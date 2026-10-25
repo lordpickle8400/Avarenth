@@ -76,6 +76,8 @@
   var mapUrls = {};   // image path -> { url, until }
   var travel = {};    // campaign id -> journey state
   var travelLog = [];
+  var grids = {};     // map id -> decoded terrain grid (or false if none)
+  var routeCache = {};
   var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
   var ui = { filters: {}, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
@@ -1203,9 +1205,9 @@
     var dm = dmView();
     var zoom = ui.mapZoom || 1;
     var list = markers[m.id];
-    if (!list) {
+    if (!list || grids[m.id] === undefined) {
       $view.innerHTML = '<div class="page"><div class="empty">Unrolling the map…</div></div>';
-      loadMarkers(m.id).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
+      Promise.all([list ? null : loadMarkers(m.id), ensureGrid(m.id)]).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
       return;
     }
     if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || m.show_markers; });
@@ -1235,7 +1237,9 @@
     if (!dm && !m.show_markers && !(tstate && tstate.map_id === m.id)) {} // nothing extra for players
     if (showRoute) {
       var pmk = list.filter(function (mk) { return mk.kind === 'party'; })[0];
-      if (pmk) html += '<svg class="route" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><line x1="' + (pmk.x * 1000) + '" y1="' + (pmk.y * 1000) + '" x2="' + (tstate.dest_x * 1000) + '" y2="' + (tstate.dest_y * 1000) + '" vector-effect="non-scaling-stroke"></line></svg>';
+      var jr = pmk && grids[m.id] ? journey(tstate) : null;
+      if (jr && jr.route) html += '<svg class="route" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + jr.route.pts.filter(function (pt, i, a) { return i % 2 === 0 || i === a.length - 1; }).map(function (pt) { return (pt.x * 1000).toFixed(1) + ',' + (pt.y * 1000).toFixed(1); }).join(' ') + '" vector-effect="non-scaling-stroke"></polyline></svg>';
+      else if (pmk) html += '<svg class="route" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><line x1="' + (pmk.x * 1000) + '" y1="' + (pmk.y * 1000) + '" x2="' + (tstate.dest_x * 1000) + '" y2="' + (tstate.dest_y * 1000) + '" vector-effect="non-scaling-stroke"></line></svg>';
       html += '<span class="dest" style="left:' + (tstate.dest_x * 100) + '%;top:' + (tstate.dest_y * 100) + '%"><span>' + esc(tstate.dest_label || 'Destination') + '</span></span>';
     }
     list.forEach(function (mk) {
@@ -1416,12 +1420,18 @@
   function rulesOf(t) {
     var r = (t && t.rules) || {};
     if (Array.isArray(r.modes) && r.speeds) {
-      return { modes: r.modes.map(String), terrains: (r.terrains || []).map(String), speeds: r.speeds, paces: r.paces || { Normal: 1 } };
+      return { modes: r.modes.map(String), terrains: (r.terrains || []).map(String), speeds: r.speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, r.terrains || []) };
     }
     // Older shape (mode miles x terrain multiplier): turn it into a grid.
     var modes = Object.keys(r.modes || { Walking: 24 }), terrains = Object.keys(r.terrains || { Plains: 1 }), speeds = {};
     terrains.forEach(function (tn) { speeds[tn] = {}; modes.forEach(function (mn) { speeds[tn][mn] = Math.round(Number(r.modes[mn] || 0) * Number(r.terrains[tn] || 1) * 10) / 10; }); });
-    return { modes: modes, terrains: terrains, speeds: speeds, paces: r.paces || { Normal: 1 } };
+    return { modes: modes, terrains: terrains, speeds: speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, terrains) };
+  }
+  var GROUND_NAMES = { r: 'Roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
+  function groundOf(r, terrains) {
+    var gmap = Object.assign({ r: 'Normal Road', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
+    Object.keys(gmap).forEach(function (k) { if (terrains.length && terrains.indexOf(gmap[k]) < 0) gmap[k] = terrains[Math.min(terrains.length - 1, k === 'r' ? 0 : terrains.length - 1)]; });
+    return gmap;
   }
   function milesPerDay(t) {
     var r = rulesOf(t);
@@ -1438,6 +1448,82 @@
     var dx = (bx - ax) * mi, dy = (by - ay) * mi * ratio;
     return Math.sqrt(dx * dx + dy * dy);
   }
+  /* Terrain grid route-finding. Cells: '.' water, 'r' road, 'g' open land, 'f' forest, 'm' mountains. */
+  function ensureGrid(mapId) {
+    if (!mapId || grids[mapId] !== undefined) return Promise.resolve();
+    return sb.from('maps').select('travel_grid').eq('id', mapId).maybeSingle().then(function (r) {
+      var tg = r.data && r.data.travel_grid;
+      if (!tg || !tg.rle || !tg.w || !tg.h) { grids[mapId] = false; return; }
+      var cells = new Array(tg.w * tg.h), i = 0, re = /(\d*)(\D)/g, m;
+      while ((m = re.exec(tg.rle)) && i < cells.length) { var n = m[1] ? parseInt(m[1], 10) : 1; for (var k = 0; k < n && i < cells.length; k++) cells[i++] = m[2]; }
+      while (i < cells.length) cells[i++] = '.';
+      grids[mapId] = { w: tg.w, h: tg.h, cells: cells };
+    });
+  }
+  // Fastest path (in days) for the current way of traveling. Returns cell list, miles and days.
+  function findRoute(m, grid, t, ax, ay, bx, by) {
+    var key = [m.id, t.mode, t.pace, JSON.stringify(rulesOf(t).speeds[t.terrain] || ''), JSON.stringify((t.rules || {}).ground || ''), ax.toFixed(4), ay.toFixed(4), bx.toFixed(4), by.toFixed(4)].join('|');
+    if (routeCache[key] !== undefined) return routeCache[key];
+    var r = rulesOf(t), W = grid.w, H = grid.h, cells = grid.cells;
+    var paceMul = Number(r.paces[t.pace] || 1);
+    var speed = {};
+    ['r', 'g', 'f', 'm'].forEach(function (c) { speed[c] = Number(((r.speeds[r.ground[c]] || {})[t.mode]) || 0) * paceMul; });
+    var cellMiles = Number(m.miles_across) / W;
+    var idx = function (x, y) { return Math.max(0, Math.min(H - 1, Math.floor(y * H))) * W + Math.max(0, Math.min(W - 1, Math.floor(x * W))); };
+    var passable = function (i) { var c = cells[i]; return c !== '.' && speed[c] > 0; };
+    var snap = function (i) {
+      if (passable(i)) return i;
+      var x0 = i % W, y0 = (i / W) | 0;
+      for (var rad = 1; rad < 12; rad++) for (var dy = -rad; dy <= rad; dy++) for (var dx = -rad; dx <= rad; dx++) {
+        var x = x0 + dx, y = y0 + dy;
+        if (x >= 0 && y >= 0 && x < W && y < H && passable(y * W + x)) return y * W + x;
+      }
+      return -1;
+    };
+    var s0 = snap(idx(ax, ay)), g0 = snap(idx(bx, by));
+    if (s0 < 0 || g0 < 0) return (routeCache[key] = null);
+    var dist = new Float64Array(W * H).fill(Infinity), prev = new Int32Array(W * H).fill(-1);
+    var heap = [], push = function (d, i) { heap.push([d, i]); var k = heap.length - 1; while (k > 0) { var p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; var tmp = heap[p]; heap[p] = heap[k]; heap[k] = tmp; k = p; } };
+    var pop = function () { var top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; var k = 0; for (;;) { var l = 2 * k + 1, rr = l + 1, sm = k; if (l < heap.length && heap[l][0] < heap[sm][0]) sm = l; if (rr < heap.length && heap[rr][0] < heap[sm][0]) sm = rr; if (sm === k) break; var tmp = heap[sm]; heap[sm] = heap[k]; heap[k] = tmp; k = sm; } } return top; };
+    var maxSpeed = Math.max(speed.r, speed.g, speed.f, speed.m);
+    var gx = g0 % W, gy = (g0 / W) | 0;
+    var hEst = function (i) { var x = i % W, y = (i / W) | 0; return Math.hypot(x - gx, y - gy) * cellMiles / maxSpeed; };
+    dist[s0] = 0; push(hEst(s0), s0);
+    var D8 = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
+    while (heap.length) {
+      var cur = pop(), i = cur[1];
+      if (i === g0) break;
+      if (cur[0] - hEst(i) > dist[i] + 1e-9) continue;
+      var x = i % W, y = (i / W) | 0;
+      for (var d = 0; d < 8; d++) {
+        var nx = x + D8[d][0], ny = y + D8[d][1];
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        var j = ny * W + nx;
+        if (!passable(j)) continue;
+        // Half a step on each cell's own terrain.
+        var miles = D8[d][2] * cellMiles;
+        var cost = miles / 2 / speed[cells[i]] + miles / 2 / speed[cells[j]];
+        if (dist[i] + cost < dist[j]) { dist[j] = dist[i] + cost; prev[j] = i; push(dist[j] + hEst(j), j); }
+      }
+    }
+    if (!isFinite(dist[g0])) return (routeCache[key] = null);
+    var path = [];
+    for (var at = g0; at >= 0; at = prev[at]) path.push(at);
+    path.reverse();
+    var pts = path.map(function (c) { return { x: ((c % W) + 0.5) / W, y: (((c / W) | 0) + 0.5) / H, c: cells[c] }; });
+    pts[0] = { x: ax, y: ay, c: pts[0].c };
+    pts[pts.length - 1] = { x: bx, y: by, c: pts[pts.length - 1].c };
+    var ratio = m.width && m.height ? m.height / m.width : 1;
+    var totalMiles = 0, totalDays = 0, legs = [];
+    for (var k = 1; k < pts.length; k++) {
+      var mi = Math.hypot(pts[k].x - pts[k - 1].x, (pts[k].y - pts[k - 1].y) * ratio) * Number(m.miles_across);
+      var dd = mi / 2 / speed[pts[k - 1].c] + mi / 2 / speed[pts[k].c];
+      legs.push({ miles: mi, days: dd, ground: pts[k].c });
+      totalMiles += mi; totalDays += dd;
+    }
+    return (routeCache[key] = { pts: pts, legs: legs, miles: totalMiles, days: totalDays });
+  }
+
   // Where the journey stands: distance left and days to go, when the map has a scale.
   function journey(t) {
     var out = { mpd: milesPerDay(t), map: t.map_id ? mapById(t.map_id) : null, party: null, remaining: null, days: null, problem: '' };
@@ -1446,24 +1532,35 @@
     if (!out.party) { out.problem = 'The party isn’t placed on ' + out.map.name + ' yet.'; return out; }
     if (t.dest_x == null) { out.problem = 'No destination set.'; return out; }
     if (!Number(out.map.miles_across)) { out.problem = 'Set how many miles wide ' + out.map.name + ' is to measure distance.'; return out; }
+    var grid = grids[out.map.id];
+    if (grid) {
+      out.route = findRoute(out.map, grid, t, out.party.x, out.party.y, t.dest_x, t.dest_y);
+      if (out.route) {
+        out.remaining = out.route.miles;
+        out.days = out.route.miles < 0.1 ? 0 : Math.ceil(out.route.days - 0.02);
+        out.byMap = true;
+        return out;
+      }
+      out.problem = 'No path over land for ' + t.mode.toLowerCase() + ' from the party to the destination.';
+    }
     out.remaining = mapDistance(out.map, out.party.x, out.party.y, t.dest_x, t.dest_y);
     out.days = out.mpd > 0 ? Math.ceil(Math.max(0, out.remaining - 0.05) / out.mpd) : null;
     return out;
   }
   function ensureTravelMarkers(t) {
-    if (t && t.map_id && !markers[t.map_id]) return loadMarkers(t.map_id);
-    return Promise.resolve();
+    if (!t || !t.map_id) return Promise.resolve();
+    return Promise.all([markers[t.map_id] ? null : loadMarkers(t.map_id), ensureGrid(t.map_id)]);
   }
 
   function journeySummary(camp) {
     var t = travel[camp.id];
     if (!t) return '';
-    if (t.map_id && !markers[t.map_id]) {
+    if (t.map_id && (!markers[t.map_id] || grids[t.map_id] === undefined)) {
       ensureTravelMarkers(t).then(function () { if (parseRoute().name === 'campaign') render(); }).catch(function () {});
       return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '</h2><div class="empty">Checking the road…</div></section>';
     }
     var j = journey(t);
-    var line = t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
+    var line = j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
     var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
     return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
       '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
@@ -1476,7 +1573,7 @@
     if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) { location.replace('#/wiki'); return; }
     var t = travel[camp.id];
     if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
-    if (t.map_id && !markers[t.map_id]) { ensureTravelMarkers(t).then(render).catch(function (e) { fail(e); }); $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
+    if (t.map_id && (!markers[t.map_id] || grids[t.map_id] === undefined)) { ensureTravelMarkers(t).then(render).catch(function (e) { fail(e); }); $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
     var dm = dmView();
     var r = rulesOf(t);
     var j = journey(t);
@@ -1487,8 +1584,10 @@
     };
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last day</button></div>';
-    html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + fmtMiles(j.mpd) + ' a day</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' + sel('tr-mode', 'Mode', r.modes) + sel('tr-pace', 'Pace', r.paces) + sel('tr-terrain', 'Terrain', r.terrains) + '</div>' +
-      (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '') + '</section>';
+    var gridOn = j.map && grids[j.map.id];
+    html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + (gridOn ? 'Terrain read from the map' : fmtMiles(j.mpd) + ' a day') + '</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' + sel('tr-mode', 'Mode', r.modes) + sel('tr-pace', 'Pace', r.paces) + (gridOn ? '' : sel('tr-terrain', 'Terrain', r.terrains)) + '</div>' +
+      (gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + ['r', 'g', 'f', 'm'].map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
+        : (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '')) + '</section>';
 
     html += '<section class="block"><h2 class="sec-title">Destination</h2>';
     if (dm) {
@@ -1497,7 +1596,7 @@
         '<div class="field"><label for="tr-dest">Destination name</label><input type="text" id="tr-dest" data-travel-text="dest_label" maxlength="60" value="' + esc(t.dest_label) + '" placeholder="e.g. Loreaon"></div>';
     }
     if (j.remaining != null) {
-      html += '<div class="vitals sum">' + vital('Heading to', t.dest_label || 'Destination') + vital('Distance left', j.remaining < 0.1 ? 'Arrived' : fmtMiles(j.remaining)) + vital('Days to go', j.remaining < 0.1 ? 0 : (j.days == null ? '—' : j.days)) + vital('Per day', fmtMiles(j.mpd)) + '</div>';
+      html += '<div class="vitals sum">' + vital('Heading to', t.dest_label || 'Destination') + vital('Distance left', j.remaining < 0.1 ? 'Arrived' : fmtMiles(j.remaining)) + vital('Days to go', j.remaining < 0.1 ? 0 : (j.days == null ? '—' : j.days)) + (j.byMap ? vital('Route', 'Along roads') : vital('Per day', fmtMiles(j.mpd))) + '</div>';
     } else {
       html += '<div class="empty">' + esc(dm ? j.problem : 'No destination shared yet.') + '</div>';
     }
@@ -1530,6 +1629,9 @@
             return '<td><input type="number" class="input" min="0" step="1" data-speed-t="' + esc(tn) + '" data-speed-m="' + esc(mn) + '" value="' + esc(((r.speeds[tn] || {})[mn]) != null ? r.speeds[tn][mn] : '') + '" aria-label="' + esc(mn + ' on ' + tn) + '" inputmode="decimal"></td>';
           }).join('') + '</tr>';
         }).join('') + '</tbody></table></div><span class="hint">Renamed or added a row or column? Save once and the grid updates.</span></div>' +
+        '<div class="field"><span class="lbl">On maps Claude has read, ground counts as</span><div class="two">' + ['r', 'g', 'f', 'm'].map(function (c) {
+          return '<div class="field"><label for="gr-' + c + '">' + GROUND_NAMES[c] + '</label><select id="gr-' + c + '" data-ground="' + c + '">' + r.terrains.map(function (tn) { return '<option' + (tn === r.ground[c] ? ' selected' : '') + '>' + esc(tn) + '</option>'; }).join('') + '</select></div>';
+        }).join('') + '</div></div>' +
         '<div class="field"><span class="lbl">Paces (multiplier)</span>';
       Object.keys(r.paces).concat(['']).forEach(function (k, i) {
         html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="pn' + i + '">Pace name</label><input type="text" class="input" id="pn' + i + '" data-pace-name value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
@@ -1555,7 +1657,24 @@
       var day = t.day;
       var entry = { campaign_id: campId, day: day, miles: 0, map_id: t.map_id || null };
       var moveOp = Promise.resolve({});
-      if (j.remaining != null && j.mpd > 0 && j.remaining >= 0.1) {
+      if (j.byMap && j.route && j.remaining >= 0.1) {
+        var budget = 1, miles = 0, byGround = {}, pts = j.route.pts, legs = j.route.legs, pos = pts[0];
+        for (var k = 0; k < legs.length && budget > 1e-9; k++) {
+          var lg = legs[k], frac = Math.min(1, budget / lg.days);
+          pos = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * frac, y: pts[k].y + (pts[k + 1].y - pts[k].y) * frac };
+          miles += lg.miles * frac; budget -= lg.days * frac;
+          var gname = rulesOf(t).ground[lg.ground] || lg.ground;
+          byGround[gname] = (byGround[gname] || 0) + lg.miles * frac;
+        }
+        var arrivedR = budget > 1e-9;
+        if (arrivedR) pos = { x: t.dest_x, y: t.dest_y };
+        var mix = Object.keys(byGround).sort(function (a, b) { return byGround[b] - byGround[a]; }).filter(function (k2) { return byGround[k2] >= 0.5; })
+          .map(function (k2) { return k2.toLowerCase() + ' (' + fmtMiles(byGround[k2]) + ')'; });
+        entry.miles = Math.round(miles * 10) / 10;
+        entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = pos.x; entry.to_y = pos.y;
+        entry.text = 'Traveled ' + fmtMiles(miles) + ' by ' + t.mode.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace' + (mix.length ? ': ' + mix.join(', ') : '') + '.' + (arrivedR ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+        moveOp = sb.from('map_markers').update({ x: pos.x, y: pos.y }).eq('id', j.party.id);
+      } else if (j.remaining != null && j.mpd > 0 && j.remaining >= 0.1) {
         var step = Math.min(j.mpd, j.remaining);
         var f = step / j.remaining;
         var nx = j.party.x + (t.dest_x - j.party.x) * f, ny = j.party.y + (t.dest_y - j.party.y) * f;
@@ -1623,7 +1742,9 @@
     var pn = form.querySelectorAll('[data-pace-name]'), pv = form.querySelectorAll('[data-pace-val]');
     pn.forEach(function (n, i) { var k = n.value.trim().slice(0, 30), v = Number(pv[i].value); if (k && isFinite(v) && v >= 0) paces[k] = Math.round(v * 100) / 100; });
     if (!Object.keys(paces).length) paces = { Normal: 1 };
-    var patch = { rules: { modes: modes, terrains: terrains, speeds: speeds, paces: paces } };
+    var ground = {};
+    form.querySelectorAll('[data-ground]').forEach(function (sl) { ground[sl.getAttribute('data-ground')] = sl.value; });
+    var patch = { rules: { modes: modes, terrains: terrains, speeds: speeds, paces: paces, ground: ground } };
     if (modes.indexOf(t.mode) < 0) patch.mode = modes[0];
     if (terrains.indexOf(t.terrain) < 0) patch.terrain = terrains[0];
     if (!(t.pace in paces)) patch.pace = Object.keys(paces)[0];
