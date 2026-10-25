@@ -2,7 +2,7 @@
 
 Wiki and character sheets for the Dornish Isles, a homebrew D&D setting.
 
-**App:** https://lordpickle8400.github.io/avarenth/
+**App:** https://lordpickle8400.github.io/Avarenth/
 
 ## How it works
 
