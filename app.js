@@ -70,6 +70,10 @@
   var campaigns = [];
   var memberships = [];
   var pins = {};
+  var crimes = [];
+  var maps = [];
+  var markers = {};   // map id -> markers
+  var mapUrls = {};   // image path -> { url, until }
   var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
   var ui = { filters: {}, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
@@ -243,6 +247,25 @@
       loaded.chars = true;
     });
   }
+  function loadCrimes() {
+    return sb.from('crimes').select('id, campaign_id, character_id, kind, title, location, severity, status, bounty, quantity, notes, dm_only, created_at').order('created_at').then(function (r) {
+      if (r.error) throw r.error;
+      crimes = r.data || [];
+    });
+  }
+  function loadMaps() {
+    return sb.from('maps').select('id, campaign_id, name, image_path, width, height, visible_to_players, show_markers, created_at').order('created_at').then(function (r) {
+      if (r.error) throw r.error;
+      maps = r.data || [];
+    });
+  }
+  function loadMarkers(mapId) {
+    return sb.from('map_markers').select('id, map_id, kind, character_id, label, x, y, article_slug, target_map_id').eq('map_id', mapId).then(function (r) {
+      if (r.error) throw r.error;
+      markers[mapId] = r.data || [];
+    });
+  }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps()]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -277,7 +300,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', map: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters']];
     if (isDM()) tabs.push(['members', 'Players']);
     $tabs.innerHTML = tabs.map(function (t) { return '<a href="#/' + t[0] + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
@@ -291,7 +314,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
-    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit'];
+    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
     }
@@ -305,6 +328,9 @@
       case 'c': return renderSheet(r.arg);
       case 'members': return renderMembers();
       case 'account': return renderAccount();
+      case 'crimes': return renderCrimes(r.arg);
+      case 'map': return renderMap(r.arg);
+      case 'map-edit': return renderMapEdit(r.arg);
       case 'campaign': return renderCampaign(r.arg);
       case 'campaign-edit': return renderCampaignEdit(r.arg);
       case 'join': return renderJoin();
@@ -432,6 +458,11 @@
         html += '<div class="empty">' + (isDM() ? 'No campaigns yet. Tap “New campaign” to start one.' : 'You’re not in a campaign yet. Ask your DM for the campaign PIN, then tap “Join a campaign”.') + '</div>';
       }
       html += '</section>';
+      var wmaps = mapsFor(null);
+      if (wmaps.length || dmView()) {
+        html += '<section class="block"><h2 class="sec-title">World maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="">+ Add map</button></small>' : '') + '</h2>' +
+          (wmaps.length ? mapList(wmaps) : '<div class="empty">No world maps yet.</div>') + '</section>';
+      }
       html += articleBrowser(world, 'world', dmView() ? 'No world lore yet. Tap “World article” to add some.' : 'Nothing has been revealed yet.');
     }
     html += '</div>';
@@ -469,6 +500,11 @@
       html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
       html += articleBrowser(world, 'cw-' + camp.id, 'No world lore yet.').replace('<h2 class="sec-title">Categories</h2>', '<h2 class="sec-title">World reference</h2>').replace(/>Articles<small>/, '>World lore<small>');
     }
+    var record = crimeSummary(crimes.filter(function (c) { return c.campaign_id === camp.id && (dmView() || !c.dm_only); }));
+    html += '<section class="block"><h2 class="sec-title">Criminal Record<small><a class="btn small quiet" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open tracker</a></small></h2>' + summaryVitals(record) + '</section>';
+    var cmaps = mapsFor(camp.id);
+    html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
+      (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
     html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small><button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
     html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
     html += '</section></div>';
@@ -909,7 +945,7 @@
       (can ? '<div class="pool-ctl"><label class="sr" for="mp-amt">Amount</label><input type="number" id="mp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small" data-act="mp" data-dir="-1">Spend</button><button type="button" class="btn small" data-act="mp" data-dir="1">Restore</button><button type="button" class="btn small quiet" data-act="mp-full">Full</button></div>' : '') +
       (edit ? '<div class="pool-edit"><label for="mp-max">Max</label><input type="number" id="mp-max" data-pool="mana.max" value="' + num(s.mana.max, 0) + '"><label for="mp-regen">Regen</label><input type="text" id="mp-regen" data-pool="mana.regen" value="' + esc(s.mana.regen) + '" placeholder="e.g. 2 per round" style="width:160px;text-align:left"></div>' : '') + '</section></div>';
 
-    var tabs = ['Spells', 'Skills', 'Inventory', 'Features', 'Notes'];
+    var tabs = ['Spells', 'Skills', 'Inventory', 'Features', 'Record', 'Notes'];
     html += '<div class="subtabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + t + '</button>'; }).join('') + '</div>';
     html += '<div role="tabpanel">' + sheetTab(c, s, edit, can, abil, pb, perc) + '</div>';
 
@@ -963,6 +999,16 @@
       });
       html += '</div>';
       if (can) html += '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field"><label for="it-name">Item</label><input type="text" id="it-name" maxlength="80"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div><div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></form>';
+    } else if (ui.sheetTab === 'Record') {
+      var camp = c.campaign_id ? campaignById(c.campaign_id) : null;
+      if (!camp) {
+        html += '<div class="empty" style="margin-top:12px">This character isn’t in a campaign, so there’s no criminal record to show.</div>';
+      } else {
+        var mine = crimes.filter(function (x) { return x.campaign_id === camp.id && (x.character_id === c.id || !x.character_id) && (dmView() || !x.dm_only); });
+        html += '<div style="margin-top:12px">' + summaryVitals(crimeSummary(mine)) + '</div><div class="tbl" style="margin-top:12px">' +
+          (mine.length ? mine.map(function (x) { return crimeRow(x, false); }).join('') : '<div class="empty">A clean record. For now.</div>') + '</div>' +
+          '<p class="note" style="margin-top:12px">Includes crimes charged to the whole party. <a href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open the full tracker</a>.</p>';
+      }
     } else if (ui.sheetTab === 'Features') {
       html += '<div class="stack" style="margin-top:12px">';
       if (!s.features.length) html += '<div class="empty">No features or traits yet.</div>';
@@ -983,6 +1029,319 @@
     return '<button type="button" class="prof" data-level="' + lvl + '" data-act="prof" data-kind="' + kind + '" data-key="' + esc(key) + '" aria-label="' + esc(aria) + '. Tap to change.">' + label + '</button>';
   }
 
+  /* ================= Criminal record ================= */
+  var SEVERITIES = ['Minor', 'Moderate', 'Serious', 'Major', 'Royal', 'Imperial'];
+  var CRIME_STATUS = ['Unknown', 'Suspected', 'Wanted', 'Cleared'];
+
+  // Totals for a set of entries. Cleared entries no longer count.
+  function crimeSummary(list) {
+    var active = list.filter(function (c) { return c.status !== 'Cleared'; });
+    var bounty = 0, wanted = 0, suspected = 0, worst = -1;
+    active.forEach(function (c) {
+      bounty += num(c.bounty, 0);
+      if (c.status === 'Wanted') wanted++;
+      if (c.status === 'Suspected') suspected++;
+      worst = Math.max(worst, SEVERITIES.indexOf(c.severity));
+    });
+    var status = wanted ? 'Wanted' : suspected ? 'Suspected' : active.length ? 'Unknown to the law' : 'Clean';
+    return { bounty: bounty, wanted: wanted, worst: worst >= 0 ? SEVERITIES[worst] : 'None', status: status, count: active.length };
+  }
+  function sevTag(s) {
+    var i = SEVERITIES.indexOf(s);
+    var cls = i <= 0 ? 'plain' : i === 1 ? 'warn' : '';
+    return '<span class="tag ' + cls + '"' + (i >= 3 ? ' style="background:var(--secret-bg)"' : '') + '>' + esc(s) + '</span>';
+  }
+  function crimeStatusTag(s) {
+    var cls = s === 'Cleared' ? 'ok' : s === 'Unknown' ? 'plain' : s === 'Suspected' ? 'warn' : '';
+    return '<span class="tag ' + cls + '">' + esc(s) + '</span>';
+  }
+  function campaignChars(campId) { return characters.filter(function (c) { return c.campaign_id === campId; }); }
+  function charName(id) { var c = charById(id); return c ? c.name : 'Unknown character'; }
+
+  function crimeRow(c, dm) {
+    var who = c.character_id ? charName(c.character_id) : 'Whole party';
+    var meta = [who, c.location, c.kind === 'contraband' ? 'Qty ' + num(c.quantity, 1) : '', c.notes].filter(Boolean).map(esc).join(' · ');
+    var html = '<div class="tbl-row" style="flex-wrap:wrap"><div class="main" style="min-width:160px"><b>' + esc(c.title) + (c.dm_only ? ' <span class="tag" style="font-size:10px">DM only</span>' : '') + '</b><span>' + meta + '</span></div>' +
+      '<span class="pill-row" style="align-items:center">' + sevTag(c.severity) + crimeStatusTag(c.status) + (num(c.bounty, 0) ? '<span class="num">' + num(c.bounty, 0) + ' gp</span>' : '') + '</span>';
+    if (dm) {
+      html += '<span class="pill-row" style="width:100%;padding-top:4px"><label class="sr" for="cs-' + c.id + '">Status</label><select class="input" id="cs-' + c.id + '" data-crime-status="' + esc(c.id) + '" style="width:auto;min-height:38px;font-size:14px;padding:4px 8px">' +
+        CRIME_STATUS.map(function (s) { return '<option' + (s === c.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>' +
+        '<label class="sr" for="cb-' + c.id + '">Bounty</label><input type="number" class="input" id="cb-' + c.id + '" data-crime-bounty="' + esc(c.id) + '" min="0" value="' + num(c.bounty, 0) + '" style="width:96px;min-height:38px;font-size:14px;padding:4px 8px" inputmode="numeric" aria-label="Bounty in gold">' +
+        '<button type="button" class="btn small danger" data-act="delete-crime" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again' : 'Remove') + '</button></span>';
+    }
+    return html + '</div>';
+  }
+
+  function summaryVitals(s) {
+    return '<div class="vitals sum">' + vital('Status', s.status) + vital('Bounty', s.bounty + ' gp') + vital('Warrants', s.wanted) + vital('Worst', s.worst) + '</div>';
+  }
+
+  function renderCrimes(slug) {
+    var camp = campaignBySlug(slug);
+    if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) { location.replace('#/wiki'); return; }
+    var dm = dmView();
+    var all = crimes.filter(function (c) { return c.campaign_id === camp.id && (dm || !c.dm_only); });
+    var party = campaignChars(camp.id).filter(function (ch) { return isDM() || ch.owner_id === uid(); });
+    var filter = ui.crimeFilter || 'all';
+    var shown = all.filter(function (c) { return filter === 'all' || (filter === 'party' ? !c.character_id : c.character_id === filter); });
+
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Criminal Record</h1></div></section><div class="page">';
+    html += '<section class="block"><h2 class="sec-title">The party<small>' + (dm ? 'Everything on record' : 'What you know') + '</small></h2>' + summaryVitals(crimeSummary(all)) + '</section>';
+    if (party.length) {
+      html += '<section class="block"><h2 class="sec-title">Members<small>Includes whole-party crimes</small></h2><div class="tbl">';
+      party.forEach(function (ch) {
+        var s = crimeSummary(all.filter(function (c) { return !c.character_id || c.character_id === ch.id; }));
+        html += '<div class="tbl-row"><div class="main"><b>' + esc(ch.name) + '</b><span>Worst: ' + esc(s.worst) + ' · ' + s.count + ' active</span></div>' + crimeStatusTag(s.status === 'Unknown to the law' ? 'Unknown' : s.status === 'Clean' ? 'Cleared' : s.status) + '<span class="num">' + s.bounty + ' gp</span></div>';
+      });
+      html += '</div></section>';
+    }
+    html += '<div class="pill-row" role="group" aria-label="Show entries for">' +
+      [['all', 'Everything'], ['party', 'Whole party']].concat(party.map(function (ch) { return [ch.id, ch.name]; })).map(function (f) {
+        return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="crime-filter" data-f="' + esc(f[0]) + '" aria-pressed="' + (filter === f[0]) + '">' + esc(f[1]) + '</button>';
+      }).join('') + '</div>';
+    ['crime', 'contraband'].forEach(function (k) {
+      var list = shown.filter(function (c) { return c.kind === k; });
+      html += '<section class="block"><h2 class="sec-title">' + (k === 'crime' ? 'Crimes' : 'Contraband') + '<small>' + list.length + '</small></h2>' +
+        (list.length ? '<div class="tbl">' + list.map(function (c) { return crimeRow(c, dm); }).join('') + '</div>' : '<div class="empty">' + (k === 'crime' ? 'No crimes on record.' : 'No contraband on record.') + '</div>') + '</section>';
+    });
+    if (dm) {
+      html += '<form class="form group-box" id="crime-form" novalidate data-camp="' + esc(camp.id) + '"><h2>Log an entry</h2>' +
+        '<div class="two"><div class="field"><label for="cr-kind">Type</label><select id="cr-kind"><option value="crime">Crime</option><option value="contraband">Contraband</option></select></div>' +
+        '<div class="field"><label for="cr-who">Who</label><select id="cr-who"><option value="">Whole party</option>' + campaignChars(camp.id).map(function (ch) { return '<option value="' + esc(ch.id) + '">' + esc(ch.name) + '</option>'; }).join('') + '</select></div></div>' +
+        '<div class="field"><label for="cr-title">Crime or item</label><input type="text" id="cr-title" maxlength="80" placeholder="e.g. Theft, Spider eggs"></div>' +
+        '<div class="field"><label for="cr-loc">Where</label><input type="text" id="cr-loc" maxlength="80" placeholder="e.g. Marloo"></div>' +
+        '<div class="two"><div class="field"><label for="cr-sev">Severity</label><select id="cr-sev">' + SEVERITIES.map(function (s) { return '<option>' + s + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="cr-status">Authorities</label><select id="cr-status">' + CRIME_STATUS.map(function (s) { return '<option>' + s + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="cr-bounty">Bounty (gp)</label><input type="number" id="cr-bounty" min="0" value="0" inputmode="numeric"></div>' +
+        '<div class="field"><label for="cr-qty">Quantity</label><input type="number" id="cr-qty" min="0" value="1" inputmode="numeric"></div></div>' +
+        '<div class="field"><label for="cr-notes">Notes</label><input type="text" id="cr-notes" maxlength="200"></div>' +
+        '<label class="check"><input type="checkbox" id="cr-dm">DM only (players never see this entry)</label>' +
+        '<div class="actions"><button type="submit" class="btn primary">Add to record</button></div></form>';
+      html += '<p class="note">Grading and punishments are in the <a href="#/a/crime-and-punishment">Crime and Punishment</a> article.</p>';
+    }
+    html += '</div>';
+    $view.innerHTML = html;
+  }
+
+  function saveCrime(form) {
+    var title = document.getElementById('cr-title').value.trim();
+    if (!title) { toast('Name the crime or item first.'); return document.getElementById('cr-title').focus(); }
+    var row = {
+      campaign_id: form.getAttribute('data-camp'),
+      character_id: document.getElementById('cr-who').value || null,
+      kind: document.getElementById('cr-kind').value,
+      title: title,
+      location: document.getElementById('cr-loc').value.trim(),
+      severity: document.getElementById('cr-sev').value,
+      status: document.getElementById('cr-status').value,
+      bounty: Math.max(0, num(document.getElementById('cr-bounty').value, 0)),
+      quantity: Math.max(0, num(document.getElementById('cr-qty').value, 1)),
+      notes: document.getElementById('cr-notes').value.trim(),
+      dm_only: document.getElementById('cr-dm').checked
+    };
+    sb.from('crimes').insert(row).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not add that entry.');
+      loadCrimes().then(function () { toast('Added to the record'); render(); });
+    });
+  }
+
+  function updateCrime(id, patch) {
+    sb.from('crimes').update(patch).eq('id', id).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not update that entry.');
+      loadCrimes().then(render);
+    });
+  }
+
+  /* ================= Maps ================= */
+  function mapById(id) { for (var i = 0; i < maps.length; i++) if (maps[i].id === id) return maps[i]; return null; }
+  function mapsFor(campId) { return maps.filter(function (m) { return (m.campaign_id || null) === (campId || null) && (dmView() || m.visible_to_players); }); }
+  function mapList(list) {
+    return '<div class="list">' + list.map(function (m) {
+      return '<a class="row" href="#/map/' + encodeURIComponent(m.id) + '"><span class="row-main"><b>' + esc(m.name) + '</b><span>Map' + (dmView() && !m.visible_to_players ? ' · hidden from players' : '') + '</span></span></a>';
+    }).join('') + '</div>';
+  }
+  function mapImageUrl(path) {
+    var hit = mapUrls[path];
+    if (hit && hit.until > Date.now()) return Promise.resolve(hit.url);
+    return sb.storage.from('maps').createSignedUrl(path, 3600).then(function (r) {
+      if (r.error) throw r.error;
+      mapUrls[path] = { url: r.data.signedUrl, until: Date.now() + 50 * 60 * 1000 };
+      return r.data.signedUrl;
+    });
+  }
+
+  function markerLabel(mk) {
+    if (mk.kind === 'party') return 'The party';
+    if (mk.kind === 'character') return charName(mk.character_id);
+    return mk.label || 'Pin';
+  }
+
+  function renderMap(id) {
+    var m = mapById(id);
+    if (!m) { $view.innerHTML = '<div class="page narrow"><div class="empty">That map doesn’t exist, or it isn’t shared with you.</div><div class="actions"><a class="btn" href="#/wiki">Back</a></div></div>'; return; }
+    var camp = m.campaign_id ? campaignById(m.campaign_id) : null;
+    var dm = dmView();
+    var zoom = ui.mapZoom || 1;
+    var list = markers[m.id];
+    if (!list) {
+      $view.innerHTML = '<div class="page"><div class="empty">Unrolling the map…</div></div>';
+      loadMarkers(m.id).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
+      return;
+    }
+    if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || m.show_markers; });
+    var placing = ui.placing && ui.placing.mapId === m.id ? ui.placing : null;
+    var chars = camp ? campaignChars(camp.id) : characters;
+
+    var html = '<div class="page" style="gap:16px"><div><p class="crumbs"><a href="#/wiki">Avarenth</a>' + (camp ? ' › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a>' : '') + '</p><h1 class="page-title">' + esc(m.name) + '</h1></div>';
+    if (dm) {
+      html += '<div class="actions"><button type="button" class="btn small' + (placing && placing.kind === 'party' ? ' primary' : '') + '" data-act="place" data-kind="party">Move party</button>' +
+        (chars.length ? '<label class="sr" for="place-char">Move a character</label><select class="input" id="place-char" style="width:auto;min-height:36px;font-size:13px;padding:4px 8px"><option value="">Move character…</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('') + '</select>' : '') +
+        '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
+        '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this pin' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+    }
+    html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
+      '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
+    list.forEach(function (mk) {
+      html += '<button type="button" class="pin pin-' + mk.kind + (ui.selectedMarker === mk.id ? ' sel' : '') + '" style="left:' + (mk.x * 100) + '%;top:' + (mk.y * 100) + '%" data-act="marker" data-id="' + esc(mk.id) + '" aria-label="' + esc(markerLabel(mk)) + '"><span>' + esc(markerLabel(mk)) + '</span></button>';
+    });
+    html += '</div></div><div class="actions" style="justify-content:flex-end"><button type="button" class="btn small" data-act="zoom" data-dir="-1" aria-label="Zoom out">−</button><span class="note">' + Math.round(zoom * 100) + '%</span><button type="button" class="btn small" data-act="zoom" data-dir="1" aria-label="Zoom in">+</button></div>';
+
+    var sel = ui.selectedMarker ? list.filter(function (mk) { return mk.id === ui.selectedMarker; })[0] : null;
+    if (ui.pendingPin && ui.pendingPin.mapId === m.id) {
+      html += '<form class="form group-box" id="pin-form" novalidate><h2>' + (ui.pendingPin.markerId ? 'Edit pin' : 'New pin') + '</h2>' +
+        '<div class="field"><label for="pin-label">Name</label><input type="text" id="pin-label" maxlength="60" value="' + esc(ui.pendingPin.label || '') + '" placeholder="e.g. Marloo"></div>' +
+        '<div class="field"><label for="pin-article">Links to article (optional)</label><input type="text" id="pin-article" list="pin-articles" value="' + esc(ui.pendingPin.articleTitle || '') + '" placeholder="Start typing a title"><datalist id="pin-articles">' + visibleArticles().map(function (a) { return '<option value="' + esc(a.title) + '"></option>'; }).join('') + '</datalist></div>' +
+        '<div class="field"><label for="pin-map">Opens map (optional)</label><select id="pin-map"><option value="">None</option>' + maps.filter(function (x) { return x.id !== m.id; }).map(function (x) { return '<option value="' + esc(x.id) + '"' + (ui.pendingPin.targetMapId === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="actions"><button type="submit" class="btn primary">Save pin</button><button type="button" class="btn" data-act="pin-cancel">Cancel</button></div></form>';
+    } else if (sel) {
+      var art = null;
+      if (sel.article_slug) art = articleBySlug(sel.article_slug);
+      var tm = sel.target_map_id ? mapById(sel.target_map_id) : null;
+      html += '<section class="group-box"><h2>' + esc(markerLabel(sel)) + '</h2><div class="actions">' +
+        (art && (dm || !art.hidden) ? '<a class="btn small" href="#/a/' + encodeURIComponent(art.slug) + '">Read article</a>' : '') +
+        (tm && (dm || tm.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(tm.id) + '">Open ' + esc(tm.name) + '</a>' : '') +
+        (dm ? '<button type="button" class="btn small" data-act="marker-move" data-id="' + esc(sel.id) + '">Move</button>' + (sel.kind === 'place' ? '<button type="button" class="btn small" data-act="pin-edit" data-id="' + esc(sel.id) + '">Edit</button>' : '') + '<button type="button" class="btn small danger" data-act="marker-delete" data-id="' + esc(sel.id) + '">' + (ui.pendingDelete === sel.id ? 'Tap again' : 'Remove') + '</button>' : '') +
+        '<button type="button" class="btn small quiet" data-act="marker-close">Close</button></div></section>';
+    }
+
+    var people = list.filter(function (mk) { return mk.kind !== 'place'; });
+    if (dm || m.show_markers) {
+      html += '<section class="block"><h2 class="sec-title">Who’s here<small>' + (dm ? (m.show_markers ? 'Players can see these' : 'Only you can see these') : '') + '</small></h2>' +
+        (people.length ? '<div class="pill-row">' + people.map(function (mk) { return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="marker" data-id="' + esc(mk.id) + '">' + esc(markerLabel(mk)) + '</button>'; }).join('') + '</div>' : '<div class="empty">Nobody placed on this map yet.' + (dm ? ' Use “Move party” or pick a character above, then tap the map.' : '') + '</div>') + '</section>';
+    }
+    html += '</div>';
+    $view.innerHTML = html;
+    var frame = document.getElementById('map-frame');
+    if (frame && ui.mapScroll && ui.mapScroll.id === m.id) { frame.scrollLeft = ui.mapScroll.left; frame.scrollTop = ui.mapScroll.top; }
+    mapImageUrl(m.image_path).then(function (url) { var img = document.getElementById('map-img'); if (img) img.src = url; }).catch(function (e) { fail(e, 'Could not load the map image.'); });
+  }
+
+  function placeAt(m, x, y) {
+    var p = ui.placing;
+    ui.placing = null;
+    if (p.kind === 'place' && !p.markerId) { ui.pendingPin = { mapId: m.id, x: x, y: y }; ui.selectedMarker = null; return render(); }
+    var list = markers[m.id] || [];
+    var existing = p.markerId ? list.filter(function (mk) { return mk.id === p.markerId; })[0]
+      : list.filter(function (mk) { return mk.kind === p.kind && (p.kind !== 'character' || mk.character_id === p.characterId); })[0];
+    var op = existing
+      ? sb.from('map_markers').update({ x: x, y: y }).eq('id', existing.id)
+      : sb.from('map_markers').insert({ map_id: m.id, kind: p.kind, character_id: p.kind === 'character' ? p.characterId : null, x: x, y: y });
+    op.then(function (r) {
+      if (r.error) return fail(r.error, 'Could not place that marker.');
+      loadMarkers(m.id).then(function () { toast('Placed'); render(); });
+    });
+  }
+
+  function savePin() {
+    var pp = ui.pendingPin;
+    var m = mapById(pp.mapId);
+    var label = document.getElementById('pin-label').value.trim();
+    var artTitle = document.getElementById('pin-article').value.trim();
+    var art = artTitle ? articleByTitle(artTitle) : null;
+    if (artTitle && !art) return toast('No article with that exact title. Pick one from the list or leave it empty.');
+    if (!label && art) label = art.title;
+    if (!label) { toast('Give the pin a name.'); return document.getElementById('pin-label').focus(); }
+    var row = { label: label, article_slug: art ? art.slug : null, target_map_id: document.getElementById('pin-map').value || null };
+    var op = pp.markerId
+      ? sb.from('map_markers').update(row).eq('id', pp.markerId)
+      : sb.from('map_markers').insert(Object.assign({ map_id: m.id, kind: 'place', x: pp.x, y: pp.y }, row));
+    op.then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the pin.');
+      ui.pendingPin = null;
+      loadMarkers(m.id).then(function () { toast('Pin saved'); render(); });
+    });
+  }
+
+  function renderMapEdit(id) {
+    var m = id ? mapById(id) : null;
+    if (id && !m) { location.replace('#/wiki'); return; }
+    var campId = m ? m.campaign_id : (ui.mapCampaign || null);
+    $view.innerHTML = '<div class="page narrow"><form class="form" id="map-form" novalidate data-id="' + esc(m ? m.id : '') + '">' +
+      '<div><p class="eyebrow">' + (m ? 'Edit map' : 'New map') + '</p><h1 class="page-title">' + (m ? esc(m.name) : 'Add a map') + '</h1></div>' +
+      '<div class="field"><label for="mp-name">Name</label><input type="text" id="mp-name" maxlength="80" value="' + esc(m ? m.name : '') + '" placeholder="e.g. The Dornish Isles, Marloo"></div>' +
+      '<div class="field"><label for="mp-file">' + (m ? 'Replace image (optional)' : 'Map image') + '</label><input type="file" id="mp-file" accept="image/png,image/jpeg,image/webp" class="input"><span class="hint">PNG, JPG or WebP, like an Inkarnate export. Big images are shrunk to 4096 px to save space.</span></div>' +
+      '<div class="field"><label for="mp-camp">Belongs to</label><select id="mp-camp">' + campaignOptions(campId, true, 'World map') + '</select></div>' +
+      '<label class="check"><input type="checkbox" id="mp-visible"' + (!m || m.visible_to_players ? ' checked' : '') + '>Players can see this map</label>' +
+      '<label class="check"><input type="checkbox" id="mp-markers"' + (m && m.show_markers ? ' checked' : '') + '>Players can see where the party and characters are</label>' +
+      '<p class="err" id="mp-err" role="alert" hidden></p>' +
+      '<div class="sticky-actions"><button type="submit" class="btn primary" id="mp-save">Save map</button><a class="btn" href="' + (m ? '#/map/' + encodeURIComponent(m.id) : '#/wiki') + '">Cancel</a>' +
+      (m ? '<button type="button" class="btn danger" data-act="delete-map" data-id="' + esc(m.id) + '" style="margin-left:auto">' + (ui.pendingDelete === m.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div></form></div>';
+  }
+
+  // Shrink to at most 4096 px on the long side and re-encode, so maps stay well inside the free storage.
+  function prepareImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var scale = Math.min(1, 4096 / Math.max(img.naturalWidth, img.naturalHeight));
+        var w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        cv.toBlob(function (blob) {
+          if (blob && blob.type === 'image/webp') return resolve({ blob: blob, w: w, h: h, ext: 'webp', type: 'image/webp' });
+          cv.toBlob(function (jpg) { jpg ? resolve({ blob: jpg, w: w, h: h, ext: 'jpg', type: 'image/jpeg' }) : reject(new Error('Could not read that image.')); }, 'image/jpeg', 0.88);
+        }, 'image/webp', 0.88);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('That file isn’t an image this browser can read.')); };
+      img.src = url;
+    });
+  }
+
+  function saveMap(form) {
+    var id = form.getAttribute('data-id');
+    var name = document.getElementById('mp-name').value.trim();
+    var file = document.getElementById('mp-file').files[0];
+    var $err = document.getElementById('mp-err');
+    var show = function (msg) { $err.textContent = msg; $err.hidden = false; btn.disabled = false; btn.textContent = 'Save map'; };
+    var btn = document.getElementById('mp-save');
+    if (!name) return show('Give the map a name.');
+    if (!id && !file) return show('Choose a map image.');
+    var row = { name: name, campaign_id: document.getElementById('mp-camp').value || null, visible_to_players: document.getElementById('mp-visible').checked, show_markers: document.getElementById('mp-markers').checked };
+    btn.disabled = true; btn.textContent = file ? 'Uploading…' : 'Saving…';
+    var mapId = id || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : null);
+    if (!mapId) return show('This browser is too old to upload maps.');
+    var old = id ? mapById(id) : null;
+    var step = file ? prepareImage(file).then(function (img) {
+      var path = mapId + '-' + Date.now() + '.' + img.ext;
+      return sb.storage.from('maps').upload(path, img.blob, { contentType: img.type, upsert: false }).then(function (r) {
+        if (r.error) throw r.error;
+        row.image_path = path; row.width = img.w; row.height = img.h;
+      });
+    }) : Promise.resolve();
+    step.then(function () {
+      return id ? sb.from('maps').update(row).eq('id', id) : sb.from('maps').insert(Object.assign({ id: mapId }, row));
+    }).then(function (r) {
+      if (r.error) throw r.error;
+      if (old && row.image_path && old.image_path) sb.storage.from('maps').remove([old.image_path]);
+      return loadMaps();
+    }).then(function () { toast('Map saved'); go('#/map/' + encodeURIComponent(mapId)); })
+      .catch(function (e) { console.error(e); show(e && e.message ? e.message : 'Could not save the map.'); });
+  }
+
   /* ================= Events ================= */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
@@ -991,7 +1350,7 @@
     var c = currentChar();
     switch (act) {
       case 'signout': sb.auth.signOut(); break;
-      case 'recheck': loadProfile().then(function () { if (isMember()) return Promise.all([loadWiki(), loadCharacters(), loadMembers()]); }).then(render).catch(function (err) { fail(err); }); break;
+      case 'recheck': loadProfile().then(function () { if (isMember()) return loadAll(); }).then(render).catch(function (err) { fail(err); }); break;
       case 'authmode': ui.authMode = el.getAttribute('data-mode'); renderAuth(); break;
       case 'preview':
         preview = el.getAttribute('data-mode');
@@ -1007,6 +1366,68 @@
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
       case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
+      case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
+      case 'delete-crime':
+        var crid = el.getAttribute('data-id');
+        if (ui.pendingDelete !== crid) { ui.pendingDelete = crid; el.textContent = 'Tap again'; return; }
+        sb.from('crimes').delete().eq('id', crid).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not remove that entry.');
+          ui.pendingDelete = null;
+          loadCrimes().then(function () { toast('Removed'); render(); });
+        });
+        break;
+      case 'new-map': ui.mapCampaign = el.getAttribute('data-campaign') || null; go('#/map-edit'); break;
+      case 'place':
+        ui.placing = { mapId: parseRoute().arg, kind: el.getAttribute('data-kind') };
+        ui.pendingPin = null; ui.selectedMarker = null;
+        render(); break;
+      case 'place-cancel': ui.placing = null; render(); break;
+      case 'zoom':
+        var fr = document.getElementById('map-frame');
+        var steps = [1, 1.5, 2, 3, 4];
+        var zi = Math.max(0, steps.indexOf(ui.mapZoom || 1));
+        var nz = steps[Math.max(0, Math.min(steps.length - 1, zi + num(el.getAttribute('data-dir'), 1)))];
+        if (fr) {
+          var ratio = nz / (ui.mapZoom || 1);
+          ui.mapScroll = { id: parseRoute().arg, left: (fr.scrollLeft + fr.clientWidth / 2) * ratio - fr.clientWidth / 2, top: (fr.scrollTop + fr.clientHeight / 2) * ratio - fr.clientHeight / 2 };
+        }
+        ui.mapZoom = nz; render(); break;
+      case 'marker':
+        if (ui.placing) return;
+        ui.selectedMarker = el.getAttribute('data-id'); ui.pendingPin = null; ui.pendingDelete = null;
+        rememberMapScroll(); render(); break;
+      case 'marker-close': ui.selectedMarker = null; rememberMapScroll(); render(); break;
+      case 'marker-move':
+        ui.placing = { mapId: parseRoute().arg, kind: 'move', markerId: el.getAttribute('data-id') };
+        ui.selectedMarker = null; rememberMapScroll(); render(); break;
+      case 'pin-edit':
+        var pm = (markers[parseRoute().arg] || []).filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+        if (!pm) return;
+        var pa = pm.article_slug ? articleBySlug(pm.article_slug) : null;
+        ui.pendingPin = { mapId: pm.map_id, markerId: pm.id, label: pm.label, articleTitle: pa ? pa.title : '', targetMapId: pm.target_map_id };
+        ui.selectedMarker = null; rememberMapScroll(); render(); break;
+      case 'pin-cancel': ui.pendingPin = null; rememberMapScroll(); render(); break;
+      case 'marker-delete':
+        var mkid = el.getAttribute('data-id');
+        if (ui.pendingDelete !== mkid) { ui.pendingDelete = mkid; el.textContent = 'Tap again'; return; }
+        sb.from('map_markers').delete().eq('id', mkid).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not remove that marker.');
+          ui.pendingDelete = null; ui.selectedMarker = null;
+          rememberMapScroll();
+          loadMarkers(parseRoute().arg).then(render);
+        });
+        break;
+      case 'delete-map':
+        var dmid = el.getAttribute('data-id');
+        if (ui.pendingDelete !== dmid) { ui.pendingDelete = dmid; el.textContent = 'Tap again to delete'; return; }
+        var dm0 = mapById(dmid);
+        sb.from('maps').delete().eq('id', dmid).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not delete the map.');
+          if (dm0 && dm0.image_path) sb.storage.from('maps').remove([dm0.image_path]);
+          ui.pendingDelete = null;
+          loadMaps().then(function () { toast('Map deleted'); go('#/wiki'); });
+        });
+        break;
       case 'newchar-in': ui.newChar = true; ui.newCharCampaign = el.getAttribute('data-campaign'); go('#/characters'); break;
       case 'delete-campaign':
         var cpid = el.getAttribute('data-id');
@@ -1120,6 +1541,24 @@
     }
   });
 
+  function rememberMapScroll() {
+    var fr = document.getElementById('map-frame');
+    if (fr) ui.mapScroll = { id: parseRoute().arg, left: fr.scrollLeft, top: fr.scrollTop };
+  }
+
+  // Tapping the map while placing a marker.
+  document.addEventListener('click', function (e) {
+    var inner = e.target.closest('#map-inner');
+    if (!inner || !ui.placing || e.target.closest('.pin')) return;
+    var m = mapById(parseRoute().arg);
+    if (!m) return;
+    var rect = inner.getBoundingClientRect();
+    var x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    var y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    rememberMapScroll();
+    placeAt(m, x, y);
+  });
+
   function currentChar() {
     var r = parseRoute();
     return r.name === 'c' ? charById(r.arg) : null;
@@ -1181,6 +1620,13 @@
   // Recalculate derived numbers once a field is finished.
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
+    if (t.hasAttribute('data-crime-bounty')) return updateCrime(t.getAttribute('data-crime-bounty'), { bounty: Math.max(0, num(t.value, 0)) });
+    if (t.id === 'place-char' && t.value) {
+      ui.placing = { mapId: parseRoute().arg, kind: 'character', characterId: t.value };
+      ui.pendingPin = null; ui.selectedMarker = null;
+      rememberMapScroll(); return render();
+    }
     if (currentChar() && (t.hasAttribute('data-ab') || t.hasAttribute('data-pool') || (t.hasAttribute('data-sf') && t.type === 'number'))) {
       var id = t.id;
       render();
@@ -1198,6 +1644,9 @@
       case 'builder-form': return saveBuilder();
       case 'newchar-form': return createCharacter();
       case 'campaign-form': return saveCampaign(f);
+      case 'crime-form': return saveCrime(f);
+      case 'pin-form': return savePin();
+      case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
       case 'account-form':
         var name = document.getElementById('acc-name').value.trim().slice(0, 60);
@@ -1233,6 +1682,10 @@
     if (r.name !== 'characters') { ui.newChar = false; ui.newCharCampaign = null; }
     if (r.name !== 'new' && r.name !== 'edit') ui.editCampaign = null;
     if (r.name !== 'campaign') ui.campQuery = '';
+    if (r.name !== 'crimes') ui.crimeFilter = null;
+    if (r.name !== 'map-edit') ui.mapCampaign = ui.mapCampaign && r.name === 'map-edit' ? ui.mapCampaign : null;
+    ui.placing = null; ui.pendingPin = null; ui.selectedMarker = null;
+    if (r.name !== 'map' || !ui.mapScroll || ui.mapScroll.id !== r.arg) { ui.mapZoom = 1; ui.mapScroll = null; }
     render();
     window.scrollTo(0, 0);
   });
@@ -1242,7 +1695,7 @@
     if (document.visibilityState !== 'visible' || !isMember()) return;
     var r = parseRoute();
     if (['edit', 'builder', 'customize', 'c'].indexOf(r.name) >= 0) return;
-    Promise.all([loadWiki(), loadCharacters(), loadMembers()]).then(render).catch(function () {});
+    loadAll().then(render).catch(function () {});
   });
 
   /* ================= Boot ================= */
@@ -1259,7 +1712,7 @@
     if (!s) { profile = null; articles = []; secrets = {}; characters = []; members = []; loaded = { wiki: false, chars: false, members: false }; render(); return; }
     if (prev === s.user.id && booted) return;
     booted = loadProfile()
-      .then(function () { render(); if (isMember()) return Promise.all([loadWiki(), loadCharacters(), loadMembers()]); })
+      .then(function () { render(); if (isMember()) return loadAll(); })
       .then(render)
       .catch(function (e) { fail(e, 'Could not reach the archive. If the app sat unused for a week, the DM may need to resume it in Supabase.'); render(); });
   }

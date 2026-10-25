@@ -248,3 +248,22 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20; max-width: calc(100% - 32px); padding: 10px 16px; background: var(--text); color: var(--bg); border-radius: 999px; font-family: var(--ui); font-size: 14px; font-weight: 600; text-align: center; }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* ---------- Criminal record ---------- */
+.tag.warn { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
+.vital .v { overflow-wrap: anywhere; }
+
+/* ---------- Maps ---------- */
+.map-frame { position: relative; max-height: 72vh; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.map-inner { position: relative; min-width: 100%; }
+.map-inner[data-placing] { cursor: crosshair; outline: 2px dashed var(--accent); outline-offset: -2px; }
+.map-inner img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; background: var(--soft); }
+.pin { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; border: 0; background: none; cursor: pointer; min-width: 44px; min-height: 44px; justify-content: flex-end; }
+.pin::after { content: ""; width: 16px; height: 16px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.pin span { max-width: 140px; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--text); font-family: var(--ui); font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pin-party::after { width: 22px; height: 22px; background: var(--secret); }
+.pin-character::after { background: var(--mana); }
+.pin.sel span { background: var(--accent); color: var(--on-accent); }
+.vitals.sum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 640px) { .vitals.sum { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.vitals.sum .v { font-size: 19px; overflow-wrap: normal; line-height: 1.2; }
