@@ -28,11 +28,11 @@
     T('People', 'Species', 'A people or creature kind and what makes them tick.', ['Lifespan', 'Size', 'Homeland', 'Languages'], ['Biology', 'Society', 'History'], ['Hidden origins']),
     T('People', 'Culture', 'How a group lives: customs, values, food, names.', ['Region', 'Language', 'Religion'], ['Customs', 'Values', 'Food & dress', 'Naming'], ['Tensions']),
     T('People', 'Rank / Title', 'A position someone can hold, and what comes with it.', ['Organization', 'Held by', 'Succession'], ['Duties', 'Privileges', 'History'], ['Who really holds power']),
-    T('Places', 'Settlement', 'Cities, towns and villages, districts and all.', ['Region', 'Population', 'Ruler', 'Factions present'], ['Overview', 'Districts', 'Government', 'Trade', 'Notable places'], ['Hidden factions', 'Plot hooks']),
-    T('Places', 'Location', 'A single place: a tavern, temple, ruin or fortress.', ['Type', 'Settlement', 'Owner'], ['Description', 'History', 'Who you find there'], ['Traps & secrets']),
+    T('Places', 'Settlement', 'Cities, towns and villages, districts and all.', ['Region', 'Population', 'Ruler', 'Factions present', 'Status'], ['Overview', 'Districts', 'Government', 'Trade', 'Notable places'], ['Hidden factions', 'Plot hooks']),
+    T('Places', 'Location', 'A single place: a tavern, temple, ruin or fortress.', ['Type', 'Settlement', 'Owner', 'Status'], ['Description', 'History', 'Who you find there'], ['Traps & secrets']),
     T('Places', 'Region', 'Islands, coasts, forests and seas.', ['Climate', 'Terrain', 'Settlements'], ['Geography', 'Wildlife', 'Dangers'], ['Undiscovered places']),
-    T('Places', 'Country', 'Realms, empires and kingdoms.', ['Capital', 'Ruler', 'Government', 'Allies', 'Enemies'], ['Overview', 'History', 'Politics', 'Military', 'Economy'], ['Coming conflicts']),
-    T('Groups', 'Organization', 'Factions, guilds, cults, noble houses and conspiracies.', ['Type', 'Leader', 'Members', 'Seat of power', 'Goal', 'Allies', 'Rivals'], ['Goals', 'Methods', 'History', 'Structure', 'Relations'], ['Secret agenda', 'Infiltrators']),
+    T('Places', 'Country', 'Realms, empires and kingdoms.', ['Capital', 'Ruler', 'Government', 'Allies', 'Enemies', 'Status'], ['Overview', 'History', 'Politics', 'Military', 'Economy'], ['Coming conflicts']),
+    T('Groups', 'Organization', 'Factions, guilds, cults, noble houses and conspiracies.', ['Type', 'Leader', 'Members', 'Seat of power', 'Goal', 'Allies', 'Rivals', 'Status'], ['Goals', 'Methods', 'History', 'Structure', 'Relations'], ['Secret agenda', 'Infiltrators']),
     T('Groups', 'Religion', 'Faiths, their gods and their followers.', ['Deities', 'Holy site', 'Clergy'], ['Beliefs', 'Rituals', 'Holy days', 'Schisms'], ['What is actually true']),
     T('Lore & Magic', 'Spell', 'One spell, built for your mana and tome systems.', ['School', 'Mana cost', 'Casting time', 'Range', 'Class access', 'Tome location'], ['Effect', 'Tradition variants', 'Lore'], ['Which faction guards the tome']),
     T('Lore & Magic', 'Magic System', 'How magic works, what it costs, who can use it.', ['Source', 'Practitioners', 'Limits', 'Replaces'], ['How it works', 'Costs', 'Learning'], ['Hidden rules']),
@@ -40,7 +40,7 @@
     T('Lore & Magic', 'Tradition', 'Festivals, rites and customs.', ['Culture', 'When'], ['Origins', 'Practice', 'Meaning'], []),
     T('Lore & Magic', 'Language', 'How a people speak and write.', ['Speakers', 'Script', 'Family'], ['Sound & feel', 'Common phrases', 'Naming'], []),
     T('Things', 'Item', 'Weapons, relics, artifacts and trinkets.', ['Type', 'Rarity', 'Owner', 'Location'], ['Description', 'History', 'Properties'], ['Curse or hidden power']),
-    T('Things', 'Ship', 'Vessels that sail the isles.', ['Class', 'Captain', 'Home port', 'Crew'], ['Description', 'History', 'Notable voyages'], ['Hidden cargo']),
+    T('Things', 'Ship', 'Vessels that sail the isles.', ['Class', 'Captain', 'Home port', 'Crew', 'Status'], ['Description', 'History', 'Notable voyages'], ['Hidden cargo']),
     T('Things', 'Document', 'Letters, treaties, prophecies and journals.', ['Author', 'Date', 'Location'], ['Full text', 'Context'], ['Forgeries']),
     T('History', 'Historical Event', 'Something that happened and changed things.', ['Date', 'Location', 'Involved'], ['Background', 'What happened', 'Aftermath'], ['The real story']),
     T('History', 'Conflict', 'Wars, battles and feuds.', ['Sides', 'Leaders', 'Dates', 'Result'], ['Causes', 'Battles', 'Outcome'], []),
@@ -372,7 +372,12 @@
   function articleRow(a, showCampaign) {
     var camp = showCampaign && a.campaign_id ? campaignById(a.campaign_id) : null;
     return '<a class="row" href="#/a/' + encodeURIComponent(a.slug) + '"><span class="row-main"><b>' + esc(a.title || 'Untitled') + '</b><span>' + esc(a.template) + (showCampaign ? ' · ' + esc(camp ? camp.name : 'World') : '') + '</span></span>' +
-      (a.hidden && dmView() ? '<span class="tag">Hidden</span>' : '') + '</a>';
+      statusTag(a) + (a.hidden && dmView() ? '<span class="tag">Hidden</span>' : '') + '</a>';
+  }
+  // A Status field (Destroyed, Fallen, Disbanded, Dead…) shows as a tag so lost things stand apart.
+  function statusTag(a) {
+    var st = String(((a.fields || {}).Status) || '').replace(/\[\[|\]\]/g, '').trim();
+    return st ? '<span class="tag plain">' + esc(st.slice(0, 24)) + '</span>' : '';
   }
 
   // Categories plus the article list for one scope (the world, or one campaign).
@@ -554,7 +559,7 @@
     var camp = a.campaign_id ? campaignById(a.campaign_id) : null;
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › ' +
       (camp ? '<a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a> › ' : '') +
-      '<button type="button" class="btn small quiet" style="min-height:0;padding:0;border:0;font-size:12px" data-act="filter-home" data-scope="' + (camp ? 'c-' + esc(camp.id) : 'world') + '" data-target="' + (camp ? '#/campaign/' + encodeURIComponent(camp.slug) : '#/wiki') + '" data-group="' + esc(tpl.group) + '">' + esc(CATEGORY_LABEL[tpl.group] || tpl.group) + '</button></p><h1>' + esc(a.title) + '</h1></div></section><div class="page">';
+      '<button type="button" class="btn small quiet" style="min-height:0;padding:0;border:0;font-size:12px" data-act="filter-home" data-scope="' + (camp ? 'c-' + esc(camp.id) : 'world') + '" data-target="' + (camp ? '#/campaign/' + encodeURIComponent(camp.slug) : '#/wiki') + '" data-group="' + esc(tpl.group) + '">' + esc(CATEGORY_LABEL[tpl.group] || tpl.group) + '</button></p><h1>' + esc(a.title) + '</h1>' + (statusTag(a) ? '<div class="actions" style="margin-top:6px">' + statusTag(a) + '</div>' : '') + '</div></section><div class="page">';
     if (dmView()) html += '<div class="actions"><a class="btn" href="#/edit/' + encodeURIComponent(a.slug) + '">Edit article</a>' + (a.hidden ? '<span class="tag">Hidden from players</span>' : '') + '</div>';
     html += '<div class="art' + (fieldKeys.length ? ' has-box' : '') + '">';
     if (fieldKeys.length) {
