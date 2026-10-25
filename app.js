@@ -270,8 +270,8 @@
   }
   function loadTravel() {
     return Promise.all([
-      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules'),
-      sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, created_at').order('created_at', { ascending: false }).limit(500)
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person'),
+      sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
       travel = {};
@@ -1223,10 +1223,12 @@
         (chars.length ? '<label class="sr" for="place-char">Move a character</label><select class="input" id="place-char" style="width:auto;min-height:36px;font-size:13px;padding:4px 8px"><option value="">Move character…</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('') + '</select>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
         (tcamp ? '<button type="button" class="btn small' + (placing && placing.kind === 'dest' ? ' primary' : '') + '" data-act="place" data-kind="dest">Set destination</button>' : '') +
-        '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>';
+        '<button type="button" class="btn small' + (placing && placing.kind && placing.kind.indexOf('cal') === 0 ? ' primary' : '') + '" data-act="place" data-kind="cal1">Calibrate scale</button>' +
+        '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>' +
+        (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
       if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
-      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
     html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
       '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
@@ -1242,7 +1244,10 @@
     html += '</div></div><div class="actions" style="justify-content:flex-end"><button type="button" class="btn small" data-act="zoom" data-dir="-1" aria-label="Zoom out">−</button><span class="note">' + Math.round(zoom * 100) + '%</span><button type="button" class="btn small" data-act="zoom" data-dir="1" aria-label="Zoom in">+</button></div>';
 
     var sel = ui.selectedMarker ? list.filter(function (mk) { return mk.id === ui.selectedMarker; })[0] : null;
-    if (ui.pendingPin && ui.pendingPin.mapId === m.id) {
+    if (ui.scale && ui.scale.mapId === m.id && ui.scale.b) {
+      html += '<form class="form group-box" id="scale-form" novalidate><h2>Set the scale</h2><div class="field"><label for="sc-miles">How many miles between those two points?</label><input type="number" id="sc-miles" min="0" step="1" value="50" inputmode="decimal"></div>' +
+        '<div class="actions"><button type="submit" class="btn primary">Save scale</button><button type="button" class="btn" data-act="scale-cancel">Cancel</button></div></form>';
+    } else if (ui.pendingPin && ui.pendingPin.mapId === m.id) {
       html += '<form class="form group-box" id="pin-form" novalidate><h2>' + (ui.pendingPin.markerId ? 'Edit pin' : 'New pin') + '</h2>' +
         '<div class="field"><label for="pin-label">Name</label><input type="text" id="pin-label" maxlength="60" value="' + esc(ui.pendingPin.label || '') + '" placeholder="e.g. Marloo"></div>' +
         '<div class="field"><label for="pin-article">Links to article (optional)</label><input type="text" id="pin-article" list="pin-articles" value="' + esc(ui.pendingPin.articleTitle || '') + '" placeholder="Start typing a title"><datalist id="pin-articles">' + visibleArticles().map(function (a) { return '<option value="' + esc(a.title) + '"></option>'; }).join('') + '</datalist></div>' +
@@ -1274,6 +1279,8 @@
   function placeAt(m, x, y) {
     var p = ui.placing;
     ui.placing = null;
+    if (p.kind === 'cal1') { ui.scale = { mapId: m.id, a: { x: x, y: y } }; ui.placing = { mapId: m.id, kind: 'cal2' }; return render(); }
+    if (p.kind === 'cal2') { ui.scale.b = { x: x, y: y }; return render(); }
     if (p.kind === 'dest') {
       var tc = null;
       Object.keys(travel).forEach(function (cid) { if (!tc && travel[cid].map_id === m.id) tc = cid; });
@@ -1294,6 +1301,22 @@
     op.then(function (r) {
       if (r.error) return fail(r.error, 'Could not place that marker.');
       loadMarkers(m.id).then(function () { toast('Placed'); render(); });
+    });
+  }
+
+  function saveScale() {
+    var sc = ui.scale, m = mapById(sc.mapId);
+    var miles = Number(document.getElementById('sc-miles').value);
+    if (!(miles > 0)) return toast('Enter the miles the scale bar shows.');
+    var ratio = m.width && m.height ? m.height / m.width : 1;
+    var dx = sc.b.x - sc.a.x, dy = (sc.b.y - sc.a.y) * ratio;
+    var span = Math.sqrt(dx * dx + dy * dy);
+    if (span < 0.005) return toast('Those two taps were too close together. Try again, zoomed in.');
+    var across = Math.round(miles / span);
+    sb.from('maps').update({ miles_across: across }).eq('id', m.id).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the scale.');
+      ui.scale = null;
+      loadMaps().then(function () { toast('Scale set: ' + across + ' miles across'); render(); });
     });
   }
 
@@ -1389,15 +1412,24 @@
   }
 
   /* ================= Travel ================= */
+  // Rules are a grid: miles per day for each terrain and way of traveling, times a pace multiplier.
   function rulesOf(t) {
     var r = (t && t.rules) || {};
-    return { modes: r.modes || { Walking: 24 }, paces: r.paces || { Normal: 1 }, terrains: r.terrains || { Plains: 1 } };
+    if (Array.isArray(r.modes) && r.speeds) {
+      return { modes: r.modes.map(String), terrains: (r.terrains || []).map(String), speeds: r.speeds, paces: r.paces || { Normal: 1 } };
+    }
+    // Older shape (mode miles x terrain multiplier): turn it into a grid.
+    var modes = Object.keys(r.modes || { Walking: 24 }), terrains = Object.keys(r.terrains || { Plains: 1 }), speeds = {};
+    terrains.forEach(function (tn) { speeds[tn] = {}; modes.forEach(function (mn) { speeds[tn][mn] = Math.round(Number(r.modes[mn] || 0) * Number(r.terrains[tn] || 1) * 10) / 10; }); });
+    return { modes: modes, terrains: terrains, speeds: speeds, paces: r.paces || { Normal: 1 } };
   }
   function milesPerDay(t) {
     var r = rulesOf(t);
-    var v = Number(r.modes[t.mode] || 0) * Number(r.paces[t.pace] || 1) * Number(r.terrains[t.terrain] || 1);
-    return Math.round(v * 10) / 10;
+    var base = Number(((r.speeds[t.terrain] || {})[t.mode]) || 0);
+    return Math.round(base * Number(r.paces[t.pace] || 1) * 10) / 10;
   }
+  function partySize(t) { return num(t.party_size, 0) || campaignChars(t.campaign_id).length; }
+  function foodPerDay(t) { return Math.round(partySize(t) * Number(t.food_per_person || 0) * 10) / 10; }
   function fmtMiles(n) { return (Math.round(n * 10) / 10) + ' mi'; }
   function partyMarker(mapId) { return (markers[mapId] || []).filter(function (mk) { return mk.kind === 'party'; })[0] || null; }
   function mapDistance(m, ax, ay, bx, by) {
@@ -1451,7 +1483,7 @@
     var log = travelLog.filter(function (l) { return l.campaign_id === camp.id; });
     var sel = function (id, key, opts) {
       if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
-      return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + Object.keys(opts).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
+      return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last day</button></div>';
@@ -1472,20 +1504,38 @@
     if (dm && j.map) html += '<div class="actions"><a class="btn" href="#/map/' + encodeURIComponent(j.map.id) + '">Open map to set the party or destination</a>' + (t.dest_x != null ? '<button type="button" class="btn small" data-act="clear-dest" data-camp="' + esc(camp.id) + '">Clear destination</button>' : '') + '</div>';
     html += '</section>';
 
+    var fpd = foodPerDay(t);
+    var foodDays = fpd > 0 ? Math.floor(Number(t.food || 0) / fpd) : null;
+    html += '<section class="block"><h2 class="sec-title">Supplies<small>' + (fpd ? fpd + ' food a day' : 'No food use set') + '</small></h2>' +
+      '<div class="vitals sum">' + vital('Food', Math.round(Number(t.food || 0) * 10) / 10) + vital('Lasts', foodDays == null ? '—' : foodDays + (foodDays === 1 ? ' day' : ' days')) + vital('Party', partySize(t) + (num(t.party_size, 0) ? '' : ' (auto)')) + vital('Each eats', Number(t.food_per_person || 0) + '/day') + '</div>' +
+      (foodDays != null && foodDays <= 2 ? '<p class="err" style="margin:0">' + (foodDays === 0 ? 'Out of food.' : 'Food is running low.') + '</p>' : '');
+    if (dm) {
+      html += '<form class="two" id="food-form" novalidate data-camp="' + esc(camp.id) + '" style="align-items:start">' +
+        '<div class="field"><label for="fd-food">Food on hand</label><input type="number" id="fd-food" min="0" step="1" value="' + Number(t.food || 0) + '" inputmode="decimal"></div>' +
+        '<div class="field"><label for="fd-size">Party size</label><input type="number" id="fd-size" min="0" step="1" value="' + num(t.party_size, 0) + '" inputmode="numeric"><span class="hint">0 = count characters in the campaign.</span></div>' +
+        '<div class="field"><label for="fd-per">Food per person a day</label><input type="number" id="fd-per" min="0" step="0.5" value="' + Number(t.food_per_person || 0) + '" inputmode="decimal"></div>' +
+        '<div class="field"><button type="submit" class="btn">Update supplies</button></div></form>';
+    }
+    html += '</section>';
     html += '<section class="block"><h2 class="sec-title">Journey log<small>' + log.length + ' entries</small></h2>' +
       (log.length ? '<div class="tbl">' + log.map(function (l) { return '<div class="tbl-row"><div class="main"><b>Day ' + l.day + '</b><span>' + esc(l.text) + '</span></div>' + (Number(l.miles) ? '<span class="num">' + fmtMiles(Number(l.miles)) + '</span>' : '') + '</div>'; }).join('') + '</div>' : '<div class="empty">Nothing logged yet. Each “Next day” adds an entry.</div>') + '</section>';
 
     if (dm) {
-      html += '<form class="form group-box" id="rules-form" novalidate data-camp="' + esc(camp.id) + '"><h2>Travel rules</h2><p class="note" style="margin:0">Miles per day for each way of traveling, then multipliers for pace and terrain. Leave a name empty to remove that row.</p>';
-      [['modes', 'Ways to travel', 'miles a day'], ['paces', 'Paces', 'multiplier'], ['terrains', 'Terrain', 'multiplier']].forEach(function (g) {
-        html += '<div class="field"><span class="lbl">' + g[1] + '</span>';
-        Object.keys(r[g[0]]).concat(['']).forEach(function (k, i) {
-          html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="rn-' + g[0] + i + '">Name</label><input type="text" class="input" id="rn-' + g[0] + i + '" data-rule-name="' + g[0] + '" value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
-            '<label class="sr" for="rv-' + g[0] + i + '">' + g[2] + '</label><input type="number" class="input" id="rv-' + g[0] + i + '" data-rule-val="' + g[0] + '" step="0.05" min="0" value="' + (k ? esc(r[g[0]][k]) : '') + '" placeholder="' + g[2] + '" inputmode="decimal"></div>';
-        });
-        html += '</div>';
+      html += '<form class="form group-box" id="rules-form" novalidate data-camp="' + esc(camp.id) + '"><h2>Travel rules</h2>' +
+        '<div class="two"><div class="field"><label for="ru-modes">Ways to travel</label><textarea id="ru-modes" style="min-height:120px">' + esc(r.modes.join('\n')) + '</textarea><span class="hint">One per line.</span></div>' +
+        '<div class="field"><label for="ru-terrains">Terrain</label><textarea id="ru-terrains" style="min-height:120px">' + esc(r.terrains.join('\n')) + '</textarea><span class="hint">One per line.</span></div></div>' +
+        '<div class="field"><span class="lbl">Miles per day</span><div class="grid-wrap"><table class="grid"><thead><tr><th scope="col">Terrain</th>' + r.modes.map(function (mn) { return '<th scope="col">' + esc(mn) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+        r.terrains.map(function (tn, ti) {
+          return '<tr><th scope="row">' + esc(tn) + '</th>' + r.modes.map(function (mn, mi) {
+            return '<td><input type="number" class="input" min="0" step="1" data-speed-t="' + esc(tn) + '" data-speed-m="' + esc(mn) + '" value="' + esc(((r.speeds[tn] || {})[mn]) != null ? r.speeds[tn][mn] : '') + '" aria-label="' + esc(mn + ' on ' + tn) + '" inputmode="decimal"></td>';
+          }).join('') + '</tr>';
+        }).join('') + '</tbody></table></div><span class="hint">Renamed or added a row or column? Save once and the grid updates.</span></div>' +
+        '<div class="field"><span class="lbl">Paces (multiplier)</span>';
+      Object.keys(r.paces).concat(['']).forEach(function (k, i) {
+        html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="pn' + i + '">Pace name</label><input type="text" class="input" id="pn' + i + '" data-pace-name value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
+          '<label class="sr" for="pv' + i + '">Multiplier</label><input type="number" class="input" id="pv' + i + '" data-pace-val step="0.05" min="0" value="' + (k ? esc(r.paces[k]) : '') + '" placeholder="multiplier" inputmode="decimal"></div>';
       });
-      html += '<div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
+      html += '</div><div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
     }
     html += '</div>';
     $view.innerHTML = html;
@@ -1518,12 +1568,16 @@
       } else {
         entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
       }
+      var need = foodPerDay(t), have = Number(t.food || 0);
+      var used = Math.min(need, have);
+      entry.food_used = used;
+      if (need > 0) entry.text += used < need ? ' Ran out of food (short ' + (Math.round((need - used) * 10) / 10) + ').' : ' Ate ' + used + ' food, ' + (Math.round((have - used) * 10) / 10) + ' left.';
       return moveOp.then(function (r) {
         if (r.error) throw r.error;
         return sb.from('travel_log').insert(entry);
       }).then(function (r) {
         if (r.error) throw r.error;
-        return sb.from('travel_state').update({ day: day + 1 }).eq('campaign_id', campId);
+        return sb.from('travel_state').update({ day: day + 1, food: Math.round((have - used) * 10) / 10 }).eq('campaign_id', campId);
       }).then(function (r) {
         if (r.error) throw r.error;
         return Promise.all([loadTravel(), t.map_id ? loadMarkers(t.map_id) : null]);
@@ -1544,7 +1598,7 @@
       return sb.from('travel_log').delete().eq('id', last.id);
     }).then(function (r) {
       if (r.error) throw r.error;
-      return sb.from('travel_state').update({ day: last.day }).eq('campaign_id', campId);
+      return sb.from('travel_state').update({ day: last.day, food: Number(travel[campId].food || 0) + Number(last.food_used || 0) }).eq('campaign_id', campId);
     }).then(function (r) {
       if (r.error) throw r.error;
       return Promise.all([loadTravel(), last.map_id ? loadMarkers(last.map_id) : null]);
@@ -1554,22 +1608,35 @@
 
   function saveRules(form) {
     var campId = form.getAttribute('data-camp');
-    var rules = { modes: {}, paces: {}, terrains: {} };
-    ['modes', 'paces', 'terrains'].forEach(function (g) {
-      var names = form.querySelectorAll('[data-rule-name="' + g + '"]');
-      var vals = form.querySelectorAll('[data-rule-val="' + g + '"]');
-      names.forEach(function (n, i) {
-        var k = n.value.trim().slice(0, 30), v = Number(vals[i].value);
-        if (k && isFinite(v) && v >= 0) rules[g][k] = Math.round(v * 100) / 100;
-      });
-    });
-    if (!Object.keys(rules.modes).length || !Object.keys(rules.paces).length || !Object.keys(rules.terrains).length) return toast('Keep at least one entry in each list.');
     var t = travel[campId];
-    var patch = { rules: rules };
-    if (!(t.mode in rules.modes)) patch.mode = Object.keys(rules.modes)[0];
-    if (!(t.pace in rules.paces)) patch.pace = Object.keys(rules.paces)[0];
-    if (!(t.terrain in rules.terrains)) patch.terrain = Object.keys(rules.terrains)[0];
+    var old = rulesOf(t);
+    var lines2 = function (id) { return uniq(document.getElementById(id).value.split('\n').map(function (x) { return x.trim().slice(0, 30); })); };
+    var modes = lines2('ru-modes'), terrains = lines2('ru-terrains');
+    if (!modes.length || !terrains.length) return toast('Keep at least one way to travel and one terrain.');
+    var speeds = {};
+    terrains.forEach(function (tn) { speeds[tn] = {}; modes.forEach(function (mn) { speeds[tn][mn] = Number(((old.speeds[tn] || {})[mn]) || 0); }); });
+    form.querySelectorAll('[data-speed-t]').forEach(function (inp) {
+      var tn = inp.getAttribute('data-speed-t'), mn = inp.getAttribute('data-speed-m');
+      if (speeds[tn] && mn in speeds[tn]) speeds[tn][mn] = Math.max(0, Number(inp.value) || 0);
+    });
+    var paces = {};
+    var pn = form.querySelectorAll('[data-pace-name]'), pv = form.querySelectorAll('[data-pace-val]');
+    pn.forEach(function (n, i) { var k = n.value.trim().slice(0, 30), v = Number(pv[i].value); if (k && isFinite(v) && v >= 0) paces[k] = Math.round(v * 100) / 100; });
+    if (!Object.keys(paces).length) paces = { Normal: 1 };
+    var patch = { rules: { modes: modes, terrains: terrains, speeds: speeds, paces: paces } };
+    if (modes.indexOf(t.mode) < 0) patch.mode = modes[0];
+    if (terrains.indexOf(t.terrain) < 0) patch.terrain = terrains[0];
+    if (!(t.pace in paces)) patch.pace = Object.keys(paces)[0];
     saveTravel(campId, patch).then(function () { toast('Rules saved'); render(); });
+  }
+
+  function saveFood(form) {
+    var campId = form.getAttribute('data-camp');
+    saveTravel(campId, {
+      food: Math.max(0, Number(document.getElementById('fd-food').value) || 0),
+      party_size: Math.max(0, num(document.getElementById('fd-size').value, 0)),
+      food_per_person: Math.max(0, Number(document.getElementById('fd-per').value) || 0)
+    }).then(function () { toast('Supplies updated'); render(); });
   }
 
   /* ================= Live updates ================= */
@@ -1647,7 +1714,8 @@
         ui.placing = { mapId: parseRoute().arg, kind: el.getAttribute('data-kind') };
         ui.pendingPin = null; ui.selectedMarker = null;
         render(); break;
-      case 'place-cancel': ui.placing = null; render(); break;
+      case 'place-cancel': ui.placing = null; ui.scale = null; render(); break;
+      case 'scale-cancel': ui.scale = null; render(); break;
       case 'zoom':
         var fr = document.getElementById('map-frame');
         var steps = [1, 1.5, 2, 3, 4];
@@ -1920,6 +1988,8 @@
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
+      case 'food-form': return saveFood(f);
+      case 'scale-form': return saveScale();
       case 'pin-form': return savePin();
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
@@ -1959,7 +2029,7 @@
     if (r.name !== 'campaign') ui.campQuery = '';
     if (r.name !== 'crimes') ui.crimeFilter = null;
     if (r.name !== 'map-edit') ui.mapCampaign = ui.mapCampaign && r.name === 'map-edit' ? ui.mapCampaign : null;
-    ui.placing = null; ui.pendingPin = null; ui.selectedMarker = null;
+    ui.placing = null; ui.pendingPin = null; ui.selectedMarker = null; ui.scale = null;
     if (r.name !== 'map' || !ui.mapScroll || ui.mapScroll.id !== r.arg) { ui.mapZoom = 1; ui.mapScroll = null; }
     render();
     window.scrollTo(0, 0);
