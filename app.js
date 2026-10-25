@@ -74,6 +74,8 @@
   var maps = [];
   var markers = {};   // map id -> markers
   var mapUrls = {};   // image path -> { url, until }
+  var travel = {};    // campaign id -> journey state
+  var travelLog = [];
   var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
   var ui = { filters: {}, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
@@ -254,9 +256,10 @@
     });
   }
   function loadMaps() {
-    return sb.from('maps').select('id, campaign_id, name, image_path, width, height, visible_to_players, show_markers, created_at').order('created_at').then(function (r) {
+    return sb.from('maps').select('id, campaign_id, name, image_path, width, height, visible_to_players, show_markers, miles_across, created_at').order('created_at').then(function (r) {
       if (r.error) throw r.error;
       maps = r.data || [];
+      loaded.maps = true;
     });
   }
   function loadMarkers(mapId) {
@@ -265,7 +268,18 @@
       markers[mapId] = r.data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps()]); }
+  function loadTravel() {
+    return Promise.all([
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules'),
+      sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, created_at').order('created_at', { ascending: false }).limit(500)
+    ]).then(function (res) {
+      res.forEach(function (r) { if (r.error) throw r.error; });
+      travel = {};
+      (res[0].data || []).forEach(function (t) { travel[t.campaign_id] = t; });
+      travelLog = res[1].data || [];
+    });
+  }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel()]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -300,7 +314,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', map: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters']];
     if (isDM()) tabs.push(['members', 'Players']);
     $tabs.innerHTML = tabs.map(function (t) { return '<a href="#/' + t[0] + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
@@ -329,6 +343,7 @@
       case 'members': return renderMembers();
       case 'account': return renderAccount();
       case 'crimes': return renderCrimes(r.arg);
+      case 'travel': return renderTravel(r.arg);
       case 'map': return renderMap(r.arg);
       case 'map-edit': return renderMapEdit(r.arg);
       case 'campaign': return renderCampaign(r.arg);
@@ -487,6 +502,7 @@
         ? '<p style="margin:0;font-family:var(--ui);font-size:28px;font-weight:700;letter-spacing:0.18em">' + esc(pins[camp.id]) + '</p><p class="note" style="margin:0">Give this to players so they can join. Players never see it in the app.</p>'
         : '<p class="note" style="margin:0">No PIN yet, so players can only be added from the Players tab. Set one under “Edit campaign”.</p>') + '</div>';
     }
+    if (camp.status !== 'finished' || dmView()) html += journeySummary(camp);
     // A campaign shows its own articles plus all world lore, so players can look up rules and history.
     var world = visibleArticles().filter(function (a) { return !a.campaign_id; });
     var cq = (ui.campQuery || '').trim().toLowerCase();
@@ -512,6 +528,7 @@
   }
 
   function renderCampaignEdit(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var camp = slug ? campaignBySlug(slug) : null;
     if (slug && !camp) { location.replace('#/wiki'); return; }
     var c = camp || { name: '', summary: '', status: 'active' };
@@ -677,6 +694,7 @@
 
   /* ================= Wiki: editor ================= */
   function renderEdit(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var isNew = !slug;
     var a, sec = {};
     if (isNew) {
@@ -1077,6 +1095,7 @@
   }
 
   function renderCrimes(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var camp = campaignBySlug(slug);
     if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) { location.replace('#/wiki'); return; }
     var dm = dmView();
@@ -1177,6 +1196,7 @@
   }
 
   function renderMap(id) {
+    if (!loaded.wiki || !loaded.maps) { $view.innerHTML = '<div class="page"><div class="empty">Unrolling the map…</div></div>'; return; }
     var m = mapById(id);
     if (!m) { $view.innerHTML = '<div class="page narrow"><div class="empty">That map doesn’t exist, or it isn’t shared with you.</div><div class="actions"><a class="btn" href="#/wiki">Back</a></div></div>'; return; }
     var camp = m.campaign_id ? campaignById(m.campaign_id) : null;
@@ -1191,17 +1211,31 @@
     if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || m.show_markers; });
     var placing = ui.placing && ui.placing.mapId === m.id ? ui.placing : null;
     var chars = camp ? campaignChars(camp.id) : characters;
+    // The journey (if any) that uses this map.
+    var tcamp = null, tstate = null;
+    Object.keys(travel).forEach(function (cid) { var c0 = campaignById(cid); if (!tstate && travel[cid].map_id === m.id && c0 && (dm || myCampaigns().indexOf(c0) >= 0)) { tstate = travel[cid]; tcamp = c0; } });
+    if (!tstate && camp && travel[camp.id]) { tstate = travel[camp.id]; tcamp = camp; }
+    var showRoute = tstate && tstate.map_id === m.id && tstate.dest_x != null && (dm || m.show_markers);
 
     var html = '<div class="page" style="gap:16px"><div><p class="crumbs"><a href="#/wiki">Avarenth</a>' + (camp ? ' › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a>' : '') + '</p><h1 class="page-title">' + esc(m.name) + '</h1></div>';
     if (dm) {
       html += '<div class="actions"><button type="button" class="btn small' + (placing && placing.kind === 'party' ? ' primary' : '') + '" data-act="place" data-kind="party">Move party</button>' +
         (chars.length ? '<label class="sr" for="place-char">Move a character</label><select class="input" id="place-char" style="width:auto;min-height:36px;font-size:13px;padding:4px 8px"><option value="">Move character…</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('') + '</select>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
+        (tcamp ? '<button type="button" class="btn small' + (placing && placing.kind === 'dest' ? ' primary' : '') + '" data-act="place" data-kind="dest">Set destination</button>' : '') +
         '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>';
-      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this pin' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+      if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
+      else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
     html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
       '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
+    if (!dm && !m.show_markers && !(tstate && tstate.map_id === m.id)) {} // nothing extra for players
+    if (showRoute) {
+      var pmk = list.filter(function (mk) { return mk.kind === 'party'; })[0];
+      if (pmk) html += '<svg class="route" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><line x1="' + (pmk.x * 1000) + '" y1="' + (pmk.y * 1000) + '" x2="' + (tstate.dest_x * 1000) + '" y2="' + (tstate.dest_y * 1000) + '" vector-effect="non-scaling-stroke"></line></svg>';
+      html += '<span class="dest" style="left:' + (tstate.dest_x * 100) + '%;top:' + (tstate.dest_y * 100) + '%"><span>' + esc(tstate.dest_label || 'Destination') + '</span></span>';
+    }
     list.forEach(function (mk) {
       html += '<button type="button" class="pin pin-' + mk.kind + (ui.selectedMarker === mk.id ? ' sel' : '') + '" style="left:' + (mk.x * 100) + '%;top:' + (mk.y * 100) + '%" data-act="marker" data-id="' + esc(mk.id) + '" aria-label="' + esc(markerLabel(mk)) + '"><span>' + esc(markerLabel(mk)) + '</span></button>';
     });
@@ -1240,6 +1274,16 @@
   function placeAt(m, x, y) {
     var p = ui.placing;
     ui.placing = null;
+    if (p.kind === 'dest') {
+      var tc = null;
+      Object.keys(travel).forEach(function (cid) { if (!tc && travel[cid].map_id === m.id) tc = cid; });
+      if (!tc && m.campaign_id && travel[m.campaign_id]) tc = m.campaign_id;
+      if (!tc) return toast('This map isn’t part of a campaign journey.');
+      var near = (markers[m.id] || []).filter(function (mk) { return mk.kind === 'place'; }).sort(function (a, b) { return Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y); })[0];
+      var label = near && Math.hypot(near.x - x, near.y - y) < 0.04 ? near.label : (travel[tc].dest_label || '');
+      if (near && label === near.label) { x = near.x; y = near.y; }
+      return saveTravel(tc, { map_id: m.id, dest_x: x, dest_y: y, dest_label: label }).then(function () { toast('Destination set'); render(); });
+    }
     if (p.kind === 'place' && !p.markerId) { ui.pendingPin = { mapId: m.id, x: x, y: y }; ui.selectedMarker = null; return render(); }
     var list = markers[m.id] || [];
     var existing = p.markerId ? list.filter(function (mk) { return mk.id === p.markerId; })[0]
@@ -1274,6 +1318,7 @@
   }
 
   function renderMapEdit(id) {
+    if (id && !loaded.maps) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var m = id ? mapById(id) : null;
     if (id && !m) { location.replace('#/wiki'); return; }
     var campId = m ? m.campaign_id : (ui.mapCampaign || null);
@@ -1281,6 +1326,7 @@
       '<div><p class="eyebrow">' + (m ? 'Edit map' : 'New map') + '</p><h1 class="page-title">' + (m ? esc(m.name) : 'Add a map') + '</h1></div>' +
       '<div class="field"><label for="mp-name">Name</label><input type="text" id="mp-name" maxlength="80" value="' + esc(m ? m.name : '') + '" placeholder="e.g. The Dornish Isles, Marloo"></div>' +
       '<div class="field"><label for="mp-file">' + (m ? 'Replace image (optional)' : 'Map image') + '</label><input type="file" id="mp-file" accept="image/png,image/jpeg,image/webp" class="input"><span class="hint">PNG, JPG or WebP, like an Inkarnate export. Big images are shrunk to 4096 px to save space.</span></div>' +
+      '<div class="field"><label for="mp-miles">Width in miles</label><input type="number" id="mp-miles" min="0" step="1" value="' + esc(m ? (Number(m.miles_across) || '') : '') + '" placeholder="e.g. 300" inputmode="decimal"><span class="hint">How far it is from the left edge of the map to the right edge. Used to measure travel.</span></div>' +
       '<div class="field"><label for="mp-camp">Belongs to</label><select id="mp-camp">' + campaignOptions(campId, true, 'World map') + '</select></div>' +
       '<label class="check"><input type="checkbox" id="mp-visible"' + (!m || m.visible_to_players ? ' checked' : '') + '>Players can see this map</label>' +
       '<label class="check"><input type="checkbox" id="mp-markers"' + (m && m.show_markers ? ' checked' : '') + '>Players can see where the party and characters are</label>' +
@@ -1320,7 +1366,7 @@
     var btn = document.getElementById('mp-save');
     if (!name) return show('Give the map a name.');
     if (!id && !file) return show('Choose a map image.');
-    var row = { name: name, campaign_id: document.getElementById('mp-camp').value || null, visible_to_players: document.getElementById('mp-visible').checked, show_markers: document.getElementById('mp-markers').checked };
+    var row = { name: name, campaign_id: document.getElementById('mp-camp').value || null, visible_to_players: document.getElementById('mp-visible').checked, show_markers: document.getElementById('mp-markers').checked, miles_across: Math.max(0, Number(document.getElementById('mp-miles').value) || 0) };
     btn.disabled = true; btn.textContent = file ? 'Uploading…' : 'Saving…';
     var mapId = id || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : null);
     if (!mapId) return show('This browser is too old to upload maps.');
@@ -1342,6 +1388,223 @@
       .catch(function (e) { console.error(e); show(e && e.message ? e.message : 'Could not save the map.'); });
   }
 
+  /* ================= Travel ================= */
+  function rulesOf(t) {
+    var r = (t && t.rules) || {};
+    return { modes: r.modes || { Walking: 24 }, paces: r.paces || { Normal: 1 }, terrains: r.terrains || { Plains: 1 } };
+  }
+  function milesPerDay(t) {
+    var r = rulesOf(t);
+    var v = Number(r.modes[t.mode] || 0) * Number(r.paces[t.pace] || 1) * Number(r.terrains[t.terrain] || 1);
+    return Math.round(v * 10) / 10;
+  }
+  function fmtMiles(n) { return (Math.round(n * 10) / 10) + ' mi'; }
+  function partyMarker(mapId) { return (markers[mapId] || []).filter(function (mk) { return mk.kind === 'party'; })[0] || null; }
+  function mapDistance(m, ax, ay, bx, by) {
+    var mi = Number(m.miles_across || 0);
+    var ratio = m.width && m.height ? m.height / m.width : 1;
+    var dx = (bx - ax) * mi, dy = (by - ay) * mi * ratio;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  // Where the journey stands: distance left and days to go, when the map has a scale.
+  function journey(t) {
+    var out = { mpd: milesPerDay(t), map: t.map_id ? mapById(t.map_id) : null, party: null, remaining: null, days: null, problem: '' };
+    if (!out.map) { out.problem = 'No travel map chosen yet.'; return out; }
+    out.party = partyMarker(out.map.id);
+    if (!out.party) { out.problem = 'The party isn’t placed on ' + out.map.name + ' yet.'; return out; }
+    if (t.dest_x == null) { out.problem = 'No destination set.'; return out; }
+    if (!Number(out.map.miles_across)) { out.problem = 'Set how many miles wide ' + out.map.name + ' is to measure distance.'; return out; }
+    out.remaining = mapDistance(out.map, out.party.x, out.party.y, t.dest_x, t.dest_y);
+    out.days = out.mpd > 0 ? Math.ceil(Math.max(0, out.remaining - 0.05) / out.mpd) : null;
+    return out;
+  }
+  function ensureTravelMarkers(t) {
+    if (t && t.map_id && !markers[t.map_id]) return loadMarkers(t.map_id);
+    return Promise.resolve();
+  }
+
+  function journeySummary(camp) {
+    var t = travel[camp.id];
+    if (!t) return '';
+    if (t.map_id && !markers[t.map_id]) {
+      ensureTravelMarkers(t).then(function () { if (parseRoute().name === 'campaign') render(); }).catch(function () {});
+      return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '</h2><div class="empty">Checking the road…</div></section>';
+    }
+    var j = journey(t);
+    var line = t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
+    var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
+    return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
+      '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
+      (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>';
+  }
+
+  function renderTravel(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug);
+    if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) { location.replace('#/wiki'); return; }
+    var t = travel[camp.id];
+    if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
+    if (t.map_id && !markers[t.map_id]) { ensureTravelMarkers(t).then(render).catch(function (e) { fail(e); }); $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
+    var dm = dmView();
+    var r = rulesOf(t);
+    var j = journey(t);
+    var log = travelLog.filter(function (l) { return l.campaign_id === camp.id; });
+    var sel = function (id, key, opts) {
+      if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
+      return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + Object.keys(opts).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
+    };
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
+    if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last day</button></div>';
+    html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + fmtMiles(j.mpd) + ' a day</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' + sel('tr-mode', 'Mode', r.modes) + sel('tr-pace', 'Pace', r.paces) + sel('tr-terrain', 'Terrain', r.terrains) + '</div>' +
+      (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '') + '</section>';
+
+    html += '<section class="block"><h2 class="sec-title">Destination</h2>';
+    if (dm) {
+      var travelMaps = maps.filter(function (x) { return !x.campaign_id || x.campaign_id === camp.id; });
+      html += '<div class="field"><label for="tr-map">Travel map</label><select id="tr-map" data-travel="map_id"><option value="">Choose a map…</option>' + travelMaps.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === t.map_id ? ' selected' : '') + '>' + esc(x.name) + (Number(x.miles_across) ? ' (' + x.miles_across + ' mi across)' : ' (no scale yet)') + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="tr-dest">Destination name</label><input type="text" id="tr-dest" data-travel-text="dest_label" maxlength="60" value="' + esc(t.dest_label) + '" placeholder="e.g. Loreaon"></div>';
+    }
+    if (j.remaining != null) {
+      html += '<div class="vitals sum">' + vital('Heading to', t.dest_label || 'Destination') + vital('Distance left', j.remaining < 0.1 ? 'Arrived' : fmtMiles(j.remaining)) + vital('Days to go', j.remaining < 0.1 ? 0 : (j.days == null ? '—' : j.days)) + vital('Per day', fmtMiles(j.mpd)) + '</div>';
+    } else {
+      html += '<div class="empty">' + esc(dm ? j.problem : 'No destination shared yet.') + '</div>';
+    }
+    if (dm && j.map) html += '<div class="actions"><a class="btn" href="#/map/' + encodeURIComponent(j.map.id) + '">Open map to set the party or destination</a>' + (t.dest_x != null ? '<button type="button" class="btn small" data-act="clear-dest" data-camp="' + esc(camp.id) + '">Clear destination</button>' : '') + '</div>';
+    html += '</section>';
+
+    html += '<section class="block"><h2 class="sec-title">Journey log<small>' + log.length + ' entries</small></h2>' +
+      (log.length ? '<div class="tbl">' + log.map(function (l) { return '<div class="tbl-row"><div class="main"><b>Day ' + l.day + '</b><span>' + esc(l.text) + '</span></div>' + (Number(l.miles) ? '<span class="num">' + fmtMiles(Number(l.miles)) + '</span>' : '') + '</div>'; }).join('') + '</div>' : '<div class="empty">Nothing logged yet. Each “Next day” adds an entry.</div>') + '</section>';
+
+    if (dm) {
+      html += '<form class="form group-box" id="rules-form" novalidate data-camp="' + esc(camp.id) + '"><h2>Travel rules</h2><p class="note" style="margin:0">Miles per day for each way of traveling, then multipliers for pace and terrain. Leave a name empty to remove that row.</p>';
+      [['modes', 'Ways to travel', 'miles a day'], ['paces', 'Paces', 'multiplier'], ['terrains', 'Terrain', 'multiplier']].forEach(function (g) {
+        html += '<div class="field"><span class="lbl">' + g[1] + '</span>';
+        Object.keys(r[g[0]]).concat(['']).forEach(function (k, i) {
+          html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="rn-' + g[0] + i + '">Name</label><input type="text" class="input" id="rn-' + g[0] + i + '" data-rule-name="' + g[0] + '" value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
+            '<label class="sr" for="rv-' + g[0] + i + '">' + g[2] + '</label><input type="number" class="input" id="rv-' + g[0] + i + '" data-rule-val="' + g[0] + '" step="0.05" min="0" value="' + (k ? esc(r[g[0]][k]) : '') + '" placeholder="' + g[2] + '" inputmode="decimal"></div>';
+        });
+        html += '</div>';
+      });
+      html += '<div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
+    }
+    html += '</div>';
+    $view.innerHTML = html;
+  }
+
+  function saveTravel(campId, patch) {
+    Object.assign(travel[campId], patch);
+    return sb.from('travel_state').update(patch).eq('campaign_id', campId).then(function (r) {
+      if (r.error) { fail(r.error, 'Could not update the journey.'); return loadTravel().then(render); }
+    });
+  }
+
+  function nextDay(campId) {
+    var t = travel[campId];
+    ensureTravelMarkers(t).then(function () {
+      var j = journey(t);
+      var day = t.day;
+      var entry = { campaign_id: campId, day: day, miles: 0, map_id: t.map_id || null };
+      var moveOp = Promise.resolve({});
+      if (j.remaining != null && j.mpd > 0 && j.remaining >= 0.1) {
+        var step = Math.min(j.mpd, j.remaining);
+        var f = step / j.remaining;
+        var nx = j.party.x + (t.dest_x - j.party.x) * f, ny = j.party.y + (t.dest_y - j.party.y) * f;
+        var arrived = step >= j.remaining - 0.05;
+        if (arrived) { nx = t.dest_x; ny = t.dest_y; }
+        entry.miles = Math.round(step * 10) / 10;
+        entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = nx; entry.to_y = ny;
+        entry.text = 'Traveled ' + fmtMiles(step) + ' by ' + t.mode.toLowerCase() + ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace.' + (arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+        moveOp = sb.from('map_markers').update({ x: nx, y: ny }).eq('id', j.party.id);
+      } else {
+        entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
+      }
+      return moveOp.then(function (r) {
+        if (r.error) throw r.error;
+        return sb.from('travel_log').insert(entry);
+      }).then(function (r) {
+        if (r.error) throw r.error;
+        return sb.from('travel_state').update({ day: day + 1 }).eq('campaign_id', campId);
+      }).then(function (r) {
+        if (r.error) throw r.error;
+        return Promise.all([loadTravel(), t.map_id ? loadMarkers(t.map_id) : null]);
+      }).then(function () { toast('Day ' + (day + 1)); render(); });
+    }).catch(function (e) { fail(e, 'Could not advance the day.'); });
+  }
+
+  function undoDay(campId) {
+    var last = travelLog.filter(function (l) { return l.campaign_id === campId; })[0];
+    if (!last) return;
+    var steps = [];
+    if (last.map_id && last.from_x != null) {
+      var pm = partyMarker(last.map_id);
+      if (pm) steps.push(sb.from('map_markers').update({ x: last.from_x, y: last.from_y }).eq('id', pm.id));
+    }
+    Promise.all(steps).then(function (res) {
+      res.forEach(function (r) { if (r.error) throw r.error; });
+      return sb.from('travel_log').delete().eq('id', last.id);
+    }).then(function (r) {
+      if (r.error) throw r.error;
+      return sb.from('travel_state').update({ day: last.day }).eq('campaign_id', campId);
+    }).then(function (r) {
+      if (r.error) throw r.error;
+      return Promise.all([loadTravel(), last.map_id ? loadMarkers(last.map_id) : null]);
+    }).then(function () { toast('Back to day ' + last.day); render(); })
+      .catch(function (e) { fail(e, 'Could not undo the last day.'); });
+  }
+
+  function saveRules(form) {
+    var campId = form.getAttribute('data-camp');
+    var rules = { modes: {}, paces: {}, terrains: {} };
+    ['modes', 'paces', 'terrains'].forEach(function (g) {
+      var names = form.querySelectorAll('[data-rule-name="' + g + '"]');
+      var vals = form.querySelectorAll('[data-rule-val="' + g + '"]');
+      names.forEach(function (n, i) {
+        var k = n.value.trim().slice(0, 30), v = Number(vals[i].value);
+        if (k && isFinite(v) && v >= 0) rules[g][k] = Math.round(v * 100) / 100;
+      });
+    });
+    if (!Object.keys(rules.modes).length || !Object.keys(rules.paces).length || !Object.keys(rules.terrains).length) return toast('Keep at least one entry in each list.');
+    var t = travel[campId];
+    var patch = { rules: rules };
+    if (!(t.mode in rules.modes)) patch.mode = Object.keys(rules.modes)[0];
+    if (!(t.pace in rules.paces)) patch.pace = Object.keys(rules.paces)[0];
+    if (!(t.terrain in rules.terrains)) patch.terrain = Object.keys(rules.terrains)[0];
+    saveTravel(campId, patch).then(function () { toast('Rules saved'); render(); });
+  }
+
+  /* ================= Live updates ================= */
+  var liveChannel = null;
+  function busy() {
+    var r = parseRoute();
+    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit'].indexOf(r.name) >= 0) return true;
+    if (ui.pendingPin || ui.placing) return true;
+    var a = document.activeElement;
+    return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
+  function liveRefresh(job) {
+    clearTimeout(liveRefresh.t);
+    liveRefresh.jobs = (liveRefresh.jobs || []).concat([job]);
+    liveRefresh.t = setTimeout(function () {
+      var jobs = liveRefresh.jobs; liveRefresh.jobs = [];
+      Promise.all(jobs.map(function (fn) { return fn(); })).then(function () {
+        if (!busy()) { rememberMapScroll(); render(); }
+      }).catch(function () {});
+    }, 300);
+  }
+  function startLive() {
+    if (liveChannel || !sb.channel) return;
+    liveChannel = sb.channel('avarenth-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'map_markers' }, function (p) {
+        var mid = (p.new && p.new.map_id) || (p.old && p.old.map_id);
+        liveRefresh(function () { return mid && markers[mid] ? loadMarkers(mid) : Object.keys(markers).length ? Promise.all(Object.keys(markers).map(loadMarkers)) : null; });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_state' }, function () { liveRefresh(loadTravel); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_log' }, function () { liveRefresh(loadTravel); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'crimes' }, function () { liveRefresh(loadCrimes); })
+      .subscribe();
+  }
+  function stopLive() { if (liveChannel) { sb.removeChannel(liveChannel); liveChannel = null; } }
+
   /* ================= Events ================= */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
@@ -1350,7 +1613,7 @@
     var c = currentChar();
     switch (act) {
       case 'signout': sb.auth.signOut(); break;
-      case 'recheck': loadProfile().then(function () { if (isMember()) return loadAll(); }).then(render).catch(function (err) { fail(err); }); break;
+      case 'recheck': loadProfile().then(function () { if (isMember()) return loadAll().then(startLive); }).then(render).catch(function (err) { fail(err); }); break;
       case 'authmode': ui.authMode = el.getAttribute('data-mode'); renderAuth(); break;
       case 'preview':
         preview = el.getAttribute('data-mode');
@@ -1367,6 +1630,9 @@
         go(el.getAttribute('data-target') || '#/wiki'); break;
       case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
       case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
+      case 'next-day': el.disabled = true; rememberMapScroll(); nextDay(el.getAttribute('data-camp')); break;
+      case 'undo-day': el.disabled = true; undoDay(el.getAttribute('data-camp')); break;
+      case 'clear-dest': saveTravel(el.getAttribute('data-camp'), { dest_x: null, dest_y: null }).then(render); break;
       case 'delete-crime':
         var crid = el.getAttribute('data-id');
         if (ui.pendingDelete !== crid) { ui.pendingDelete = crid; el.textContent = 'Tap again'; return; }
@@ -1621,6 +1887,14 @@
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
+    if (t.hasAttribute('data-travel') || t.hasAttribute('data-travel-text')) {
+      var tcamp = campaignBySlug(parseRoute().arg);
+      if (!tcamp) return;
+      var key = t.getAttribute('data-travel') || t.getAttribute('data-travel-text');
+      var patch = {}; patch[key] = key === 'map_id' ? (t.value || null) : t.value.trim();
+      if (key === 'map_id') { patch.dest_x = null; patch.dest_y = null; }
+      return saveTravel(tcamp.id, patch).then(function () { return ensureTravelMarkers(travel[tcamp.id]); }).then(render);
+    }
     if (t.hasAttribute('data-crime-bounty')) return updateCrime(t.getAttribute('data-crime-bounty'), { bounty: Math.max(0, num(t.value, 0)) });
     if (t.id === 'place-char' && t.value) {
       ui.placing = { mapId: parseRoute().arg, kind: 'character', characterId: t.value };
@@ -1645,6 +1919,7 @@
       case 'newchar-form': return createCharacter();
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
+      case 'rules-form': return saveRules(f);
       case 'pin-form': return savePin();
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
@@ -1709,10 +1984,10 @@
   function onSession(s) {
     var prev = uid();
     session = s;
-    if (!s) { profile = null; articles = []; secrets = {}; characters = []; members = []; loaded = { wiki: false, chars: false, members: false }; render(); return; }
+    if (!s) { stopLive(); profile = null; articles = []; secrets = {}; characters = []; members = []; loaded = { wiki: false, chars: false, members: false }; render(); return; }
     if (prev === s.user.id && booted) return;
     booted = loadProfile()
-      .then(function () { render(); if (isMember()) return loadAll(); })
+      .then(function () { render(); if (isMember()) return loadAll().then(startLive); })
       .then(render)
       .catch(function (e) { fail(e, 'Could not reach the archive. If the app sat unused for a week, the DM may need to resume it in Supabase.'); render(); });
   }

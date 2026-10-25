@@ -267,3 +267,10 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .vitals.sum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 640px) { .vitals.sum { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .vitals.sum .v { font-size: 19px; overflow-wrap: normal; line-height: 1.2; }
+
+/* ---------- Travel ---------- */
+.route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.route line { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 8 6; stroke-linecap: round; filter: drop-shadow(0 1px 1px rgba(0,0,0,.6)); }
+.dest { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none; }
+.dest::after { content: ""; width: 14px; height: 14px; border: 3px solid var(--accent); border-radius: 50%; background: var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.dest span { padding: 1px 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-family: var(--ui); font-size: 11px; font-weight: 700; white-space: nowrap; }
