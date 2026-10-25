@@ -405,28 +405,29 @@
     if (dmView()) {
       html += '<div class="actions"><button type="button" class="btn primary" data-act="new-article" data-campaign="">+ World article</button><a class="btn" href="#/campaign-edit">+ New campaign</a><a class="btn" href="#/customize">Customize</a></div>';
     }
-    html += '<label class="search"><span class="sr">Search all articles</span>' + SEARCH_ICON +
-      '<input id="home-search" type="search" placeholder="Search the world and your campaigns…" value="' + esc(ui.homeQuery) + '" autocomplete="off"></label>';
+    // The world page only ever shows world lore; campaign articles live on their campaign's page.
+    var world = all.filter(function (a) { return !a.campaign_id; });
+    html += '<label class="search"><span class="sr">Search world lore</span>' + SEARCH_ICON +
+      '<input id="home-search" type="search" placeholder="Search world lore…" value="' + esc(ui.homeQuery) + '" autocomplete="off"></label>';
 
     if (q) {
-      var hits = all.filter(function (a) { return String(a.title || '').toLowerCase().indexOf(q) >= 0; });
+      var hits = world.filter(function (a) { return String(a.title || '').toLowerCase().indexOf(q) >= 0; });
       html += '<section class="block"><h2 class="sec-title">Search results<small>' + hits.length + '</small></h2>' +
-        (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
+        (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, false); }).join('') + '</div>' : '<div class="empty">No world lore matches that search.</div>') + '</section>';
     } else {
       var camps = myCampaigns().slice().sort(function (a, b) { return (a.status === 'finished') - (b.status === 'finished'); });
       html += '<section class="block"><h2 class="sec-title">Campaigns' + (!isDM() ? '<small><a class="btn small quiet" href="#/join">Join a campaign</a></small>' : '') + '</h2>';
       if (camps.length) {
         html += '<div class="cats">';
         camps.forEach(function (c) {
-          var n = all.filter(function (a) { return a.campaign_id === c.id; }).length;
-          html += '<a class="cat" href="#/campaign/' + encodeURIComponent(c.slug) + '" style="text-decoration:none;color:inherit"><b>' + esc(c.name) + '</b><span>' + (c.status === 'finished' ? 'Finished · ' : '') + n + (n === 1 ? ' article' : ' articles') + '</span></a>';
+          html += '<a class="cat" href="#/campaign/' + encodeURIComponent(c.slug) + '" style="text-decoration:none;color:inherit"><b>' + esc(c.name) + '</b><span>' + (c.status === 'finished' ? 'Finished' : 'Open campaign') + '</span></a>';
         });
         html += '</div>';
       } else {
         html += '<div class="empty">' + (isDM() ? 'No campaigns yet. Tap “New campaign” to start one.' : 'You’re not in a campaign yet. Ask your DM for the campaign PIN, then tap “Join a campaign”.') + '</div>';
       }
       html += '</section>';
-      html += articleBrowser(all.filter(function (a) { return !a.campaign_id; }), 'world', dmView() ? 'No world lore yet. Tap “World article” to add some.' : 'Nothing has been revealed yet.');
+      html += articleBrowser(world, 'world', dmView() ? 'No world lore yet. Tap “World article” to add some.' : 'Nothing has been revealed yet.');
     }
     html += '</div>';
     $view.innerHTML = html;
@@ -450,7 +451,19 @@
         ? '<p style="margin:0;font-family:var(--ui);font-size:28px;font-weight:700;letter-spacing:0.18em">' + esc(pins[camp.id]) + '</p><p class="note" style="margin:0">Give this to players so they can join. Players never see it in the app.</p>'
         : '<p class="note" style="margin:0">No PIN yet, so players can only be added from the Players tab. Set one under “Edit campaign”.</p>') + '</div>';
     }
-    html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
+    // A campaign shows its own articles plus all world lore, so players can look up rules and history.
+    var world = visibleArticles().filter(function (a) { return !a.campaign_id; });
+    var cq = (ui.campQuery || '').trim().toLowerCase();
+    html += '<label class="search"><span class="sr">Search this campaign and world lore</span>' + SEARCH_ICON +
+      '<input id="camp-search" type="search" placeholder="Search this campaign and world lore…" value="' + esc(ui.campQuery || '') + '" autocomplete="off"></label>';
+    if (cq) {
+      var hits = list.concat(world).filter(function (a) { return String(a.title || '').toLowerCase().indexOf(cq) >= 0; });
+      html += '<section class="block"><h2 class="sec-title">Search results<small>' + hits.length + '</small></h2>' +
+        (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
+    } else {
+      html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
+      html += articleBrowser(world, 'cw-' + camp.id, 'No world lore yet.').replace('<h2 class="sec-title">Categories</h2>', '<h2 class="sec-title">World reference</h2>').replace(/>Articles<small>/, '>World lore<small>');
+    }
     html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small><button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
     html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
     html += '</section></div>';
@@ -1118,6 +1131,15 @@
       try { s.setSelectionRange(pos, pos); } catch (err) {}
       return;
     }
+    if (t.id === 'camp-search') {
+      ui.campQuery = t.value;
+      var cpos = t.selectionStart;
+      render();
+      var cs = document.getElementById('camp-search');
+      cs.focus();
+      try { cs.setSelectionRange(cpos, cpos); } catch (err) {}
+      return;
+    }
     if (t.hasAttribute('data-color')) {
       var key = t.getAttribute('data-color');
       var base = clone(palette());
@@ -1205,6 +1227,7 @@
     if (r.name !== 'c') ui.sheetEdit = false;
     if (r.name !== 'characters') { ui.newChar = false; ui.newCharCampaign = null; }
     if (r.name !== 'new' && r.name !== 'edit') ui.editCampaign = null;
+    if (r.name !== 'campaign') ui.campQuery = '';
     render();
     window.scrollTo(0, 0);
   });
