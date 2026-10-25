@@ -262,6 +262,8 @@
       if (r.error) throw r.error;
       maps = r.data || [];
       loaded.maps = true;
+      // Re-read terrain grids on the next view, in case Claude has added or updated one.
+      grids = {}; routeCache = {};
     });
   }
   function loadMarkers(mapId) {
