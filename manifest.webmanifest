@@ -1,7 +1,7 @@
 {
   "name": "Avarenth",
   "short_name": "Avarenth",
-  "description": "Wiki and character sheets for the Dornish Isles.",
+  "description": "Wiki and character sheets for the world of Avarenth.",
   "start_url": "./#/wiki",
   "scope": "./",
   "display": "standalone",

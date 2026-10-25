@@ -1,6 +1,6 @@
 # Avarenth
 
-Wiki and character sheets for the Dornish Isles, a homebrew D&D setting.
+Wiki and character sheets for Avarenth, a homebrew D&D world, with a section for each campaign.
 
 **App:** https://lordpickle8400.github.io/Avarenth/
 

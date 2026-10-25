@@ -67,8 +67,11 @@
   var look = clone(DEFAULT_LOOK);
   var characters = [];
   var members = [];
+  var campaigns = [];
+  var memberships = [];
+  var pins = {};
   var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
-  var ui = { homeFilter: null, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
+  var ui = { filters: {}, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
 
   var $view = document.getElementById('view');
@@ -114,6 +117,18 @@
     return TEMPLATES[TEMPLATES.length - 1];
   }
   function visibleArticles() { return articles.filter(function (a) { return dmView() || !a.hidden; }); }
+  function campaignById(id) { for (var i = 0; i < campaigns.length; i++) if (campaigns[i].id === id) return campaigns[i]; return null; }
+  function campaignBySlug(slug) { for (var i = 0; i < campaigns.length; i++) if (campaigns[i].slug === slug) return campaigns[i]; return null; }
+  // Campaigns this person may file things under: all for the DM, only joined ones for players.
+  function myCampaigns() {
+    if (isDM()) return campaigns;
+    return campaigns.filter(function (c) { return memberships.some(function (m) { return m.campaign_id === c.id && m.user_id === uid(); }); });
+  }
+  function campaignOptions(selected, allowNone, noneLabel) {
+    var html = allowNone ? '<option value="">' + esc(noneLabel || 'World lore (every player)') + '</option>' : '';
+    myCampaigns().forEach(function (c) { html += '<option value="' + esc(c.id) + '"' + (c.id === selected ? ' selected' : '') + '>' + esc(c.name) + (c.status === 'finished' ? ' (finished)' : '') + '</option>'; });
+    return html;
+  }
   function articleBySlug(slug) { for (var i = 0; i < articles.length; i++) if (articles[i].slug === slug) return articles[i]; return null; }
   function articleByTitle(title) {
     var t = String(title).trim().toLowerCase();
@@ -194,13 +209,23 @@
   }
   function loadWiki() {
     var jobs = [
-      sb.from('articles').select('id, slug, title, template, summary, fields, sections, hidden, updated_at').order('updated_at', { ascending: false }),
+      sb.from('articles').select('id, slug, title, template, summary, fields, sections, hidden, campaign_id, updated_at').order('updated_at', { ascending: false }),
       sb.from('templates').select('id, name, blurb, sidebar, sections, dm').order('name'),
-      sb.from('settings').select('look').eq('id', 1).maybeSingle()
+      sb.from('settings').select('look').eq('id', 1).maybeSingle(),
+      sb.from('campaigns').select('id, slug, name, summary, status, created_at').order('created_at'),
+      sb.from('campaign_members').select('campaign_id, user_id')
     ];
-    if (isDM()) jobs.push(sb.from('article_secrets').select('article_id, dm, dm_notes'));
+    if (isDM()) {
+      jobs.push(sb.from('article_secrets').select('article_id, dm, dm_notes'));
+      jobs.push(sb.from('campaign_pins').select('campaign_id, pin'));
+    }
     return Promise.all(jobs).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
+      campaigns = res[3].data || [];
+      memberships = res[4].data || [];
+      pins = {};
+      if (res[6]) (res[6].data || []).forEach(function (p) { pins[p.campaign_id] = p.pin; });
+      res.splice(3, 2);
       articles = res[0].data || [];
       customTemplates = (res[1].data || []).map(function (t) {
         return { id: t.id, name: String(t.name), blurb: String(t.blurb || ''), sidebar: (t.sidebar || []).map(String), sections: (t.sections || []).map(String), dm: (t.dm || []).map(String) };
@@ -212,7 +237,7 @@
     });
   }
   function loadCharacters() {
-    return sb.from('characters').select('id, owner_id, name, sheet, ddb_url, updated_at').order('name').then(function (r) {
+    return sb.from('characters').select('id, owner_id, name, sheet, ddb_url, campaign_id, updated_at').order('name').then(function (r) {
       if (r.error) throw r.error;
       characters = r.data || [];
       loaded.chars = true;
@@ -252,7 +277,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', characters: 'characters', c: 'characters', members: 'members' })[r.name] || '';
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters']];
     if (isDM()) tabs.push(['members', 'Players']);
     $tabs.innerHTML = tabs.map(function (t) { return '<a href="#/' + t[0] + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
@@ -266,7 +291,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
-    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members'];
+    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
     }
@@ -280,6 +305,9 @@
       case 'c': return renderSheet(r.arg);
       case 'members': return renderMembers();
       case 'account': return renderAccount();
+      case 'campaign': return renderCampaign(r.arg);
+      case 'campaign-edit': return renderCampaignEdit(r.arg);
+      case 'join': return renderJoin();
       default: return renderHome();
     }
   }
@@ -294,7 +322,7 @@
   function renderAuth() {
     var signup = ui.authMode === 'signup';
     $view.innerHTML = '<div class="auth">' +
-      '<h1>AVARENTH</h1><p class="eyebrow sub">The Dornish Isles</p>' +
+      '<h1>AVARENTH</h1><p class="eyebrow sub">The World</p>' +
       '<div class="seg" role="group" aria-label="Account" style="align-self:center"><button type="button" data-act="authmode" data-mode="signin" aria-pressed="' + !signup + '">Sign in</button><button type="button" data-act="authmode" data-mode="signup" aria-pressed="' + signup + '">Create account</button></div>' +
       '<form class="form" id="auth-form" novalidate>' +
       (signup ? '<div class="field"><label for="a-name">Your name</label><input type="text" id="a-name" autocomplete="nickname" placeholder="What the table calls you"></div>' : '') +
@@ -341,47 +369,157 @@
   }
 
   /* ================= Wiki: home ================= */
-  function renderHome() {
-    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
-    var list = visibleArticles();
+  function articleRow(a, showCampaign) {
+    var camp = showCampaign && a.campaign_id ? campaignById(a.campaign_id) : null;
+    return '<a class="row" href="#/a/' + encodeURIComponent(a.slug) + '"><span class="row-main"><b>' + esc(a.title || 'Untitled') + '</b><span>' + esc(a.template) + (showCampaign ? ' · ' + esc(camp ? camp.name : 'World') : '') + '</span></span>' +
+      (a.hidden && dmView() ? '<span class="tag">Hidden</span>' : '') + '</a>';
+  }
+
+  // Categories plus the article list for one scope (the world, or one campaign).
+  function articleBrowser(list, scope, emptyText) {
+    var filter = (ui.filters || {})[scope] || null;
     var groups = {};
     list.forEach(function (a) { var g = findTemplate(a.template).group; groups[g] = (groups[g] || 0) + 1; });
     var cats = CAT_ORDER.filter(function (g) { return groups[g]; });
-    var q = ui.homeQuery.toLowerCase();
-    var shown = list.filter(function (a) {
-      if (ui.homeFilter && findTemplate(a.template).group !== ui.homeFilter) return false;
-      if (q && String(a.title || '').toLowerCase().indexOf(q) < 0) return false;
-      return true;
-    });
-
-    var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">The Dornish Isles</p><h1>Avarenth</h1>' +
-      (isDM() ? '<p class="crumbs">' + (dmView() ? 'DM view: everything, secrets included' : 'Player preview: what your table sees') + '</p>' : '') +
-      '</div></section><div class="page">';
-    if (dmView()) {
-      html += '<div class="actions"><a class="btn primary" href="#/new">+ New article</a><a class="btn" href="#/customize">Customize</a></div>';
-    }
-    html += '<label class="search"><span class="sr">Search articles</span>' + SEARCH_ICON +
-      '<input id="home-search" type="search" placeholder="Search Marloo, factions, spells…" value="' + esc(ui.homeQuery) + '" autocomplete="off"></label>';
-    if (cats.length) {
+    var shown = list.filter(function (a) { return !filter || findTemplate(a.template).group === filter; });
+    var html = '';
+    if (cats.length > 1) {
       html += '<section class="block"><h2 class="sec-title">Categories</h2><div class="cats">';
       cats.forEach(function (g) {
-        html += '<button type="button" class="cat" data-act="filter" data-group="' + esc(g) + '" aria-pressed="' + (ui.homeFilter === g) + '"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
+        html += '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="' + (filter === g) + '"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
       });
       html += '</div></section>';
     }
-    html += '<section class="block"><h2 class="sec-title">' + (ui.homeFilter ? esc(CATEGORY_LABEL[ui.homeFilter] || ui.homeFilter) + '<small><button type="button" class="btn small quiet" data-act="filter" data-group="">Show all</button></small>' : 'Latest Articles<small>' + shown.length + ' total</small>') + '</h2>';
-    if (!shown.length) {
-      html += '<div class="empty">' + (list.length ? 'Nothing matches that search.' : (dmView() ? 'No articles yet. Tap “New article” and pick a template to start.' : 'Nothing has been revealed yet.')) + '</div>';
-    } else {
-      html += '<div class="list">';
-      shown.forEach(function (a) {
-        html += '<a class="row" href="#/a/' + encodeURIComponent(a.slug) + '"><span class="row-main"><b>' + esc(a.title || 'Untitled') + '</b><span>' + esc(a.template) + '</span></span>' +
-          (a.hidden && dmView() ? '<span class="tag">Hidden</span>' : '') + '</a>';
-      });
-      html += '</div>';
+    html += '<section class="block"><h2 class="sec-title">' + (filter ? esc(CATEGORY_LABEL[filter] || filter) + '<small><button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">Show all</button></small>' : 'Articles<small>' + shown.length + ' total</small>') + '</h2>';
+    html += shown.length ? '<div class="list">' + shown.map(function (a) { return articleRow(a, false); }).join('') + '</div>' : '<div class="empty">' + esc(emptyText) + '</div>';
+    return html + '</section>';
+  }
+
+  function renderHome() {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var all = visibleArticles();
+    var q = ui.homeQuery.trim().toLowerCase();
+    var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">The World</p><h1>Avarenth</h1>' +
+      (isDM() ? '<p class="crumbs">' + (dmView() ? 'DM view: everything, secrets included' : 'Player preview: what your table sees') + '</p>' : '') +
+      '</div></section><div class="page">';
+    if (dmView()) {
+      html += '<div class="actions"><button type="button" class="btn primary" data-act="new-article" data-campaign="">+ World article</button><a class="btn" href="#/campaign-edit">+ New campaign</a><a class="btn" href="#/customize">Customize</a></div>';
     }
+    html += '<label class="search"><span class="sr">Search all articles</span>' + SEARCH_ICON +
+      '<input id="home-search" type="search" placeholder="Search the world and your campaigns…" value="' + esc(ui.homeQuery) + '" autocomplete="off"></label>';
+
+    if (q) {
+      var hits = all.filter(function (a) { return String(a.title || '').toLowerCase().indexOf(q) >= 0; });
+      html += '<section class="block"><h2 class="sec-title">Search results<small>' + hits.length + '</small></h2>' +
+        (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
+    } else {
+      var camps = myCampaigns().slice().sort(function (a, b) { return (a.status === 'finished') - (b.status === 'finished'); });
+      html += '<section class="block"><h2 class="sec-title">Campaigns' + (!isDM() ? '<small><a class="btn small quiet" href="#/join">Join a campaign</a></small>' : '') + '</h2>';
+      if (camps.length) {
+        html += '<div class="cats">';
+        camps.forEach(function (c) {
+          var n = all.filter(function (a) { return a.campaign_id === c.id; }).length;
+          html += '<a class="cat" href="#/campaign/' + encodeURIComponent(c.slug) + '" style="text-decoration:none;color:inherit"><b>' + esc(c.name) + '</b><span>' + (c.status === 'finished' ? 'Finished · ' : '') + n + (n === 1 ? ' article' : ' articles') + '</span></a>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="empty">' + (isDM() ? 'No campaigns yet. Tap “New campaign” to start one.' : 'You’re not in a campaign yet. Ask your DM for the campaign PIN, then tap “Join a campaign”.') + '</div>';
+      }
+      html += '</section>';
+      html += articleBrowser(all.filter(function (a) { return !a.campaign_id; }), 'world', dmView() ? 'No world lore yet. Tap “World article” to add some.' : 'Nothing has been revealed yet.');
+    }
+    html += '</div>';
+    $view.innerHTML = html;
+  }
+
+  /* ================= Campaigns ================= */
+  function renderCampaign(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug);
+    if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) {
+      $view.innerHTML = '<div class="page narrow"><div class="empty">That campaign doesn’t exist, or you haven’t joined it.</div><div class="actions"><a class="btn" href="#/join">Join with a PIN</a><a class="btn" href="#/wiki">Back to the world</a></div></div>';
+      return;
+    }
+    var list = visibleArticles().filter(function (a) { return a.campaign_id === camp.id; });
+    var party = characters.filter(function (c) { return c.campaign_id === camp.id; });
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › Campaign' + (camp.status === 'finished' ? ' · Finished' : '') + '</p><h1>' + esc(camp.name) + '</h1></div></section><div class="page">';
+    if (camp.summary) html += '<p class="lede">' + inline(camp.summary) + '</p>';
+    if (dmView()) {
+      html += '<div class="actions"><button type="button" class="btn primary" data-act="new-article" data-campaign="' + esc(camp.id) + '">+ Campaign article</button><a class="btn" href="#/campaign-edit/' + encodeURIComponent(camp.slug) + '">Edit campaign</a></div>';
+      html += '<div class="group-box"><h2>Join PIN</h2>' + (pins[camp.id]
+        ? '<p style="margin:0;font-family:var(--ui);font-size:28px;font-weight:700;letter-spacing:0.18em">' + esc(pins[camp.id]) + '</p><p class="note" style="margin:0">Give this to players so they can join. Players never see it in the app.</p>'
+        : '<p class="note" style="margin:0">No PIN yet, so players can only be added from the Players tab. Set one under “Edit campaign”.</p>') + '</div>';
+    }
+    html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
+    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small><button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
+    html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
     html += '</section></div>';
     $view.innerHTML = html;
+  }
+
+  function renderCampaignEdit(slug) {
+    var camp = slug ? campaignBySlug(slug) : null;
+    if (slug && !camp) { location.replace('#/wiki'); return; }
+    var c = camp || { name: '', summary: '', status: 'active' };
+    $view.innerHTML = '<div class="page narrow"><form class="form" id="campaign-form" novalidate data-id="' + esc(camp ? camp.id : '') + '">' +
+      '<div><p class="eyebrow">' + (camp ? 'Edit campaign' : 'New campaign') + '</p><h1 class="page-title">' + (camp ? esc(camp.name) : 'Start a campaign') + '</h1></div>' +
+      '<div class="field"><label for="cp-name">Campaign name</label><input type="text" id="cp-name" maxlength="80" value="' + esc(c.name) + '" placeholder="e.g. The Dornish Isles"></div>' +
+      '<div class="field"><label for="cp-summary">Summary</label><textarea id="cp-summary" style="min-height:90px" placeholder="What this campaign is about">' + esc(c.summary) + '</textarea></div>' +
+      '<div class="field"><label for="cp-pin">Join PIN</label><input type="text" id="cp-pin" maxlength="12" autocomplete="off" value="' + esc(camp ? (pins[camp.id] || '') : '') + '" placeholder="4 to 12 letters or numbers"><span class="hint">Players enter this to join. Leave it empty to add players only by hand.</span></div>' +
+      '<div class="field"><label for="cp-status">Status</label><select id="cp-status"><option value="active"' + (c.status === 'active' ? ' selected' : '') + '>Active</option><option value="finished"' + (c.status === 'finished' ? ' selected' : '') + '>Finished (PIN stops working)</option></select></div>' +
+      '<div class="sticky-actions"><button type="submit" class="btn primary" id="cp-save">Save</button><a class="btn" href="' + (camp ? '#/campaign/' + encodeURIComponent(camp.slug) : '#/wiki') + '">Cancel</a>' +
+      (camp ? '<button type="button" class="btn danger" data-act="delete-campaign" data-id="' + esc(camp.id) + '" style="margin-left:auto">' + (ui.pendingDelete === camp.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div>' +
+      (camp ? '<p class="note">Deleting a campaign moves its articles to world lore and leaves its characters without a campaign. Nothing else is deleted.</p>' : '') +
+      '</form></div>';
+  }
+
+  function saveCampaign(form) {
+    var id = form.getAttribute('data-id');
+    var name = document.getElementById('cp-name').value.trim();
+    var pin = document.getElementById('cp-pin').value.trim();
+    if (!name) { toast('Name the campaign first.'); return document.getElementById('cp-name').focus(); }
+    if (pin && !/^[A-Za-z0-9]{4,12}$/.test(pin)) return toast('Use 4 to 12 letters or numbers for the PIN.');
+    var row = { name: name, summary: document.getElementById('cp-summary').value.trim(), status: document.getElementById('cp-status').value };
+    var btn = document.getElementById('cp-save');
+    btn.disabled = true;
+    var write;
+    if (id) write = sb.from('campaigns').update(row).eq('id', id).select('id, slug').single();
+    else {
+      var base = slugify(name), s = base, n = 2;
+      while (campaignBySlug(s)) s = base + '-' + (n++);
+      row.slug = s;
+      write = sb.from('campaigns').insert(row).select('id, slug').single();
+    }
+    write.then(function (r) {
+      if (r.error) throw r.error;
+      var cid = r.data.id, cslug = r.data.slug;
+      var pinWrite = pin ? sb.from('campaign_pins').upsert({ campaign_id: cid, pin: pin }) : sb.from('campaign_pins').delete().eq('campaign_id', cid);
+      return pinWrite.then(function (r2) {
+        if (r2.error) throw r2.error;
+        if (!id) return sb.from('campaign_members').insert({ campaign_id: cid, user_id: uid() }).then(function () { return cslug; });
+        return cslug;
+      });
+    }).then(function (cslug) {
+      return loadWiki().then(function () { toast('Saved'); go('#/campaign/' + encodeURIComponent(cslug)); });
+    }).catch(function (e) { btn.disabled = false; fail(e, 'Could not save the campaign.'); });
+  }
+
+  function renderJoin() {
+    var mine = myCampaigns();
+    $view.innerHTML = '<div class="page narrow"><div><p class="eyebrow">Campaigns</p><h1 class="page-title">Join a campaign</h1><p class="note" style="margin:6px 0 0">Your DM will give you the campaign’s PIN.</p></div>' +
+      '<form class="form" id="join-form" novalidate><div class="field"><label for="join-pin">Campaign PIN</label><input type="text" id="join-pin" maxlength="12" autocomplete="off" autocapitalize="off" inputmode="text" style="font-family:var(--ui);font-size:22px;letter-spacing:0.15em"></div>' +
+      '<p class="err" id="join-err" role="alert" hidden></p><div class="actions"><button type="submit" class="btn primary">Join</button><a class="btn" href="#/wiki">Cancel</a></div></form>' +
+      (mine.length ? '<section class="block"><h2 class="sec-title">You’re in</h2><div class="list">' + mine.map(function (c) { return '<a class="row" href="#/campaign/' + encodeURIComponent(c.slug) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + (c.status === 'finished' ? 'Finished' : 'Active') + '</span></span></a>'; }).join('') + '</div></section>' : '') +
+      '</div>';
+  }
+  function submitJoin() {
+    var code = document.getElementById('join-pin').value.trim();
+    var $err = document.getElementById('join-err');
+    if (!code) { $err.textContent = 'Enter the PIN your DM gave you.'; $err.hidden = false; return; }
+    sb.rpc('join_campaign', { code: code }).then(function (r) {
+      if (r.error) { $err.textContent = r.error.message || 'That PIN didn’t work.'; $err.hidden = false; return; }
+      return Promise.all([loadWiki(), loadCharacters()]).then(function () { toast('You joined the campaign'); go('#/campaign/' + encodeURIComponent(r.data)); });
+    });
   }
 
   /* ================= Wiki: article ================= */
@@ -400,7 +538,10 @@
     var dm = sec.dm || {};
     var dmKeys = Object.keys(dm).filter(function (k) { return String(dm[k] || '').trim(); });
 
-    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <button type="button" class="btn small quiet" style="min-height:0;padding:0;border:0;font-size:12px" data-act="filter-home" data-group="' + esc(tpl.group) + '">' + esc(CATEGORY_LABEL[tpl.group] || tpl.group) + '</button></p><h1>' + esc(a.title) + '</h1></div></section><div class="page">';
+    var camp = a.campaign_id ? campaignById(a.campaign_id) : null;
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › ' +
+      (camp ? '<a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a> › ' : '') +
+      '<button type="button" class="btn small quiet" style="min-height:0;padding:0;border:0;font-size:12px" data-act="filter-home" data-scope="' + (camp ? 'c-' + esc(camp.id) : 'world') + '" data-target="' + (camp ? '#/campaign/' + encodeURIComponent(camp.slug) : '#/wiki') + '" data-group="' + esc(tpl.group) + '">' + esc(CATEGORY_LABEL[tpl.group] || tpl.group) + '</button></p><h1>' + esc(a.title) + '</h1></div></section><div class="page">';
     if (dmView()) html += '<div class="actions"><a class="btn" href="#/edit/' + encodeURIComponent(a.slug) + '">Edit article</a>' + (a.hidden ? '<span class="tag">Hidden from players</span>' : '') + '</div>';
     html += '<div class="art' + (fieldKeys.length ? ' has-box' : '') + '">';
     if (fieldKeys.length) {
@@ -485,7 +626,7 @@
     var isNew = !slug;
     var a, sec = {};
     if (isNew) {
-      a = { title: '', template: ui.editTemplate || 'Generic Article', summary: '', fields: {}, sections: [], hidden: false };
+      a = { title: '', template: ui.editTemplate || 'Generic Article', summary: '', fields: {}, sections: [], hidden: false, campaign_id: ui.editCampaign || null };
     } else {
       var found = articleBySlug(slug);
       if (!found) { location.replace('#/wiki'); return; }
@@ -502,6 +643,7 @@
     var html = '<div class="page narrow"><form class="form" id="edit-form" novalidate data-slug="' + esc(slug || '') + '" data-template="' + esc(a.template) + '">' +
       '<div><p class="eyebrow">' + (isNew ? 'New ' : 'Editing ') + esc(tpl.name) + '</p><h1 class="page-title">' + (isNew ? 'New article' : esc(a.title)) + '</h1></div>' +
       '<div class="field"><label for="f-title">Title</label><input type="text" id="f-title" required maxlength="120" value="' + esc(a.title) + '" placeholder="e.g. Marloo"></div>' +
+      '<div class="field"><label for="f-campaign">Belongs to</label><select id="f-campaign">' + campaignOptions(a.campaign_id, true) + '</select><span class="hint">World lore is shared by every campaign. Campaign articles are only seen by that campaign’s players.</span></div>' +
       '<div class="field"><label for="f-summary">Summary</label><textarea id="f-summary" style="min-height:80px" placeholder="One or two sentences shown under the title">' + esc(a.summary) + '</textarea></div>';
     if (fieldNames.length) {
       html += '<div class="group-box"><h2>Sidebar</h2>';
@@ -524,7 +666,7 @@
     var slug = form.getAttribute('data-slug');
     var existing = slug ? articleBySlug(slug) : null;
     var get = function (id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-    var row = { title: get('f-title'), template: form.getAttribute('data-template'), summary: get('f-summary'), fields: {}, sections: [], hidden: !!document.getElementById('f-hidden').checked };
+    var row = { title: get('f-title'), template: form.getAttribute('data-template'), summary: get('f-summary'), fields: {}, sections: [], hidden: !!document.getElementById('f-hidden').checked, campaign_id: document.getElementById('f-campaign').value || null };
     if (!row.title) { toast('Give the article a title first.'); return document.getElementById('f-title').focus(); }
     $view.querySelectorAll('[data-field]').forEach(function (el) { if (el.value.trim()) row.fields[el.getAttribute('data-field')] = el.value.trim(); });
     $view.querySelectorAll('[data-section]').forEach(function (el) { if (el.value.trim()) row.sections.push({ h: el.getAttribute('data-section'), b: el.value.trim() }); });
@@ -572,7 +714,7 @@
     });
     html += '</section><section class="block"><h2 class="sec-title">Heading font</h2><div class="stack">';
     Object.keys(FONTS).forEach(function (name) {
-      html += '<button type="button" class="opt" data-act="font" data-name="' + esc(name) + '" aria-pressed="' + (look.font === name) + '"><span style="font-family:' + FONTS[name] + ';font-size:21px;font-weight:700">Dornish Isles</span><small>' + esc(name) + '</small></button>';
+      html += '<button type="button" class="opt" data-act="font" data-name="' + esc(name) + '" aria-pressed="' + (look.font === name) + '"><span style="font-family:' + FONTS[name] + ';font-size:21px;font-weight:700">Avarenth</span><small>' + esc(name) + '</small></button>';
     });
     html += '</div></section><section class="block"><h2 class="sec-title">Corners</h2><div class="two">';
     ['Sharp', 'Rounded'].forEach(function (name) {
@@ -593,9 +735,16 @@
       var btn = you || m.role === 'dm' ? '' : m.role === 'pending'
         ? '<button type="button" class="btn small primary" data-act="role" data-id="' + esc(m.id) + '" data-role="player">Approve</button>'
         : '<button type="button" class="btn small" data-act="role" data-id="' + esc(m.id) + '" data-role="pending">Remove access</button>';
-      return '<div class="tbl-row"><div class="main"><b>' + esc(m.display_name || 'Unnamed') + (you ? ' (you)' : '') + '</b><span>Joined ' + esc(new Date(m.created_at).toLocaleDateString()) + '</span></div>' + tag + btn + '</div>';
+      var campRow = '';
+      if (m.role === 'player' && campaigns.length) {
+        campRow = '<div class="pill-row" style="padding:0 0 10px">' + campaigns.map(function (c) {
+          var inIt = memberships.some(function (x) { return x.campaign_id === c.id && x.user_id === m.id; });
+          return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="member-camp" data-user="' + esc(m.id) + '" data-camp="' + esc(c.id) + '" aria-pressed="' + inIt + '">' + (inIt ? '✓ ' : '+ ') + esc(c.name) + '</button>';
+        }).join('') + '</div>';
+      }
+      return '<div class="tbl-row" style="border-bottom:' + (campRow ? '0' : '1px solid var(--soft)') + '"><div class="main"><b>' + esc(m.display_name || 'Unnamed') + (you ? ' (you)' : '') + '</b><span>Joined ' + esc(new Date(m.created_at).toLocaleDateString()) + '</span></div>' + tag + btn + '</div>' + (campRow ? campRow + '<div style="border-bottom:1px solid var(--soft)"></div>' : '');
     };
-    var html = '<div class="page narrow"><div><p class="eyebrow">Your table</p><h1 class="page-title">Players</h1><p class="note" style="margin:6px 0 0">Send your players the app link. When they create an account, approve them here.</p></div>';
+    var html = '<div class="page narrow"><div><p class="eyebrow">Your table</p><h1 class="page-title">Players</h1><p class="note" style="margin:6px 0 0">Send your players the app link. When they create an account, approve them here. Then give them a campaign’s PIN, or tap a campaign under their name to add them yourself.</p></div>';
     html += '<section class="block"><h2 class="sec-title">Waiting for approval<small>' + pending.length + '</small></h2>' + (pending.length ? '<div class="tbl">' + pending.map(row).join('') + '</div>' : '<div class="empty">Nobody is waiting right now.</div>') + '</section>';
     html += '<section class="block"><h2 class="sec-title">At the table</h2><div class="tbl">' + rest.map(row).join('') + '</div></section>';
     html += '<button type="button" class="btn" data-act="reload-members">Refresh</button></div>';
@@ -631,23 +780,32 @@
   function charById(id) { for (var i = 0; i < characters.length; i++) if (characters[i].id === id) return characters[i]; return null; }
   function canEditChar(c) { return !!c && (c.owner_id === uid() || isDM()); }
 
+  function charRow(c, showOwner) {
+    var s = normSheet(c.sheet);
+    var line = ['Level ' + num(s.level, 1), s.species, s.cls].filter(Boolean).join(' · ');
+    return '<a class="row" href="#/c/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
+  }
+
   function renderCharacters() {
     if (!loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Loading characters…</div></div>'; return; }
-    var mine = characters.filter(function (c) { return c.owner_id === uid(); });
-    var others = characters.filter(function (c) { return c.owner_id !== uid(); });
-    var row = function (c, showOwner) {
-      var s = normSheet(c.sheet);
-      var line = ['Level ' + num(s.level, 1), s.species, s.cls].filter(Boolean).join(' · ');
-      return '<a class="row" href="#/c/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
-    };
-    var html = '<div class="page narrow"><div><p class="eyebrow">Characters</p><h1 class="page-title">' + (isDM() ? 'The party' : 'Your characters') + '</h1></div>';
+    var html = '<div class="page narrow"><div><p class="eyebrow">Characters</p><h1 class="page-title">' + (isDM() ? 'Every party' : 'Your characters') + '</h1></div>';
     if (ui.newChar) {
-      html += '<form class="form" id="newchar-form" novalidate><div class="field"><label for="nc-name">Character name</label><input type="text" id="nc-name" maxlength="80" placeholder="e.g. Kael Vorn" autofocus></div><div class="actions"><button type="submit" class="btn primary">Create</button><button type="button" class="btn" data-act="newchar-cancel">Cancel</button></div></form>';
+      html += '<form class="form" id="newchar-form" novalidate><div class="field"><label for="nc-name">Character name</label><input type="text" id="nc-name" maxlength="80" placeholder="e.g. Kael Vorn"></div>' +
+        '<div class="field"><label for="nc-campaign">Campaign</label><select id="nc-campaign">' + campaignOptions(ui.newCharCampaign || (myCampaigns()[0] || {}).id, true, 'No campaign yet') + '</select></div>' +
+        '<div class="actions"><button type="submit" class="btn primary">Create</button><button type="button" class="btn" data-act="newchar-cancel">Cancel</button></div></form>';
     } else {
       html += '<div class="actions"><button type="button" class="btn primary" data-act="newchar">+ New character</button></div>';
     }
-    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Yours (NPCs and spares)' : 'Yours') + '</h2>' + (mine.length ? '<div class="list">' + mine.map(function (c) { return row(c, false); }).join('') + '</div>' : '<div class="empty">No characters yet. Tap “New character” to make one.</div>') + '</section>';
-    if (isDM()) html += '<section class="block"><h2 class="sec-title">Players’ characters</h2>' + (others.length ? '<div class="list">' + others.map(function (c) { return row(c, true); }).join('') + '</div>' : '<div class="empty">Your players haven’t made characters yet.</div>') + '</section>';
+    var groups = myCampaigns().map(function (c) { return { id: c.id, name: c.name + (c.status === 'finished' ? ' (finished)' : '') }; });
+    groups.push({ id: null, name: 'No campaign' });
+    var any = false;
+    groups.forEach(function (g) {
+      var list = characters.filter(function (c) { return (c.campaign_id || null) === g.id || (g.id === null && c.campaign_id && !campaignById(c.campaign_id)); });
+      if (!list.length) return;
+      any = true;
+      html += '<section class="block"><h2 class="sec-title">' + esc(g.name) + '</h2><div class="list">' + list.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div></section>';
+    });
+    if (!any) html += '<div class="empty">No characters yet. Tap “New character” to make one.</div>';
     html += '</div>';
     $view.innerHTML = html;
   }
@@ -655,7 +813,8 @@
   function createCharacter() {
     var name = document.getElementById('nc-name').value.trim();
     if (!name) { toast('Give your character a name.'); return; }
-    sb.from('characters').insert({ name: name, owner_id: uid(), sheet: defaultSheet() }).select('id, owner_id, name, sheet, ddb_url, updated_at').single().then(function (r) {
+    var campaignId = document.getElementById('nc-campaign').value || null;
+    sb.from('characters').insert({ name: name, owner_id: uid(), sheet: defaultSheet(), campaign_id: campaignId }).select('id, owner_id, name, sheet, ddb_url, campaign_id, updated_at').single().then(function (r) {
       if (r.error) return fail(r.error, 'Could not create the character.');
       characters.push(r.data);
       ui.newChar = false;
@@ -671,7 +830,7 @@
     clearTimeout(saveTimers['c' + c.id]);
     saveTimers['c' + c.id] = setTimeout(function () {
       var ddb = /^https:\/\//i.test(c.ddb_url || '') ? c.ddb_url : '';
-      sb.from('characters').update({ name: c.name || 'Unnamed', sheet: c.sheet, ddb_url: ddb }).eq('id', c.id).then(function (r) {
+      sb.from('characters').update({ name: c.name || 'Unnamed', sheet: c.sheet, ddb_url: ddb, campaign_id: c.campaign_id || null }).eq('id', c.id).then(function (r) {
         var el2 = document.getElementById('saved');
         if (r.error) { if (el2) el2.textContent = 'Not saved'; return fail(r.error, 'Could not save the sheet. Your changes are still on screen; try again.'); }
         if (el2) el2.textContent = 'Saved';
@@ -708,7 +867,7 @@
         sheetInput('Subclass', 'subclass', s.subclass) + sheetInput('Background', 'background', s.background) +
         sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class', 'ac', s.ac, 'number') +
         sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') +
-        '</div><div class="field"><label for="ch-ddb">D&amp;D Beyond link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
+        '</div><div class="field"><label for="ch-camp">Campaign</label><select id="ch-camp" data-cf="campaign_id">' + campaignOptions(c.campaign_id, true, 'No campaign') + '</select></div><div class="field"><label for="ch-ddb">D&amp;D Beyond link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
     }
 
     html += '<div class="abilities">';
@@ -821,8 +980,35 @@
         writeLocal('avarenth-preview', preview);
         render();
         break;
-      case 'filter': ui.homeFilter = el.getAttribute('aria-pressed') === 'true' ? null : (el.getAttribute('data-group') || null); renderHome(); break;
-      case 'filter-home': ui.homeFilter = el.getAttribute('data-group'); go('#/wiki'); break;
+      case 'filter':
+        ui.filters = ui.filters || {};
+        ui.filters[el.getAttribute('data-scope')] = el.getAttribute('aria-pressed') === 'true' ? null : (el.getAttribute('data-group') || null);
+        render(); break;
+      case 'filter-home':
+        ui.filters = ui.filters || {};
+        ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
+        go(el.getAttribute('data-target') || '#/wiki'); break;
+      case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
+      case 'newchar-in': ui.newChar = true; ui.newCharCampaign = el.getAttribute('data-campaign'); go('#/characters'); break;
+      case 'delete-campaign':
+        var cpid = el.getAttribute('data-id');
+        if (ui.pendingDelete !== cpid) { ui.pendingDelete = cpid; el.textContent = 'Tap again to delete'; return; }
+        sb.from('campaigns').delete().eq('id', cpid).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not delete the campaign.');
+          ui.pendingDelete = null;
+          Promise.all([loadWiki(), loadCharacters()]).then(function () { toast('Campaign deleted'); go('#/wiki'); });
+        });
+        break;
+      case 'member-camp':
+        var mu = el.getAttribute('data-user'), mc = el.getAttribute('data-camp');
+        var op = el.getAttribute('aria-pressed') === 'true'
+          ? sb.from('campaign_members').delete().eq('campaign_id', mc).eq('user_id', mu)
+          : sb.from('campaign_members').insert({ campaign_id: mc, user_id: mu });
+        op.then(function (r) {
+          if (r.error) return fail(r.error, 'Could not change that player’s campaigns.');
+          loadWiki().then(renderMembers);
+        });
+        break;
       case 'jump': var t = document.getElementById(el.getAttribute('data-target')); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
       case 'pick-template': ui.selectedTemplate = el.getAttribute('data-name'); ui.pendingDelete = null; renderNew(); break;
       case 'use-template': ui.editTemplate = el.getAttribute('data-name'); go('#/edit'); break;
@@ -984,6 +1170,8 @@
       case 'edit-form': return saveEdit(f);
       case 'builder-form': return saveBuilder();
       case 'newchar-form': return createCharacter();
+      case 'campaign-form': return saveCampaign(f);
+      case 'join-form': return submitJoin();
       case 'account-form':
         var name = document.getElementById('acc-name').value.trim().slice(0, 60);
         return sb.from('profiles').update({ display_name: name }).eq('id', uid()).then(function (r) {
@@ -1015,7 +1203,8 @@
     ui.pendingDelete = null;
     var r = parseRoute();
     if (r.name !== 'c') ui.sheetEdit = false;
-    if (r.name !== 'characters') ui.newChar = false;
+    if (r.name !== 'characters') { ui.newChar = false; ui.newCharCampaign = null; }
+    if (r.name !== 'new' && r.name !== 'edit') ui.editCampaign = null;
     render();
     window.scrollTo(0, 0);
   });
