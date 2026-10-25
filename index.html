@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Avarenth</title>
+  <meta name="description" content="Wiki and character sheets for the Dornish Isles.">
+  <meta name="theme-color" content="#0f1013">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600;700&family=IM+Fell+English&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="bar">
+      <div class="bar-in">
+        <a class="brand" href="#/wiki">AVARENTH</a>
+        <div class="bar-right" id="bar-right"></div>
+      </div>
+      <nav class="tabs" id="tabs" aria-label="Sections" hidden></nav>
+    </header>
+    <main class="wrap" id="view">
+      <div class="page"><div class="empty">Opening the archive…</div></div>
+    </main>
+    <div class="toast" id="toast" role="status" hidden></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
