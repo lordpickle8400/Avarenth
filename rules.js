@@ -44,7 +44,9 @@
       [3, 'Expertise', 'Double your proficiency bonus for two skills you\'re proficient in (two more at 10th).'],
       [5, 'Font of Inspiration', 'You regain Bardic Inspiration on a short rest as well.'],
       [6, 'Countercharm', 'Use an action to give nearby allies advantage on saves against being frightened or charmed.'],
-      [10, 'Magical Secrets', 'Learn two spells from any class list. In Avarenth they still come from tomes or teachers.', true],
+      [10, 'Magical Secrets', 'Bards learn through songs and stories. Pick two spells from any class list: no tome needed, at half the learning cost. Two more at 14th and 18th level.'],
+      [14, 'Magical Secrets', 'Two more spells from any class list, no tome needed, at half the learning cost.'],
+      [18, 'Magical Secrets', 'Two more spells from any class list, no tome needed, at half the learning cost.'],
       [20, 'Superior Inspiration', 'When you roll initiative with no Bardic Inspiration left, you regain one.']
     ]
   };
@@ -139,7 +141,7 @@
       [1, 'Lay on Hands', 'A pool of healing equal to five times your paladin level, refilled on a long rest.'],
       [2, 'Fighting Style', 'Pick a fighting specialty, like Defense, Dueling or Great Weapon Fighting.'],
       [2, 'Spellcasting', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
-      [2, 'Divine Smite', 'When you hit with a melee weapon, spend magic to deal extra radiant damage.', true],
+      [2, 'Divine Smite', 'When you hit with a melee weapon, spend mana for extra radiant damage: 2d8 for 5 mana, 3d8 for 10, 4d8 for 18, or 5d8 for 28. Add 1d8 against undead and fiends.'],
       [3, 'Divine Health', 'Immune to disease.'],
       [3, 'Sacred Oath', 'Swear your oath.'],
       [5, 'Extra Attack', 'Attack twice when you take the Attack action.'],
@@ -162,7 +164,7 @@
       [2, 'Fighting Style', 'Pick a fighting specialty, like Archery, Defense or Two-Weapon Fighting.'],
       [2, 'Spellcasting', 'You cast with mana. Wisdom is your spellcasting ability. See the Mana Guide.'],
       [3, 'Ranger Archetype', 'Choose your archetype.'],
-      [3, 'Primeval Awareness', 'Spend magic to sense certain creature types nearby.', true],
+      [3, 'Primeval Awareness', 'Spend 5 mana to sense nearby aberrations, celestials, dragons, elementals, fey, fiends and undead for one minute.'],
       [5, 'Extra Attack', 'Attack twice when you take the Attack action.'],
       [8, 'Land\'s Stride', 'Move through nonmagical difficult terrain and plants freely.'],
       [10, 'Hide in Plain Sight', 'Camouflage yourself to become very hard to spot while still.'],
@@ -204,7 +206,7 @@
     features: [
       [1, 'Spellcasting', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
       [1, 'Sorcerous Origin', 'Choose where your magic comes from.'],
-      [2, 'Font of Magic', 'Sorcery points equal to your sorcerer level. In 5e they convert to and from spell slots.', true],
+      [2, 'Font of Magic', 'Sorcery points equal to your sorcerer level fuel Metamagic. As a bonus action, trade 1 point for 5 mana or 5 mana for 1 point. You can\'t go over your max.'],
       [3, 'Metamagic', 'Twist your spells with sorcery points: farther, faster, twinned, quieter. Two options at 3rd, more at 10th and 17th.'],
       [20, 'Sorcerous Restoration', 'Regain 4 sorcery points on a short rest.']
     ]
@@ -221,8 +223,11 @@
       [1, 'Pact Magic', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
       [2, 'Eldritch Invocations', 'Learn invocations, small permanent magical gifts from your patron. More as you level.'],
       [3, 'Pact Boon', 'Choose a gift: a pact weapon, a familiar, a book of shadows or a talisman.'],
-      [11, 'Mystic Arcanum', 'In 5e, one free high-level spell per long rest. In Avarenth, high magic uses High Magic Charges instead.', true],
-      [20, 'Eldritch Master', 'Once per long rest, spend a minute to regain your magic.', true]
+      [11, 'Mystic Arcanum', 'Your patron is your tome: you learn one 6th-level spell without finding it (a 7th at 13th, an 8th at 15th, a 9th at 17th). You still need a High Magic Charge or Reality Channel to cast it. Every gift is a debt your patron will call in, and leaves a mark on you that grows with each one.'],
+      [13, 'Mystic Arcanum', 'Your patron grants a 7th-level spell. Another debt, and the mark grows.'],
+      [15, 'Mystic Arcanum', 'Your patron grants an 8th-level spell. Another debt, and the mark grows.'],
+      [17, 'Mystic Arcanum', 'Your patron grants a 9th-level spell. Another debt, and by now people can tell what you are.'],
+      [20, 'Eldritch Master', 'Once per long rest, spend a minute pleading with your patron to regain half your max mana.']
     ]
   };
 
@@ -234,10 +239,10 @@
     subclasses: ['School of Abjuration', 'School of Conjuration', 'School of Divination', 'School of Enchantment', 'School of Evocation', 'School of Illusion', 'School of Necromancy', 'School of Transmutation', 'Bladesinging', 'War Magic', 'Chronurgy Magic', 'Graviturgy Magic', 'Order of Scribes'],
     features: [
       [1, 'Spellcasting', 'You cast with mana. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
-      [1, 'Arcane Recovery', 'Once per day after a short rest, recover some of your magic.', true],
+      [1, 'Arcane Recovery', 'Once per day after a short rest, regain mana equal to 5 × your wizard level.'],
       [2, 'Arcane Tradition', 'Choose your school.'],
-      [18, 'Spell Mastery', 'Pick a 1st- and a 2nd-level spell you can cast at their lowest level without spending magic.', true],
-      [20, 'Signature Spells', 'Two 3rd-level spells you can cast once each per short rest for free.', true]
+      [18, 'Spell Mastery', 'Pick one 1st-level and one 2nd-level spell you know. They cost you no mana.'],
+      [20, 'Signature Spells', 'Pick two 3rd-level spells you know. Each can be cast once per short rest without spending mana.']
     ]
   };
 
@@ -260,7 +265,9 @@
     // Starting spell picks from the class list, and free picks gained at later levels.
     // A DM-tunable default: Avarenth's class spells are learned at levels 1, 3 and 5+.
     startPicks: { full: [3, 2], half: [2, 2], martial: [1, 1] },
-    freePickLevels: [3, 5, 7, 9, 11, 13, 15, 17, 19]
+    freePickLevels: [3, 5, 7, 9, 11, 13, 15, 17, 19],
+    arcanum: { 11: 6, 13: 7, 15: 8, 17: 9 },   // warlock level -> spell level the patron grants
+    secrets: { 10: 2, 14: 2, 18: 2 }          // bard level -> Magical Secrets picks
   };
 
   var SPECIES = {

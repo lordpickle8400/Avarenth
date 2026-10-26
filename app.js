@@ -855,7 +855,7 @@
       ac: 10, speed: 30, initBonus: 0,
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
       mana: { cur: 0, max: 0, regen: '', override: false },
-      charges: { hm: 0, rc: 0 }, picks: 0,
+      charges: { hm: 0, rc: 0 }, picks: 0, secretPicks: 0, debts: [],
       saves: {}, skills: {},
       spells: [], items: [], attacks: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, features: [], notes: '', log: []
     };
@@ -873,7 +873,7 @@
     out.charges = Object.assign(defaultSheet().charges, s.charges || {});
     out.coins = Object.assign(defaultSheet().coins, s.coins || {});
     ['saves', 'skills'].forEach(function (k) { if (!out[k] || typeof out[k] !== 'object') out[k] = {}; });
-    ['spells', 'items', 'features', 'attacks', 'log'].forEach(function (k) { if (!Array.isArray(out[k])) out[k] = []; });
+    ['spells', 'items', 'features', 'attacks', 'log', 'debts'].forEach(function (k) { if (!Array.isArray(out[k])) out[k] = []; });
     return out;
   }
   function mod(score) { return Math.floor((num(score, 10) - 10) / 2); }
@@ -928,6 +928,7 @@
     var out = [], cd = classOf(s);
     if (!s.cls) out.push(['Pick a class for this character. Tap “Edit sheet”, or start over with the character builder.', '']);
     if (cd && !s.subclass && num(s.level, 1) >= cd.subclassLevel) out.push(['Choose your ' + cd.subclassLabel.toLowerCase() + '. Tap “Edit sheet” to set it.', '']);
+    if (num(s.secretPicks, 0) > 0) out.push(['You have ' + s.secretPicks + ' Magical Secrets to learn: any class list, no tome needed, half the cost.', 'spells']);
     if (num(s.picks, 0) > 0) out.push(['You have ' + s.picks + ' free spell ' + (s.picks === 1 ? 'pick' : 'picks') + ' from your class list.', 'spells']);
     if (cd && num(s.level, 1) < 20) out.push(['Ready for level ' + (num(s.level, 1) + 1) + '? The level-up guide walks you through it.', 'level']);
     return out;
@@ -1136,9 +1137,12 @@
     }
     var opt = function (cur, other) { return '<option value="">—</option>' + ABILITIES.map(function (a) { return '<option value="' + a[0] + '"' + (cur === a[0] ? ' selected' : '') + (other === a[0] ? ' disabled' : '') + '>' + a[1] + '</option>'; }).join(''); };
     html += '<div class="two"><div class="field"><label for="bd-p2">+2 to</label><select id="bd-p2" data-build="plus2">' + opt(b.plus2, b.plus1) + '</select></div><div class="field"><label for="bd-p1">+1 to</label><select id="bd-p1" data-build="plus1">' + opt(b.plus1, b.plus2) + '</select></div></div>';
-    var sc = buildScores(b);
-    html += '<div class="abilities">' + ABILITIES.map(function (a) { var v = sc[a[0]]; return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + (v ? signed(mod(v)) : '—') + '</span><span class="score">' + (v || '—') + '</span></div>'; }).join('') + '</div>';
+    html += '<div id="bd-scores">' + buildScoresHtml(b) + '</div>';
     return html;
+  }
+  function buildScoresHtml(b) {
+    var sc = buildScores(b);
+    return '<div class="abilities">' + ABILITIES.map(function (a) { var v = sc[a[0]]; return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + (v ? signed(mod(v)) : '—') + '</span><span class="score">' + (v || '—') + '</span></div>'; }).join('') + '</div>';
   }
 
   function buildSpellsHtml(b) {
@@ -1236,6 +1240,16 @@
         (L.asi === 'feat' ? '<div class="field"><label for="lv-feat">Feat</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. War Caster"><span class="hint">Check with your DM which feats are allowed.</span></div>'
           : '<div class="two"><div class="field"><label for="lv-a">' + (L.asi === 'one' ? '+2 to' : 'First +1') + '</label><select id="lv-a" data-lv="a">' + opt(L.a) + '</select></div>' + (L.asi === 'two' ? '<div class="field"><label for="lv-b">Second +1</label><select id="lv-b" data-lv="b">' + opt(L.b) + '</select></div>' : '') + '</div>') + '</section>';
     }
+    var arcLevel = s.cls === 'Warlock' ? (RULES.magic.arcanum || {})[nxt] : 0;
+    if (arcLevel) {
+      var arcCand = (spells || []).filter(function (sp) { return sp.status === 'approved' && sp.level === arcLevel && !s.spells.some(function (x) { return x.name === sp.name; }); });
+      html += '<section class="block"><h2 class="sec-title">Mystic Arcanum: your patron’s gift</h2><p class="note">Your patron teaches you a ' + ordinal(arcLevel) + '-level spell, no tome needed. It isn’t free. Every gift is a debt your patron will call in, and it leaves a mark on you that grows with each one. Agree the debt and the mark with your DM.</p>' +
+        '<div class="field"><label for="lv-arc">Spell</label><select id="lv-arc" data-lv="arc"><option value="">Choose…</option>' + arcCand.map(function (sp) { return '<option' + (L.arc === sp.name ? ' selected' : '') + '>' + esc(sp.name) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="lv-debt">What your patron will ask in return</label><input type="text" id="lv-debt" data-lv="debt" maxlength="160" value="' + esc(L.debt || '') + '" placeholder="Leave blank: the DM names it later"></div>' +
+        '<div class="field"><label for="lv-mark">The mark it leaves</label><input type="text" id="lv-mark" data-lv="mark" maxlength="160" value="' + esc(L.mark || '') + '" placeholder="e.g. Your reflection lags a moment behind you"></div></section>';
+    }
+    var secretGain = s.cls === 'Bard' ? num((RULES.magic.secrets || {})[nxt], 0) : 0;
+    if (secretGain) html += '<section class="block"><h2 class="sec-title">Magical Secrets</h2><p class="note">You gain ' + secretGain + ' Magical Secrets. Learn them any time from the Spells tab: any class list, no tome needed, at half the learning cost.</p></section>';
     if (freePick) {
       var cand = (spells || []).filter(function (sp) { return sp.status === 'approved' && onClassList(sp, s.cls) && sp.level <= learnNow && !s.spells.some(function (x) { return x.name === sp.name; }); });
       html += '<section class="block"><h2 class="sec-title">A new class spell</h2><p class="note">You learn one spell from your class list for free. Pick it now, or save the pick for later from the sheet.</p>' +
@@ -1244,12 +1258,13 @@
           return g.length ? '<optgroup label="' + (lv ? ordinal(lv) + ' level' : 'Cantrips') + '">' + g.map(function (sp) { return '<option' + (L.spell === sp.name ? ' selected' : '') + '>' + esc(sp.name) + '</option>'; }).join('') + '</optgroup>' : '';
         }).join('') + '</select></div></section>';
     }
-    var err = levelUpError(L, needSub, isAsi);
+    var err = levelUpError(L, needSub, isAsi, !!arcLevel);
     html += '<p class="err" ' + (err ? '' : 'hidden') + '>' + esc(err) + '</p><div class="actions"><a class="btn" href="#/c/' + encodeURIComponent(c.id) + '">Cancel</a><button type="button" class="btn primary" data-act="lv-apply">Level up to ' + nxt + '</button></div></div>';
     $view.innerHTML = html;
   }
-  function levelUpError(L, needSub, isAsi) {
+  function levelUpError(L, needSub, isAsi, needArc) {
     if (L.hp === 'roll' && !L.rolled) return 'Roll your hit points, or take the average.';
+    if (needArc && !L.arc) return 'Choose the spell your patron grants.';
     if (needSub && (!L.sub || (L.sub === 'Other…' && !L.subOther.trim()))) return 'Choose your subclass.';
     if (isAsi) {
       if (L.asi === 'feat' && !L.feat.trim()) return 'Name your feat.';
@@ -1262,7 +1277,8 @@
     var s = c.sheet, cd = classOf(s), L = ui.lvl;
     var cur = num(s.level, 1), nxt = cur + 1;
     var needSub = !s.subclass && nxt >= cd.subclassLevel, isAsi = cd.asi.indexOf(nxt) >= 0;
-    var err = levelUpError(L, needSub, isAsi);
+    var arcLevel = s.cls === 'Warlock' ? (RULES.magic.arcanum || {})[nxt] : 0;
+    var err = levelUpError(L, needSub, isAsi, !!arcLevel);
     if (err) return toast(err);
     var conBefore = mod(s.abilities.con);
     var notes = [];
@@ -1287,6 +1303,16 @@
       if (sp) { s.spells.push({ name: sp.name, level: sp.level, school: sp.school, source: 'Class' }); notes.push('learned ' + sp.name); }
       else { s.picks = num(s.picks, 0) + 1; notes.push('saved a free spell pick'); }
     }
+    if (arcLevel) {
+      var asp = spellByName(L.arc);
+      if (asp) {
+        s.spells.push({ name: asp.name, level: asp.level, school: asp.school, source: 'Patron' });
+        s.debts.push({ spell: asp.name, level: nxt, debt: (L.debt || '').trim(), mark: (L.mark || '').trim(), paid: false });
+        notes.push('patron granted ' + asp.name + ', at a price');
+      }
+    }
+    var sec = s.cls === 'Bard' ? num((RULES.magic.secrets || {})[nxt], 0) : 0;
+    if (sec) { s.secretPicks = num(s.secretPicks, 0) + sec; notes.push('gained ' + sec + ' Magical Secrets'); }
     s.log.push({ level: nxt, text: notes.join('; ') + '.' });
     ui.lvl = null;
     saveCharSoon(c);
@@ -1457,6 +1483,17 @@
           '<p class="note" style="margin-top:12px">Includes crimes charged to the whole party. <a href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open the full tracker</a>.</p>';
       }
     } else if (ui.sheetTab === 'Features') {
+      if (s.cls === 'Warlock' || s.debts.length) {
+        html += '<section class="block debts" style="margin-top:12px"><h2 class="sec-title">Patron debts<small>' + s.debts.filter(function (d) { return !d.paid; }).length + ' owed</small></h2><div class="tbl">';
+        if (!s.debts.length) html += '<div class="empty">Nothing owed. Yet.</div>';
+        s.debts.forEach(function (d, i) {
+          html += '<div class="tbl-row"><div class="main"><b>' + esc(d.spell || 'A favor') + (d.paid ? ' <span class="tag ok" style="font-size:10px">Paid</span>' : '') + '</b><span>Owed: ' + esc(d.debt || 'A favor, to be named by the patron') + '</span>' + (d.mark ? '<span>Mark: ' + esc(d.mark) + '</span>' : '') + '</div>' +
+            (can ? '<button type="button" class="btn small" data-act="debt-paid" data-i="' + i + '">' + (d.paid ? 'Owed again' : 'Mark paid') + '</button>' : '') + (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="debts" data-i="' + i + '">Remove</button>' : '') + '</div>';
+        });
+        html += '</div>';
+        if (can) html += '<form class="inline-form" id="add-debt" novalidate style="margin-top:10px"><div class="field"><label for="db-what">Debt</label><input type="text" id="db-what" maxlength="160" placeholder="What the patron asks"></div><div class="field"><label for="db-mark">Mark</label><input type="text" id="db-mark" maxlength="160"></div><button type="submit" class="btn">Add debt</button></form>';
+        html += '</section>';
+      }
       html += '<div class="stack" style="margin-top:12px">';
       var all = derivedFeatures(s);
       all.forEach(function (f) {
@@ -1507,23 +1544,24 @@
     var top = learnableLevel(s), cap = listCap(s.cls);
     var knownNames = s.spells.map(function (x) { return x.name; });
     var q = P.q.trim().toLowerCase();
+    if (P.mode === 'secret' && !num(s.secretPicks, 0)) P.mode = 'class';
     var pool = spells.filter(function (sp) {
       if (sp.status !== 'approved' || knownNames.indexOf(sp.name) >= 0) return false;
       if (q && sp.name.toLowerCase().indexOf(q) < 0) return false;
       return P.mode === 'class' ? onClassList(sp, s.cls) : !onClassList(sp, s.cls);
     }).slice(0, 60);
     var html = '<div class="group-box picker"><h2>Learn a spell</h2>' +
-      '<div class="seg wide" role="group" aria-label="Where from"><button type="button" data-act="pick-mode" data-val="class" aria-pressed="' + (P.mode === 'class') + '">My class list</button><button type="button" data-act="pick-mode" data-val="tome" aria-pressed="' + (P.mode === 'tome') + '">A tome I found</button></div>' +
-      '<p class="note">' + (P.mode === 'class' ? 'Spells on the ' + esc(s.cls || 'class') + ' list, up to ' + ordinal(cap) + ' level. Use a free pick if you have one; otherwise it costs gold and study time, like a tome.' : 'Any spell you’ve found as a tome. You can learn up to ' + (top ? ordinal(top) + ' level' : 'cantrips') + ' right now. It costs gold and study time; check with your DM that you have the tome.') + '</p>' +
+      '<div class="seg wide" role="group" aria-label="Where from"><button type="button" data-act="pick-mode" data-val="class" aria-pressed="' + (P.mode === 'class') + '">My class list</button><button type="button" data-act="pick-mode" data-val="tome" aria-pressed="' + (P.mode === 'tome') + '">A tome I found</button>' + (num(s.secretPicks, 0) ? '<button type="button" data-act="pick-mode" data-val="secret" aria-pressed="' + (P.mode === 'secret') + '">Magical Secrets (' + s.secretPicks + ')</button>' : '') + '</div>' +
+      '<p class="note">' + (P.mode === 'secret' ? 'A spell from any class list, learned through song and story: no tome needed, at half the learning cost.' : P.mode === 'class' ? 'Spells on the ' + esc(s.cls || 'class') + ' list, up to ' + ordinal(cap) + ' level. Use a free pick if you have one; otherwise it costs gold and study time, like a tome.' : 'Any spell you’ve found as a tome. You can learn up to ' + (top ? ordinal(top) + ' level' : 'cantrips') + ' right now. It costs gold and study time; check with your DM that you have the tome.') + '</p>' +
       '<label class="search"><span class="sr">Search spells</span>' + SEARCH_ICON + '<input id="pick-q" type="search" placeholder="Search spells…" value="' + esc(P.q) + '" autocomplete="off"></label>' +
       '<label class="check" style="margin:8px 0"><input type="checkbox" id="pick-pay"' + (P.pay ? ' checked' : '') + '> Pay the learning cost from my ' + esc(coinName('gp')) + '</label><div class="tbl">';
     if (!pool.length) html += '<div class="empty">No spells match.</div>';
     pool.forEach(function (sp) {
       var ok = sp.level === 0 || sp.level <= top;
       var free = P.mode === 'class' && num(s.picks, 0) > 0;
-      var costGp = RULES.magic.learnCost[sp.level], hrs = RULES.magic.studyHours[sp.level];
+      var costGp = RULES.magic.learnCost[sp.level] / (P.mode === 'secret' ? 2 : 1), hrs = RULES.magic.studyHours[sp.level];
       html += '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + '</b><span>' + esc(levelText(sp.level) + ' · ' + sp.school) + ' · ' + (free ? 'free pick' : costGp + ' gp, ' + (hrs < 1 ? '30 min' : hrs + (hrs === 1 ? ' hour' : ' hours'))) + '</span></div>' + rarityTag(sp.rarity) +
-        (ok ? '<button type="button" class="btn small primary" data-act="learn" data-name="' + esc(sp.name) + '" data-src="' + (P.mode === 'class' ? 'Class' : 'Tome') + '">' + (free ? 'Take' : 'Learn') + '</button>' : '<span class="note">Level ' + RULES.magic.learnLevel[sp.level] + (sp.level >= 6 && !hmMax(s.cls, 20) ? ' · never' : '') + '</span>') + '</div>';
+        (ok ? '<button type="button" class="btn small primary" data-act="learn" data-name="' + esc(sp.name) + '" data-src="' + (P.mode === 'class' ? 'Class' : P.mode === 'secret' ? 'Secret' : 'Tome') + '">' + (free ? 'Take' : 'Learn') + '</button>' : '<span class="note">Level ' + RULES.magic.learnLevel[sp.level] + (sp.level >= 6 && !hmMax(s.cls, 20) ? ' · never' : '') + '</span>') + '</div>';
     });
     return html + '</div></div>';
   }
@@ -1534,9 +1572,10 @@
     if (sp.level > learnableLevel(s) && sp.level > 0) return toast('You can’t learn ' + ordinal(sp.level) + '-level spells yet.');
     var free = src === 'Class' && num(s.picks, 0) > 0;
     var msg = 'Learned ' + sp.name;
+    if (src === 'Secret') { if (!num(s.secretPicks, 0)) return; s.secretPicks = num(s.secretPicks, 0) - 1; }
     if (free) { s.picks = num(s.picks, 0) - 1; msg += ' (free pick)'; }
     else if (ui.pick && ui.pick.pay) {
-      var cost = RULES.magic.learnCost[sp.level];
+      var cost = RULES.magic.learnCost[sp.level] / (src === 'Secret' ? 2 : 1);
       if (num(s.coins.gp, 0) < cost) return toast('You need ' + cost + ' ' + coinName('gp') + ' to learn it. Untick “Pay the learning cost” if your DM settles it another way.');
       s.coins.gp = num(s.coins.gp, 0) - cost; msg += ' for ' + cost + ' gp';
     }
@@ -2826,6 +2865,7 @@
       case 'pick-toggle': ui.spellPick = !ui.spellPick; render(); break;
       case 'pick-mode': ui.pick = Object.assign(ui.pick || { q: '', pay: true }, { mode: el.getAttribute('data-val') }); render(); break;
       case 'long-rest': if (c) longRest(c); break;
+      case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
@@ -2962,7 +3002,7 @@
       return;
     }
     if (t.getAttribute('data-build') === 'name' && ui.build) { ui.build.name = t.value; var hint = document.querySelector('.build-nav + .note'); if (hint) hint.hidden = !!t.value.trim(); return; }
-    if (t.hasAttribute('data-manual') && ui.build) { ui.build.manual[t.getAttribute('data-manual')] = Math.max(3, Math.min(20, num(t.value, 10))); return; }
+    if (t.hasAttribute('data-manual') && ui.build) { ui.build.manual[t.getAttribute('data-manual')] = Math.max(3, Math.min(20, num(t.value, 10))); var sbx = document.getElementById('bd-scores'); if (sbx) sbx.innerHTML = buildScoresHtml(ui.build); return; }
     if (ui.lvl && t.hasAttribute('data-lv') && t.tagName === 'INPUT') { ui.lvl[t.getAttribute('data-lv')] = t.value; return; }
     if (t.id === 'pick-q') {
       ui.pick.q = t.value;
@@ -2998,8 +3038,7 @@
     }
     if (t.hasAttribute('data-build') && ui.build) { ui.build[t.getAttribute('data-build')] = t.value; if (t.tagName === 'SELECT') render(); return; }
     if (t.hasAttribute('data-assign') && ui.build) { ui.build.assign[t.getAttribute('data-assign')] = t.value; return render(); }
-    if (t.hasAttribute('data-manual') && ui.build) return render();
-    if (ui.lvl && t.hasAttribute('data-lv')) { ui.lvl[t.getAttribute('data-lv')] = t.value; return render(); }
+    if (ui.lvl && t.hasAttribute('data-lv')) { ui.lvl[t.getAttribute('data-lv')] = t.value; if (t.tagName === 'SELECT') render(); return; }
     if (t.id === 'pick-pay' && ui.pick) { ui.pick.pay = t.checked; return; }
     if (t.hasAttribute('data-mana-override')) { var oc = currentChar(); if (oc) { oc.sheet.mana.override = t.checked; if (t.checked) oc.sheet.mana.max = manaMax(Object.assign({}, oc.sheet, { mana: Object.assign({}, oc.sheet.mana, { override: false }) })); saveCharSoon(oc); render(); } return; }
     if (t.hasAttribute('data-spell-rarity')) return setSpellRarity(t.getAttribute('data-spell-rarity'), t.value);
@@ -3019,10 +3058,13 @@
       rememberMapScroll(); return render();
     }
     if (currentChar() && (t.hasAttribute('data-ab') || t.hasAttribute('data-pool') || (t.hasAttribute('data-sf') && (t.type === 'number' || ['cls', 'species', 'subclass'].indexOf(t.getAttribute('data-sf')) >= 0)))) {
-      var id = t.id;
-      render();
-      var again = document.getElementById(id);
-      if (again) again.focus();
+      // Wait until the tap that moved focus has finished (so its click isn't lost), then redraw and put focus back.
+      setTimeout(function () {
+        var active = document.activeElement && document.activeElement.id;
+        render();
+        var again = active ? document.getElementById(active) : null;
+        if (again) again.focus();
+      }, 200);
     }
   });
 
@@ -3055,6 +3097,12 @@
         if (!sn) return toast('Name the spell first.');
         c.sheet.spells.push({ name: sn, source: document.getElementById('sp-src').value, cost: Math.max(0, num(document.getElementById('sp-cost').value, 0)), notes: '' });
         render(); saveCharSoon(c); var n1 = document.getElementById('sp-name'); if (n1) n1.focus(); return;
+      case 'add-debt':
+        if (!c) return;
+        var dw = document.getElementById('db-what').value.trim(), dm2 = document.getElementById('db-mark').value.trim();
+        if (!dw && !dm2) return toast('Describe the debt first.');
+        c.sheet.debts.push({ spell: '', level: num(c.sheet.level, 1), debt: dw, mark: dm2, paid: false });
+        render(); saveCharSoon(c); return;
       case 'add-attack':
         if (!c) return;
         var an = document.getElementById('at-name').value.trim();
