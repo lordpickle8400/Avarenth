@@ -1433,7 +1433,7 @@
 
   /* ================= Spell tomes ================= */
   var RARITIES = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
-  var SPELL_CLASSES = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
+  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
   var SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
   var SPELL_COLS = 'name, level, school, classes, book, ritual, concentration, rarity, notes, homebrew, status, submitted_by, casting_time, spell_range, components, duration, description, dm_note, created_at';
   function loadSpells() {
