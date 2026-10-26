@@ -297,14 +297,15 @@
     standardArray: [15, 14, 13, 12, 10, 8], pointBuyCost: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }, pointBuyBudget: 27,
     coins: { cp: 'Copper Foxes', sp: 'Silver Stags', gp: 'Golden Eagles' },
     // Who a character serves. Gods of Akorianism, and the lords of the Hollow Court (only those players can read about are offered).
-    devotion: { Cleric: 'Deity', Paladin: 'Deity', Warlock: 'Patron', Druid: 'Deity' },
-    devotionRequired: ['Cleric', 'Paladin', 'Warlock'],
+    devotion: { Cleric: 'Deity', Paladin: 'Deity', Warlock: 'Patron', Druid: 'Deity', Ranger: 'Deity', Monk: 'Deity' },
+    devotionRequired: ['Cleric', 'Paladin', 'Warlock'],   // Paladins may swear to their oath alone instead of a god
+    natureOnly: ['Druid'],
     gods: [
       { name: 'Akoron', about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akorianism' },
-      { name: 'Roselle', about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism' },
+      { name: 'Roselle', about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism', nature: true },
       { name: 'Azrul', about: 'God of death', domains: 'Death, Grave', article: 'Akorianism' },
       { name: 'Korinth', about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Akorianism' },
-      { name: 'Thorum', about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism' },
+      { name: 'Thorum', about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism', nature: true },
       { name: 'Florin', about: 'God of trickery', domains: 'Trickery', article: 'Akorianism' },
       { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Akorianism' }
     ],

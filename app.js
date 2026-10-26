@@ -885,14 +885,17 @@
   function devotionLabel(cls) { return (RULES.devotion || {})[cls] || ''; }
   function devotionRequired(cls) { return (RULES.devotionRequired || []).indexOf(cls) >= 0; }
   // Gods are always on offer; Hollow Court lords only when the viewer can read about them.
-  function patronOptions() {
-    var out = (RULES.gods || []).map(function (g) { return { name: g.name, about: g.about, domains: g.domains, article: g.article, kind: 'god' }; });
-    (RULES.demons || []).forEach(function (d) { if (articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
+  var OATH_ONLY = 'Their oath alone';
+  function patronOptions(cls) {
+    var nature = (RULES.natureOnly || []).indexOf(cls) >= 0;
+    var out = (RULES.gods || []).filter(function (g) { return !nature || g.nature; }).map(function (g) { return { name: g.name, about: g.about, domains: g.domains, article: g.article, kind: 'god' }; });
+    if (!nature) (RULES.demons || []).forEach(function (d) { if (articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
     return out;
   }
   function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
   function patronLine(s) {
     if (!s.patron) return '';
+    if (s.patron === OATH_ONLY) return 'Sworn to their oath, not a god';
     var p = patronInfo(s.patron), art = p ? articleByTitle(p.article) : articleByTitle(s.patron);
     var label = (devotionLabel(s.cls) === 'Patron' ? 'Pact with ' : 'Serves ') ;
     return label + (art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron));
@@ -942,7 +945,7 @@
   function nextSteps(c, s) {
     var out = [], cd = classOf(s);
     if (!s.cls) out.push(['Pick a class for this character. Tap “Edit sheet”, or start over with the character builder.', '']);
-    if (devotionRequired(s.cls) && !s.patron) out.push(['Choose the ' + (devotionLabel(s.cls) === 'Patron' ? 'patron you made your pact with' : 'god you serve') + '. Tap “Edit sheet” to set it.', '']);
+    if (devotionRequired(s.cls) && !s.patron) out.push([(devotionLabel(s.cls) === 'Patron' ? 'Choose the patron you made your pact with' : s.cls === 'Paladin' ? 'Choose the god you serve, or swear to your oath alone' : 'Choose the god you serve') + '. Tap “Edit sheet” to set it.', '']);
     if (cd && !s.subclass && num(s.level, 1) >= cd.subclassLevel) out.push(['Choose your ' + cd.subclassLabel.toLowerCase() + '. Tap “Edit sheet” to set it.', '']);
     if (num(s.secretPicks, 0) > 0) out.push(['You have ' + s.secretPicks + ' Magical Secrets to learn: any class list, no tome needed, half the cost.', 'spells']);
     if (num(s.picks, 0) > 0) out.push(['You have ' + s.picks + ' free spell ' + (s.picks === 1 ? 'pick' : 'picks') + ' from your class list.', 'spells']);
@@ -1083,14 +1086,18 @@
         choiceGrid(Object.keys(RULES.classes).map(function (k) { var c = RULES.classes[k], m = RULES.magic.mana[k]; return [k, 'd' + c.hd + ' hit die · ' + (m ? m[0] + ' mana' : 'no mana') + ' · ' + c.primary]; }), b.cls, 'bd-class');
       if (cd) html += classCard(b.cls);
     } else if (step === 'Deity' || step === 'Patron') {
-      var opts = patronOptions(), isPact = step === 'Patron';
+      var opts = patronOptions(b.cls), isPact = step === 'Patron';
       html += '<p class="guide">' + (isPact ? 'A warlock’s power is borrowed. Who did you make your pact with? Gods can bargain too, but most warlocks deal with the lords of the Hollow Court, and every gift comes with a price.' :
         b.cls === 'Druid' ? 'Druids draw on the land itself, but many honor a god of nature. Choose one if yours does, or skip this.' :
+        b.cls === 'Paladin' ? 'A paladin’s power comes from their oath. Swear it in a god’s name, or to the oath alone.' :
+        b.cls === 'Monk' ? 'Some monasteries serve a god, like the monks of the Blooming Isle who serve Roselle. Choose one if your order does, or skip this.' :
+        b.cls === 'Ranger' ? 'Some rangers honor a god of the wild or the sea. Choose one if yours does, or skip this.' :
         'Your power comes from the god you serve. ' + (b.cls === 'Cleric' ? 'Your god shapes which domain fits you best.' : 'Your oath is sworn in their name.')) + '</p>' +
         '<h2 class="sec-title">The gods of Akorianism</h2>' + choiceGrid(opts.filter(function (o) { return o.kind === 'god'; }).map(function (o) { return [o.name, o.about + (b.cls === 'Cleric' && o.domains ? ' · fits ' + o.domains : '')]; }), b.patron, 'bd-patron');
       var dem = opts.filter(function (o) { return o.kind === 'demon'; });
       if (dem.length) html += '<h2 class="sec-title" style="margin-top:16px">The Hollow Court</h2>' + (isPact ? '' : '<p class="note">Serving a demon lord is heresy in Doresmere. Talk to your DM before you choose one.</p>') + choiceGrid(dem.map(function (o) { return [o.name, o.about]; }), b.patron, 'bd-patron');
-      if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">No god</button></div>';
+      if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">No god</h2>' + choiceGrid([[OATH_ONLY, 'Your power comes from your conviction alone']], b.patron, 'bd-patron');
+      if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         choiceGrid(Object.keys(RULES.species).map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species');
@@ -1208,7 +1215,7 @@
   function buildReviewHtml(b) {
     var s = buildSheet(b), cd = RULES.classes[b.cls];
     return '<p class="guide">Here’s ' + esc(b.name) + '. Create the character, then add armor, weapons and gear on the sheet.</p>' +
-      '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + (s.patron ? ' · ' + (devotionLabel(b.cls) === 'Patron' ? 'pact with ' : 'serves ') + esc(s.patron) : '') + '</p>' +
+      '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + (s.patron ? ' · ' + (s.patron === OATH_ONLY ? 'sworn to their oath' : (devotionLabel(b.cls) === 'Patron' ? 'pact with ' : 'serves ') + esc(s.patron)) : '') + '</p>' +
       '<div class="abilities">' + ABILITIES.map(function (a) { return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + signed(mod(s.abilities[a[0]])) + '</span><span class="score">' + s.abilities[a[0]] + '</span></div>'; }).join('') + '</div>' +
       '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', s.ac) + vital('Speed', s.speed + ' ft') + '</div>' +
       '<div class="tbl" style="margin-top:10px"><div class="tbl-row"><div class="main"><b>Skills</b><span>' + esc(Object.keys(s.skills).sort().join(', ')) + '</span></div></div>' +
@@ -1386,7 +1393,7 @@
       html += '<div class="group-box"><h2>Basics</h2><datalist id="dl-classes">' + Object.keys(RULES.classes).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-species">' + Object.keys(RULES.species).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-subs">' + (cd ? cd.subclasses.map(function (k) { return '<option value="' + esc(k) + '">'; }).join('') : '') + '</datalist>' +
-        '<datalist id="dl-patrons">' + patronOptions().map(function (p) { return '<option value="' + esc(p.name) + '">'; }).join('') + '</datalist>' +
+        '<datalist id="dl-patrons">' + patronOptions(s.cls).map(function (p) { return p.name; }).concat(s.cls === 'Paladin' ? [OATH_ONLY] : []).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-bgs">' + Object.keys(RULES.backgrounds).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist><div class="two">' +
         sheetInput('Species', 'species', s.species, '', 'dl-species') + sheetInput('Class', 'cls', s.cls, '', 'dl-classes') +
         sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') +
