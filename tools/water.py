@@ -20,6 +20,20 @@ inland = np.load(SP + '/inland2.npy')
 sea = (np.load(SP + '/coastal.npy') | np.load(SP + '/deep.npy')) & ~inland
 land = ~(sea | inland)
 
+# Open sea runs off the edges of the map: the frame line, the legend box drawn over the water,
+# and the Coralyn marker (the sea elves live under the water) are all just sea.
+yy, xx = np.ogrid[:land.shape[0], :land.shape[1]]
+open_sea = np.zeros_like(land)
+open_sea[:2, :] = True
+open_sea[:1400, :2] = True
+open_sea[:1400, -2:] = True
+open_sea[:560, :340] = True
+open_sea[:130, :420] = True
+open_sea |= (yy - 296) ** 2 + (xx - 457) ** 2 < 45 ** 2
+land &= ~open_sea
+inland &= ~open_sea
+sea |= open_sea
+
 # Leave out the legend box and the southern landmass, which isn't part of the Isles.
 cut = np.zeros_like(inland)
 cut[:560, :340] = True
