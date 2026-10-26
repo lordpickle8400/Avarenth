@@ -18,7 +18,7 @@ def snap(c):
                     if best is None or d < best[0]: best = (d, (y, x))
         if best: return best[1]
     return c
-def path(a, b):
+def path(a, b, avoid=None):
     dist = {a: 0}; prev = {}; pq = [(0, a)]
     while pq:
         d, u = heapq.heappop(pq)
@@ -31,7 +31,7 @@ def path(a, b):
                 if not (0 <= v[0] < H and 0 <= v[1] < W): continue
                 c = g[v]
                 if c == '.': continue
-                step = (1.414 if dy and dx else 1) * (1 if c == 'r' else 25)
+                step = (1.414 if dy and dx else 1) * (1 if c == 'r' else 25) * (8 if avoid is not None and avoid[v] else 1)
                 nd = d + step
                 if nd < dist.get(v, 1e18): dist[v] = nd; prev[v] = u; heapq.heappush(pq, (nd, v))
     out = [b]
@@ -39,12 +39,26 @@ def path(a, b):
     return out[::-1]
 major = np.zeros_like(g, dtype=bool)
 s = snap(cell(cap))
+# A noble with a second road to the capital gets that one as a main road too.
 for name, p in nobles.items():
-    pp = path(s, snap(cell(p)))
+    e = snap(cell(p))
+    pp = path(s, e)
     off = sum(1 for c in pp if g[c] != 'r')
     print(name, 'cells', len(pp), 'off-road', off)
     for c in pp:
         if g[c] == 'r': major[c] = True
+    used = np.zeros(g.shape, bool)
+    for c in pp:
+        # roads may share the stretch right next to the seat or the capital
+        if min(abs(c[0] - q[0]) + abs(c[1] - q[1]) for q in (s, e)) > 14: used[c] = True
+    alt = path(s, e, avoid=used)
+    fresh = sum(1 for c in alt if not used[c] and g[c] == 'r')
+    off2 = sum(1 for c in alt if g[c] != 'r')
+    ok = fresh >= 0.4 * len(alt) and off2 <= 5 and len(alt) <= 1.8 * len(pp)
+    print('  second road', len(alt), 'new', fresh, 'off-road', off2, 'KEEP' if ok else 'skip')
+    if ok:
+        for c in alt:
+            if g[c] == 'r': major[c] = True
 g2 = g.copy(); g2[major] = 'R'
 print('major cells', major.sum(), 'of road', (g == 'r').sum())
 flat = g2.ravel(); rle = []; prev = None; cnt = 0
