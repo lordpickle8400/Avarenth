@@ -1420,15 +1420,43 @@
   /* ================= Travel ================= */
   // Rules are a grid: miles per day for each terrain and way of traveling, times a pace multiplier.
   function rulesOf(t) {
-    var r = (t && t.rules) || {};
+    var r = (t && t.rules) || {}, out;
     if (Array.isArray(r.modes) && r.speeds) {
-      return { modes: r.modes.map(String), terrains: (r.terrains || []).map(String), speeds: r.speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, r.terrains || []) };
+      out = { modes: r.modes.map(String), terrains: (r.terrains || []).map(String), speeds: r.speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, r.terrains || []) };
+    } else {
+      // Older shape (mode miles x terrain multiplier): turn it into a grid.
+      var modes = Object.keys(r.modes || { Walking: 24 }), terrains = Object.keys(r.terrains || { Plains: 1 }), speeds = {};
+      terrains.forEach(function (tn) { speeds[tn] = {}; modes.forEach(function (mn) { speeds[tn][mn] = Math.round(Number(r.modes[mn] || 0) * Number(r.terrains[tn] || 1) * 10) / 10; }); });
+      out = { modes: modes, terrains: terrains, speeds: speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, terrains) };
     }
-    // Older shape (mode miles x terrain multiplier): turn it into a grid.
-    var modes = Object.keys(r.modes || { Walking: 24 }), terrains = Object.keys(r.terrains || { Plains: 1 }), speeds = {};
-    terrains.forEach(function (tn) { speeds[tn] = {}; modes.forEach(function (mn) { speeds[tn][mn] = Math.round(Number(r.modes[mn] || 0) * Number(r.terrains[tn] || 1) * 10) / 10; }); });
-    return { modes: modes, terrains: terrains, speeds: speeds, paces: r.paces || { Normal: 1 }, ground: groundOf(r, terrains) };
+    out.boats = boatsOf(r);
+    out.weathers = r.weathers && Object.keys(r.weathers).length ? r.weathers : Object.assign({}, DEFAULT_WEATHER);
+    var cur = r.current || {};
+    out.current = { down: cur.down != null ? Number(cur.down) : 1.5, up: cur.up != null ? Number(cur.up) : 0.5 };
+    return out;
   }
+  /* Boats. river = the smallest river it fits on ('s' stream, 'v' river, 'b' great river; '' stays off rivers).
+     sea = how far out it can go ('c' coastal only, 'd' deep water too; '' stays off the sea). */
+  var DEFAULT_BOATS = [
+    { name: 'Rowboat', mi: 18, river: 's', sea: 'c' },
+    { name: 'River barge', mi: 24, river: 'v', sea: 'c' },
+    { name: 'Cog', mi: 48, river: 'b', sea: 'd' },
+    { name: 'Sailing ship', mi: 72, river: 'b', sea: 'd' },
+    { name: 'Galley', mi: 96, river: 'b', sea: 'd' }
+  ];
+  var DEFAULT_WEATHER = { 'Fair': 1, 'Strong winds': 1.25, 'Rough seas': 0.75, 'Storm': 0.5 };
+  var WATER_NAMES = { s: 'Stream', v: 'River', b: 'Great river', c: 'Coastal water', d: 'Deep water' };
+  var RIVER_FIT = [['s', 'Streams and up'], ['v', 'Rivers and up'], ['b', 'Great rivers only'], ['', 'Not on rivers']];
+  var SEA_FIT = [['c', 'Coastal only'], ['d', 'Coastal and deep'], ['', 'Not at sea']];
+  function boatsOf(r) {
+    if (!Array.isArray(r.boats)) return DEFAULT_BOATS.map(function (b) { return Object.assign({}, b); });
+    return r.boats.filter(function (b) { return b && b.name; }).map(function (b) {
+      return { name: String(b.name), mi: Number(b.mi) || 0, river: ['s', 'v', 'b'].indexOf(b.river) >= 0 ? b.river : '', sea: ['c', 'd'].indexOf(b.sea) >= 0 ? b.sea : '' };
+    });
+  }
+  function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
+  function weatherMul(t, r) { return Number((r || rulesOf(t)).weathers[t.weather] || 1); }
+  function groundName(t, c) { return boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
   var GROUND_NAMES = { r: 'Roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
   function groundOf(r, terrains) {
     var gmap = Object.assign({ r: 'Normal Road', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
@@ -1436,7 +1464,8 @@
     return gmap;
   }
   function milesPerDay(t) {
-    var r = rulesOf(t);
+    var r = rulesOf(t), boat = boatOf(t);
+    if (boat) return Math.round(boat.mi * weatherMul(t, r) * 10) / 10;
     var base = Number(((r.speeds[t.terrain] || {})[t.mode]) || 0);
     return Math.round(base * Number(r.paces[t.pace] || 1) * 10) / 10;
   }
@@ -1450,29 +1479,74 @@
     var dx = (bx - ax) * mi, dy = (by - ay) * mi * ratio;
     return Math.sqrt(dx * dx + dy * dy);
   }
-  /* Terrain grid route-finding. Cells: '.' water, 'r' road, 'g' open land, 'f' forest, 'm' mountains. */
+  /* Terrain grid route-finding. Land cells: '.' water, 'r' road, 'g' open land, 'f' forest, 'm' mountains.
+     Water layer (same size): '-' none, 's' stream, 'v' river, 'b' great river or lake, 'c' coastal sea, 'd' deep sea. */
+  function decodeRle(rle, n, fill) {
+    var cells = new Array(n), i = 0, re = /(\d*)(\D)/g, m;
+    while ((m = re.exec(rle)) && i < n) { var k = m[1] ? parseInt(m[1], 10) : 1; for (var j = 0; j < k && i < n; j++) cells[i++] = m[2]; }
+    while (i < n) cells[i++] = fill;
+    return cells;
+  }
   function ensureGrid(mapId) {
     if (!mapId || grids[mapId] !== undefined) return Promise.resolve();
     return sb.from('maps').select('travel_grid').eq('id', mapId).maybeSingle().then(function (r) {
       var tg = r.data && r.data.travel_grid;
       if (!tg || !tg.rle || !tg.w || !tg.h) { grids[mapId] = false; return; }
-      var cells = new Array(tg.w * tg.h), i = 0, re = /(\d*)(\D)/g, m;
-      while ((m = re.exec(tg.rle)) && i < cells.length) { var n = m[1] ? parseInt(m[1], 10) : 1; for (var k = 0; k < n && i < cells.length; k++) cells[i++] = m[2]; }
-      while (i < cells.length) cells[i++] = '.';
-      grids[mapId] = { w: tg.w, h: tg.h, cells: cells };
+      var g = { w: tg.w, h: tg.h, cells: decodeRle(tg.rle, tg.w * tg.h, '.') };
+      if (tg.water && tg.water.rle) {
+        g.water = decodeRle(tg.water.rle, tg.w * tg.h, '-');
+        g.seaDist = seaDistance(g);
+      }
+      grids[mapId] = g;
     });
   }
-  // Fastest path (in days) for the current way of traveling. Returns cell list, miles and days.
+  // Steps along the water from each river cell to the sea, so a boat knows which way is downstream.
+  function seaDistance(g) {
+    var W = g.w, H = g.h, wa = g.water, d = new Int32Array(W * H).fill(-1), q = [], head = 0;
+    var river = function (c) { return c === 's' || c === 'v' || c === 'b'; };
+    for (var i = 0; i < wa.length; i++) if (wa[i] === 'c' || wa[i] === 'd') { d[i] = 0; q.push(i); }
+    while (head < q.length) {
+      var at = q[head++], x = at % W, y = (at / W) | 0;
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+        var nx = x + dx, ny = y + dy;
+        if ((dx || dy) && nx >= 0 && ny >= 0 && nx < W && ny < H) {
+          var j = ny * W + nx;
+          if (d[j] < 0 && river(wa[j])) { d[j] = d[at] + 1; q.push(j); }
+        }
+      }
+    }
+    return d;
+  }
+  // Fastest path (in days) for the current way of traveling. Returns points, legs, miles and days.
   function findRoute(m, grid, t, ax, ay, bx, by) {
-    var key = [m.id, t.mode, t.pace, JSON.stringify(rulesOf(t).speeds[t.terrain] || ''), JSON.stringify((t.rules || {}).ground || ''), ax.toFixed(4), ay.toFixed(4), bx.toFixed(4), by.toFixed(4)].join('|');
+    var r = rulesOf(t), boat = boatOf(t);
+    if (boat && !grid.water) return null;
+    var key = [m.id, t.mode, t.pace, t.weather, JSON.stringify(rulesOf(t).speeds[t.terrain] || ''), JSON.stringify((t.rules || {}).ground || ''), JSON.stringify(boat || ''), JSON.stringify(r.current), ax.toFixed(4), ay.toFixed(4), bx.toFixed(4), by.toFixed(4)].join('|');
     if (routeCache[key] !== undefined) return routeCache[key];
-    var r = rulesOf(t), W = grid.w, H = grid.h, cells = grid.cells;
-    var paceMul = Number(r.paces[t.pace] || 1);
-    var speed = {};
-    ['r', 'g', 'f', 'm'].forEach(function (c) { speed[c] = Number(((r.speeds[r.ground[c]] || {})[t.mode]) || 0) * paceMul; });
+    var W = grid.w, H = grid.h, cells = boat ? grid.water : grid.cells;
+    var speedOf, flow = function () { return 1; }, fastest;
+    if (boat) {
+      var RANK = { s: 1, v: 2, b: 3, c: 1, d: 2 }, base = boat.mi * weatherMul(t, r);
+      speedOf = function (c) {
+        if (c === 's' || c === 'v' || c === 'b') return boat.river && RANK[c] >= RANK[boat.river] ? base : 0;
+        if (c === 'c' || c === 'd') return boat.sea && RANK[c] <= RANK[boat.sea] ? base : 0;
+        return 0;
+      };
+      var sd = grid.seaDist, down = r.current.down || 1, up = r.current.up || 1;
+      // Current only runs on streams and rivers; great rivers, lakes and the lagoon are wide and slow.
+      var runs = function (c) { return c === 's' || c === 'v'; };
+      flow = function (i, j) { var a = sd[i], b2 = sd[j]; if (a < 0 || b2 < 0 || a === b2 || !(runs(cells[i]) || runs(cells[j]))) return 1; return b2 < a ? down : up; };
+      fastest = base * Math.max(1, down);
+    } else {
+      var paceMul = Number(r.paces[t.pace] || 1), speed = {};
+      ['r', 'g', 'f', 'm'].forEach(function (c) { speed[c] = Number(((r.speeds[r.ground[c]] || {})[t.mode]) || 0) * paceMul; });
+      speedOf = function (c) { return speed[c] || 0; };
+      fastest = Math.max(speed.r, speed.g, speed.f, speed.m);
+    }
+    if (!(fastest > 0)) return (routeCache[key] = null);
     var cellMiles = Number(m.miles_across) / W;
     var idx = function (x, y) { return Math.max(0, Math.min(H - 1, Math.floor(y * H))) * W + Math.max(0, Math.min(W - 1, Math.floor(x * W))); };
-    var passable = function (i) { var c = cells[i]; return c !== '.' && speed[c] > 0; };
+    var passable = function (i) { return speedOf(cells[i]) > 0; };
     var snap = function (i) {
       if (passable(i)) return i;
       var x0 = i % W, y0 = (i / W) | 0;
@@ -1484,12 +1558,12 @@
     };
     var s0 = snap(idx(ax, ay)), g0 = snap(idx(bx, by));
     if (s0 < 0 || g0 < 0) return (routeCache[key] = null);
+    var stepDays = function (i, j, miles) { return (miles / 2 / speedOf(cells[i]) + miles / 2 / speedOf(cells[j])) / flow(i, j); };
     var dist = new Float64Array(W * H).fill(Infinity), prev = new Int32Array(W * H).fill(-1);
     var heap = [], push = function (d, i) { heap.push([d, i]); var k = heap.length - 1; while (k > 0) { var p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; var tmp = heap[p]; heap[p] = heap[k]; heap[k] = tmp; k = p; } };
     var pop = function () { var top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; var k = 0; for (;;) { var l = 2 * k + 1, rr = l + 1, sm = k; if (l < heap.length && heap[l][0] < heap[sm][0]) sm = l; if (rr < heap.length && heap[rr][0] < heap[sm][0]) sm = rr; if (sm === k) break; var tmp = heap[sm]; heap[sm] = heap[k]; heap[k] = tmp; k = sm; } } return top; };
-    var maxSpeed = Math.max(speed.r, speed.g, speed.f, speed.m);
     var gx = g0 % W, gy = (g0 / W) | 0;
-    var hEst = function (i) { var x = i % W, y = (i / W) | 0; return Math.hypot(x - gx, y - gy) * cellMiles / maxSpeed; };
+    var hEst = function (i) { var x = i % W, y = (i / W) | 0; return Math.hypot(x - gx, y - gy) * cellMiles / fastest; };
     dist[s0] = 0; push(hEst(s0), s0);
     var D8 = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
     while (heap.length) {
@@ -1502,9 +1576,7 @@
         if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
         var j = ny * W + nx;
         if (!passable(j)) continue;
-        // Half a step on each cell's own terrain.
-        var miles = D8[d][2] * cellMiles;
-        var cost = miles / 2 / speed[cells[i]] + miles / 2 / speed[cells[j]];
+        var cost = stepDays(i, j, D8[d][2] * cellMiles);
         if (dist[i] + cost < dist[j]) { dist[j] = dist[i] + cost; prev[j] = i; push(dist[j] + hEst(j), j); }
       }
     }
@@ -1519,7 +1591,7 @@
     var totalMiles = 0, totalDays = 0, legs = [];
     for (var k = 1; k < pts.length; k++) {
       var mi = Math.hypot(pts[k].x - pts[k - 1].x, (pts[k].y - pts[k - 1].y) * ratio) * Number(m.miles_across);
-      var dd = mi / 2 / speed[pts[k - 1].c] + mi / 2 / speed[pts[k].c];
+      var dd = stepDays(path[k - 1], path[k], mi);
       legs.push({ miles: mi, days: dd, ground: pts[k].c });
       totalMiles += mi; totalDays += dd;
     }
@@ -1543,7 +1615,8 @@
         out.byMap = true;
         return out;
       }
-      out.problem = 'No path over land for ' + t.mode.toLowerCase() + ' from the party to the destination.';
+      out.problem = boatOf(t) ? (grid.water ? 'No water route a ' + t.mode.toLowerCase() + ' can take from the party to the destination.' : 'Claude hasn’t read the water on ' + out.map.name + ' yet.')
+        : 'No path over land for ' + t.mode.toLowerCase() + ' from the party to the destination.';
     }
     out.remaining = mapDistance(out.map, out.party.x, out.party.y, t.dest_x, t.dest_y);
     out.days = out.mpd > 0 ? Math.ceil(Math.max(0, out.remaining - 0.05) / out.mpd) : null;
@@ -1562,7 +1635,8 @@
       return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '</h2><div class="empty">Checking the road…</div></section>';
     }
     var j = journey(t);
-    var line = j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
+    var line = boatOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + (j.byMap ? ' · route over water' : ' · ' + fmtMiles(j.mpd) + ' a day')
+      : j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
     var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
     return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
       '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
@@ -1587,8 +1661,19 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last day</button></div>';
     var gridOn = j.map && grids[j.map.id];
-    html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + (gridOn ? 'Terrain read from the map' : fmtMiles(j.mpd) + ' a day') + '</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' + sel('tr-mode', 'Mode', r.modes) + sel('tr-pace', 'Pace', r.paces) + (gridOn ? '' : sel('tr-terrain', 'Terrain', r.terrains)) + '</div>' +
-      (gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + ['r', 'g', 'f', 'm'].map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
+    var boat = boatOf(t);
+    var modeSel = dm ? '<div class="field"><label for="tr-mode">Mode</label><select id="tr-mode" data-travel="mode"><optgroup label="Over land">' +
+      r.modes.map(function (k) { return '<option' + (k === t.mode ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</optgroup>' +
+      (r.boats.length ? '<optgroup label="By boat">' + r.boats.map(function (b) { return '<option' + (b.name === t.mode ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</optgroup>' : '') + '</select></div>'
+      : sel('tr-mode', 'Mode', r.modes);
+    var fitText = function (b) {
+      var riv = { s: 'any river or stream', v: 'rivers and great rivers', b: 'great rivers only' }[b.river], sea = { c: 'coastal water', d: 'coastal and deep water' }[b.sea];
+      return [riv ? 'fits ' + riv : 'stays off rivers', sea ? 'sails ' + sea : 'stays off the sea'].join(', ');
+    };
+    html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + (boat ? fmtMiles(j.mpd) + ' a day before current' : gridOn ? 'Terrain read from the map' : fmtMiles(j.mpd) + ' a day') + '</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' +
+      modeSel + (boat ? sel('tr-weather', 'Weather', r.weathers) : sel('tr-pace', 'Pace', r.paces)) + (gridOn || boat ? '' : sel('tr-terrain', 'Terrain', r.terrains)) + '</div>' +
+      (boat ? '<p class="note" style="margin:0">A ' + esc(boat.name.toLowerCase()) + ' ' + esc(fitText(boat)) + '. Downstream is ×' + r.current.down + ', upstream ×' + r.current.up + '.' + (gridOn && grids[j.map.id].water ? ' The route follows water it can use on ' + esc(j.map.name) + '.' : '') + '</p>'
+        : gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + ['r', 'g', 'f', 'm'].map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
         : (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '')) + '</section>';
 
     html += '<section class="block"><h2 class="sec-title">Destination</h2>';
@@ -1598,7 +1683,7 @@
         '<div class="field"><label for="tr-dest">Destination name</label><input type="text" id="tr-dest" data-travel-text="dest_label" maxlength="60" value="' + esc(t.dest_label) + '" placeholder="e.g. Loreaon"></div>';
     }
     if (j.remaining != null) {
-      html += '<div class="vitals sum">' + vital('Heading to', t.dest_label || 'Destination') + vital('Distance left', j.remaining < 0.1 ? 'Arrived' : fmtMiles(j.remaining)) + vital('Days to go', j.remaining < 0.1 ? 0 : (j.days == null ? '—' : j.days)) + (j.byMap ? vital('Route', 'Along roads') : vital('Per day', fmtMiles(j.mpd))) + '</div>';
+      html += '<div class="vitals sum">' + vital('Heading to', t.dest_label || 'Destination') + vital('Distance left', j.remaining < 0.1 ? 'Arrived' : fmtMiles(j.remaining)) + vital('Days to go', j.remaining < 0.1 ? 0 : (j.days == null ? '—' : j.days)) + (j.byMap ? vital('Route', boat ? 'By water' : 'Along roads') : vital('Per day', fmtMiles(j.mpd))) + '</div>';
     } else {
       html += '<div class="empty">' + esc(dm ? j.problem : 'No destination shared yet.') + '</div>';
     }
@@ -1639,7 +1724,23 @@
         html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="pn' + i + '">Pace name</label><input type="text" class="input" id="pn' + i + '" data-pace-name value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
           '<label class="sr" for="pv' + i + '">Multiplier</label><input type="number" class="input" id="pv' + i + '" data-pace-val step="0.05" min="0" value="' + (k ? esc(r.paces[k]) : '') + '" placeholder="multiplier" inputmode="decimal"></div>';
       });
-      html += '</div><div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
+      html += '</div>';
+      var opt = function (list, v) { return list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join(''); };
+      html += '<div class="field"><span class="lbl">Boats</span><div class="grid-wrap"><table class="grid"><thead><tr><th scope="col">Boat</th><th scope="col">Miles a day</th><th scope="col">Rivers</th><th scope="col">Sea</th></tr></thead><tbody>' +
+        r.boats.concat([{ name: '', mi: '', river: 's', sea: 'c' }]).map(function (b, i) {
+          return '<tr data-boat><td><input type="text" class="input" data-boat-name value="' + esc(b.name) + '" placeholder="' + (b.name ? '' : 'Add a boat…') + '" maxlength="30" aria-label="Boat name"></td>' +
+            '<td><input type="number" class="input" data-boat-mi min="0" step="1" value="' + esc(b.mi) + '" aria-label="Miles a day" inputmode="decimal"></td>' +
+            '<td><select class="input" data-boat-river aria-label="Rivers it fits">' + opt(RIVER_FIT, b.river) + '</select></td>' +
+            '<td><select class="input" data-boat-sea aria-label="How far out to sea">' + opt(SEA_FIT, b.sea) + '</select></td></tr>';
+        }).join('') + '</tbody></table></div><span class="hint">Clear a boat’s name to remove it.</span></div>' +
+        '<div class="field"><span class="lbl">Weather on the water (multiplier)</span>';
+      Object.keys(r.weathers).concat(['']).forEach(function (k, i) {
+        html += '<div class="two" style="margin-bottom:6px"><label class="sr" for="wn' + i + '">Weather</label><input type="text" class="input" id="wn' + i + '" data-weather-name value="' + esc(k) + '" placeholder="' + (k ? '' : 'Add new…') + '" maxlength="30">' +
+          '<label class="sr" for="wv' + i + '">Multiplier</label><input type="number" class="input" id="wv' + i + '" data-weather-val step="0.05" min="0" value="' + (k ? esc(r.weathers[k]) : '') + '" placeholder="multiplier" inputmode="decimal"></div>';
+      });
+      html += '</div><div class="two"><div class="field"><label for="cu-down">Downstream (multiplier)</label><input type="number" id="cu-down" step="0.05" min="0" value="' + r.current.down + '" inputmode="decimal"></div>' +
+        '<div class="field"><label for="cu-up">Upstream (multiplier)</label><input type="number" id="cu-up" step="0.05" min="0" value="' + r.current.up + '" inputmode="decimal"></div></div>';
+      html += '<div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
     }
     html += '</div>';
     $view.innerHTML = html;
@@ -1665,7 +1766,7 @@
           var lg = legs[k], frac = Math.min(1, budget / lg.days);
           pos = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * frac, y: pts[k].y + (pts[k + 1].y - pts[k].y) * frac };
           miles += lg.miles * frac; budget -= lg.days * frac;
-          var gname = rulesOf(t).ground[lg.ground] || lg.ground;
+          var gname = groundName(t, lg.ground);
           byGround[gname] = (byGround[gname] || 0) + lg.miles * frac;
         }
         var arrivedR = budget > 1e-9;
@@ -1674,7 +1775,7 @@
           .map(function (k2) { return k2.toLowerCase() + ' (' + fmtMiles(byGround[k2]) + ')'; });
         entry.miles = Math.round(miles * 10) / 10;
         entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = pos.x; entry.to_y = pos.y;
-        entry.text = 'Traveled ' + fmtMiles(miles) + ' by ' + t.mode.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace' + (mix.length ? ': ' + mix.join(', ') : '') + '.' + (arrivedR ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+        entry.text = 'Traveled ' + fmtMiles(miles) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather' : ' at a ' + t.pace.toLowerCase() + ' pace') + (mix.length ? ': ' + mix.join(', ') : '') + '.' + (arrivedR ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
         moveOp = sb.from('map_markers').update({ x: pos.x, y: pos.y }).eq('id', j.party.id);
       } else if (j.remaining != null && j.mpd > 0 && j.remaining >= 0.1) {
         var step = Math.min(j.mpd, j.remaining);
@@ -1684,7 +1785,7 @@
         if (arrived) { nx = t.dest_x; ny = t.dest_y; }
         entry.miles = Math.round(step * 10) / 10;
         entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = nx; entry.to_y = ny;
-        entry.text = 'Traveled ' + fmtMiles(step) + ' by ' + t.mode.toLowerCase() + ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace.' + (arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+        entry.text = 'Traveled ' + fmtMiles(step) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather.' : ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace.') + (arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
         moveOp = sb.from('map_markers').update({ x: nx, y: ny }).eq('id', j.party.id);
       } else {
         entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
@@ -1746,8 +1847,20 @@
     if (!Object.keys(paces).length) paces = { Normal: 1 };
     var ground = {};
     form.querySelectorAll('[data-ground]').forEach(function (sl) { ground[sl.getAttribute('data-ground')] = sl.value; });
-    var patch = { rules: { modes: modes, terrains: terrains, speeds: speeds, paces: paces, ground: ground } };
-    if (modes.indexOf(t.mode) < 0) patch.mode = modes[0];
+    var boats = [];
+    form.querySelectorAll('[data-boat]').forEach(function (row) {
+      var name = row.querySelector('[data-boat-name]').value.trim().slice(0, 30);
+      if (!name || modes.indexOf(name) >= 0 || boats.some(function (b) { return b.name === name; })) return;
+      boats.push({ name: name, mi: Math.max(0, Number(row.querySelector('[data-boat-mi]').value) || 0), river: row.querySelector('[data-boat-river]').value, sea: row.querySelector('[data-boat-sea]').value });
+    });
+    var weathers = {};
+    var wn = form.querySelectorAll('[data-weather-name]'), wv = form.querySelectorAll('[data-weather-val]');
+    wn.forEach(function (n, i) { var k = n.value.trim().slice(0, 30), v = Number(wv[i].value); if (k && isFinite(v) && v >= 0) weathers[k] = Math.round(v * 100) / 100; });
+    if (!Object.keys(weathers).length) weathers = { Fair: 1 };
+    var current = { down: Math.max(0, Number(document.getElementById('cu-down').value) || 1), up: Math.max(0, Number(document.getElementById('cu-up').value) || 1) };
+    var patch = { rules: { modes: modes, terrains: terrains, speeds: speeds, paces: paces, ground: ground, boats: boats, weathers: weathers, current: current } };
+    if (modes.indexOf(t.mode) < 0 && !boats.some(function (b) { return b.name === t.mode; })) patch.mode = modes[0];
+    if (!(t.weather in weathers)) patch.weather = Object.keys(weathers)[0];
     if (terrains.indexOf(t.terrain) < 0) patch.terrain = terrains[0];
     if (!(t.pace in paces)) patch.pace = Object.keys(paces)[0];
     saveTravel(campId, patch).then(function () { toast('Rules saved'); render(); });
