@@ -299,3 +299,10 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .review-actions .input[type="text"] { flex: 1 1 180px; min-width: 0; }
 .chip.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+
+/* ---------- Tables inside articles (lines written as  a | b | c) ---------- */
+.wiki-table-wrap { overflow-x: auto; margin: 0 0 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+.wiki-table { width: 100%; border-collapse: collapse; font-family: var(--ui); font-size: 14px; }
+.wiki-table th, .wiki-table td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.wiki-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--soft); }
+.wiki-table tr:last-child td { border-bottom: 0; }

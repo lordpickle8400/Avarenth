@@ -149,13 +149,22 @@
 
   /* Text with [[Links]] and paragraphs. Input is escaped first. */
   function rich(text) {
-    return String(text || '').split(/\n\s*\n/).map(function (p) {
-      var html = esc(p.trim()).replace(/\n/g, '<br>');
-      html = html.replace(/\[\[([^\]]+)\]\]/g, function (_, name) {
+    var links = function (html) {
+      return html.replace(/\[\[([^\]]+)\]\]/g, function (_, name) {
         var target = articleByTitle(unescapeName(name));
         if (target) return '<a class="link" href="#/a/' + encodeURIComponent(target.slug) + '">' + name + '</a>';
         return '<span class="missing">' + name + '</span>';
       });
+    };
+    return String(text || '').split(/\n\s*\n/).map(function (p) {
+      // A block where every line has a | is a table; the first line is the header.
+      var lines = p.trim().split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l && !/^[\s|:-]+$/.test(l); });
+      if (lines.length >= 2 && lines.every(function (l) { return l.indexOf('|') >= 0; })) {
+        var cells = function (l) { return l.replace(/^\||\|$/g, '').split('|').map(function (c) { return links(esc(c.trim())); }); };
+        return '<div class="wiki-table-wrap"><table class="wiki-table"><thead><tr>' + cells(lines[0]).map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          lines.slice(1).map(function (l) { return '<tr>' + cells(l).map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+      }
+      var html = links(esc(p.trim()).replace(/\n/g, '<br>'));
       return html ? '<p>' + html + '</p>' : '';
     }).join('');
   }
