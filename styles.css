@@ -306,3 +306,42 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .wiki-table th, .wiki-table td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
 .wiki-table th { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--soft); }
 .wiki-table tr:last-child td { border-bottom: 0; }
+
+/* ---------- Character builder, level-up guide, sheet extras ---------- */
+.guide { margin: 0; font-size: 18px; line-height: 1.5; }
+.steps { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 0; padding: 0; list-style: none; font-family: var(--ui); font-size: 12px; font-weight: 600; color: var(--muted); }
+.steps li { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; }
+.steps li.done { color: var(--text); border-color: color-mix(in srgb, var(--accent) 50%, var(--bg)); }
+.steps li[aria-current="step"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 640px) { .choice-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.choice { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 64px; padding: 10px 12px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); cursor: pointer; }
+.choice b { font-family: var(--display); font-size: 17px; }
+.choice span { font-family: var(--ui); font-size: 12px; color: var(--muted); line-height: 1.35; }
+.choice[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+.chip.pick { min-height: 40px; cursor: pointer; color: var(--text); }
+.chip.pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip.pick:disabled { opacity: 0.45; cursor: default; }
+.seg.wide { border-radius: var(--radius); flex-wrap: wrap; }
+.seg.wide button { flex: 1 1 auto; border-radius: var(--radius); }
+.ab-assign { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 640px) { .ab-assign { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.build-nav { justify-content: space-between; }
+.btn[aria-disabled="true"] { opacity: 0.55; }
+.next-steps { padding: 12px 14px; background: color-mix(in srgb, var(--accent) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--bg)); border-radius: var(--radius); font-family: var(--ui); font-size: 14px; }
+.next-steps ul { margin: 6px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.linkish { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
+.charges { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--ui); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.pips { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: middle; }
+.pip { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--mana); }
+.pip.on { background: var(--mana); }
+.num.big { font-size: 20px; font-weight: 700; min-width: 44px; text-align: right; }
+.inline-form.attack-form { display: flex; flex-wrap: wrap; align-items: flex-end; }
+.attack-form .field { flex: 1 1 120px; }
+.attack-form .check { min-height: 44px; }
+.rest-row .note { margin: 0; }
+.section.feat { padding-bottom: 12px; border-bottom: 1px solid var(--soft); }
+.section.feat h2 { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 10px; font-size: 19px; border: 0; padding: 0; }
+.section.feat h2 small { display: inline-flex; align-items: center; gap: 8px; font-family: var(--ui); font-size: 12px; font-weight: 500; color: var(--muted); }
+.pool-edit .check { min-height: 36px; font-size: 13px; gap: 8px; }
+.picker .tbl-row .tag { flex: none; }
