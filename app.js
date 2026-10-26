@@ -1453,7 +1453,7 @@
       if (q && sp.name.toLowerCase().indexOf(q) < 0) return false;
       if (f.rarity && sp.rarity !== f.rarity) return false;
       if (f.level !== '' && String(sp.level) !== f.level) return false;
-      if (f.cls && (sp.classes || []).indexOf(f.cls) < 0) return false;
+      if (f.cls === '_tome' ? (sp.classes || []).length : (f.cls && (sp.classes || []).indexOf(f.cls) < 0)) return false;
       if (f.school && sp.school !== f.school) return false;
       if (f.src === 'official' && sp.homebrew) return false;
       if (f.src === 'homebrew' && !sp.homebrew) return false;
@@ -1477,7 +1477,7 @@
       (list.length ? ': ' + RARITIES.filter(function (r) { return counts[r]; }).map(function (r) { return counts[r] + ' ' + r.toLowerCase(); }).join(', ') : '') + '</p>';
     if (!list.length) return html + '<div class="empty">No spells match those filters.</div>';
     html += '<div class="tbl">' + list.map(function (sp) {
-      var cls = (sp.classes || []).length ? sp.classes.join(', ') : 'Any class, from a tome';
+      var cls = (sp.classes || []).length ? sp.classes.join(', ') : 'Tome only';
       var src = sp.homebrew ? 'Homebrew' + (sp.submitted_by ? ' by ' + memberName(sp.submitted_by) : '') : sp.book;
       var right = dm ? '<div class="spell-right"><label class="sr" for="rar-' + esc(sp.name) + '">Rarity of ' + esc(sp.name) + '</label><select class="input rar-sel" id="rar-' + esc(sp.name) + '" data-spell-rarity="' + esc(sp.name) + '">' +
         RARITIES.map(function (r) { return '<option' + (r === sp.rarity ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' +
@@ -1526,13 +1526,13 @@
     var levels = [];
     for (var i = 0; i <= 9; i++) levels.push([String(i), levelText(i)]);
     var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">Magic</p><h1>Spell Tomes</h1>' +
-      '<p class="crumbs">Any spell can be learned from its tome. Rarity is how hard that tome is to find. See <a href="#/a/spell-tomes">Spell Tomes</a>.</p></div></section><div class="page">';
+      '<p class="crumbs">Each class list stops at 5th level for full casters and 4th for everyone else. Anything beyond that has to be found in a tome. Rarity is how hard that tome is to find. See <a href="#/a/spell-tomes">Spell Tomes</a>.</p></div></section><div class="page">';
     html += '<div class="actions"><a class="btn' + (dmView() ? '' : ' primary') + '" href="#/spell-new">+ Homebrew spell</a></div>';
     if (dmView()) html += reviewHtml();
     else html += mySubmissionsHtml();
     html += '<label class="search"><span class="sr">Search spells</span>' + SEARCH_ICON + '<input id="spell-search" type="search" placeholder="Search spells…" value="' + esc(f.q) + '" autocomplete="off"></label>';
     html += '<div class="filters-grid">' + sel('sp-rarity', 'rarity', 'Rarity', RARITIES, 'Any rarity') + sel('sp-level', 'level', 'Level', levels, 'Any level') +
-      sel('sp-class', 'cls', 'Class', SPELL_CLASSES, 'Any class') + sel('sp-school', 'school', 'School', SCHOOLS, 'Any school') +
+      sel('sp-class', 'cls', 'Class list', SPELL_CLASSES.concat([['_tome', 'Tome only']]), 'Any class') + sel('sp-school', 'school', 'School', SCHOOLS, 'Any school') +
       sel('sp-src', 'src', 'Source', [['official', 'Official'], ['homebrew', 'Homebrew']], 'Any source') + '</div>';
     if (dmView()) html += '<p class="note" style="margin:0">Change a spell’s rarity right in the list. It saves straight away.</p>';
     html += '<section class="block"><div id="spell-list">' + spellListHtml() + '</div></section></div>';
