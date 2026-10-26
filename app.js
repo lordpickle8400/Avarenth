@@ -850,7 +850,7 @@
 
   function defaultSheet() {
     return {
-      species: '', cls: '', subclass: '', background: '', level: 1,
+      species: '', cls: '', subclass: '', background: '', patron: '', level: 1,
       abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
       ac: 10, speed: 30, initBonus: 0,
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
@@ -882,6 +882,21 @@
   function canEditChar(c) { return !!c && (c.owner_id === uid() || isDM()); }
 
   function classOf(s) { return RULES.classes[s.cls] || null; }
+  function devotionLabel(cls) { return (RULES.devotion || {})[cls] || ''; }
+  function devotionRequired(cls) { return (RULES.devotionRequired || []).indexOf(cls) >= 0; }
+  // Gods are always on offer; Hollow Court lords only when the viewer can read about them.
+  function patronOptions() {
+    var out = (RULES.gods || []).map(function (g) { return { name: g.name, about: g.about, domains: g.domains, article: g.article, kind: 'god' }; });
+    (RULES.demons || []).forEach(function (d) { if (articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
+    return out;
+  }
+  function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
+  function patronLine(s) {
+    if (!s.patron) return '';
+    var p = patronInfo(s.patron), art = p ? articleByTitle(p.article) : articleByTitle(s.patron);
+    var label = (devotionLabel(s.cls) === 'Patron' ? 'Pact with ' : 'Serves ') ;
+    return label + (art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron));
+  }
   function isFullCaster(cls) { return RULES.magic.fullCasters.indexOf(cls) >= 0; }
   function casterKind(cls) { return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger') ? 'half' : 'martial'; }
   function listCap(cls) { return isFullCaster(cls) ? 5 : 4; }
@@ -927,6 +942,7 @@
   function nextSteps(c, s) {
     var out = [], cd = classOf(s);
     if (!s.cls) out.push(['Pick a class for this character. Tap “Edit sheet”, or start over with the character builder.', '']);
+    if (devotionRequired(s.cls) && !s.patron) out.push(['Choose the ' + (devotionLabel(s.cls) === 'Patron' ? 'patron you made your pact with' : 'god you serve') + '. Tap “Edit sheet” to set it.', '']);
     if (cd && !s.subclass && num(s.level, 1) >= cd.subclassLevel) out.push(['Choose your ' + cd.subclassLabel.toLowerCase() + '. Tap “Edit sheet” to set it.', '']);
     if (num(s.secretPicks, 0) > 0) out.push(['You have ' + s.secretPicks + ' Magical Secrets to learn: any class list, no tome needed, half the cost.', 'spells']);
     if (num(s.picks, 0) > 0) out.push(['You have ' + s.picks + ' free spell ' + (s.picks === 1 ? 'pick' : 'picks') + ' from your class list.', 'spells']);
@@ -997,8 +1013,9 @@
 
   /* ---------- Character builder ---------- */
   var BUILD_STEPS = ['Name', 'Class', 'Species', 'Background', 'Abilities', 'Skills', 'Spells', 'Review'];
+  function buildSteps(b) { var out = BUILD_STEPS.slice(); if (devotionLabel(b.cls)) out.splice(2, 0, devotionLabel(b.cls)); return out; }
   function newBuild() {
-    return { step: 0, name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
+    return { step: 0, patron: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
   }
   function buildBase(b) {
     var out = {};
@@ -1016,7 +1033,8 @@
   function buildFixedSkills(b) { return uniq((RULES.backgrounds[b.bg] || []).concat((RULES.species[b.species] || {}).skill ? [RULES.species[b.species].skill] : [])); }
   function buildSpellNeeds(b) { var p = RULES.magic.startPicks[casterKind(b.cls)] || [0, 0]; return { cantrips: p[0], first: p[1] }; }
   function buildStepError(b) {
-    switch (BUILD_STEPS[b.step]) {
+    switch (buildSteps(b)[b.step]) {
+      case 'Deity': case 'Patron': return b.patron || !devotionRequired(b.cls) ? '' : 'Choose who you serve.';
       case 'Name': return b.name.trim() ? '' : 'Give your character a name.';
       case 'Class': return b.cls ? '' : 'Pick a class.';
       case 'Species': return b.species ? '' : 'Pick a species.';
@@ -1052,9 +1070,9 @@
   function renderBuild() {
     var b = ui.build || (ui.build = newBuild());
     if (spells === null && b.step >= 6) { loadSpells().then(render).catch(function (e) { fail(e); }); }
-    var step = BUILD_STEPS[b.step];
+    var steps = buildSteps(b), step = steps[b.step];
     var html = '<div class="page narrow"><p class="crumbs"><a href="#/characters">Characters</a></p><h1 class="page-title">Build a character</h1>' +
-      '<ol class="steps">' + BUILD_STEPS.map(function (t, i) { return '<li' + (i === b.step ? ' aria-current="step"' : '') + (i < b.step ? ' class="done"' : '') + '>' + t + '</li>'; }).join('') + '</ol>';
+      '<ol class="steps">' + steps.map(function (t, i) { return '<li' + (i === b.step ? ' aria-current="step"' : '') + (i < b.step ? ' class="done"' : '') + '>' + t + '</li>'; }).join('') + '</ol>';
     var cd = RULES.classes[b.cls];
     if (step === 'Name') {
       html += '<p class="guide">Start with who they are. You can change the name any time.</p>' +
@@ -1064,6 +1082,15 @@
       html += '<p class="guide">Your class is what you do best. It sets your hit points, your skills, how much mana you have and which spells are on your list.</p>' +
         choiceGrid(Object.keys(RULES.classes).map(function (k) { var c = RULES.classes[k], m = RULES.magic.mana[k]; return [k, 'd' + c.hd + ' hit die · ' + (m ? m[0] + ' mana' : 'no mana') + ' · ' + c.primary]; }), b.cls, 'bd-class');
       if (cd) html += classCard(b.cls);
+    } else if (step === 'Deity' || step === 'Patron') {
+      var opts = patronOptions(), isPact = step === 'Patron';
+      html += '<p class="guide">' + (isPact ? 'A warlock’s power is borrowed. Who did you make your pact with? Gods can bargain too, but most warlocks deal with the lords of the Hollow Court, and every gift comes with a price.' :
+        b.cls === 'Druid' ? 'Druids draw on the land itself, but many honor a god of nature. Choose one if yours does, or skip this.' :
+        'Your power comes from the god you serve. ' + (b.cls === 'Cleric' ? 'Your god shapes which domain fits you best.' : 'Your oath is sworn in their name.')) + '</p>' +
+        '<h2 class="sec-title">The gods of Akorianism</h2>' + choiceGrid(opts.filter(function (o) { return o.kind === 'god'; }).map(function (o) { return [o.name, o.about + (b.cls === 'Cleric' && o.domains ? ' · fits ' + o.domains : '')]; }), b.patron, 'bd-patron');
+      var dem = opts.filter(function (o) { return o.kind === 'demon'; });
+      if (dem.length) html += '<h2 class="sec-title" style="margin-top:16px">The Hollow Court</h2>' + (isPact ? '' : '<p class="note">Serving a demon lord is heresy in Doresmere. Talk to your DM before you choose one.</p>') + choiceGrid(dem.map(function (o) { return [o.name, o.about]; }), b.patron, 'bd-patron');
+      if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">No god</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         choiceGrid(Object.keys(RULES.species).map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species');
@@ -1165,7 +1192,7 @@
   function buildSheet(b) {
     var cd = RULES.classes[b.cls], sc = buildScores(b), spc = RULES.species[b.species] || {};
     var s = defaultSheet();
-    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1;
+    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : '';
     s.abilities = sc;
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
@@ -1181,7 +1208,7 @@
   function buildReviewHtml(b) {
     var s = buildSheet(b), cd = RULES.classes[b.cls];
     return '<p class="guide">Here’s ' + esc(b.name) + '. Create the character, then add armor, weapons and gear on the sheet.</p>' +
-      '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + '</p>' +
+      '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + (s.patron ? ' · ' + (devotionLabel(b.cls) === 'Patron' ? 'pact with ' : 'serves ') + esc(s.patron) : '') + '</p>' +
       '<div class="abilities">' + ABILITIES.map(function (a) { return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + signed(mod(s.abilities[a[0]])) + '</span><span class="score">' + s.abilities[a[0]] + '</span></div>'; }).join('') + '</div>' +
       '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', s.ac) + vital('Speed', s.speed + ' ft') + '</div>' +
       '<div class="tbl" style="margin-top:10px"><div class="tbl-row"><div class="main"><b>Skills</b><span>' + esc(Object.keys(s.skills).sort().join(', ')) + '</span></div></div>' +
@@ -1341,7 +1368,7 @@
     var html = '<div class="page sheet" data-char="' + esc(c.id) + '">';
     html += '<div class="sheet-head"><div style="min-width:0"><p class="crumbs"><a href="#/characters">Characters</a>' + (c.owner_id !== uid() ? ' · ' + esc(memberName(c.owner_id)) : '') + '</p>';
     if (edit) html += '<div class="field" style="margin-top:6px"><label for="ch-name">Name</label><input type="text" id="ch-name" data-cf="name" value="' + esc(c.name) + '" maxlength="80"></div>';
-    else html += '<h1>' + esc(c.name) + '</h1><p class="who" style="margin:4px 0 0">' + esc(who) + '</p>';
+    else html += '<h1>' + esc(c.name) + '</h1><p class="who" style="margin:4px 0 0">' + esc(who) + '</p>' + (s.patron ? '<p class="who" style="margin:2px 0 0">' + patronLine(s) + '</p>' : '');
     html += '</div><div class="actions">' + (can ? '<span class="saved" id="saved" aria-live="polite"></span>' +
       (cd && num(s.level, 1) < 20 && !edit ? '<a class="btn primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') +
       '<button type="button" class="btn' + (edit ? ' primary' : '') + '" data-act="sheet-edit">' + (edit ? 'Done editing' : 'Edit sheet') + '</button>' : '') +
@@ -1359,9 +1386,11 @@
       html += '<div class="group-box"><h2>Basics</h2><datalist id="dl-classes">' + Object.keys(RULES.classes).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-species">' + Object.keys(RULES.species).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-subs">' + (cd ? cd.subclasses.map(function (k) { return '<option value="' + esc(k) + '">'; }).join('') : '') + '</datalist>' +
+        '<datalist id="dl-patrons">' + patronOptions().map(function (p) { return '<option value="' + esc(p.name) + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-bgs">' + Object.keys(RULES.backgrounds).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist><div class="two">' +
         sheetInput('Species', 'species', s.species, '', 'dl-species') + sheetInput('Class', 'cls', s.cls, '', 'dl-classes') +
         sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') +
+        (devotionLabel(s.cls) || s.patron ? sheetInput(devotionLabel(s.cls) || 'Deity or patron', 'patron', s.patron, '', 'dl-patrons') : '') +
         sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class', 'ac', s.ac, 'number') +
         sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') +
         '</div><p class="hint">To gain a level, use the level-up guide. It adds hit points, mana and choices for you. Changing the level here doesn’t.</p>' +
@@ -2869,14 +2898,15 @@
       case 'spend-hd': if (c) spendHitDie(c); break;
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
-        if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; } bb.cls = val; }
+        if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; } bb.cls = val; }
         else if (act === 'bd-species') { if (bb.species !== val) bb.skills = []; bb.species = val; }
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
+      case 'bd-patron': ui.build.patron = el.getAttribute('data-val'); render(); break;
       case 'bd-next':
         var berr = buildStepError(ui.build);
         if (berr) return toast(berr);
-        ui.build.step = Math.min(BUILD_STEPS.length - 1, ui.build.step + 1); render(); window.scrollTo(0, 0); break;
+        ui.build.step = Math.min(buildSteps(ui.build).length - 1, ui.build.step + 1); render(); window.scrollTo(0, 0); break;
       case 'bd-back': ui.build.step = Math.max(0, ui.build.step - 1); render(); window.scrollTo(0, 0); break;
       case 'bd-method': ui.build.method = el.getAttribute('data-val'); ui.build.assign = {}; render(); break;
       case 'bd-roll':

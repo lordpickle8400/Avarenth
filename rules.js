@@ -295,5 +295,28 @@
 
   window.AVARENTH_RULES = { classes: C, subLevels: SUB_LEVELS, magic: MAGIC, species: SPECIES, backgrounds: BACKGROUNDS,
     standardArray: [15, 14, 13, 12, 10, 8], pointBuyCost: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }, pointBuyBudget: 27,
-    coins: { cp: 'Copper Foxes', sp: 'Silver Stags', gp: 'Golden Eagles' } };
+    coins: { cp: 'Copper Foxes', sp: 'Silver Stags', gp: 'Golden Eagles' },
+    // Who a character serves. Gods of Akorianism, and the lords of the Hollow Court (only those players can read about are offered).
+    devotion: { Cleric: 'Deity', Paladin: 'Deity', Warlock: 'Patron', Druid: 'Deity' },
+    devotionRequired: ['Cleric', 'Paladin', 'Warlock'],
+    gods: [
+      { name: 'Akoron', about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akorianism' },
+      { name: 'Roselle', about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism' },
+      { name: 'Azrul', about: 'God of death', domains: 'Death, Grave', article: 'Akorianism' },
+      { name: 'Korinth', about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Akorianism' },
+      { name: 'Thorum', about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism' },
+      { name: 'Florin', about: 'God of trickery', domains: 'Trickery', article: 'Akorianism' },
+      { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Akorianism' }
+    ],
+    demons: [
+      { name: 'The Hungering Head', about: 'Ruler of the Hollow Court, eater of the sun', article: 'The Hungering Head' },
+      { name: 'Kharneth', about: 'Demon of debts', article: 'Kharneth, the Debt-Keeper' },
+      { name: 'Drakhar', about: 'Demon of tyranny, the Last Emperor', article: 'Drakhar, the Last Emperor' },
+      { name: 'The Pyre-Saint', about: 'Demon of zealotry', article: 'The Pyre-Saint' },
+      { name: 'Sytha', about: 'Demon of spiders and betrayal', article: 'Sytha, the Broodmother' },
+      { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below' },
+      { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
+      { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
+      { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' }
+    ] };
 })();
