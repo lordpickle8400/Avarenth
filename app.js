@@ -1457,10 +1457,11 @@
   function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
   function weatherMul(t, r) { return Number((r || rulesOf(t)).weathers[t.weather] || 1); }
   function groundName(t, c) { return boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
-  var GROUND_NAMES = { r: 'Roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
+  var GROUND_NAMES = { R: 'Main roads', r: 'Other roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
+  var GROUND_KEYS = ['R', 'r', 'g', 'f', 'm'];
   function groundOf(r, terrains) {
-    var gmap = Object.assign({ r: 'Normal Road', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
-    Object.keys(gmap).forEach(function (k) { if (terrains.length && terrains.indexOf(gmap[k]) < 0) gmap[k] = terrains[Math.min(terrains.length - 1, k === 'r' ? 0 : terrains.length - 1)]; });
+    var gmap = Object.assign({ R: 'Major Road', r: 'Normal Road', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
+    Object.keys(gmap).forEach(function (k) { if (terrains.length && terrains.indexOf(gmap[k]) < 0) gmap[k] = terrains[Math.min(terrains.length - 1, k === 'r' || k === 'R' ? 0 : terrains.length - 1)]; });
     return gmap;
   }
   function milesPerDay(t) {
@@ -1479,7 +1480,7 @@
     var dx = (bx - ax) * mi, dy = (by - ay) * mi * ratio;
     return Math.sqrt(dx * dx + dy * dy);
   }
-  /* Terrain grid route-finding. Land cells: '.' water, 'r' road, 'g' open land, 'f' forest, 'm' mountains.
+  /* Terrain grid route-finding. Land cells: '.' water, 'R' main road (capital to a noble seat), 'r' other road, 'g' open land, 'f' forest, 'm' mountains.
      Water layer (same size): '-' none, 's' stream, 'v' river, 'b' great river or lake, 'c' coastal sea, 'd' deep sea. */
   function decodeRle(rle, n, fill) {
     var cells = new Array(n), i = 0, re = /(\d*)(\D)/g, m;
@@ -1539,9 +1540,9 @@
       fastest = base * Math.max(1, down);
     } else {
       var paceMul = Number(r.paces[t.pace] || 1), speed = {};
-      ['r', 'g', 'f', 'm'].forEach(function (c) { speed[c] = Number(((r.speeds[r.ground[c]] || {})[t.mode]) || 0) * paceMul; });
+      GROUND_KEYS.forEach(function (c) { speed[c] = Number(((r.speeds[r.ground[c]] || {})[t.mode]) || 0) * paceMul; });
       speedOf = function (c) { return speed[c] || 0; };
-      fastest = Math.max(speed.r, speed.g, speed.f, speed.m);
+      fastest = Math.max(speed.R, speed.r, speed.g, speed.f, speed.m);
     }
     if (!(fastest > 0)) return (routeCache[key] = null);
     var cellMiles = Number(m.miles_across) / W;
@@ -1673,7 +1674,7 @@
     html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + (boat ? fmtMiles(j.mpd) + ' a day before current' : gridOn ? 'Terrain read from the map' : fmtMiles(j.mpd) + ' a day') + '</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' +
       modeSel + (boat ? sel('tr-weather', 'Weather', r.weathers) : sel('tr-pace', 'Pace', r.paces)) + (gridOn || boat ? '' : sel('tr-terrain', 'Terrain', r.terrains)) + '</div>' +
       (boat ? '<p class="note" style="margin:0">A ' + esc(boat.name.toLowerCase()) + ' ' + esc(fitText(boat)) + '. Downstream is ×' + r.current.down + ', upstream ×' + r.current.up + '.' + (gridOn && grids[j.map.id].water ? ' The route follows water it can use on ' + esc(j.map.name) + '.' : '') + '</p>'
-        : gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + ['r', 'g', 'f', 'm'].map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
+        : gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + GROUND_KEYS.map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
         : (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '')) + '</section>';
 
     html += '<section class="block"><h2 class="sec-title">Destination</h2>';
@@ -1716,7 +1717,7 @@
             return '<td><input type="number" class="input" min="0" step="1" data-speed-t="' + esc(tn) + '" data-speed-m="' + esc(mn) + '" value="' + esc(((r.speeds[tn] || {})[mn]) != null ? r.speeds[tn][mn] : '') + '" aria-label="' + esc(mn + ' on ' + tn) + '" inputmode="decimal"></td>';
           }).join('') + '</tr>';
         }).join('') + '</tbody></table></div><span class="hint">Renamed or added a row or column? Save once and the grid updates.</span></div>' +
-        '<div class="field"><span class="lbl">On maps Claude has read, ground counts as</span><div class="two">' + ['r', 'g', 'f', 'm'].map(function (c) {
+        '<div class="field"><span class="lbl">On maps Claude has read, ground counts as</span><div class="two">' + GROUND_KEYS.map(function (c) {
           return '<div class="field"><label for="gr-' + c + '">' + GROUND_NAMES[c] + '</label><select id="gr-' + c + '" data-ground="' + c + '">' + r.terrains.map(function (tn) { return '<option' + (tn === r.ground[c] ? ' selected' : '') + '>' + esc(tn) + '</option>'; }).join('') + '</select></div>';
         }).join('') + '</div></div>' +
         '<div class="field"><span class="lbl">Paces (multiplier)</span>';
