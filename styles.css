@@ -292,3 +292,10 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .rar-very-rare { --rar: #a35fe0; }
 .rar-legendary { --rar: #e0912f; }
 .rar-sel { flex: none; width: auto; min-width: 118px; }
+.spell-desc { white-space: pre-wrap; color: var(--text); font-family: var(--body); font-size: 15px; line-height: 1.45; margin-top: 4px; }
+.spell-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.review .main { min-width: 0; flex: 1; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.review-actions .input[type="text"] { flex: 1 1 180px; min-width: 0; }
+.chip.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }

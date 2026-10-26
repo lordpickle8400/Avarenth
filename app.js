@@ -80,7 +80,7 @@
   var routeCache = {};
   var spells = null;  // the spell tome list, loaded when first opened
   var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
-  var ui = { filters: {}, spellFilter: { q: '', rarity: '', level: '', cls: '', school: '' }, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
+  var ui = { filters: {}, spellFilter: { q: '', rarity: '', level: '', cls: '', school: '', src: '' }, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Spells', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
 
   var $view = document.getElementById('view');
@@ -284,7 +284,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel()]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -319,8 +319,9 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', spells: 'spells', members: 'members' })[r.name] || '';
-    var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells']];
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var waiting = isDM() && spells ? pendingSpells().length : 0;
+    var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
     $tabs.innerHTML = tabs.map(function (t) { return '<a href="#/' + t[0] + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -355,6 +356,8 @@
       case 'campaign-edit': return renderCampaignEdit(r.arg);
       case 'join': return renderJoin();
       case 'spells': return renderSpells();
+      case 'spell-new': return renderSpellForm('');
+      case 'spell-edit': return renderSpellForm(r.arg);
       default: return renderHome();
     }
   }
@@ -1423,24 +1426,39 @@
   var RARITIES = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
   var SPELL_CLASSES = ['Artificer', 'Bard', 'Cleric', 'Druid', 'Paladin', 'Ranger', 'Sorcerer', 'Warlock', 'Wizard'];
   var SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
+  var SPELL_COLS = 'name, level, school, classes, book, ritual, concentration, rarity, notes, homebrew, status, submitted_by, casting_time, spell_range, components, duration, description, dm_note, created_at';
   function loadSpells() {
-    return sb.from('spells').select('name, level, school, classes, book, ritual, concentration, rarity, notes').order('level').order('name').then(function (r) {
+    return sb.from('spells').select(SPELL_COLS).order('level').order('name').then(function (r) {
       if (r.error) throw r.error;
       spells = r.data || [];
     });
   }
+  function spellByName(n) { return (spells || []).filter(function (x) { return x.name === n; })[0] || null; }
+  function pendingSpells() { return (spells || []).filter(function (x) { return x.status === 'pending'; }); }
   function rarityTag(r) { return '<span class="tag rar rar-' + String(r || '').toLowerCase().replace(/\s+/g, '-') + '">' + esc(r) + '</span>'; }
   function levelText(l) { return Number(l) === 0 ? 'Cantrip' : 'Level ' + l; }
   function filteredSpells() {
     var f = ui.spellFilter, q = f.q.trim().toLowerCase();
     return (spells || []).filter(function (sp) {
+      if (sp.status !== 'approved') return false;
       if (q && sp.name.toLowerCase().indexOf(q) < 0) return false;
       if (f.rarity && sp.rarity !== f.rarity) return false;
       if (f.level !== '' && String(sp.level) !== f.level) return false;
       if (f.cls && (sp.classes || []).indexOf(f.cls) < 0) return false;
       if (f.school && sp.school !== f.school) return false;
+      if (f.src === 'official' && sp.homebrew) return false;
+      if (f.src === 'homebrew' && !sp.homebrew) return false;
       return true;
     });
+  }
+  // The rules text a homebrew spell carries (official spells only link to their book).
+  function spellDetails(sp) {
+    var bits = [['Casting time', sp.casting_time], ['Range', sp.spell_range], ['Components', sp.components], ['Duration', sp.duration]].filter(function (x) { return x[1]; });
+    return (bits.length ? '<span>' + bits.map(function (x) { return esc(x[0]) + ': ' + esc(x[1]); }).join(' · ') + '</span>' : '') +
+      (sp.description ? '<span class="spell-desc">' + esc(sp.description) + '</span>' : '');
+  }
+  function spellMeta(sp) {
+    return [levelText(sp.level), sp.school].concat(sp.ritual ? ['ritual'] : []).concat(sp.concentration ? ['concentration'] : []).join(' · ');
   }
   function spellListHtml() {
     var list = filteredSpells(), dm = dmView();
@@ -1450,19 +1468,45 @@
       (list.length ? ': ' + RARITIES.filter(function (r) { return counts[r]; }).map(function (r) { return counts[r] + ' ' + r.toLowerCase(); }).join(', ') : '') + '</p>';
     if (!list.length) return html + '<div class="empty">No spells match those filters.</div>';
     html += '<div class="tbl">' + list.map(function (sp) {
-      var meta = [levelText(sp.level), sp.school].concat(sp.ritual ? ['ritual'] : []).concat(sp.concentration ? ['concentration'] : []).join(' · ');
       var cls = (sp.classes || []).length ? sp.classes.join(', ') : 'Any class, from a tome';
-      var right = dm ? '<label class="sr" for="rar-' + esc(sp.name) + '">Rarity of ' + esc(sp.name) + '</label><select class="input rar-sel" id="rar-' + esc(sp.name) + '" data-spell-rarity="' + esc(sp.name) + '">' +
-        RARITIES.map(function (r) { return '<option' + (r === sp.rarity ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' : rarityTag(sp.rarity);
-      return '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + '</b><span>' + esc(meta) + '</span><span>' + esc(cls) + ' · ' + esc(sp.book) + '</span>' +
-        (sp.notes ? '<span>' + esc(sp.notes) + '</span>' : '') + '</div>' + right + '</div>';
+      var src = sp.homebrew ? 'Homebrew' + (sp.submitted_by ? ' by ' + memberName(sp.submitted_by) : '') : sp.book;
+      var right = dm ? '<div class="spell-right"><label class="sr" for="rar-' + esc(sp.name) + '">Rarity of ' + esc(sp.name) + '</label><select class="input rar-sel" id="rar-' + esc(sp.name) + '" data-spell-rarity="' + esc(sp.name) + '">' +
+        RARITIES.map(function (r) { return '<option' + (r === sp.rarity ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' +
+        (sp.homebrew ? '<a class="btn small quiet" href="#/spell-edit/' + encodeURIComponent(sp.name) + '">Edit</a>' : '') + '</div>' : rarityTag(sp.rarity);
+      return '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + (sp.homebrew ? ' <span class="tag plain" style="font-size:10px">Homebrew</span>' : '') + '</b><span>' + esc(spellMeta(sp)) + '</span><span>' + esc(cls) + ' · ' + esc(src) + '</span>' +
+        (sp.homebrew ? spellDetails(sp) : '') + (sp.notes ? '<span>' + esc(sp.notes) + '</span>' : '') + '</div>' + right + '</div>';
     }).join('') + '</div>';
     return html;
+  }
+  function reviewHtml() {
+    var list = pendingSpells();
+    if (!list.length) return '';
+    return '<section class="block"><h2 class="sec-title">Waiting for your review<small>' + list.length + '</small></h2><div class="tbl">' + list.map(function (sp) {
+      var id = 'rv-' + esc(sp.name);
+      return '<div class="tbl-row review"><div class="main"><b>' + esc(sp.name) + '</b><span>' + esc(spellMeta(sp)) + ' · from ' + esc(memberName(sp.submitted_by)) + '</span>' +
+        '<span>' + esc((sp.classes || []).join(', ') || 'No classes picked') + ' · suggested ' + esc(sp.rarity.toLowerCase()) + '</span>' + spellDetails(sp) +
+        '<div class="review-actions"><label class="sr" for="' + id + '-rar">Rarity</label><select class="input rar-sel" id="' + id + '-rar" data-review-rarity="' + esc(sp.name) + '">' +
+        RARITIES.map(function (r) { return '<option' + (r === sp.rarity ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' +
+        '<button type="button" class="btn small primary" data-act="spell-approve" data-name="' + esc(sp.name) + '">Approve</button>' +
+        '<a class="btn small" href="#/spell-edit/' + encodeURIComponent(sp.name) + '">Edit</a></div>' +
+        '<div class="review-actions"><label class="sr" for="' + id + '-note">Note to the player</label><input type="text" class="input" id="' + id + '-note" maxlength="300" placeholder="Note if you send it back, e.g. too strong for 2nd level">' +
+        '<button type="button" class="btn small" data-act="spell-return" data-name="' + esc(sp.name) + '">Send back</button></div></div></div>';
+    }).join('') + '</div></section>';
+  }
+  function mySubmissionsHtml() {
+    var mine = (spells || []).filter(function (x) { return x.homebrew && x.submitted_by === uid(); });
+    if (!mine.length) return '';
+    var label = { pending: '<span class="tag">Waiting for the DM</span>', returned: '<span class="tag">Sent back</span>', approved: '<span class="tag ok">Approved</span>' };
+    return '<section class="block"><h2 class="sec-title">Your homebrew<small>' + mine.length + '</small></h2><div class="tbl">' + mine.map(function (sp) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + '</b><span>' + esc(spellMeta(sp)) + '</span>' +
+        (sp.status === 'returned' && sp.dm_note ? '<span class="err" style="margin:0">DM: ' + esc(sp.dm_note) + '</span>' : '') + '</div>' +
+        label[sp.status] + (sp.status !== 'approved' ? '<a class="btn small quiet" href="#/spell-edit/' + encodeURIComponent(sp.name) + '">' + (sp.status === 'returned' ? 'Fix and resend' : 'Edit') + '</a>' : '') + '</div>';
+    }).join('') + '</div></section>';
   }
   function renderSpells() {
     if (spells === null) {
       $view.innerHTML = '<div class="page"><div class="empty">Opening the spell tomes…</div></div>';
-      loadSpells().then(function () { if (parseRoute().name === 'spells') render(); }).catch(function (e) { fail(e, 'Could not load the spells.'); });
+      loadSpells().then(function () { if (['spells', 'spell-new', 'spell-edit'].indexOf(parseRoute().name) >= 0) render(); }).catch(function (e) { fail(e, 'Could not load the spells.'); });
       return;
     }
     var f = ui.spellFilter;
@@ -1474,21 +1518,122 @@
     for (var i = 0; i <= 9; i++) levels.push([String(i), levelText(i)]);
     var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">Magic</p><h1>Spell Tomes</h1>' +
       '<p class="crumbs">Any spell can be learned from its tome. Rarity is how hard that tome is to find. See <a href="#/a/spell-tomes">Spell Tomes</a>.</p></div></section><div class="page">';
+    html += '<div class="actions"><a class="btn' + (dmView() ? '' : ' primary') + '" href="#/spell-new">+ Homebrew spell</a></div>';
+    if (dmView()) html += reviewHtml();
+    else html += mySubmissionsHtml();
     html += '<label class="search"><span class="sr">Search spells</span>' + SEARCH_ICON + '<input id="spell-search" type="search" placeholder="Search spells…" value="' + esc(f.q) + '" autocomplete="off"></label>';
     html += '<div class="filters-grid">' + sel('sp-rarity', 'rarity', 'Rarity', RARITIES, 'Any rarity') + sel('sp-level', 'level', 'Level', levels, 'Any level') +
-      sel('sp-class', 'cls', 'Class', SPELL_CLASSES, 'Any class') + sel('sp-school', 'school', 'School', SCHOOLS, 'Any school') + '</div>';
+      sel('sp-class', 'cls', 'Class', SPELL_CLASSES, 'Any class') + sel('sp-school', 'school', 'School', SCHOOLS, 'Any school') +
+      sel('sp-src', 'src', 'Source', [['official', 'Official'], ['homebrew', 'Homebrew']], 'Any source') + '</div>';
     if (dmView()) html += '<p class="note" style="margin:0">Change a spell’s rarity right in the list. It saves straight away.</p>';
     html += '<section class="block"><div id="spell-list">' + spellListHtml() + '</div></section></div>';
     $view.innerHTML = html;
   }
   function setSpellRarity(name, rarity) {
-    var sp = (spells || []).filter(function (x) { return x.name === name; })[0];
+    var sp = spellByName(name);
     if (!sp || RARITIES.indexOf(rarity) < 0) return;
     var before = sp.rarity;
     sp.rarity = rarity;
     sb.from('spells').update({ rarity: rarity, updated_at: new Date().toISOString() }).eq('name', name).then(function (r) {
       if (r.error) { sp.rarity = before; fail(r.error, 'Could not change that rarity.'); render(); return; }
       toast(name + ' is now ' + rarity.toLowerCase());
+    });
+  }
+
+  /* Homebrew spells: players write them, the DM approves, sends back or edits them. */
+  function renderSpellForm(name) {
+    if (spells === null) return renderSpells();
+    var sp = name ? spellByName(name) : null;
+    if (name && !sp) { location.replace('#/spells'); return; }
+    var dm = dmView();
+    if (sp && !dm && (sp.submitted_by !== uid() || sp.status === 'approved')) { location.replace('#/spells'); return; }
+    var v = sp || { name: '', level: 1, school: 'Evocation', classes: [], ritual: false, concentration: false, rarity: 'Common', casting_time: '1 action', spell_range: '', components: '', duration: 'Instantaneous', description: '' };
+    var opt = function (list, cur) { return list.map(function (o) { var val = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; return '<option value="' + esc(val) + '"' + (String(val) === String(cur) ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join(''); };
+    var levels = [];
+    for (var i = 0; i <= 9; i++) levels.push([i, levelText(i)]);
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/spells">Spells</a></p><h1 class="page-title">' + (sp ? 'Edit ' + esc(sp.name) : 'New homebrew spell') + '</h1>' +
+      (sp && sp.status === 'returned' && sp.dm_note ? '<p class="err">DM: ' + esc(sp.dm_note) + '</p>' : '') +
+      (!dm ? '<p class="note">Your DM reviews every homebrew spell before it joins the tome list. You can edit it until then.</p>' : '') +
+      '<form class="form" id="spell-form" novalidate data-name="' + esc(sp ? sp.name : '') + '">' +
+      '<div class="field"><label for="hb-name">Name</label><input type="text" id="hb-name" maxlength="80" value="' + esc(v.name) + '" required></div>' +
+      '<div class="two"><div class="field"><label for="hb-level">Level</label><select id="hb-level">' + opt(levels, v.level) + '</select></div>' +
+      '<div class="field"><label for="hb-school">School</label><select id="hb-school">' + opt(SCHOOLS, v.school) + '</select></div></div>' +
+      '<div class="field"><span class="lbl">Classes that learn it</span><div class="chips">' + SPELL_CLASSES.map(function (c) {
+        return '<label class="chip check"><input type="checkbox" data-hb-class value="' + c + '"' + ((v.classes || []).indexOf(c) >= 0 ? ' checked' : '') + '> ' + c + '</label>';
+      }).join('') + '</div><span class="hint">Leave all empty if anyone can learn it from the tome.</span></div>' +
+      '<div class="two"><div class="field"><label for="hb-time">Casting time</label><input type="text" id="hb-time" maxlength="60" value="' + esc(v.casting_time) + '"></div>' +
+      '<div class="field"><label for="hb-range">Range</label><input type="text" id="hb-range" maxlength="60" value="' + esc(v.spell_range) + '" placeholder="e.g. 60 feet"></div>' +
+      '<div class="field"><label for="hb-comp">Components</label><input type="text" id="hb-comp" maxlength="120" value="' + esc(v.components) + '" placeholder="e.g. V, S, M (a pinch of ash)"></div>' +
+      '<div class="field"><label for="hb-dur">Duration</label><input type="text" id="hb-dur" maxlength="60" value="' + esc(v.duration) + '"></div></div>' +
+      '<div class="chips" style="margin-bottom:12px"><label class="chip check"><input type="checkbox" id="hb-conc"' + (v.concentration ? ' checked' : '') + '> Concentration</label><label class="chip check"><input type="checkbox" id="hb-ritual"' + (v.ritual ? ' checked' : '') + '> Ritual</label></div>' +
+      '<div class="field"><label for="hb-desc">What it does</label><textarea id="hb-desc" maxlength="6000" style="min-height:180px">' + esc(v.description) + '</textarea></div>' +
+      '<div class="field"><label for="hb-rar">' + (dm ? 'Rarity' : 'Rarity you’d suggest') + '</label><select id="hb-rar">' + opt(RARITIES, v.rarity) + '</select></div>' +
+      '<p class="err" id="hb-err" hidden></p>' +
+      '<div class="actions"><button type="submit" class="btn primary">' + (dm ? (sp ? 'Save' : 'Add spell') : (sp ? 'Save and resend' : 'Send to the DM')) + '</button>' +
+      (sp ? '<button type="button" class="btn" data-act="spell-delete" data-name="' + esc(sp.name) + '">' + (dm ? 'Delete spell' : 'Withdraw') + '</button>' : '') + '</div></form></div>';
+    $view.innerHTML = html;
+  }
+  function saveSpellForm(form) {
+    var old = form.getAttribute('data-name');
+    var $err = document.getElementById('hb-err');
+    var show = function (m) { $err.textContent = m; $err.hidden = false; };
+    var dm = dmView();
+    var row = {
+      name: document.getElementById('hb-name').value.trim().replace(/\s+/g, ' ').slice(0, 80),
+      level: Number(document.getElementById('hb-level').value) || 0,
+      school: document.getElementById('hb-school').value,
+      classes: Array.prototype.map.call(form.querySelectorAll('[data-hb-class]:checked'), function (x) { return x.value; }),
+      casting_time: document.getElementById('hb-time').value.trim(),
+      spell_range: document.getElementById('hb-range').value.trim(),
+      components: document.getElementById('hb-comp').value.trim(),
+      duration: document.getElementById('hb-dur').value.trim(),
+      concentration: document.getElementById('hb-conc').checked,
+      ritual: document.getElementById('hb-ritual').checked,
+      description: document.getElementById('hb-desc').value.trim(),
+      rarity: document.getElementById('hb-rar').value,
+      book: 'Homebrew', homebrew: true, updated_at: new Date().toISOString()
+    };
+    if (!row.name) return show('Give the spell a name.');
+    if (!row.description) return show('Describe what the spell does.');
+    if ((!old || old.toLowerCase() !== row.name.toLowerCase()) && (spells || []).some(function (x) { return x.name.toLowerCase() === row.name.toLowerCase(); })) return show('There’s already a spell called that.');
+    var existing = old ? spellByName(old) : null;
+    if (!dm) { row.status = 'pending'; row.dm_note = ''; row.submitted_by = uid(); }
+    else if (!existing) { row.status = 'approved'; row.submitted_by = uid(); }
+    var op = existing ? sb.from('spells').update(row).eq('name', old) : sb.from('spells').insert(row);
+    op.then(function (r) {
+      if (r.error) return show(r.error.code === '23505' ? 'There’s already a spell called that.' : (r.error.message || 'Could not save the spell.'));
+      toast(dm ? 'Spell saved' : 'Sent to the DM for review');
+      return loadSpells().then(function () { go('#/spells'); });
+    });
+  }
+  function reviewSpell(name, approve) {
+    var sp = spellByName(name);
+    if (!sp) return;
+    var patch = { updated_at: new Date().toISOString() };
+    if (approve) {
+      var rs = document.querySelector('[data-review-rarity="' + CSS.escape(name) + '"]');
+      patch.status = 'approved'; patch.dm_note = ''; patch.rarity = rs ? rs.value : sp.rarity;
+    } else {
+      var note = document.getElementById('rv-' + name + '-note');
+      patch.status = 'returned'; patch.dm_note = note ? note.value.trim().slice(0, 300) : '';
+    }
+    sb.from('spells').update(patch).eq('name', name).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not update that spell.');
+      Object.assign(sp, patch);
+      toast(approve ? name + ' added to the tomes' : name + ' sent back');
+      render();
+    });
+  }
+  function deleteSpell(name) {
+    var sp = spellByName(name);
+    if (!sp) return;
+    if (ui.pendingDelete !== 'spell:' + name) { ui.pendingDelete = 'spell:' + name; toast('Tap again to confirm'); return; }
+    ui.pendingDelete = null;
+    sb.from('spells').delete().eq('name', name).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not remove that spell.');
+      spells = spells.filter(function (x) { return x.name !== name; });
+      toast(dmView() ? 'Spell deleted' : 'Spell withdrawn');
+      go('#/spells');
     });
   }
 
@@ -1955,7 +2100,7 @@
   var liveChannel = null;
   function busy() {
     var r = parseRoute();
-    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit'].indexOf(r.name) >= 0) return true;
+    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit'].indexOf(r.name) >= 0) return true;
     if (ui.pendingPin || ui.placing) return true;
     var a = document.activeElement;
     return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -1980,6 +2125,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_state' }, function () { liveRefresh(loadTravel); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_log' }, function () { liveRefresh(loadTravel); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'crimes' }, function () { liveRefresh(loadCrimes); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'spells' }, function () { if (spells !== null || isDM()) liveRefresh(loadSpells); })
       .subscribe();
   }
   function stopLive() { if (liveChannel) { sb.removeChannel(liveChannel); liveChannel = null; } }
@@ -2007,6 +2153,9 @@
         ui.filters = ui.filters || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
+      case 'spell-approve': return reviewSpell(el.getAttribute('data-name'), true);
+      case 'spell-return': return reviewSpell(el.getAttribute('data-name'), false);
+      case 'spell-delete': return deleteSpell(el.getAttribute('data-name'));
       case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
       case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
       case 'next-day': el.disabled = true; rememberMapScroll(); nextDay(el.getAttribute('data-camp')); break;
@@ -2313,6 +2462,7 @@
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
+      case 'spell-form': return saveSpellForm(f);
       case 'food-form': return saveFood(f);
       case 'scale-form': return saveScale();
       case 'pin-form': return savePin();
