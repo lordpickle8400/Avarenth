@@ -263,6 +263,8 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .pin span { max-width: 140px; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--text); font-family: var(--ui); font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pin-party::after { width: 22px; height: 22px; background: var(--secret); }
 .pin-character::after { background: var(--mana); }
+.pin-shop::after { width: 14px; height: 14px; border-radius: 4px; transform: none; background: #3fae5a; }
+.pin-shop span { font-size: 10px; }
 .pin.sel span { background: var(--accent); color: var(--on-accent); }
 .vitals.sum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 640px) { .vitals.sum { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

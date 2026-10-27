@@ -1844,7 +1844,7 @@
         (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
       if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
-      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
     html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
       '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
@@ -1859,6 +1859,9 @@
     list.forEach(function (mk) {
       html += '<button type="button" class="pin pin-' + mk.kind + (ui.selectedMarker === mk.id ? ' sel' : '') + '" style="left:' + (mk.x * 100) + '%;top:' + (mk.y * 100) + '%" data-act="marker" data-id="' + esc(mk.id) + '" aria-label="' + esc(markerLabel(mk)) + '"><span>' + esc(markerLabel(mk)) + '</span></button>';
     });
+    if (dm && loaded.shops) shops.filter(function (sp) { return sp.map_id === m.id && sp.map_x != null; }).forEach(function (sp) {
+      html += '<button type="button" class="pin pin-shop' + (ui.selectedShop === sp.id ? ' sel' : '') + '" style="left:' + (sp.map_x * 100) + '%;top:' + (sp.map_y * 100) + '%" data-act="shop-pin" data-id="' + esc(sp.id) + '" aria-label="Shop: ' + esc(sp.name) + '"><span>' + esc(sp.name) + '</span></button>';
+    });
     html += '</div></div><div class="actions" style="justify-content:flex-end"><button type="button" class="btn small" data-act="zoom" data-dir="-1" aria-label="Zoom out">−</button><span class="note">' + Math.round(zoom * 100) + '%</span><button type="button" class="btn small" data-act="zoom" data-dir="1" aria-label="Zoom in">+</button></div>';
 
     var sel = ui.selectedMarker ? list.filter(function (mk) { return mk.id === ui.selectedMarker; })[0] : null;
@@ -1871,6 +1874,11 @@
         '<div class="field"><label for="pin-article">Links to article (optional)</label><input type="text" id="pin-article" list="pin-articles" value="' + esc(ui.pendingPin.articleTitle || '') + '" placeholder="Start typing a title"><datalist id="pin-articles">' + visibleArticles().map(function (a) { return '<option value="' + esc(a.title) + '"></option>'; }).join('') + '</datalist></div>' +
         '<div class="field"><label for="pin-map">Opens map (optional)</label><select id="pin-map"><option value="">None</option>' + maps.filter(function (x) { return x.id !== m.id; }).map(function (x) { return '<option value="' + esc(x.id) + '"' + (ui.pendingPin.targetMapId === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>' +
         '<div class="actions"><button type="submit" class="btn primary">Save pin</button><button type="button" class="btn" data-act="pin-cancel">Cancel</button></div></form>';
+    } else if (dm && ui.selectedShop && shopById(ui.selectedShop) && shopById(ui.selectedShop).map_id === m.id) {
+      var ssel = shopById(ui.selectedShop);
+      html += '<section class="group-box"><h2>' + esc(ssel.name) + '</h2><p class="note" style="margin:0">' + esc([ssel.kind, ssel.keeper.replace(/\[\[|\]\]/g, '')].filter(Boolean).join(' · ')) + ' · ' + (ssel.stock || []).length + ' items</p><div class="actions">' +
+        '<a class="btn small primary" href="#/shop/' + encodeURIComponent(ssel.id) + '">Open shop</a><button type="button" class="btn small" data-act="shop-place" data-id="' + esc(ssel.id) + '">Move</button>' +
+        '<button type="button" class="btn small" data-act="shop-unpin" data-id="' + esc(ssel.id) + '">Take off map</button><button type="button" class="btn small quiet" data-act="shop-close">Close</button></div></section>';
     } else if (sel) {
       var art = null;
       if (sel.article_slug) art = articleBySlug(sel.article_slug);
@@ -1879,9 +1887,12 @@
         (art && (dm || !art.hidden) ? '<a class="btn small" href="#/a/' + encodeURIComponent(art.slug) + '">Read article</a>' : '') +
         (tm && (dm || tm.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(tm.id) + '">Open ' + esc(tm.name) + '</a>' : '') +
         (dm ? '<button type="button" class="btn small" data-act="marker-move" data-id="' + esc(sel.id) + '">Move</button>' + (sel.kind === 'place' ? '<button type="button" class="btn small" data-act="pin-edit" data-id="' + esc(sel.id) + '">Edit</button>' : '') + '<button type="button" class="btn small danger" data-act="marker-delete" data-id="' + esc(sel.id) + '">' + (ui.pendingDelete === sel.id ? 'Tap again' : 'Remove') + '</button>' : '') +
-        '<button type="button" class="btn small quiet" data-act="marker-close">Close</button></div></section>';
+        '<button type="button" class="btn small quiet" data-act="marker-close">Close</button></div>' +
+        (dm && art && art.template === 'Settlement' && loaded.shops ? '<p class="eyebrow" style="margin:10px 0 4px;font-size:11px">Shops in ' + esc(art.title) + '</p>' + shopRows(shopsAt(art.id)) +
+          '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(art.id) + '" data-campaign="' + esc(art.campaign_id || m.campaign_id || '') + '">+ Shop in ' + esc(art.title) + '</button></div>' : '') + '</section>';
     }
 
+    if (dm && loaded.shops) html += mapShopsSection(m);
     var people = list.filter(function (mk) { return mk.kind !== 'place'; });
     if (dm || m.show_markers) {
       html += '<section class="block"><h2 class="sec-title">Who’s here<small>' + (dm ? (m.show_markers ? 'Players can see these' : 'Only you can see these') : '') + '</small></h2>' +
@@ -1908,6 +1919,19 @@
       var label = near && Math.hypot(near.x - x, near.y - y) < 0.04 ? near.label : (travel[tc].dest_label || '');
       if (near && label === near.label) { x = near.x; y = near.y; }
       return saveTravel(tc, { map_id: m.id, dest_x: x, dest_y: y, dest_label: label }).then(function () { toast('Destination set'); render(); });
+    }
+    if (p.kind === 'shop') {
+      var psh = shopById(p.shopId);
+      if (!psh) return render();
+      return sb.from('shops').update({ map_id: m.id, map_x: x, map_y: y }).eq('id', psh.id).then(function (r) {
+        if (r.error) return fail(r.error, 'Could not pin the shop.');
+        psh.map_id = m.id; psh.map_x = x; psh.map_y = y; ui.selectedShop = psh.id; toast('Shop pinned'); render();
+      });
+    }
+    if (p.kind === 'newshop') {
+      var npl = settlementForMap(m);
+      ui.newShop = { place: npl ? npl.id : '', campaign: m.campaign_id || (npl && npl.campaign_id) || '', map_id: m.id, x: x, y: y };
+      return go('#/shop-edit/new');
     }
     if (p.kind === 'place' && !p.markerId) { ui.pendingPin = { mapId: m.id, x: x, y: y }; ui.selectedMarker = null; return render(); }
     var list = markers[m.id] || [];
@@ -2545,6 +2569,32 @@
       '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(a.id) + '" data-campaign="' + esc(a.campaign_id || '') + '">+ Add a shop</button></div><span class="note">Players never see shops. Open one when they walk in.</span></section>';
   }
 
+  // Which settlement a map shows: a pin elsewhere that opens this map, or the map's name.
+  function settlementForMap(m) {
+    var hit = null;
+    Object.keys(markers).forEach(function (mid) {
+      (markers[mid] || []).forEach(function (mk) {
+        if (!hit && mk.target_map_id === m.id && mk.article_slug) { var a = articleBySlug(mk.article_slug); if (a && a.template === 'Settlement') hit = a; }
+      });
+    });
+    if (hit) return hit;
+    var name = String(m.name || '').toLowerCase();
+    return settlementsFor(null).filter(function (a) { return name.indexOf(a.title.toLowerCase()) >= 0; })
+      .sort(function (a, b) { return b.title.length - a.title.length; })[0] || null;
+  }
+  function mapShopsSection(m) {
+    var pl = settlementForMap(m);
+    var here = shops.filter(function (sp) { return sp.map_id === m.id; });
+    var loose = pl ? shopsAt(pl.id).filter(function (sp) { return sp.map_id !== m.id; }) : [];
+    if (!pl && !here.length) return '';
+    var html = '<section class="block"><h2 class="sec-title">Shops' + (pl ? ' in ' + esc(pl.title) : '') + '<small>Only you see these</small></h2>';
+    if (here.length) html += '<div class="pill-row">' + here.map(function (sp) { return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="shop-pin" data-id="' + esc(sp.id) + '">' + esc(sp.name) + '</button>'; }).join('') + '</div>';
+    if (loose.length) html += '<p class="note" style="margin:10px 0 4px">Not on this map yet:</p><div class="tbl">' + loose.map(function (sp) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + '</b><span>' + esc(sp.kind) + '</span></div><a class="btn small quiet" href="#/shop/' + encodeURIComponent(sp.id) + '">Open</a><button type="button" class="btn small" data-act="shop-place" data-id="' + esc(sp.id) + '">Pin it</button></div>';
+    }).join('') + '</div>';
+    if (!here.length && !loose.length) html += '<div class="empty">No shops here yet.</div>';
+    return html + '<div class="actions"><button type="button" class="btn small primary" data-act="place" data-kind="newshop">+ New shop on the map</button></div></section>';
+  }
   function renderShops(slug) {
     if (!loaded.wiki || !loaded.shops) { $view.innerHTML = '<div class="page"><div class="empty">Opening the market…</div></div>'; return; }
     var camp = campaignBySlug(slug);
@@ -2575,7 +2625,8 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs">' + (camp ? '<a href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a>' : '') + (place ? ' › <a href="#/a/' + encodeURIComponent(place.slug) + '">' + esc(place.title) + '</a>' : '') + '</p><h1>' + esc(shop.name) + '</h1>' +
       '<p class="crumbs">' + [esc(shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
-    html += '<div class="actions"><a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
+    var smap = shop.map_id ? mapById(shop.map_id) : null;
+    html += '<div class="actions">' + (smap ? '<a class="btn" href="#/map/' + encodeURIComponent(smap.id) + '">On the ' + esc(smap.name) + ' map</a>' : '') + '<a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
       '<button type="button" class="btn quiet" data-act="shop-edit-toggle" aria-pressed="' + !!ui.shopEdit + '">' + (ui.shopEdit ? 'Done editing' : 'Edit stock') + '</button></div>';
 
     // Customer
@@ -2686,6 +2737,7 @@
     if (!id) {
       var pa = row.place_id ? articleById(row.place_id) : null;
       row.campaign_id = ns.campaign || (pa && pa.campaign_id) || null;
+      if (ns.map_id) { row.map_id = ns.map_id; row.map_x = ns.x; row.map_y = ns.y; }
     }
     var op = id ? sb.from('shops').update(row).eq('id', id).select('*').single() : sb.from('shops').insert(row).select('*').single();
     op.then(function (r) {
@@ -3358,8 +3410,25 @@
           ui.mapScroll = { id: parseRoute().arg, left: (fr.scrollLeft + fr.clientWidth / 2) * ratio - fr.clientWidth / 2, top: (fr.scrollTop + fr.clientHeight / 2) * ratio - fr.clientHeight / 2 };
         }
         ui.mapZoom = nz; render(); break;
+      case 'shop-pin':
+        if (ui.placing) return;
+        ui.selectedShop = el.getAttribute('data-id'); ui.selectedMarker = null; ui.pendingPin = null;
+        rememberMapScroll(); render(); break;
+      case 'shop-close': ui.selectedShop = null; rememberMapScroll(); render(); break;
+      case 'shop-place':
+        ui.placing = { mapId: parseRoute().arg, kind: 'shop', shopId: el.getAttribute('data-id') };
+        ui.selectedShop = null; ui.selectedMarker = null; rememberMapScroll(); render(); break;
+      case 'shop-unpin':
+        var sup = shopById(el.getAttribute('data-id'));
+        if (!sup) return;
+        sb.from('shops').update({ map_id: null, map_x: null, map_y: null }).eq('id', sup.id).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not do that.');
+          sup.map_id = null; sup.map_x = null; sup.map_y = null; ui.selectedShop = null; render();
+        });
+        break;
       case 'marker':
         if (ui.placing) return;
+        ui.selectedShop = null;
         ui.selectedMarker = el.getAttribute('data-id'); ui.pendingPin = null; ui.pendingDelete = null;
         rememberMapScroll(); render(); break;
       case 'marker-close': ui.selectedMarker = null; rememberMapScroll(); render(); break;
