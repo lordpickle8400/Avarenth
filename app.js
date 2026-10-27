@@ -293,7 +293,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadLibraries(), loadReputation(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -328,7 +328,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', library: 'wiki', 'library-edit': 'wiki', reputation: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
     var waiting = isDM() && spells ? pendingSpells().length : 0;
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
@@ -343,7 +343,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
-    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'library-edit', 'reputation'];
+    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
     }
@@ -367,8 +367,6 @@
       case 'campaign-edit': return renderCampaignEdit(r.arg);
       case 'join': return renderJoin();
       case 'spells': return renderSpells();
-      case 'library': return renderLibrary(r.arg);
-      case 'library-edit': return renderLibraryEdit(r.arg);
       case 'reputation': return renderReputation(r.arg);
       case 'spell-new': return renderSpellForm('');
       case 'spell-edit': return renderSpellForm(r.arg);
@@ -544,8 +542,7 @@
     var cmaps = mapsFor(camp.id);
     html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
       (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
-    html += librariesSection(camp);
-    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small><button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
+    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small>' + (dmView() ? '<a class="btn small quiet" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
     html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
     html += '</section></div>';
     $view.innerHTML = html;
@@ -1434,7 +1431,7 @@
       (edit ? '<div class="pool-edit"><label class="check"><input type="checkbox" id="mp-ovr" data-mana-override' + (s.mana.override ? ' checked' : '') + '> Set max by hand</label>' + (s.mana.override ? '<label for="mp-max">Max</label><input type="number" id="mp-max" data-pool="mana.max" value="' + num(s.mana.max, 0) + '">' : '<span class="note">' + (autoMana(s.cls, s.level) !== null ? 'Worked out from class and level.' : 'Set a class to work it out.') + '</span>') + '</div>' : '') + '</section></div>';
     if (can) html += '<div class="actions rest-row"><button type="button" class="btn" data-act="long-rest">Long rest</button><span class="note">Refills hit points, mana and charges, and gives back half your hit dice.</span></div>';
 
-    var tabs = ['Actions', 'Spells', 'Skills', 'Inventory', 'Features', 'Standing', 'Record', 'Notes'];
+    var tabs = ['Actions', 'Spells', 'Skills', 'Inventory', 'Features', 'Reputation', 'Record', 'Notes'];
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = 'Actions';
     html += '<div class="subtabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + t + '</button>'; }).join('') + '</div>';
     html += '<div role="tabpanel">' + sheetTab(c, s, edit, can, abil, pb, perc) + '</div>';
@@ -1512,7 +1509,7 @@
       });
       html += '</div>';
       if (can) html += '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field"><label for="it-name">Item</label><input type="text" id="it-name" maxlength="80"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div><div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></form>';
-    } else if (ui.sheetTab === 'Standing') {
+    } else if (ui.sheetTab === 'Reputation') {
       html += standingTabHtml(c, s);
     } else if (ui.sheetTab === 'Record') {
       var camp = c.campaign_id ? campaignById(c.campaign_id) : null;
@@ -2243,155 +2240,60 @@
     });
   }
 
-  /* ================= Reputation & tome libraries ================= */
+  /* ================= Reputation ================= */
+  // Standing is a step count from Neutral. A character starts where their class, species, background and faith put them
+  // (RULES.factionStart); the DM's changes are stored as a shift on top of that.
   var STANDINGS = ['Hostile', 'Cold', 'Neutral', 'Friendly', 'Allied', 'Devoted'];
-  var LIB_KINDS = ['Library', 'Shop', 'Black market', 'Temple', 'Teacher'];
-  var STANDING_ACCESS = { Hostile: 'Banned. They won’t deal with you.', Cold: 'No normal access.', Neutral: 'Common tomes, at half again the price.', Friendly: 'Common and uncommon tomes at standard prices.', Allied: 'Rare tomes too, at 20% off.', Devoted: 'Broad access, at half price.' };
-  var libraries = [], reputation = [];
-  var libStock = {};   // "library|character" -> rows from library_stock()
-  var libTomes = {};   // library id -> stock rows (DM only)
+  var STANDING_MEANS = { Hostile: 'They want you gone, or dead.', Cold: 'Distrusted. Expect closed doors.', Neutral: 'Just another face.', Friendly: 'They’ll hear you out and do small favors.', Allied: 'Trusted. Real help, real secrets.', Devoted: 'One of their own.' };
+  var reputation = [];
 
-  function loadLibraries() {
-    return sb.from('libraries').select('id, campaign_id, name, kind, faction_id, location, notes, hidden').order('name').then(function (r) {
-      if (r.error) throw r.error;
-      libraries = r.data || []; libStock = {}; libTomes = {}; loaded.libs = true;
-    });
-  }
   function loadReputation() {
-    return sb.from('reputation').select('character_id, faction_id, standing, note').then(function (r) {
+    return sb.from('reputation').select('character_id, faction_id, shift, note').then(function (r) {
       if (r.error) throw r.error;
-      reputation = r.data || []; libStock = {};
+      reputation = r.data || [];
     });
   }
-  function libraryById(id) { return libraries.filter(function (l) { return l.id === id; })[0] || null; }
   function articleById(id) { return articles.filter(function (a) { return a.id === id; })[0] || null; }
-  function standingOf(charId, factionId) { var r = reputation.filter(function (x) { return x.character_id === charId && x.faction_id === factionId; })[0]; return r ? r.standing : 'Neutral'; }
   function factionsFor(campId) {
     return visibleArticles().filter(function (a) { return a.template === 'Organization' && (!a.campaign_id || a.campaign_id === campId); })
       .sort(function (a, b) { return String(a.title).localeCompare(b.title); });
   }
-  function librariesFor(campId) { return libraries.filter(function (l) { return (!l.campaign_id || l.campaign_id === campId) && (dmView() || !l.hidden); }); }
   function standingTag(st) { return '<span class="tag st st-' + String(st).toLowerCase() + '">' + esc(st) + '</span>'; }
-  function factionLink(id) { var a = id ? articleById(id) : null; return a ? '<a class="link" href="#/a/' + encodeURIComponent(a.slug) + '">' + esc(a.title) + '</a>' : ''; }
-
-  function librariesSection(camp) {
-    var libs = librariesFor(camp.id);
-    var html = '<section class="block"><h2 class="sec-title">Libraries &amp; shops' + (dmView() ? '<small><a class="btn small quiet" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><button type="button" class="btn small quiet" data-act="new-library" data-campaign="' + esc(camp.id) + '">+ Add</button></small>' : '') + '</h2>';
-    if (!libs.length) return html + '<div class="empty">' + (dmView() ? 'No libraries yet. Add one to start stocking tomes.' : 'No libraries or shops known yet.') + '</div></section>';
-    return html + '<div class="list">' + libs.map(function (l) {
-      var f = l.faction_id ? articleById(l.faction_id) : null;
-      return '<a class="row" href="#/library/' + encodeURIComponent(l.id) + '"><span class="row-main"><b>' + esc(l.name) + '</b><span>' + esc([l.kind, f ? f.title : '', l.location].filter(Boolean).join(' · ')) + '</span></span>' + (l.hidden ? '<span class="tag">Hidden</span>' : '') + '</a>';
-    }).join('') + '</div></section>';
+  function faithGroup(patron) {
+    if (!patron) return null;
+    if ((RULES.gods || []).some(function (g) { return g.name === patron && g.good; })) return 'good';
+    if ((RULES.demons || []).some(function (d) { return d.name === patron; })) return 'demon';
+    return null;
   }
-
-  function libraryChars(l) {
-    var list = characters.filter(function (c) { return (!l.campaign_id || c.campaign_id === l.campaign_id) && (isDM() || c.owner_id === uid()); });
-    return list;
-  }
-  function renderLibrary(id) {
-    if (!loaded.wiki || !loaded.libs || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the library…</div></div>'; return; }
-    var l = libraryById(id);
-    if (!l || (l.hidden && !dmView())) { $view.innerHTML = '<div class="page narrow"><div class="empty">That place isn’t known to you.</div></div>'; return; }
-    var camp = l.campaign_id ? campaignById(l.campaign_id) : null;
-    var chars = libraryChars(l);
-    ui.libChar = ui.libChar || {};
-    var chId = ui.libChar[l.id] && chars.some(function (c) { return c.id === ui.libChar[l.id]; }) ? ui.libChar[l.id] : (chars[0] || {}).id;
-    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a>' + (camp ? ' › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a>' : '') + '</p><h1>' + esc(l.name) + '</h1>' +
-      '<p class="crumbs">' + [esc(l.kind), factionLink(l.faction_id), esc(l.location)].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
-    if (l.notes) html += '<div class="prose">' + rich(l.notes) + '</div>';
-    if (dmView()) html += '<div class="actions"><a class="btn" href="#/library-edit/' + encodeURIComponent(l.id) + '">Edit</a>' + (l.hidden ? '<span class="tag">Hidden from players</span>' : '') + '</div>';
-    if (!chars.length) {
-      html += '<div class="empty">' + (isDM() ? 'No characters in this campaign yet.' : 'You need a character in this campaign to browse here.') + '</div>';
-    } else {
-      html += '<div class="field"><label for="lib-char">Browsing as</label><select id="lib-char" data-lib-char="' + esc(l.id) + '">' + chars.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === chId ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div>';
-      var st = l.faction_id ? standingOf(chId, l.faction_id) : null;
-      html += '<div class="group-box standing-box">' + (l.faction_id ? '<p style="margin:0">Standing with ' + factionLink(l.faction_id) + ': ' + standingTag(st) + '</p><p class="note" style="margin:4px 0 0">' + esc(STANDING_ACCESS[st]) + '</p>'
-        : '<p class="note" style="margin:0">Open to anyone: common and uncommon tomes at standard prices.</p>') + (l.kind === 'Black market' ? '<p class="note" style="margin:4px 0 0">Black-market prices: about double, no questions asked.</p>' : '') + '</div>';
-      var key = l.id + '|' + chId;
-      if (libStock[key] === undefined) {
-        libStock[key] = null;
-        sb.rpc('library_stock', { lib: l.id, ch: chId }).then(function (r) {
-          if (r.error) { libStock[key] = []; fail(r.error, 'Could not open the stock.'); }
-          else libStock[key] = r.data || [];
-          if (parseRoute().name === 'library') render();
-        });
-      }
-      var rows = libStock[key];
-      var c = charById(chId), s = c ? normSheet(c.sheet) : defaultSheet();
-      var owned = (s.tomes || []).map(function (t) { return t.name; }).concat(s.spells.map(function (x) { return x.name; }));
-      html += '<section class="block"><h2 class="sec-title">Tomes' + (rows ? '<small>' + rows.length + ' you can see · ' + num(s.coins.gp, 0) + ' ' + esc(coinName('gp')) + '</small>' : '') + '</h2>';
-      if (rows === null) html += '<div class="empty">Looking over the shelves…</div>';
-      else if (!rows.length) html += '<div class="empty">' + (st && STANDINGS.indexOf(st) < 2 ? 'They won’t show you anything.' : 'Nothing here you can see. Better standing may open more shelves.') + '</div>';
-      else html += '<div class="tbl">' + rows.map(function (t) {
-        var have = owned.indexOf(t.spell_name) >= 0, sold = t.qty !== null && t.qty <= 0, poor = num(s.coins.gp, 0) < t.price;
-        var canBuy = c && (c.owner_id === uid() || isDM());
-        return '<div class="tbl-row"><div class="main"><b>' + esc(t.spell_name) + '</b><span>' + esc(levelText(t.level) + ' · ' + t.school) + ' · ' + t.price + ' gp' + (t.qty !== null ? ' · ' + t.qty + ' left' : '') + '</span></div>' + rarityTag(t.rarity) +
-          (have ? '<span class="tag ok">Owned</span>' : sold ? '<span class="tag plain">Sold out</span>' : canBuy ? '<button type="button" class="btn small primary" data-act="buy-tome" data-lib="' + esc(l.id) + '" data-ch="' + esc(chId) + '" data-spell="' + esc(t.spell_name) + '"' + (poor ? ' disabled' : '') + '>Buy</button>' : '') + '</div>';
-      }).join('') + '</div>';
-      html += '<p class="note">A bought tome goes in your pack. To learn it, open your sheet’s Spells tab and choose “A tome I found”. Learning costs gold and study time too (see the <a href="#/a/mana-guide">Mana Guide</a>).</p></section>';
+  // Where a character starts with a faction, and why.
+  function startStanding(s, fac) {
+    var rule = (RULES.factionStart || {})[fac.slug] || {}, pts = 0, why = [];
+    function add(n, label) { if (n) { pts += n; why.push(label + ' ' + (n > 0 ? '+' : '−') + Math.abs(n)); } }
+    if (rule.base) add(rule.base, 'Everyone');
+    if (rule.cls && s.cls) add(rule.cls[s.cls] || 0, s.cls);
+    if (rule.species && s.species) add(rule.species[s.species] || 0, s.species);
+    if (rule.bg && s.background) add(rule.bg[s.background] || 0, s.background);
+    if (rule.faith && s.patron) {
+      var f = rule.faith[s.patron] !== undefined ? rule.faith[s.patron] : (rule.faith[faithGroup(s.patron)] || 0);
+      add(f, s.patron);
     }
-    if (dmView()) html += libraryStockEditor(l);
-    html += '</div>';
-    $view.innerHTML = html;
+    return { pts: Math.max(-2, Math.min(2, pts)), why: why };
   }
-
-  function libraryStockEditor(l) {
-    if (libTomes[l.id] === undefined) {
-      libTomes[l.id] = null;
-      sb.from('library_tomes').select('spell_name, price, qty, min_standing').eq('library_id', l.id).then(function (r) {
-        if (r.error) { libTomes[l.id] = []; return fail(r.error); }
-        libTomes[l.id] = r.data || [];
-        if (parseRoute().name === 'library') render();
-      });
-    }
-    if (spells === null) loadSpells().then(function () { if (parseRoute().name === 'library') render(); }).catch(function () {});
-    var rows = libTomes[l.id];
-    var html = '<section class="block group-box"><h2>Stock (DM)</h2><p class="note" style="margin-top:0">Players only see tomes their standing allows: common at Neutral, uncommon at Friendly, rare at Allied, very rare and legendary at Devoted. Leave price blank to use the Mana Guide price.</p>';
-    if (rows === null) return html + '<div class="empty">Loading stock…</div></section>';
-    html += '<div class="tbl">' + (rows.length ? rows.map(function (t) {
-      var sp = spellByName(t.spell_name);
-      return '<div class="tbl-row stock-row"><div class="main"><b>' + esc(t.spell_name) + '</b><span>' + (sp ? esc(levelText(sp.level)) + ' · ' + esc(sp.rarity) : '') + '</span></div>' +
-        '<label class="sr" for="tp-' + esc(t.spell_name) + '">Base price</label><input type="number" class="input mini" id="tp-' + esc(t.spell_name) + '" data-stock="price" data-spell="' + esc(t.spell_name) + '" data-lib="' + esc(l.id) + '" value="' + (t.price === null ? '' : t.price) + '" placeholder="gp" min="0" inputmode="numeric">' +
-        '<label class="sr" for="tq-' + esc(t.spell_name) + '">Copies</label><input type="number" class="input mini" id="tq-' + esc(t.spell_name) + '" data-stock="qty" data-spell="' + esc(t.spell_name) + '" data-lib="' + esc(l.id) + '" value="' + (t.qty === null ? '' : t.qty) + '" placeholder="∞" min="0" inputmode="numeric">' +
-        '<label class="sr" for="tm-' + esc(t.spell_name) + '">Standing needed</label><select class="input mini" id="tm-' + esc(t.spell_name) + '" data-stock="min_standing" data-spell="' + esc(t.spell_name) + '" data-lib="' + esc(l.id) + '"><option value="">By rarity</option>' + STANDINGS.slice(2).map(function (x) { return '<option' + (t.min_standing === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select>' +
-        '<button type="button" class="btn small quiet" data-act="stock-rm" data-lib="' + esc(l.id) + '" data-spell="' + esc(t.spell_name) + '" aria-label="Remove ' + esc(t.spell_name) + '">✕</button></div>';
-    }).join('') : '<div class="empty">Nothing on the shelves yet.</div>') + '</div>';
-    html += '<datalist id="dl-all-spells">' + (spells || []).filter(function (x) { return x.status === 'approved'; }).map(function (x) { return '<option value="' + esc(x.name) + '">'; }).join('') + '</datalist>' +
-      '<form class="inline-form" id="stock-add" novalidate data-lib="' + esc(l.id) + '" style="margin-top:10px"><div class="field"><label for="st-spell">Add a tome</label><input type="text" id="st-spell" list="dl-all-spells" placeholder="Spell name"></div><button type="submit" class="btn primary">Add</button></form>' +
-      '<p class="note">Columns: base price (gp), copies (blank = unlimited), standing needed.</p></section>';
-    return html;
+  function repRow(charId, factionId) { return reputation.filter(function (x) { return x.character_id === charId && x.faction_id === factionId; })[0] || null; }
+  function standingFor(c, fac) {
+    var st = startStanding(normSheet(c.sheet), fac), row = repRow(c.id, fac.id), shift = row ? num(row.shift, 0) : 0;
+    var idx = Math.max(0, Math.min(5, st.pts + shift + 2));
+    return { name: STANDINGS[idx], idx: idx, start: STANDINGS[st.pts + 2], startPts: st.pts, shift: shift, why: st.why };
   }
-
-  function renderLibraryEdit(id) {
-    if (!loaded.wiki || !loaded.libs) { $view.innerHTML = '<div class="page"><div class="empty">Opening…</div></div>'; return; }
-    var l = id && id !== 'new' ? libraryById(id) : null;
-    if (id && id !== 'new' && !l) { location.replace('#/wiki'); return; }
-    var v = l || { name: '', kind: 'Library', faction_id: '', location: '', notes: '', hidden: false, campaign_id: ui.newLibCampaign || '' };
-    var facs = factionsFor(v.campaign_id || null);
-    $view.innerHTML = '<div class="page narrow"><form class="form" id="library-form" novalidate data-id="' + esc(l ? l.id : '') + '"><div><p class="eyebrow">' + (l ? 'Edit' : 'New') + ' library or shop</p><h1 class="page-title">' + (l ? esc(l.name) : 'Add a place that holds tomes') + '</h1></div>' +
-      '<div class="field"><label for="lb-name">Name</label><input type="text" id="lb-name" maxlength="80" value="' + esc(v.name) + '" placeholder="e.g. The Royal Archive of Loreaon"></div>' +
-      '<div class="two"><div class="field"><label for="lb-kind">Kind</label><select id="lb-kind">' + LIB_KINDS.map(function (k) { return '<option' + (k === v.kind ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field"><label for="lb-camp">Campaign</label><select id="lb-camp">' + campaignOptions(v.campaign_id, true, 'Whole world') + '</select></div></div>' +
-      '<div class="field"><label for="lb-fac">Run by</label><select id="lb-fac"><option value="">No faction (open to anyone)</option>' + facs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === v.faction_id ? ' selected' : '') + '>' + esc(a.title) + '</option>'; }).join('') + '</select><span class="hint">Standing with this faction decides what a character can see and the price.</span></div>' +
-      '<div class="field"><label for="lb-loc">Where</label><input type="text" id="lb-loc" maxlength="120" value="' + esc(v.location) + '" placeholder="e.g. Loreaon"></div>' +
-      '<div class="field"><label for="lb-notes">Notes players see</label><textarea id="lb-notes" maxlength="1000">' + esc(v.notes) + '</textarea></div>' +
-      '<label class="check"><input type="checkbox" id="lb-hidden"' + (v.hidden ? ' checked' : '') + '> Hidden from players</label>' +
-      '<div class="actions"><button type="submit" class="btn primary">Save</button><a class="btn" href="' + (l ? '#/library/' + encodeURIComponent(l.id) : '#/wiki') + '">Cancel</a>' + (l ? '<button type="button" class="btn danger" data-act="library-delete" data-id="' + esc(l.id) + '">' + (ui.pendingDelete === 'lib:' + l.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div></form></div>';
+  function standingSelect(c, fac, st, id) {
+    return '<select class="input rar-sel st-sel st-' + st.name.toLowerCase() + '"' + (id ? ' id="' + id + '"' : '') + ' data-rep="' + esc(c.id + '|' + fac.id) + '" aria-label="' + esc(c.name) + '’s standing with ' + esc(fac.title) + '">' +
+      STANDINGS.map(function (x) { return '<option' + (x === st.name ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select>';
   }
-  function saveLibrary(form) {
-    var id = form.getAttribute('data-id');
-    var row = {
-      name: document.getElementById('lb-name').value.trim().slice(0, 80), kind: document.getElementById('lb-kind').value,
-      campaign_id: document.getElementById('lb-camp').value || null, faction_id: document.getElementById('lb-fac').value || null,
-      location: document.getElementById('lb-loc').value.trim().slice(0, 120), notes: document.getElementById('lb-notes').value.trim().slice(0, 1000),
-      hidden: document.getElementById('lb-hidden').checked
-    };
-    if (!row.name) return toast('Give it a name.');
-    var op = id ? sb.from('libraries').update(row).eq('id', id).select('id').single() : sb.from('libraries').insert(row).select('id').single();
-    op.then(function (r) {
-      if (r.error) return fail(r.error, 'Could not save.');
-      return loadLibraries().then(function () { toast('Saved'); go('#/library/' + encodeURIComponent(r.data.id)); });
-    });
+  function standingWhy(st) {
+    var bits = [];
+    bits.push(st.why.length ? 'Started ' + st.start + ' (' + st.why.join(', ') + ')' : 'Started Neutral');
+    if (st.shift) bits.push((st.shift > 0 ? 'risen ' : 'fallen ') + Math.abs(st.shift) + ' since');
+    return bits.join(', ');
   }
 
   function renderReputation(slug) {
@@ -2401,61 +2303,47 @@
     var chars = campaignChars(camp.id), facs = factionsFor(camp.id);
     var q = (ui.repQuery || '').trim().toLowerCase();
     var html = '<div class="page"><p class="crumbs"><a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1 class="page-title">Reputation</h1>' +
-      '<p class="note">Each character’s standing with each faction. It decides which tomes they can see and what they pay. Everyone starts Neutral. Players see their own standings on their sheet.</p>' +
+      '<p class="note">Every character starts somewhere with each faction, based on class, species, background and faith. Change a standing here or on their sheet. Players see theirs on the Reputation tab.</p>' +
       '<label class="search"><span class="sr">Find a faction</span>' + SEARCH_ICON + '<input id="rep-q" type="search" placeholder="Find a faction…" value="' + esc(ui.repQuery || '') + '" autocomplete="off"></label>';
     if (!chars.length) html += '<div class="empty">No characters in this campaign yet.</div>';
     else facs.filter(function (a) { return !q || a.title.toLowerCase().indexOf(q) >= 0; }).forEach(function (a) {
-      html += '<section class="block rep-block"><h2 class="sec-title">' + esc(a.title) + '</h2><div class="tbl">' + chars.map(function (c) {
-        var st = standingOf(c.id, a.id);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(c.name) + '</b></div><label class="sr" for="rp-' + esc(c.id + a.id) + '">Standing of ' + esc(c.name) + ' with ' + esc(a.title) + '</label><select class="input rar-sel st-sel st-' + st.toLowerCase() + '" id="rp-' + esc(c.id + a.id) + '" data-rep="' + esc(c.id + '|' + a.id) + '">' + STANDINGS.map(function (x) { return '<option' + (x === st ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></div>';
+      html += '<section class="block rep-block"><h2 class="sec-title">' + esc(a.title) + (a.hidden ? '<small>Hidden</small>' : '') + '</h2><div class="tbl">' + chars.map(function (c) {
+        var st = standingFor(c, a);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(c.name) + '</b><span>' + esc(standingWhy(st)) + '</span></div>' + standingSelect(c, a, st, 'rp-' + c.id + a.id) + '</div>';
       }).join('') + '</div></section>';
     });
     html += '</div>';
     $view.innerHTML = html;
   }
+  // The DM picks the standing they want; we store how far that is from where the character started.
   function setStanding(charId, factionId, standing) {
-    if (STANDINGS.indexOf(standing) < 0) return;
-    sb.from('reputation').upsert({ character_id: charId, faction_id: factionId, standing: standing, updated_at: new Date().toISOString() }).then(function (r) {
+    var c = charById(charId), fac = articleById(factionId), idx = STANDINGS.indexOf(standing);
+    if (!c || !fac || idx < 0) return;
+    var shift = idx - 2 - startStanding(normSheet(c.sheet), fac).pts;
+    sb.from('reputation').upsert({ character_id: charId, faction_id: factionId, shift: shift, updated_at: new Date().toISOString() }).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save that standing.');
-      var row = reputation.filter(function (x) { return x.character_id === charId && x.faction_id === factionId; })[0];
-      if (row) row.standing = standing; else reputation.push({ character_id: charId, faction_id: factionId, standing: standing, note: '' });
-      libStock = {};
-      toast('Now ' + standing);
-      render();
-    });
-  }
-  function buyTome(libId, chId, spell) {
-    var c = charById(chId);
-    if (!c) return;
-    clearTimeout(saveTimers['c' + c.id]);
-    sb.rpc('buy_tome', { lib: libId, ch: chId, spell: spell }).then(function (r) {
-      if (r.error) return toast(r.error.message || 'Could not buy that tome.');
-      c.sheet = r.data;
-      delete libStock[libId + '|' + chId];
-      delete libTomes[libId];
-      toast('Bought the ' + spell + ' tome');
+      var row = repRow(charId, factionId);
+      if (row) row.shift = shift; else reputation.push({ character_id: charId, faction_id: factionId, shift: shift, note: '' });
+      toast(c.name + ' is now ' + standing + ' with ' + fac.title);
       render();
     });
   }
   function standingTabHtml(c, s) {
     var facs = factionsFor(c.campaign_id || null), dm = dmView();
-    var set = facs.filter(function (a) { return reputation.some(function (x) { return x.character_id === c.id && x.faction_id === a.id; }); });
-    var html = '<section class="block" style="margin-top:12px"><h2 class="sec-title">Standing</h2><p class="note" style="margin-top:0">Your reputation decides which tomes a faction will show you and what you pay. Anyone not listed sees you as Neutral.</p><div class="tbl">';
-    var list = dm ? facs : set;
-    if (!list.length) html += '<div class="empty">Neutral with everyone, for now.</div>';
-    list.forEach(function (a) {
-      var st = standingOf(c.id, a.id);
-      html += '<div class="tbl-row"><div class="main"><b><a class="link" href="#/a/' + encodeURIComponent(a.slug) + '">' + esc(a.title) + '</a></b><span>' + esc(STANDING_ACCESS[st]) + '</span></div>' +
-        (dm ? '<select class="input rar-sel st-sel st-' + st.toLowerCase() + '" data-rep="' + esc(c.id + '|' + a.id) + '" aria-label="Standing with ' + esc(a.title) + '">' + STANDINGS.map(function (x) { return '<option' + (x === st ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select>' : standingTag(st)) + '</div>';
-    });
-    html += '</div></section>';
+    var html = '<section class="block" style="margin-top:12px"><h2 class="sec-title">Reputation</h2><p class="note" style="margin-top:0">How each faction sees you. You start where your class, people, past and faith put you. Your deeds move it from there.</p>';
+    if (!facs.length) return html + '<div class="empty">No factions known yet.</div></section>';
+    var rows = facs.map(function (a) { return { a: a, st: standingFor(c, a) }; });
+    // Strongest feelings first, either way.
+    rows.sort(function (x, y) { return Math.abs(y.st.idx - 2) - Math.abs(x.st.idx - 2) || String(x.a.title).localeCompare(y.a.title); });
+    html += '<div class="tbl">' + rows.map(function (r) {
+      return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/a/' + encodeURIComponent(r.a.slug) + '">' + esc(r.a.title) + '</a></b><span>' + esc(STANDING_MEANS[r.st.name]) + ' ' + esc(standingWhy(r.st)) + '.</span></div>' +
+        (dm ? standingSelect(c, r.a, r.st) : standingTag(r.st.name)) + '</div>';
+    }).join('') + '</div></section>';
     var tomes = s.tomes || [];
-    html += '<section class="block"><h2 class="sec-title">Tomes in your pack<small>' + tomes.length + '</small></h2>' + (tomes.length ? '<div class="tbl">' + tomes.map(function (t) {
+    if (tomes.length) html += '<section class="block"><h2 class="sec-title">Tomes in your pack<small>' + tomes.length + '</small></h2><div class="tbl">' + tomes.map(function (t) {
       var learned = s.spells.some(function (x) { return x.name === t.name; });
       return '<div class="tbl-row"><div class="main"><b>' + esc(t.name) + '</b><span>' + esc([t.from ? 'From ' + t.from : '', t.paid ? t.paid + ' gp' : ''].filter(Boolean).join(' · ')) + '</span></div>' + (learned ? '<span class="tag ok">Learned</span>' : '<span class="tag plain">Not learned yet</span>') + '</div>';
-    }).join('') + '</div>' : '<div class="empty">No tomes yet. Find them in libraries and shops, or out in the world.</div>') + '</section>';
-    var libs = librariesFor(c.campaign_id || null);
-    if (libs.length) html += '<p class="note">Places that hold tomes: ' + libs.map(function (l) { return '<a href="#/library/' + encodeURIComponent(l.id) + '">' + esc(l.name) + '</a>'; }).join(', ') + '.</p>';
+    }).join('') + '</div></section>';
     return html;
   }
 
@@ -2922,7 +2810,7 @@
   var liveChannel = null;
   function busy() {
     var r = parseRoute();
-    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up', 'library-edit'].indexOf(r.name) >= 0) return true;
+    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up'].indexOf(r.name) >= 0) return true;
     if (ui.pendingPin || ui.placing) return true;
     var a = document.activeElement;
     return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -2948,8 +2836,6 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_log' }, function () { liveRefresh(loadTravel); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'crimes' }, function () { liveRefresh(loadCrimes); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reputation' }, function () { liveRefresh(loadReputation); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'libraries' }, function () { liveRefresh(loadLibraries); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'library_tomes' }, function () { libStock = {}; libTomes = {}; liveRefresh(function () { return null; }); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'spells' }, function () { if (spells !== null || isDM()) liveRefresh(loadSpells); })
       .subscribe();
   }
@@ -2978,23 +2864,6 @@
         ui.filters = ui.filters || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
-      case 'new-library': ui.newLibCampaign = el.getAttribute('data-campaign') || ''; go('#/library-edit/new'); break;
-      case 'buy-tome': return buyTome(el.getAttribute('data-lib'), el.getAttribute('data-ch'), el.getAttribute('data-spell'));
-      case 'stock-rm':
-        var rl = el.getAttribute('data-lib'), rsn = el.getAttribute('data-spell');
-        sb.from('library_tomes').delete().eq('library_id', rl).eq('spell_name', rsn).then(function (r) {
-          if (r.error) return fail(r.error, 'Could not remove it.');
-          libTomes[rl] = (libTomes[rl] || []).filter(function (x) { return x.spell_name !== rsn; }); libStock = {}; render();
-        });
-        break;
-      case 'library-delete':
-        var dlid = el.getAttribute('data-id');
-        if (ui.pendingDelete !== 'lib:' + dlid) { ui.pendingDelete = 'lib:' + dlid; el.textContent = 'Tap again to delete'; return; }
-        sb.from('libraries').delete().eq('id', dlid).then(function (r) {
-          if (r.error) return fail(r.error, 'Could not delete it.');
-          return loadLibraries().then(function () { toast('Deleted'); go('#/wiki'); });
-        });
-        break;
       case 'spell-approve': return reviewSpell(el.getAttribute('data-name'), true);
       case 'spell-return': return reviewSpell(el.getAttribute('data-name'), false);
       case 'spell-delete': return deleteSpell(el.getAttribute('data-name'));
@@ -3326,16 +3195,7 @@
     if (ui.lvl && t.hasAttribute('data-lv')) { ui.lvl[t.getAttribute('data-lv')] = t.value; if (t.tagName === 'SELECT') render(); return; }
     if (t.id === 'pick-pay' && ui.pick) { ui.pick.pay = t.checked; return; }
     if (t.hasAttribute('data-mana-override')) { var oc = currentChar(); if (oc) { oc.sheet.mana.override = t.checked; if (t.checked) oc.sheet.mana.max = manaMax(Object.assign({}, oc.sheet, { mana: Object.assign({}, oc.sheet.mana, { override: false }) })); saveCharSoon(oc); render(); } return; }
-    if (t.hasAttribute('data-lib-char')) { ui.libChar = ui.libChar || {}; ui.libChar[t.getAttribute('data-lib-char')] = t.value; return render(); }
     if (t.hasAttribute('data-rep')) { var rp = t.getAttribute('data-rep').split('|'); return setStanding(rp[0], rp[1], t.value); }
-    if (t.hasAttribute('data-stock')) {
-      var sl = t.getAttribute('data-lib'), ssn = t.getAttribute('data-spell'), field = t.getAttribute('data-stock'), patch = {};
-      patch[field] = field === 'min_standing' ? (t.value || null) : (t.value === '' ? null : Math.max(0, num(t.value, 0)));
-      return sb.from('library_tomes').update(patch).eq('library_id', sl).eq('spell_name', ssn).then(function (r) {
-        if (r.error) return fail(r.error, 'Could not save that.');
-        (libTomes[sl] || []).forEach(function (x) { if (x.spell_name === ssn) x[field] = patch[field]; }); libStock = {}; toast('Saved');
-      });
-    }
     if (t.hasAttribute('data-spell-rarity')) return setSpellRarity(t.getAttribute('data-spell-rarity'), t.value);
     if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
     if (t.hasAttribute('data-travel') || t.hasAttribute('data-travel-text')) {
@@ -3375,16 +3235,6 @@
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
       case 'spell-form': return saveSpellForm(f);
-      case 'library-form': return saveLibrary(f);
-      case 'stock-add':
-        var slib = f.getAttribute('data-lib'), sname = document.getElementById('st-spell').value.trim();
-        var sfound = (spells || []).filter(function (x) { return x.name.toLowerCase() === sname.toLowerCase(); })[0];
-        if (!sfound) return toast('Pick a spell from the list.');
-        return sb.from('library_tomes').insert({ library_id: slib, spell_name: sfound.name }).then(function (r) {
-          if (r.error) return fail(r.error, r.error.code === '23505' ? 'That tome is already here.' : 'Could not add it.');
-          (libTomes[slib] = libTomes[slib] || []).push({ spell_name: sfound.name, price: null, qty: null, min_standing: null }); libStock = {};
-          render(); var ns = document.getElementById('st-spell'); if (ns) ns.focus();
-        });
       case 'food-form': return saveFood(f);
       case 'scale-form': return saveScale();
       case 'pin-form': return savePin();

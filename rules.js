@@ -301,11 +301,11 @@
     devotionRequired: ['Cleric', 'Paladin', 'Warlock'],   // Paladins may swear to their oath alone instead of a god
     natureOnly: ['Druid'],
     gods: [
-      { name: 'Akoron', about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akorianism' },
-      { name: 'Roselle', about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism', nature: true },
+      { name: 'Akoron', good: true, about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akorianism' },
+      { name: 'Roselle', good: true, about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism', nature: true },
       { name: 'Azrul', about: 'God of death', domains: 'Death, Grave', article: 'Akorianism' },
-      { name: 'Korinth', about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Akorianism' },
-      { name: 'Thorum', about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism', nature: true },
+      { name: 'Korinth', good: true, about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Akorianism' },
+      { name: 'Thorum', good: true, about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism', nature: true },
       { name: 'Florin', about: 'God of trickery', domains: 'Trickery', article: 'Akorianism' },
       { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Akorianism' }
     ],
@@ -319,5 +319,22 @@
       { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
       { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
       { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' }
-    ] };
+    ],
+    // Where each faction starts with a new character, in steps from Neutral (+1 Friendly, +2 Allied, -1 Cold, -2 Hostile).
+    // base applies to everyone; then class, species, background and faith add up. A named god or demon beats the
+    // 'good' and 'demon' groups. Starting standing is capped at Allied and Hostile; the DM moves it from there.
+    // Crown and noble factions only care about blood: no class or faith pulls them off Neutral.
+    factionStart: {
+      'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },
+      'the-red-scales': { base: -2, species: { Dragonborn: 3, Kobold: 2, Lizardfolk: 1 } },
+      'spider-cult': { base: -1, cls: { Druid: -1 }, faith: { Sytha: 3, good: -1 } },
+      'the-blooming-isle': { cls: { Monk: 1, Druid: 1 }, bg: { Acolyte: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
+      'the-thornwardens': { cls: { Paladin: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
+      'the-city-state-of-coralyn': { species: { Elf: 1 }, faith: { Thorum: 1 } },
+      'the-tribe-of-orock': { species: { Goliath: 1 }, cls: { Barbarian: 1 } },
+      'house-anvilborn': { species: { Dwarf: 1 } },
+      'house-ignis': { species: { Dragonborn: 1, Kobold: 1 } },
+      'the-last-watch': { species: { Dragonborn: -2, Kobold: -2, Lizardfolk: -1 } },
+      'the-nine-below': { faith: { 'The Nine Below': 2, Azrul: -1 } }
+    } };
 })();
