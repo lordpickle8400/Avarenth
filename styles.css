@@ -356,3 +356,16 @@ select.input.mini { width: 110px; }
 .stock-row { flex-wrap: wrap; }
 .stock-row .main { flex: 1 1 100%; }
 @media (min-width: 640px) { .stock-row { flex-wrap: nowrap; } .stock-row .main { flex: 1 1 auto; } }
+
+/* Shops */
+.counter .two { align-items: end; }
+.counter-line { margin: 4px 0 2px; font-family: var(--ui); }
+.recog-res { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; font-family: var(--ui); background: var(--card, rgba(127,127,127,.08)); }
+.recog-res.hit { border-left: 3px solid #d9534f; }
+.recog-res.miss { border-left: 3px solid #3fae5a; }
+.recog .seg { margin-top: 8px; }
+.kind-h { font-family: var(--ui); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; opacity: .7; margin: 16px 0 6px; }
+.place-box { margin: 8px 0 10px; }
+.place-box .chips { margin-top: 4px; }
+.shops-secret .list, .shops-secret .place-box { margin-top: 8px; }
+.tbl-row s.note { font-size: 12px; margin-left: 4px; }

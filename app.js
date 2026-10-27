@@ -293,7 +293,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadShops(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -328,7 +328,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
     var waiting = isDM() && spells ? pendingSpells().length : 0;
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
@@ -343,7 +343,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
-    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation'];
+    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
     }
@@ -368,6 +368,9 @@
       case 'join': return renderJoin();
       case 'spells': return renderSpells();
       case 'reputation': return renderReputation(r.arg);
+      case 'shops': return renderShops(r.arg);
+      case 'shop': return renderShop(r.arg);
+      case 'shop-edit': return renderShopEdit(r.arg);
       case 'spell-new': return renderSpellForm('');
       case 'spell-edit': return renderSpellForm(r.arg);
       default: return renderHome();
@@ -542,7 +545,7 @@
     var cmaps = mapsFor(camp.id);
     html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
       (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
-    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small>' + (dmView() ? '<a class="btn small quiet" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
+    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small>' + (dmView() ? '<a class="btn small quiet" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small quiet" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
     html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
     html += '</section></div>';
     $view.innerHTML = html;
@@ -660,6 +663,7 @@
       if (String(sec.dm_notes || '').trim()) html += '<div class="prose">' + rich(sec.dm_notes) + '</div>';
       html += '<span class="note">Players never receive this section.</span></section>';
     }
+    html += articleShopsHtml(a);
     html += '</div></div></div>';
     $view.innerHTML = html;
   }
@@ -2348,6 +2352,428 @@
     return html;
   }
 
+  /* ================= Shops (DM only) ================= */
+  // The DM opens a shop when the party walks in, picks who's buying, and the app does the money, the stock and the sheet.
+  var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
+  var SIZES = ITEMS.sizes;
+  var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Other' };
+  var KIND_ORDER = ['s', 'f', 'g', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'x', 'z'];
+  var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
+  var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
+  var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
+  var RECOG_DC = 15;
+  var shops = [], places = [];
+
+  function loadShops() {
+    if (!isDM()) { loaded.shops = true; return Promise.resolve(); }
+    return Promise.all([
+      sb.from('shops').select('*').order('name'),
+      sb.from('places').select('article_id, size, tags, price_mod')
+    ]).then(function (rs) {
+      if (rs[0].error) throw rs[0].error;
+      if (rs[1].error) throw rs[1].error;
+      shops = rs[0].data || []; places = rs[1].data || []; loaded.shops = true;
+    });
+  }
+  function fnum(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+  function shopById(id) { return shops.filter(function (s) { return s.id === id; })[0] || null; }
+  function itemByName(n) { var k = String(n || '').toLowerCase(); return ITEMS.items.filter(function (i) { return i.name.toLowerCase() === k; })[0] || null; }
+  function placeOf(articleId) {
+    var p = places.filter(function (x) { return x.article_id === articleId; })[0];
+    return p || { article_id: articleId, size: 2, tags: [], price_mod: 1, unset: true };
+  }
+  function hasTag(p, t) { return (p.tags || []).indexOf(t) >= 0; }
+  function settlementsFor(campId) {
+    return articles.filter(function (a) { return a.template === 'Settlement' && (!campId || !a.campaign_id || a.campaign_id === campId); })
+      .sort(function (a, b) { return String(a.title).localeCompare(b.title); });
+  }
+  function shopsAt(placeId) { return shops.filter(function (s) { return s.place_id === placeId; }); }
+
+  /* ---------- Money ---------- */
+  function toCp(gp) { return Math.max(0, Math.round(fnum(gp, 0) * 100)); }
+  function money(cp) {
+    cp = Math.round(cp);
+    if (cp <= 0) return 'free';
+    var g = Math.floor(cp / 100), s = Math.floor((cp % 100) / 10), c = cp % 10, out = [];
+    if (g) out.push(g.toLocaleString() + ' gp'); if (s) out.push(s + ' sp'); if (c) out.push(c + ' cp');
+    return out.join(' ');
+  }
+  // Shopkeepers quote round numbers: whole gold over 10 gp, silver over 1 gp.
+  function niceCp(cp) { cp = Math.max(1, Math.round(cp)); return cp >= 1000 ? Math.round(cp / 100) * 100 : cp >= 100 ? Math.round(cp / 10) * 10 : cp; }
+  function walletCp(s) { var c = s.coins || {}; return num(c.cp, 0) + num(c.sp, 0) * 10 + num(c.gp, 0) * 100 + num(c.pp, 0) * 1000; }
+  // Pays out of the purse and makes change. Platinum is only broken if it has to be.
+  function setWallet(s, total) {
+    var pp = Math.min(num(s.coins.pp, 0), Math.floor(total / 1000)), rest = total - pp * 1000;
+    s.coins.pp = pp; s.coins.gp = Math.floor(rest / 100); rest %= 100; s.coins.sp = Math.floor(rest / 10); s.coins.cp = rest % 10;
+  }
+
+  /* ---------- Stocking ---------- */
+  function rint(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function stockFor(shop) {
+    var K = ITEMS.shopKinds[shop.kind] || ITEMS.shopKinds['General store'];
+    var p = shop.place_id ? placeOf(shop.place_id) : { size: 2, tags: [], price_mod: 1 };
+    var size = Math.max(0, Math.min(4, num(p.size, 2))), eff = size + (hasTag(p, 'trade') ? 1 : 0);
+    var armed = hasTag(p, 'forge') || hasTag(p, 'military');
+    var out = [];
+    ITEMS.items.forEach(function (it) {
+      var extra = (K.extra || []).indexOf(it.name) >= 0;
+      var inShop = extra || (K.kinds || []).indexOf(it.kind) >= 0 || (K.tags || []).some(function (t) { return it.tags.indexOf(t) >= 0; });
+      if (!inShop) return;
+      if (!extra && (K.skipKinds || []).indexOf(it.kind) >= 0) return;
+      var magicOk = K.magicFrom && eff >= K.magicFrom && it.tags.indexOf('magic') >= 0;
+      if (!extra && !magicOk && (K.skipTags || []).some(function (t) { return it.tags.indexOf(t) >= 0; })) return;
+      if (it.kind === 'x' && !K.fence) return;
+      if (it.tags.indexOf('shady') >= 0 && !K.fence && eff < 3) return;
+      if (it.size > eff) return;
+      if (it.tags.indexOf('sea') >= 0 && !hasTag(p, 'port')) return;
+      if (it.tags.indexOf('river') >= 0 && it.kind === 'b' && !hasTag(p, 'river') && !hasTag(p, 'port')) return;
+      if (hasTag(p, 'mining') && !armed && WEAPON_ARMOR.indexOf(it.kind) >= 0 && it.tags.indexOf('mining') < 0) return;
+      var chance = [0.45, 0.55, 0.7, 0.85, 0.97][size];
+      if (K.fence) chance *= it.kind === 'x' ? 1.6 : 0.3;
+      if (it.kind === 's') chance = 1;
+      function boost(tag, itTag, x) { if (hasTag(p, tag) && it.tags.indexOf(itTag) >= 0) chance *= x; }
+      boost('mining', 'mining', 1.6); boost('port', 'nautical', 1.5); boost('farming', 'farm', 1.4); boost('farming', 'luxury', 0.5);
+      boost('frontier', 'survival', 1.5); boost('frontier', 'luxury', 0.4); boost('holy', 'holy', 1.5); boost('forge', 'metal', 1.4);
+      if (hasTag(p, 'military') && WEAPON_ARMOR.indexOf(it.kind) >= 0) chance *= 1.5;
+      if (hasTag(p, 'trade')) chance *= 1.15;
+      if (it.size === eff && it.size > 0) chance *= 0.6;   // the best a place can carry is rarer
+      if (Math.random() > chance) return;
+      var price = it.price * [1.3, 1.15, 1, 0.95, 0.9][size] * fnum(p.price_mod, 1) * (0.92 + Math.random() * 0.16);
+      function pm(tag, itTag, x) { if (hasTag(p, tag) && (!itTag || it.tags.indexOf(itTag) >= 0 || it.kind === itTag)) price *= x; }
+      pm('trade', null, 0.9); pm('remote', null, 1.25); pm('frontier', null, 1.15); pm('farming', 'farm', 0.8); pm('farming', 'f', 0.8);
+      pm('mining', 'mining', 0.85); pm('port', 'nautical', 0.9); pm('holy', 'holy', 0.9);
+      if (hasTag(p, 'forge') && WEAPON_ARMOR.indexOf(it.kind) >= 0) price *= 0.85;
+      if (K.fence) price *= it.kind === 'x' ? 1 : 0.7;   // stolen goods go cheap
+      var f = [0.4, 0.6, 1, 1.5, 2][size], q;
+      if (it.kind === 's') q = null;
+      else if (it.price < 0.1) q = Math.max(1, Math.round(rint(10, 40) * f));
+      else if (it.price < 1) q = Math.max(1, Math.round(rint(4, 15) * f));
+      else if (it.price < 10) q = Math.max(1, Math.round(rint(2, 8) * f));
+      else if (it.price < 100) q = Math.max(1, Math.round(rint(1, 4) * f));
+      else if (it.price < 1000) q = rint(1, 2);
+      else q = 1;
+      if (K.fence && q) q = Math.max(1, Math.ceil(q / 2));
+      out.push({ n: it.name, k: it.kind, p: niceCp(price * 100) / 100, q: q });
+    });
+    return out;
+  }
+
+  /* ---------- Who's at the counter ---------- */
+  function shopStanding(shop, c) {
+    var fac = shop.faction_id ? articleById(shop.faction_id) : null;
+    if (fac) return Object.assign({ fac: fac }, standingFor(c, fac));
+    var st = startStanding(normSheet(c.sheet), { slug: 'townsfolk' });
+    return { fac: null, name: STANDINGS[st.pts + 2], idx: st.pts + 2, why: st.why, shift: 0, start: STANDINGS[st.pts + 2] };
+  }
+  function openCrimes(shop, c) {
+    return crimes.filter(function (x) {
+      return (!shop.campaign_id || x.campaign_id === shop.campaign_id) && (x.character_id === c.id || !x.character_id) && (x.status === 'Wanted' || x.status === 'Suspected');
+    });
+  }
+  function notoriety(shop, c) {
+    var list = openCrimes(shop, c);
+    if (!list.length) return null;
+    var place = shop.place_id ? articleById(shop.place_id) : null, pname = place ? place.title.toLowerCase() : '';
+    var worst = 0, wanted = false, local = false;
+    list.forEach(function (x) {
+      worst = Math.max(worst, SEVERITIES.indexOf(x.severity));
+      if (x.status === 'Wanted') wanted = true;
+      if (pname && String(x.location || '').toLowerCase().indexOf(pname) >= 0) local = true;
+    });
+    var parts = [['Worst crime: ' + SEVERITIES[worst], worst]];
+    if (wanted) parts.push(['Wanted', 2]);
+    if (list.length > 1) parts.push([list.length + ' open crimes', Math.min(3, list.length - 1)]);
+    if (local) parts.push(['Crime here', 4]);
+    if (num(shop.watch, 0)) parts.push(['Watchful keeper', num(shop.watch, 0)]);
+    return { mod: parts.reduce(function (t, x) { return t + x[1]; }, 0), parts: parts, list: list };
+  }
+  function shopKey(shop, c) { return shop.id + '|' + (c ? c.id : ''); }
+  function recogMult(shop, c) {
+    var r = (ui.recog || {})[shopKey(shop, c)];
+    if (!r || !r.hit) return { blocked: false, sell: 1, buy: 1 };
+    if (r.mode === 'hush') return { blocked: false, sell: 1.5, buy: 0.5, hush: true };
+    if (r.mode === 'ignore') return { blocked: false, sell: 1, buy: 1 };
+    return { blocked: true, sell: 1, buy: 1 };
+  }
+  function priceFor(shop, c, row) {
+    var cp = toCp(row.p);
+    if (!c) return cp;
+    var st = shopStanding(shop, c), m = SELL_MULT[st.name], r = recogMult(shop, c);
+    if (m === null) return null;
+    return niceCp(cp * m * r.sell);
+  }
+  function offerFor(shop, c, itemName) {
+    var it = itemByName(itemName), K = ITEMS.shopKinds[shop.kind] || {};
+    var row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === String(itemName).toLowerCase(); })[0];
+    var base = it ? it.price : row ? row.p : null;
+    if (base === null) return null;
+    var st = shopStanding(shop, c), m = BUY_MULT[st.name], r = recogMult(shop, c);
+    if (m === null) return null;
+    if (K.fence) m *= 0.6;
+    return niceCp(toCp(base) * m * r.buy);
+  }
+
+  /* ---------- Pages ---------- */
+  function placeSummary(p) {
+    return SIZES[num(p.size, 2)] + ((p.tags || []).length ? ' · ' + p.tags.join(', ') : '') + (fnum(p.price_mod, 1) !== 1 ? ' · prices ×' + fnum(p.price_mod, 1) : '');
+  }
+  function placeSettings(a) {
+    var p = placeOf(a.id);
+    return '<div class="group-box place-box"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">How big, and what it’s known for</p>' +
+      '<div class="two"><div class="field"><label for="pl-size-' + esc(a.id) + '">Size</label><select id="pl-size-' + esc(a.id) + '" data-place="' + esc(a.id) + '" data-pfield="size">' + SIZES.map(function (s, i) { return '<option value="' + i + '"' + (i === num(p.size, 2) ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="pl-mod-' + esc(a.id) + '">Price level</label><select id="pl-mod-' + esc(a.id) + '" data-place="' + esc(a.id) + '" data-pfield="price_mod">' + [[0.8, 'Cheap (×0.8)'], [0.9, 'Low (×0.9)'], [1, 'Normal'], [1.1, 'High (×1.1)'], [1.25, 'Steep (×1.25)'], [1.5, 'Gouging (×1.5)']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === fnum(p.price_mod, 1) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="chips" role="group" aria-label="Known for">' + Object.keys(ITEMS.placeTags).map(function (t) {
+        return '<button type="button" class="chip pick" data-act="place-tag" data-place="' + esc(a.id) + '" data-tag="' + t + '" aria-pressed="' + hasTag(p, t) + '" title="' + esc(ITEMS.placeTags[t].about) + '">' + t + '</button>';
+      }).join('') + '</div>' + (p.unset ? '<p class="note" style="margin:6px 0 0">Not set yet: shops here stock like a plain town.</p>' : '') + '</div>';
+  }
+  function shopRows(list) {
+    if (!list.length) return '<div class="empty">No shops here yet.</div>';
+    return '<div class="list">' + list.map(function (s) {
+      var f = s.faction_id ? articleById(s.faction_id) : null;
+      return '<a class="row" href="#/shop/' + encodeURIComponent(s.id) + '"><span class="row-main"><b>' + esc(s.name) + '</b><span>' + esc([s.kind, s.keeper, f ? f.title : ''].filter(Boolean).join(' · ')) + '</span></span><span class="tag plain">' + (s.stock || []).length + ' items</span></a>';
+    }).join('') + '</div>';
+  }
+  function placeShopsBlock(a, campId) {
+    return '<section class="block shops-block"><h2 class="sec-title"><a class="link" href="#/a/' + encodeURIComponent(a.slug) + '">' + esc(a.title) + '</a><small>' + esc(placeSummary(placeOf(a.id))) + '</small></h2>' +
+      placeSettings(a) + shopRows(shopsAt(a.id)) +
+      '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(a.id) + '" data-campaign="' + esc(campId || a.campaign_id || '') + '">+ Shop in ' + esc(a.title) + '</button></div></section>';
+  }
+  // Shown on a settlement's article, to the DM only.
+  function articleShopsHtml(a) {
+    if (!dmView() || a.template !== 'Settlement' || !loaded.shops) return '';
+    return '<section class="secret shops-secret"><h2>SHOPS (DM)</h2>' + placeSettings(a) + shopRows(shopsAt(a.id)) +
+      '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(a.id) + '" data-campaign="' + esc(a.campaign_id || '') + '">+ Add a shop</button></div><span class="note">Players never see shops. Open one when they walk in.</span></section>';
+  }
+
+  function renderShops(slug) {
+    if (!loaded.wiki || !loaded.shops) { $view.innerHTML = '<div class="page"><div class="empty">Opening the market…</div></div>'; return; }
+    var camp = campaignBySlug(slug);
+    if (!camp) { location.replace('#/wiki'); return; }
+    var q = (ui.shopQuery || '').trim().toLowerCase();
+    var setts = settlementsFor(camp.id).filter(function (a) { return !q || a.title.toLowerCase().indexOf(q) >= 0 || shopsAt(a.id).some(function (s) { return s.name.toLowerCase().indexOf(q) >= 0; }); });
+    var html = '<div class="page"><p class="crumbs"><a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1 class="page-title">Shops</h1>' +
+      '<p class="note">Only you see these. When the party walks into a shop, open it, pick who’s buying, and tap Sell. Coins and gear update on their sheet.</p>' +
+      '<label class="search"><span class="sr">Find a place or shop</span>' + SEARCH_ICON + '<input id="shop-q" type="search" placeholder="Find a place or shop…" value="' + esc(ui.shopQuery || '') + '" autocomplete="off"></label>';
+    if (!setts.length) html += '<div class="empty">No settlements' + (q ? ' match' : ' yet. Write a Settlement article first') + '.</div>';
+    setts.forEach(function (a) { html += placeShopsBlock(a, camp.id); });
+    var loose = shops.filter(function (s) { return (!s.place_id || !articleById(s.place_id)) && (!s.campaign_id || s.campaign_id === camp.id); });
+    if (loose.length) html += '<section class="block"><h2 class="sec-title">Shops with no place</h2>' + shopRows(loose) + '</section>';
+    $view.innerHTML = html + '</div>';
+  }
+
+  function renderShop(id) {
+    if (!loaded.wiki || !loaded.shops || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the shop…</div></div>'; return; }
+    var shop = shopById(id);
+    if (!shop) { $view.innerHTML = '<div class="page narrow"><div class="empty">That shop is gone.</div></div>'; return; }
+    var place = shop.place_id ? articleById(shop.place_id) : null, camp = shop.campaign_id ? campaignById(shop.campaign_id) : null;
+    var K = ITEMS.shopKinds[shop.kind] || {};
+    var chars = camp ? campaignChars(camp.id) : characters;
+    ui.shopChar = ui.shopChar || {};
+    var cid = ui.shopChar[shop.id], c = cid ? charById(cid) : null;
+    var s = c ? normSheet(c.sheet) : null;
+    var qty = Math.max(1, num(ui.shopQty, 1));
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs">' + (camp ? '<a href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a>' : '') + (place ? ' › <a href="#/a/' + encodeURIComponent(place.slug) + '">' + esc(place.title) + '</a>' : '') + '</p><h1>' + esc(shop.name) + '</h1>' +
+      '<p class="crumbs">' + [esc(shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
+    if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
+    html += '<div class="actions"><a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
+      '<button type="button" class="btn quiet" data-act="shop-edit-toggle" aria-pressed="' + !!ui.shopEdit + '">' + (ui.shopEdit ? 'Done editing' : 'Edit stock') + '</button></div>';
+
+    // Customer
+    html += '<section class="block group-box counter"><div class="two"><div class="field"><label for="shop-char">At the counter</label><select id="shop-char" data-shop-char="' + esc(shop.id) + '"><option value="">Nobody (just looking)</option>' +
+      chars.map(function (x) { return '<option value="' + esc(x.id) + '"' + (c && x.id === c.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="shop-qty">How many</label><input type="number" id="shop-qty" min="1" value="' + qty + '" inputmode="numeric"></div></div>';
+    if (c) {
+      var st = shopStanding(shop, c), rm = recogMult(shop, c);
+      html += '<p class="counter-line"><b>' + money(walletCp(s)) + '</b> in their purse · ' + standingTag(st.name) + ' ' + (st.fac ? 'with ' + esc(st.fac.title) : 'with the townsfolk') +
+        (SELL_MULT[st.name] === null ? ' · <b>won’t deal with them</b>' : SELL_MULT[st.name] !== 1 ? ' · prices ×' + SELL_MULT[st.name] : '') + '</p>';
+      if (st.why.length) html += '<p class="note" style="margin:0">' + esc(standingWhy(st)) + '</p>';
+      if (K.fence) html += '<p class="note" style="margin:6px 0 0">A fence doesn’t care who you are.</p>';
+      else {
+        var nt = notoriety(shop, c), key = shopKey(shop, c), rr = (ui.recog || {})[key];
+        if (!nt) html += '<p class="note" style="margin:6px 0 0">Nothing on the law’s books. Nobody to recognize.</p>';
+        else {
+          html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> Recognition +' + nt.mod + ' vs DC ' + RECOG_DC + ' <span class="note">(' + esc(nt.parts.map(function (x) { return x[0] + ' +' + x[1]; }).join(', ')) + ')</span></p>' +
+            '<div class="pill-row" style="margin-top:6px"><label class="check"><input type="checkbox" id="shop-disguise"' + (ui.disguise ? ' checked' : '') + '> Disguised (roll twice, take the lower)</label><button type="button" class="btn small" data-act="shop-recog" data-id="' + esc(shop.id) + '">Roll: does the keeper know them?</button></div>';
+          if (rr) {
+            html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">Rolled ' + rr.text + ' = <b>' + rr.total + '</b>. ' + (rr.hit ? 'The keeper recognizes them.' : 'No sign of recognition.') + '</p>';
+            if (rr.hit) html += '<div class="seg wide" role="group" aria-label="What the keeper does">' + [['refuse', 'Refuses service'], ['hush', 'Hush price (×1.5)'], ['ignore', 'Lets it slide']].map(function (o) {
+              return '<button type="button" data-act="shop-recog-mode" data-id="' + esc(shop.id) + '" data-mode="' + o[0] + '" aria-pressed="' + ((rr.mode || 'refuse') === o[0]) + '">' + o[1] + '</button>';
+            }).join('') + '</div>';
+          }
+          html += '</div>';
+        }
+      }
+      if (rm.blocked) html += '<p class="recog-res hit">They won’t sell or buy while the keeper knows them.</p>';
+    }
+    html += '</section>';
+
+    // Stock
+    var stock = (shop.stock || []).slice();
+    var groups = {};
+    stock.forEach(function (row, i) { var k = KIND_LABEL[row.k] ? row.k : 'z'; (groups[k] = groups[k] || []).push({ row: row, i: i }); });
+    html += '<section class="block"><h2 class="sec-title">For sale<small>' + stock.length + ' items</small></h2>';
+    if (!stock.length) html += '<div class="empty">Empty shelves. Tap “Stock it” to fill them for a ' + esc(place ? SIZES[num(placeOf(place.id).size, 2)].toLowerCase() : 'town') + '.</div>';
+    var blocked = c ? recogMult(shop, c).blocked : false;
+    KIND_ORDER.forEach(function (k) {
+      if (!groups[k]) return;
+      html += '<h3 class="kind-h">' + esc(KIND_LABEL[k]) + '</h3><div class="tbl">' + groups[k].sort(function (a, b) { return a.row.n.localeCompare(b.row.n); }).map(function (g) {
+        var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
+        var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';
+        if (ui.shopEdit) return '<div class="tbl-row stock-row"><div class="main"><b>' + esc(row.n) + '</b></div>' +
+          '<label class="sr" for="sp-' + g.i + '">Price in gp</label><input type="number" class="input mini" id="sp-' + g.i + '" data-shop-row="' + g.i + '" data-sfield="p" data-id="' + esc(shop.id) + '" value="' + row.p + '" min="0" step="0.01" inputmode="decimal">' +
+          '<label class="sr" for="sq-' + g.i + '">How many</label><input type="number" class="input mini" id="sq-' + g.i + '" data-shop-row="' + g.i + '" data-sfield="q" data-id="' + esc(shop.id) + '" value="' + (row.q === null || row.q === undefined ? '' : row.q) + '" placeholder="∞" min="0" inputmode="numeric">' +
+          '<button type="button" class="btn small quiet" data-act="shop-rm" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-label="Remove ' + esc(row.n) + '">✕</button></div>';
+        var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(row.n) + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + '</span></div>' +
+          (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
+      }).join('') + '</div>';
+    });
+    if (ui.shopEdit) html += '<datalist id="dl-items">' + ITEMS.items.map(function (i) { return '<option value="' + esc(i.name) + '">'; }).join('') + '</datalist>' +
+      '<form class="inline-form" id="shop-add" novalidate data-id="' + esc(shop.id) + '" style="margin-top:10px"><div class="field"><label for="sa-name">Add an item</label><input type="text" id="sa-name" list="dl-items" maxlength="80" placeholder="From the list, or anything"></div>' +
+      '<div class="field"><label for="sa-price">Price (gp)</label><input type="number" id="sa-price" min="0" step="0.01" inputmode="decimal" placeholder="List price"></div><div class="field"><label for="sa-qty">How many</label><input type="number" id="sa-qty" min="0" inputmode="numeric" placeholder="∞"></div><button type="submit" class="btn primary">Add</button></form>';
+    html += '</section>';
+
+    // Buying from the customer
+    if (c && !ui.shopEdit) {
+      var inv = s.items.filter(function (it) { return num(it.qty, 1) > 0; });
+      html += '<section class="block"><h2 class="sec-title">Buy from ' + esc(c.name) + '<small>' + (K.fence ? 'fences pay little' : 'about half value') + '</small></h2>';
+      if (!inv.length) html += '<div class="empty">Nothing in their pack to sell.</div>';
+      else html += '<div class="tbl">' + inv.map(function (it) {
+        var i = s.items.indexOf(it), off = offerFor(shop, c, it.name);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
+          '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
+          '<button type="button" class="btn small" data-act="shop-buy" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Buy 1</button></div>';
+      }).join('') + '</div>';
+      html += '</section>';
+    }
+
+    // Ledger
+    var led = shop.ledger || [];
+    if (led.length) html += '<section class="block"><h2 class="sec-title">Recent sales<small>' + led.length + '</small></h2><div class="tbl">' + led.slice(0, 12).map(function (l) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(l.who) + (l.dir === 'bought' ? ' sold ' : ' bought ') + esc(l.qty > 1 ? l.qty + '× ' + l.what : l.what) + '</b><span>' + esc(new Date(l.at).toLocaleDateString()) + '</span></div><span class="num">' + money(l.cp) + '</span></div>';
+    }).join('') + '</div></section>';
+    $view.innerHTML = html + '</div>';
+  }
+  function factionLinkHtml(id) { var a = articleById(id); return a ? '<a class="link" href="#/a/' + encodeURIComponent(a.slug) + '">' + esc(a.title) + '</a>' : ''; }
+
+  function renderShopEdit(id) {
+    if (!loaded.wiki || !loaded.shops) { $view.innerHTML = '<div class="page"><div class="empty">Opening…</div></div>'; return; }
+    var shop = id && id !== 'new' ? shopById(id) : null;
+    if (id && id !== 'new' && !shop) { location.replace('#/wiki'); return; }
+    var ns = ui.newShop || {};
+    var v = shop || { name: '', kind: 'General store', place_id: ns.place || '', campaign_id: ns.campaign || '', faction_id: '', keeper: '', notes: '', watch: 0 };
+    var facs = factionsFor(v.campaign_id || null), setts = settlementsFor(v.campaign_id || null);
+    $view.innerHTML = '<div class="page narrow"><form class="form" id="shop-form" novalidate data-id="' + esc(shop ? shop.id : '') + '"><div><p class="eyebrow">' + (shop ? 'Edit' : 'New') + ' shop</p><h1 class="page-title">' + (shop ? esc(shop.name) : 'Open a shop') + '</h1></div>' +
+      '<div class="field"><label for="sh-name">Name</label><input type="text" id="sh-name" maxlength="80" value="' + esc(v.name) + '" placeholder="e.g. The Bent Nail"></div>' +
+      '<div class="two"><div class="field"><label for="sh-kind">Kind</label><select id="sh-kind">' + Object.keys(ITEMS.shopKinds).map(function (k) { return '<option' + (k === v.kind ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select><span class="hint" id="sh-kind-hint">' + esc((ITEMS.shopKinds[v.kind] || {}).about || '') + '</span></div>' +
+      '<div class="field"><label for="sh-place">Where</label><select id="sh-place"><option value="">Nowhere in particular</option>' + setts.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === v.place_id ? ' selected' : '') + '>' + esc(a.title) + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="field"><label for="sh-keeper">Keeper</label><input type="text" id="sh-keeper" maxlength="120" value="' + esc(v.keeper) + '" placeholder="e.g. [[Old Brannoc]], a one-eyed smith"><span class="hint">Use [[Name]] to link an NPC article.</span></div>' +
+      '<div class="two"><div class="field"><label for="sh-fac">Answers to</label><select id="sh-fac"><option value="">Nobody (townsfolk)</option>' + facs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === v.faction_id ? ' selected' : '') + '>' + esc(a.title) + '</option>'; }).join('') + '</select><span class="hint">Standing with this faction sets prices.</span></div>' +
+      '<div class="field"><label for="sh-watch">Keeper’s eye</label><select id="sh-watch">' + [[-4, 'Oblivious (−4)'], [-2, 'Distracted (−2)'], [0, 'Ordinary'], [2, 'Sharp (+2)'], [4, 'Knows every face (+4)']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === num(v.watch, 0) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select><span class="hint">Added to the recognition roll.</span></div></div>' +
+      '<div class="field"><label for="sh-notes">Notes</label><textarea id="sh-notes" maxlength="2000">' + esc(v.notes) + '</textarea></div>' +
+      '<div class="actions"><button type="submit" class="btn primary">' + (shop ? 'Save' : 'Open the shop') + '</button><a class="btn" href="' + (shop ? '#/shop/' + encodeURIComponent(shop.id) : 'javascript:history.back()') + '">Cancel</a>' +
+      (shop ? '<button type="button" class="btn danger" data-act="shop-delete" data-id="' + esc(shop.id) + '">' + (ui.pendingDelete === 'shop:' + shop.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div></form></div>';
+  }
+  function saveShopForm(form) {
+    var id = form.getAttribute('data-id'), ns = ui.newShop || {};
+    var row = {
+      name: document.getElementById('sh-name').value.trim().slice(0, 80), kind: document.getElementById('sh-kind').value,
+      place_id: document.getElementById('sh-place').value || null, faction_id: document.getElementById('sh-fac').value || null,
+      keeper: document.getElementById('sh-keeper').value.trim().slice(0, 120), watch: num(document.getElementById('sh-watch').value, 0),
+      notes: document.getElementById('sh-notes').value.trim().slice(0, 2000)
+    };
+    if (!row.name) return toast('Give the shop a name.');
+    if (!id) {
+      var pa = row.place_id ? articleById(row.place_id) : null;
+      row.campaign_id = ns.campaign || (pa && pa.campaign_id) || null;
+    }
+    var op = id ? sb.from('shops').update(row).eq('id', id).select('*').single() : sb.from('shops').insert(row).select('*').single();
+    op.then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the shop.');
+      var i = shops.map(function (x) { return x.id; }).indexOf(r.data.id);
+      if (i >= 0) shops[i] = r.data; else shops.push(r.data);
+      ui.newShop = null;
+      // A brand-new shop gets stocked straight away.
+      if (!id) { r.data.stock = stockFor(r.data); r.data.stocked_at = new Date().toISOString(); saveShop(r.data, 'Opened and stocked'); }
+      else toast('Saved');
+      go('#/shop/' + encodeURIComponent(r.data.id));
+    });
+  }
+  function saveShop(shop, msg) {
+    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], stocked_at: shop.stocked_at || null }).eq('id', shop.id).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the shop.');
+      if (msg) toast(msg);
+    });
+  }
+  function savePlace(articleId, patch) {
+    var p = placeOf(articleId), row = { article_id: articleId, size: num(p.size, 2), tags: (p.tags || []).slice(), price_mod: fnum(p.price_mod, 1), updated_at: new Date().toISOString() };
+    Object.assign(row, patch);
+    sb.from('places').upsert(row).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save that.');
+      var i = places.map(function (x) { return x.article_id; }).indexOf(articleId);
+      if (i >= 0) places[i] = row; else places.push(row);
+      render();
+    });
+  }
+  function ledgerAdd(shop, entry) {
+    shop.ledger = [Object.assign({ at: new Date().toISOString() }, entry)].concat(shop.ledger || []).slice(0, 60);
+  }
+  function shopSell(shop, i) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]), row = (shop.stock || [])[i];
+    if (!c || !row) return;
+    var s = normSheet(c.sheet), each = priceFor(shop, c, row);
+    if (each === null || recogMult(shop, c).blocked) return toast('They won’t sell to ' + c.name + '.');
+    var limited = row.q !== null && row.q !== undefined;
+    var q = Math.max(1, num(ui.shopQty, 1));
+    if (limited) q = Math.min(q, num(row.q, 0));
+    if (q <= 0) return toast('Sold out.');
+    var cost = each * q, have = walletCp(s);
+    if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short.');
+    setWallet(s, have - cost);
+    if (row.k !== 's') {
+      var mine = s.items.filter(function (it) { return it.name.toLowerCase() === row.n.toLowerCase(); })[0];
+      if (mine) mine.qty = num(mine.qty, 1) + q; else s.items.push({ name: row.n, notes: '', qty: q });
+    }
+    if (limited) row.q = num(row.q, 0) - q;
+    c.sheet = s;
+    ledgerAdd(shop, { who: c.name, what: row.n, qty: q, cp: cost, dir: 'sold' });
+    saveCharSoon(c);
+    saveShop(shop, c.name + ' paid ' + money(cost));
+    render();
+  }
+  function shopBuy(shop, i) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]);
+    if (!c) return;
+    var s = normSheet(c.sheet), it = s.items[i];
+    if (!it || num(it.qty, 1) <= 0) return;
+    if (recogMult(shop, c).blocked) return toast('They won’t deal with ' + c.name + '.');
+    var inp = document.getElementById('bo-' + i), cp = toCp(inp ? inp.value : 0);
+    if (!cp) return toast('Name a price first.');
+    setWallet(s, walletCp(s) + cp);
+    it.qty = num(it.qty, 1) - 1;
+    if (it.qty <= 0) s.items.splice(i, 1);
+    // It goes on the shelf at about list price.
+    var cat = itemByName(it.name), row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === it.name.toLowerCase(); })[0];
+    if (row) { if (row.q !== null && row.q !== undefined) row.q = num(row.q, 0) + 1; }
+    else (shop.stock = shop.stock || []).push({ n: it.name, k: cat ? cat.kind : 'z', p: cat ? cat.price : Math.round(cp * 2) / 100, q: 1 });
+    c.sheet = s;
+    ledgerAdd(shop, { who: c.name, what: it.name, qty: 1, cp: cp, dir: 'bought' });
+    saveCharSoon(c);
+    saveShop(shop, 'Paid ' + c.name + ' ' + money(cp));
+    render();
+  }
+  function shopRecog(shop) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]);
+    if (!c) return;
+    var nt = notoriety(shop, c);
+    if (!nt) return;
+    var a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20), d = ui.disguise ? Math.min(a, b) : a;
+    var total = d + nt.mod;
+    ui.recog = ui.recog || {};
+    ui.recog[shopKey(shop, c)] = { total: total, hit: total >= RECOG_DC, mode: 'refuse', text: (ui.disguise ? 'd20 (' + a + ', ' + b + ' → ' + d + ')' : 'd20 (' + d + ')') + ' + ' + nt.mod };
+    render();
+  }
+
   /* ================= Travel ================= */
   // Rules are a grid: miles per day for each terrain and way of traveling, times a pace multiplier.
   function rulesOf(t) {
@@ -2811,7 +3237,7 @@
   var liveChannel = null;
   function busy() {
     var r = parseRoute();
-    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up'].indexOf(r.name) >= 0) return true;
+    if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up', 'shop-edit'].indexOf(r.name) >= 0) return true;
     if (ui.pendingPin || ui.placing) return true;
     var a = document.activeElement;
     return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -2865,6 +3291,39 @@
         ui.filters = ui.filters || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
+      case 'new-shop': ui.newShop = { place: el.getAttribute('data-place') || '', campaign: el.getAttribute('data-campaign') || '' }; go('#/shop-edit/new'); break;
+      case 'shop-stock':
+        var stk = shopById(el.getAttribute('data-id'));
+        if (!stk) return;
+        if ((stk.stock || []).length && ui.pendingDelete !== 'restock:' + stk.id) { ui.pendingDelete = 'restock:' + stk.id; el.textContent = 'Tap again to replace the stock'; return; }
+        ui.pendingDelete = null; stk.stock = stockFor(stk); stk.stocked_at = new Date().toISOString();
+        saveShop(stk, 'Stocked: ' + stk.stock.length + ' items'); render(); break;
+      case 'shop-edit-toggle': ui.shopEdit = !ui.shopEdit; render(); break;
+      case 'shop-rm':
+        var srm = shopById(el.getAttribute('data-id'));
+        if (!srm) return;
+        srm.stock.splice(num(el.getAttribute('data-i'), -1), 1); saveShop(srm); render(); break;
+      case 'shop-sell': var ss1 = shopById(el.getAttribute('data-id')); if (ss1) shopSell(ss1, num(el.getAttribute('data-i'), -1)); break;
+      case 'shop-buy': var sb1 = shopById(el.getAttribute('data-id')); if (sb1) shopBuy(sb1, num(el.getAttribute('data-i'), -1)); break;
+      case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1); break;
+      case 'shop-recog-mode':
+        var sr2 = shopById(el.getAttribute('data-id')), rc2 = sr2 && charById((ui.shopChar || {})[sr2.id]);
+        if (rc2 && ui.recog && ui.recog[shopKey(sr2, rc2)]) { ui.recog[shopKey(sr2, rc2)].mode = el.getAttribute('data-mode'); render(); }
+        break;
+      case 'shop-delete':
+        var sdid = el.getAttribute('data-id'), sdel = shopById(sdid);
+        if (ui.pendingDelete !== 'shop:' + sdid) { ui.pendingDelete = 'shop:' + sdid; el.textContent = 'Tap again to delete'; return; }
+        sb.from('shops').delete().eq('id', sdid).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not delete the shop.');
+          shops = shops.filter(function (x) { return x.id !== sdid; }); ui.pendingDelete = null;
+          var sdc = sdel && sdel.campaign_id ? campaignById(sdel.campaign_id) : null;
+          toast('Shop closed for good'); go(sdc ? '#/shops/' + encodeURIComponent(sdc.slug) : '#/wiki');
+        });
+        break;
+      case 'place-tag':
+        var ptid = el.getAttribute('data-place'), ptag = el.getAttribute('data-tag'), ptags = (placeOf(ptid).tags || []).slice();
+        if (ptags.indexOf(ptag) >= 0) ptags.splice(ptags.indexOf(ptag), 1); else ptags.push(ptag);
+        savePlace(ptid, { tags: ptags }); break;
       case 'spell-approve': return reviewSpell(el.getAttribute('data-name'), true);
       case 'spell-return': return reviewSpell(el.getAttribute('data-name'), false);
       case 'spell-delete': return deleteSpell(el.getAttribute('data-name'));
@@ -3120,6 +3579,11 @@
       try { s.setSelectionRange(pos, pos); } catch (err) {}
       return;
     }
+    if (t.id === 'shop-q') {
+      ui.shopQuery = t.value; var spos = t.selectionStart; render();
+      var sq = document.getElementById('shop-q'); if (sq) { sq.focus(); try { sq.setSelectionRange(spos, spos); } catch (err) {} }
+      return;
+    }
     if (t.id === 'rep-q') {
       ui.repQuery = t.value; var rpos = t.selectionStart; render();
       var rq = document.getElementById('rep-q'); if (rq) { rq.focus(); try { rq.setSelectionRange(rpos, rpos); } catch (err) {} }
@@ -3197,6 +3661,21 @@
     if (t.id === 'pick-pay' && ui.pick) { ui.pick.pay = t.checked; return; }
     if (t.hasAttribute('data-mana-override')) { var oc = currentChar(); if (oc) { oc.sheet.mana.override = t.checked; if (t.checked) oc.sheet.mana.max = manaMax(Object.assign({}, oc.sheet, { mana: Object.assign({}, oc.sheet.mana, { override: false }) })); saveCharSoon(oc); render(); } return; }
     if (t.hasAttribute('data-rep')) { var rp = t.getAttribute('data-rep').split('|'); return setStanding(rp[0], rp[1], t.value); }
+    if (t.hasAttribute('data-shop-char')) { ui.shopChar = ui.shopChar || {}; ui.shopChar[t.getAttribute('data-shop-char')] = t.value; return render(); }
+    if (t.id === 'shop-qty') { ui.shopQty = Math.max(1, num(t.value, 1)); return render(); }
+    if (t.id === 'shop-disguise') { ui.disguise = t.checked; return; }
+    if (t.id === 'sh-kind') { var skh = document.getElementById('sh-kind-hint'); if (skh) skh.textContent = (ITEMS.shopKinds[t.value] || {}).about || ''; return; }
+    if (t.hasAttribute('data-shop-row')) {
+      var srow = shopById(t.getAttribute('data-id')), sri = num(t.getAttribute('data-shop-row'), -1), sf = t.getAttribute('data-sfield');
+      if (!srow || !srow.stock[sri]) return;
+      srow.stock[sri][sf] = sf === 'p' ? Math.max(0, Math.round(fnum(t.value, 0) * 100) / 100) : (t.value === '' ? null : Math.max(0, num(t.value, 0)));
+      return saveShop(srow, 'Saved');
+    }
+    if (t.hasAttribute('data-place')) {
+      var pf = t.getAttribute('data-pfield'), pp = {};
+      pp[pf] = pf === 'size' ? num(t.value, 2) : fnum(t.value, 1);
+      return savePlace(t.getAttribute('data-place'), pp);
+    }
     if (t.hasAttribute('data-spell-rarity')) return setSpellRarity(t.getAttribute('data-spell-rarity'), t.value);
     if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
     if (t.hasAttribute('data-travel') || t.hasAttribute('data-travel-text')) {
@@ -3236,6 +3715,17 @@
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
       case 'spell-form': return saveSpellForm(f);
+      case 'shop-form': return saveShopForm(f);
+      case 'shop-add':
+        var sadd = shopById(f.getAttribute('data-id')), san = document.getElementById('sa-name').value.trim().slice(0, 80);
+        if (!sadd || !san) return toast('Name the item.');
+        var scat = itemByName(san), sap = document.getElementById('sa-price').value, saq = document.getElementById('sa-qty').value;
+        var sprice = sap === '' ? (scat ? scat.price : null) : fnum(sap, 0);
+        if (sprice === null) return toast('That one’s not on the list. Give it a price.');
+        (sadd.stock = sadd.stock || []).push({ n: scat ? scat.name : san, k: scat ? scat.kind : 'z', p: Math.round(sprice * 100) / 100, q: saq === '' ? null : Math.max(0, num(saq, 0)) });
+        saveShop(sadd, 'Added'); render();
+        var nsa = document.getElementById('sa-name'); if (nsa) nsa.focus();
+        return;
       case 'food-form': return saveFood(f);
       case 'scale-form': return saveScale();
       case 'pin-form': return savePin();
