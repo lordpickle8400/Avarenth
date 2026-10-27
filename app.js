@@ -2272,6 +2272,7 @@
     if (rule.base) add(rule.base, 'Everyone');
     if (rule.cls && s.cls) add(rule.cls[s.cls] || 0, s.cls);
     if (rule.species && s.species) add(rule.species[s.species] || 0, s.species);
+    if ((RULES.draconic || []).indexOf(s.species) >= 0 && (RULES.draconicFactions || []).indexOf(fac.slug) < 0) add(-1, 'Wary of draconic races');
     if (rule.bg && s.background) add(rule.bg[s.background] || 0, s.background);
     if (rule.faith && s.patron) {
       var f = rule.faith[s.patron] !== undefined ? rule.faith[s.patron] : (rule.faith[faithGroup(s.patron)] || 0);

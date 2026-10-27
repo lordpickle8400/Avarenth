@@ -323,8 +323,10 @@
     // Where each faction starts with a new character, in steps from Neutral (+1 Friendly, +2 Allied, -1 Cold, -2 Hostile).
     // base applies to everyone; then class, species, background and faith add up. A named god or demon beats the
     // 'good' and 'demon' groups. Starting standing is capped at Allied and Hostile; the DM moves it from there.
-    // Crown and noble factions only care about blood: no class or faith pulls them off Neutral. The noble houses
-    // (all but draconic House Ignis) start draconic races Cold.
+    // Crown and noble factions only care about blood: no class or faith pulls them off Neutral.
+    // Every faction is wary of the draconic races (one step lower) unless it is draconic itself.
+    draconic: ['Dragonborn', 'Kobold', 'Lizardfolk'],
+    draconicFactions: ['the-red-scales', 'house-ignis'],
     factionStart: {
       'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },
       'the-red-scales': { base: -2, species: { Dragonborn: 3, Kobold: 2, Lizardfolk: 1 } },
@@ -333,11 +335,7 @@
       'the-thornwardens': { cls: { Paladin: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
       'the-city-state-of-coralyn': { species: { Elf: 1 }, faith: { Thorum: 1 } },
       'the-tribe-of-orock': { species: { Goliath: 1 }, cls: { Barbarian: 1 } },
-      'house-anvilborn': { species: { Dwarf: 1, Dragonborn: -1, Kobold: -1, Lizardfolk: -1 } },
-      'house-dorn': { species: { Dragonborn: -1, Kobold: -1, Lizardfolk: -1 } },
-      'house-caspian': { species: { Dragonborn: -1, Kobold: -1, Lizardfolk: -1 } },
-      'house-marloo': { species: { Dragonborn: -1, Kobold: -1, Lizardfolk: -1 } },
-      'the-court-of-doresmere': { species: { Dragonborn: -1, Kobold: -1, Lizardfolk: -1 } },
+      'house-anvilborn': { species: { Dwarf: 1 } },
       'house-ignis': { species: { Dragonborn: 1, Kobold: 1 } },
       'the-last-watch': { species: { Dragonborn: -2, Kobold: -2, Lizardfolk: -1 } },
       'the-nine-below': { faith: { 'The Nine Below': 2, Azrul: -1 } }
