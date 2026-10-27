@@ -2578,8 +2578,9 @@
       });
     });
     if (hit) return hit;
-    var name = String(m.name || '').toLowerCase();
-    return settlementsFor(null).filter(function (a) { return name.indexOf(a.title.toLowerCase()) >= 0; })
+    function bare(t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    var name = bare(m.name);
+    return settlementsFor(null).filter(function (a) { return bare(a.title) && name.indexOf(bare(a.title)) >= 0; })
       .sort(function (a, b) { return b.title.length - a.title.length; })[0] || null;
   }
   function mapShopsSection(m) {
