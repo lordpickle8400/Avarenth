@@ -345,3 +345,14 @@ dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .section.feat h2 small { display: inline-flex; align-items: center; gap: 8px; font-family: var(--ui); font-size: 12px; font-weight: 500; color: var(--muted); }
 .pool-edit .check { min-height: 36px; font-size: 13px; gap: 8px; }
 .picker .tbl-row .tag { flex: none; }
+
+/* ---------- Reputation and libraries ---------- */
+.st { --st: var(--muted); color: color-mix(in srgb, var(--st) 80%, var(--text)); border-color: color-mix(in srgb, var(--st) 45%, var(--bg)); background: color-mix(in srgb, var(--st) 10%, transparent); }
+.st-hostile { --st: #d9534f; } .st-cold { --st: #7d93a8; } .st-neutral { --st: #9a9a9a; } .st-friendly { --st: #3fae5a; } .st-allied { --st: #3d7fe0; } .st-devoted { --st: #e0912f; }
+.st-sel { min-width: 112px; }
+.standing-box p { font-family: var(--ui); }
+.input.mini { width: 74px; min-height: 36px; padding: 4px 6px; flex: none; }
+select.input.mini { width: 110px; }
+.stock-row { flex-wrap: wrap; }
+.stock-row .main { flex: 1 1 100%; }
+@media (min-width: 640px) { .stock-row { flex-wrap: nowrap; } .stock-row .main { flex: 1 1 auto; } }
