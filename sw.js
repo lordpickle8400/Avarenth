@@ -1,7 +1,7 @@
 // Keeps the app shell available so Avarenth installs and opens like an app.
 // Network first, so updates show up right away; the cache is only a fallback.
 // Supabase data is never cached here.
-const CACHE = 'avarenth-v28';
+const CACHE = 'avarenth-v29';
 const SHELL = [
   './',
   './index.html',
@@ -33,7 +33,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   event.respondWith(
-    fetch(req)
+    // no-cache: always ask GitHub Pages whether the file changed, instead of trusting the phone's 10-minute copy.
+    fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' }))
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();

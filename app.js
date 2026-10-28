@@ -467,15 +467,16 @@
         keys[k].map(function (a) { return articleRow(a, false); }).join('') + '</div></details>';
     }).join('');
   }
-  function articleBrowser(list, scope, emptyText) {
+  function articleBrowser(list, scope, emptyText, title) {
+    title = title || 'Categories';
     ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
     var groups = {};
     list.forEach(function (a) { var g = findTemplate(a.template).group; groups[g] = (groups[g] || 0) + 1; });
     var cats = CAT_ORDER.filter(function (g) { return groups[g]; });
-    if (!cats.length) return '<section class="block"><h2 class="sec-title">Categories</h2><div class="empty">' + esc(emptyText) + '</div></section>';
+    if (!cats.length) return '<section class="block"><h2 class="sec-title">' + esc(title) + '</h2><div class="empty">' + esc(emptyText) + '</div></section>';
     var group = ui.filters[scope] && groups[ui.filters[scope]] ? ui.filters[scope] : (cats.length === 1 ? cats[0] : null);
     if (!group) {
-      return '<section class="block"><h2 class="sec-title">Categories<small>' + list.length + ' articles</small></h2><div class="cats">' + cats.map(function (g) {
+      return '<section class="block"><h2 class="sec-title">' + esc(title) + '<small>' + list.length + ' articles</small></h2><div class="cats">' + cats.map(function (g) {
         return '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="false"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
       }).join('') + '</div></section>';
     }
@@ -485,7 +486,7 @@
     var typeNames = Object.keys(types).sort(function (x, y) { return types[y] - types[x] || x.localeCompare(y); });
     var type = ui.subs[scope] && types[ui.subs[scope]] ? ui.subs[scope] : (typeNames.length === 1 ? typeNames[0] : null);
     var back = cats.length > 1 ? '<button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">← All categories</button>' : '';
-    var html = '<section class="block"><h2 class="sec-title">Categories<small>' + back + '</small></h2>';
+    var html = '<section class="block"><h2 class="sec-title">' + esc(title) + '<small>' + back + '</small></h2>';
     html += '<p class="crumbs browse-crumbs">' + esc(CATEGORY_LABEL[group] || group) + (type && typeNames.length > 1 ? ' › ' + esc(TYPE_PLURAL[type] || type) : '') + '</p>';
     if (!type) {
       html += '<div class="cats">' + typeNames.map(function (t) {
@@ -571,7 +572,7 @@
         (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
     } else {
       html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
-      html += articleBrowser(world, 'cw-' + camp.id, 'No world lore yet.').replace('<h2 class="sec-title">Categories</h2>', '<h2 class="sec-title">World reference</h2>').replace(/>Articles<small>/, '>World lore<small>');
+      html += articleBrowser(world, 'cw-' + camp.id, 'No world lore yet.', 'World reference');
     }
     var record = crimeSummary(crimes.filter(function (c) { return c.campaign_id === camp.id && (dmView() || !c.dm_only); }));
     html += '<section class="block"><h2 class="sec-title">Criminal Record<small><a class="btn small quiet" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open tracker</a></small></h2>' + summaryVitals(record) + '</section>';
