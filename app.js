@@ -445,23 +445,56 @@
     return st ? '<span class="tag plain">' + esc(st.slice(0, 24)) + '</span>' : '';
   }
 
-  // Categories plus the article list for one scope (the world, or one campaign).
+  // Browse one scope (the world, or one campaign) by drilling down: category, then type, then folders.
+  var TYPE_PLURAL = { 'Character': 'Characters', 'Species': 'Species', 'Culture': 'Cultures', 'Rank / Title': 'Ranks & titles', 'Settlement': 'Settlements', 'Location': 'Locations', 'Region': 'Regions', 'Country': 'Countries', 'Organization': 'Organizations', 'Religion': 'Religions', 'Spell': 'Spells', 'Magic System': 'Magic systems', 'Myth / Legend': 'Myths & legends', 'Tradition': 'Traditions', 'Language': 'Languages', 'Item': 'Items', 'Ship': 'Ships', 'Document': 'Documents', 'Historical Event': 'Historical events', 'Conflict': 'Conflicts', 'Session Notes': 'Session notes', 'Chapter': 'Chapters', 'Generic Article': 'Articles' };
+  // What a long list gets sorted into: characters by faction, organizations by type, places by region.
+  function folderOf(a) {
+    var f = a.fields || {}, t = a.template;
+    var v = t === 'Character' ? f.Faction : t === 'Organization' ? f.Type : (t === 'Settlement' || t === 'Region') ? f.Region : t === 'Location' ? (f.Settlement || f.Region) : t === 'Item' ? f.Type : '';
+    return String(v || '').replace(/\[\[|\]\]/g, '').split(/[,(;]/)[0].trim();
+  }
+  function articleFolders(list, scope) {
+    var sorted = list.slice().sort(function (x, y) { return String(x.title).localeCompare(String(y.title)); });
+    var keys = {};
+    sorted.forEach(function (a) { var k = folderOf(a) || 'Other'; (keys[k] = keys[k] || []).push(a); });
+    var names = Object.keys(keys);
+    if (sorted.length <= 8 || names.length < 2) return '<div class="list">' + sorted.map(function (a) { return articleRow(a, false); }).join('') + '</div>';
+    names.sort(function (x, y) { return (x === 'Other') - (y === 'Other') || keys[y].length - keys[x].length || x.localeCompare(y); });
+    ui.openFolders = ui.openFolders || {};
+    return names.map(function (k) {
+      var id = scope + '|' + k;
+      return '<details class="folder" data-folder="' + esc(id) + '"' + (ui.openFolders[id] ? ' open' : '') + '><summary><b>' + esc(k) + '</b><span>' + keys[k].length + '</span></summary><div class="list">' +
+        keys[k].map(function (a) { return articleRow(a, false); }).join('') + '</div></details>';
+    }).join('');
+  }
   function articleBrowser(list, scope, emptyText) {
-    var filter = (ui.filters || {})[scope] || null;
+    ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
     var groups = {};
     list.forEach(function (a) { var g = findTemplate(a.template).group; groups[g] = (groups[g] || 0) + 1; });
     var cats = CAT_ORDER.filter(function (g) { return groups[g]; });
-    var shown = list.filter(function (a) { return !filter || findTemplate(a.template).group === filter; });
-    var html = '';
-    if (cats.length > 1) {
-      html += '<section class="block"><h2 class="sec-title">Categories</h2><div class="cats">';
-      cats.forEach(function (g) {
-        html += '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="' + (filter === g) + '"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
-      });
-      html += '</div></section>';
+    if (!cats.length) return '<section class="block"><h2 class="sec-title">Categories</h2><div class="empty">' + esc(emptyText) + '</div></section>';
+    var group = ui.filters[scope] && groups[ui.filters[scope]] ? ui.filters[scope] : (cats.length === 1 ? cats[0] : null);
+    if (!group) {
+      return '<section class="block"><h2 class="sec-title">Categories<small>' + list.length + ' articles</small></h2><div class="cats">' + cats.map(function (g) {
+        return '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="false"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
+      }).join('') + '</div></section>';
     }
-    html += '<section class="block"><h2 class="sec-title">' + (filter ? esc(CATEGORY_LABEL[filter] || filter) + '<small><button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">Show all</button></small>' : 'Articles<small>' + shown.length + ' total</small>') + '</h2>';
-    html += shown.length ? '<div class="list">' + shown.map(function (a) { return articleRow(a, false); }).join('') + '</div>' : '<div class="empty">' + esc(emptyText) + '</div>';
+    var inGroup = list.filter(function (a) { return findTemplate(a.template).group === group; });
+    var types = {};
+    inGroup.forEach(function (a) { types[a.template] = (types[a.template] || 0) + 1; });
+    var typeNames = Object.keys(types).sort(function (x, y) { return types[y] - types[x] || x.localeCompare(y); });
+    var type = ui.subs[scope] && types[ui.subs[scope]] ? ui.subs[scope] : (typeNames.length === 1 ? typeNames[0] : null);
+    var back = cats.length > 1 ? '<button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">← All categories</button>' : '';
+    var html = '<section class="block"><h2 class="sec-title">Categories<small>' + back + '</small></h2>';
+    html += '<p class="crumbs browse-crumbs">' + esc(CATEGORY_LABEL[group] || group) + (type && typeNames.length > 1 ? ' › ' + esc(TYPE_PLURAL[type] || type) : '') + '</p>';
+    if (!type) {
+      html += '<div class="cats">' + typeNames.map(function (t) {
+        return '<button type="button" class="cat" data-act="subfilter" data-scope="' + esc(scope) + '" data-type="' + esc(t) + '"><b>' + esc(TYPE_PLURAL[t] || t) + '</b><span>' + types[t] + (types[t] === 1 ? ' article' : ' articles') + '</span></button>';
+      }).join('') + '</div>';
+    } else {
+      if (typeNames.length > 1) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="subfilter" data-scope="' + esc(scope) + '" data-type="">← All ' + esc((CATEGORY_LABEL[group] || group).toLowerCase()) + '</button></div>';
+      html += articleFolders(inGroup.filter(function (a) { return a.template === type; }), scope + '|' + type);
+    }
     return html + '</section>';
   }
 
@@ -3337,8 +3370,13 @@
         render();
         break;
       case 'filter':
-        ui.filters = ui.filters || {};
+        ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('aria-pressed') === 'true' ? null : (el.getAttribute('data-group') || null);
+        ui.subs[el.getAttribute('data-scope')] = null;
+        render(); break;
+      case 'subfilter':
+        ui.subs = ui.subs || {};
+        ui.subs[el.getAttribute('data-scope')] = el.getAttribute('data-type') || null;
         render(); break;
       case 'filter-home':
         ui.filters = ui.filters || {};
@@ -3619,6 +3657,11 @@
     var fr = document.getElementById('map-frame');
     if (fr) ui.mapScroll = { id: parseRoute().arg, left: fr.scrollLeft, top: fr.scrollTop };
   }
+
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (d && d.getAttribute && d.hasAttribute('data-folder')) { ui.openFolders = ui.openFolders || {}; ui.openFolders[d.getAttribute('data-folder')] = d.open; }
+  }, true);
 
   // Tapping the map while placing a marker.
   document.addEventListener('click', function (e) {

@@ -371,3 +371,15 @@ select.input.mini { width: 110px; }
 .place-box .chips { margin-top: 4px; }
 .shops-secret .list, .shops-secret .place-box { margin-top: 8px; }
 .tbl-row s.note { font-size: 12px; margin-left: 4px; }
+
+/* Wiki browser folders */
+.browse-crumbs { margin: 0 0 8px; }
+.folder { border: 1px solid var(--line, rgba(127,127,127,.25)); border-radius: 10px; margin: 0 0 8px; overflow: hidden; }
+.folder > summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; min-height: 48px; cursor: pointer; list-style: none; font-family: var(--ui); }
+.folder > summary::-webkit-details-marker { display: none; }
+.folder > summary::after { content: "›"; font-size: 20px; opacity: .6; transition: transform .15s; }
+.folder[open] > summary::after { transform: rotate(90deg); }
+.folder > summary b { flex: 1; }
+.folder > summary span { opacity: .7; font-size: 13px; }
+.folder > .list { border-top: 1px solid var(--line, rgba(127,127,127,.25)); }
+.folder .row { padding-left: 14px; padding-right: 14px; }
