@@ -48,8 +48,8 @@
     T('Campaign & Novel', 'Chapter', 'A chapter of the novel, linked to the lore it uses.', ['Book', 'Chapter #', 'POV character'], ['Prose'], ['Draft notes']),
     T('General', 'Generic Article', 'Anything that does not fit elsewhere.', [], ['Overview'], [])
   ];
-  var CATEGORY_LABEL = { 'People': 'People', 'Places': 'Geography', 'Groups': 'Organizations', 'Lore & Magic': 'Lore & Magic', 'Things': 'Items', 'History': 'History', 'Campaign & Novel': 'Campaign & Novel', 'General': 'General', 'Your templates': 'Your templates' };
-  var CAT_ORDER = ['Places', 'Groups', 'Lore & Magic', 'People', 'Things', 'History', 'Campaign & Novel', 'Your templates', 'General'];
+  var CATEGORY_LABEL = { 'People': 'People', 'Places': 'Geography', 'Groups': 'Organizations', 'Lore & Magic': 'Lore & Magic', 'Things': 'Items', 'History': 'History', 'Campaign & Novel': 'Campaign & Novel', 'General': 'General', 'Your templates': 'Your templates', 'Faith': 'Faith' };
+  var CAT_ORDER = ['Places', 'Groups', 'Faith', 'Lore & Magic', 'People', 'Things', 'History', 'Campaign & Novel', 'Your templates', 'General'];
 
   var ABILITIES = [['str', 'Strength'], ['dex', 'Dexterity'], ['con', 'Constitution'], ['int', 'Intelligence'], ['wis', 'Wisdom'], ['cha', 'Charisma']];
   var SKILLS = [['Acrobatics', 'dex'], ['Animal Handling', 'wis'], ['Arcana', 'int'], ['Athletics', 'str'], ['Deception', 'cha'], ['History', 'int'], ['Insight', 'wis'], ['Intimidation', 'cha'], ['Investigation', 'int'], ['Medicine', 'wis'], ['Nature', 'int'], ['Perception', 'wis'], ['Performance', 'cha'], ['Persuasion', 'cha'], ['Religion', 'int'], ['Sleight of Hand', 'dex'], ['Stealth', 'dex'], ['Survival', 'wis']];
@@ -453,13 +453,20 @@
     var v = t === 'Character' ? f.Faction : t === 'Organization' ? f.Type : (t === 'Settlement' || t === 'Region') ? f.Region : t === 'Location' ? (f.Settlement || f.Region) : t === 'Item' ? f.Type : '';
     return String(v || '').replace(/\[\[|\]\]/g, '').split(/[,(;]/)[0].trim();
   }
+  // Articles with a Faith field ("Akorianism · The Hollow Court") live together under Faith, split by the part after the dot.
+  function faithOf(a) { var v = String(((a.fields || {}).Faith) || '').replace(/\[\[|\]\]/g, '').trim(); if (!v) return ''; var i = v.indexOf('·'); return i >= 0 ? v.slice(i + 1).trim() : v; }
+  function groupOf(a) { return faithOf(a) ? 'Faith' : findTemplate(a.template).group; }
+  function typeOf(a) { return faithOf(a) || a.template; }
+  // Within a faith, demons and divine beings sort by kind: "Demon lord (Fallen)" goes under Fallen.
+  function faithFolder(a) { var sp = String(((a.fields || {}).Species) || ((a.fields || {}).Type) || ''); var m = sp.match(/\(([^)]+)\)/); return m ? m[1].trim() : (a.template === 'Character' ? '' : 'About the faith'); }
   function articleFolders(list, scope) {
     var sorted = list.slice().sort(function (x, y) { return String(x.title).localeCompare(String(y.title)); });
     var keys = {};
-    sorted.forEach(function (a) { var k = folderOf(a) || 'Other'; (keys[k] = keys[k] || []).push(a); });
+    sorted.forEach(function (a) { var k = (faithOf(a) ? faithFolder(a) : folderOf(a)) || 'Other'; (keys[k] = keys[k] || []).push(a); });
     var names = Object.keys(keys);
     if (sorted.length <= 8 || names.length < 2) return '<div class="list">' + sorted.map(function (a) { return articleRow(a, false); }).join('') + '</div>';
-    names.sort(function (x, y) { return (x === 'Other') - (y === 'Other') || keys[y].length - keys[x].length || x.localeCompare(y); });
+    var FIRST = ['About the faith', 'Firstborn', 'Fallen', 'Made'];
+    names.sort(function (x, y) { var fx = FIRST.indexOf(x), fy = FIRST.indexOf(y); if (fx >= 0 || fy >= 0) return (fx < 0 ? 99 : fx) - (fy < 0 ? 99 : fy); return (x === 'Other') - (y === 'Other') || keys[y].length - keys[x].length || x.localeCompare(y); });
     ui.openFolders = ui.openFolders || {};
     return names.map(function (k) {
       var id = scope + '|' + k;
@@ -471,7 +478,7 @@
     title = title || 'Categories';
     ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
     var groups = {};
-    list.forEach(function (a) { var g = findTemplate(a.template).group; groups[g] = (groups[g] || 0) + 1; });
+    list.forEach(function (a) { var g = groupOf(a); groups[g] = (groups[g] || 0) + 1; });
     var cats = CAT_ORDER.filter(function (g) { return groups[g]; });
     if (!cats.length) return '<section class="block"><h2 class="sec-title">' + esc(title) + '</h2><div class="empty">' + esc(emptyText) + '</div></section>';
     var group = ui.filters[scope] && groups[ui.filters[scope]] ? ui.filters[scope] : (cats.length === 1 ? cats[0] : null);
@@ -480,10 +487,10 @@
         return '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="false"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
       }).join('') + '</div></section>';
     }
-    var inGroup = list.filter(function (a) { return findTemplate(a.template).group === group; });
+    var inGroup = list.filter(function (a) { return groupOf(a) === group; });
     var types = {};
-    inGroup.forEach(function (a) { types[a.template] = (types[a.template] || 0) + 1; });
-    var typeNames = Object.keys(types).sort(function (x, y) { return types[y] - types[x] || x.localeCompare(y); });
+    inGroup.forEach(function (a) { var t = typeOf(a); types[t] = (types[t] || 0) + 1; });
+    var typeNames = Object.keys(types).sort(function (x, y) { return (y === 'The Gods') - (x === 'The Gods') || types[y] - types[x] || x.localeCompare(y); });
     var type = ui.subs[scope] && types[ui.subs[scope]] ? ui.subs[scope] : (typeNames.length === 1 ? typeNames[0] : null);
     var back = cats.length > 1 ? '<button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">← All categories</button>' : '';
     var html = '<section class="block"><h2 class="sec-title">' + esc(title) + '<small>' + back + '</small></h2>';
@@ -494,7 +501,7 @@
       }).join('') + '</div>';
     } else {
       if (typeNames.length > 1) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="subfilter" data-scope="' + esc(scope) + '" data-type="">← All ' + esc((CATEGORY_LABEL[group] || group).toLowerCase()) + '</button></div>';
-      html += articleFolders(inGroup.filter(function (a) { return a.template === type; }), scope + '|' + type);
+      html += articleFolders(inGroup.filter(function (a) { return typeOf(a) === type; }), scope + '|' + type);
     }
     return html + '</section>';
   }
