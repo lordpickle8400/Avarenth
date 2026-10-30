@@ -1152,7 +1152,7 @@
       var dem = opts.filter(function (o) { return o.kind === 'demon'; });
       if (dem.length) html += '<h2 class="sec-title" style="margin-top:16px">The Hollow Court</h2>' + (isPact ? '' : '<p class="note">Serving a demon lord is heresy in Doresmere. Talk to your DM before you choose one.</p>') + choiceGrid(dem.map(function (o) { return [o.name, o.about]; }), b.patron, 'bd-patron');
       if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">No god</h2>' + choiceGrid([[OATH_ONLY, 'Your power comes from your conviction alone']], b.patron, 'bd-patron');
-      if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">Your oath</h2><p class="note">Every paladin swears an oath, and keeps it or breaks it. Write yours in your own words: what you swear to do, what you will never do, and who you answer to.</p>' +
+      if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">Your oath</h2><p class="note">Every paladin answers to their oath, and keeps it or breaks it. Write yours in your own words: what it demands of you, and what it will never allow.</p>' +
         '<div class="field"><label for="bd-oath" class="sr">Your oath</label><textarea id="bd-oath" data-build="oath" maxlength="1500" placeholder="I swear to…">' + esc(b.oath || '') + '</textarea></div>';
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
