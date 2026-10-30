@@ -383,3 +383,13 @@ select.input.mini { width: 110px; }
 .folder > summary span { opacity: .7; font-size: 13px; }
 .folder > .list { border-top: 1px solid var(--line, rgba(127,127,127,.25)); }
 .folder .row { padding-left: 14px; padding-right: 14px; }
+
+/* Class resources */
+.res-pool { margin-top: 12px; }
+.res-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line, rgba(127,127,127,.2)); flex-wrap: wrap; }
+.res-row:first-of-type { border-top: 0; }
+.res-row .main { flex: 1 1 140px; display: flex; flex-direction: column; min-width: 0; }
+.res-row .main span { font-size: 12px; opacity: .7; font-family: var(--ui); }
+.res-num { font-family: var(--ui); font-weight: 700; font-size: 18px; min-width: 56px; text-align: right; }
+.res-num small { font-weight: 400; opacity: .7; font-size: 13px; }
+.res-row .input.mini { width: 64px; }

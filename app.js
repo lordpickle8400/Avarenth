@@ -920,6 +920,7 @@
     out.coins = Object.assign(defaultSheet().coins, s.coins || {});
     ['saves', 'skills'].forEach(function (k) { if (!out[k] || typeof out[k] !== 'object') out[k] = {}; });
     ['spells', 'items', 'features', 'attacks', 'log', 'debts', 'tomes'].forEach(function (k) { if (!Array.isArray(out[k])) out[k] = []; });
+    if (!out.res || typeof out.res !== 'object' || Array.isArray(out.res)) out.res = {};
     return out;
   }
   function mod(score) { return Math.floor((num(score, 10) - 10) / 2); }
@@ -1475,7 +1476,8 @@
       chargesHtml(s) +
       (can ? '<div class="pool-ctl"><label class="sr" for="mp-amt">Amount</label><input type="number" id="mp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small" data-act="mp" data-dir="-1">Spend</button><button type="button" class="btn small" data-act="mp" data-dir="1">Restore</button></div>' : '') +
       (edit ? '<div class="pool-edit"><label class="check"><input type="checkbox" id="mp-ovr" data-mana-override' + (s.mana.override ? ' checked' : '') + '> Set max by hand</label>' + (s.mana.override ? '<label for="mp-max">Max</label><input type="number" id="mp-max" data-pool="mana.max" value="' + num(s.mana.max, 0) + '">' : '<span class="note">' + (autoMana(s.cls, s.level) !== null ? 'Worked out from class and level.' : 'Set a class to work it out.') + '</span>') + '</div>' : '') + '</section></div>';
-    if (can) html += '<div class="actions rest-row"><button type="button" class="btn" data-act="long-rest">Long rest</button><span class="note">Refills hit points, mana and charges, and gives back half your hit dice.</span></div>';
+    html += resourcesHtml(s, can);
+    if (can) html += '<div class="actions rest-row"><button type="button" class="btn" data-act="short-rest">Short rest</button><button type="button" class="btn" data-act="long-rest">Long rest</button><span class="note">A long rest refills everything and gives back half your hit dice.</span></div>';
 
     var tabs = ['Actions', 'Spells', 'Skills', 'Inventory', 'Features', 'Reputation', 'Record', 'Notes'];
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = 'Actions';
@@ -1485,6 +1487,65 @@
     if (edit) html += '<div class="actions" style="justify-content:flex-end"><button type="button" class="btn danger" data-act="delete-char" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again to delete' : 'Delete character') + '</button></div>';
     html += '</div>';
     $view.innerHTML = html;
+  }
+  /* Class resources from the D&D rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
+  function byLevel(lvl, table) { var v = 0; table.forEach(function (t) { if (lvl >= t[0]) v = t[1]; }); return v; }
+  function classResources(s) {
+    var L = num(s.level, 1), cha = mod(s.abilities.cha), out = [];
+    function add(key, name, max, rest, extra) { if (max === 'unlimited' || max > 0) out.push(Object.assign({ key: key, name: name, max: max, rest: rest }, extra || {})); }
+    switch (s.cls) {
+      case 'Barbarian': add('rage', 'Rage', L >= 20 ? 'unlimited' : byLevel(L, [[1, 2], [3, 3], [6, 4], [12, 5], [17, 6]]), 'long'); break;
+      case 'Bard': add('insp', 'Bardic Inspiration', Math.max(1, cha), L >= 5 ? 'short' : 'long', { note: 'd' + byLevel(L, [[1, 6], [5, 8], [10, 10], [15, 12]]) }); break;
+      case 'Cleric': add('cd', 'Channel Divinity', byLevel(L, [[2, 1], [6, 2], [18, 3]]), 'short'); break;
+      case 'Druid': add('wild', 'Wild Shape', L >= 20 ? 'unlimited' : (L >= 2 ? 2 : 0), 'short'); break;
+      case 'Fighter':
+        add('wind', 'Second Wind', 1, 'short', { note: 'heal 1d10 + ' + L });
+        add('surge', 'Action Surge', byLevel(L, [[2, 1], [17, 2]]), 'short');
+        add('indom', 'Indomitable', byLevel(L, [[9, 1], [13, 2], [17, 3]]), 'long'); break;
+      case 'Monk': add('ki', 'Ki', L >= 2 ? L : 0, 'short', { pool: true }); break;
+      case 'Paladin':
+        add('loh', 'Lay on Hands', 5 * L, 'long', { pool: true, note: 'hit points to heal' });
+        add('sense', 'Divine Sense', Math.max(1, 1 + cha), 'long');
+        add('cd', 'Channel Divinity', L >= 3 ? 1 : 0, 'short'); break;
+      case 'Rogue': add('luck', 'Stroke of Luck', L >= 20 ? 1 : 0, 'short'); break;
+      case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true }); break;
+    }
+    return out;
+  }
+  function resourcesHtml(s, can) {
+    var list = classResources(s);
+    if (!list.length) return '';
+    return '<section class="pool res-pool" aria-label="Class resources"><div class="pool-top"><span class="k">' + esc(s.cls) + ' resources</span></div>' + list.map(function (r) {
+      var meta = (r.note ? r.note + ' · ' : '') + (r.rest === 'short' ? 'short or long rest' : 'long rest');
+      if (r.max === 'unlimited') return '<div class="res-row"><div class="main"><b>' + esc(r.name) + '</b><span>Unlimited</span></div></div>';
+      var used = Math.min(r.max, Math.max(0, num(s.res[r.key], 0))), left = r.max - used;
+      var shown = r.pool || r.max > 6 ? '<span class="res-num">' + left + ' <small>/ ' + r.max + '</small></span>'
+        : '<span class="pips" aria-label="' + left + ' of ' + r.max + ' left">' + Array.apply(null, Array(r.max)).map(function (_, i) { return '<i class="pip' + (i < left ? ' on' : '') + '"></i>'; }).join('') + '</span>';
+      var ctl = '';
+      if (can) ctl = (r.pool ? '<label class="sr" for="res-amt-' + r.key + '">Amount</label><input type="number" class="input mini" id="res-amt-' + r.key + '" min="1" value="1" inputmode="numeric">' : '') +
+        '<button type="button" class="btn small" data-act="res" data-key="' + r.key + '" data-dir="-1"' + (left <= 0 ? ' disabled' : '') + '>Use</button>' +
+        '<button type="button" class="btn small quiet" data-act="res" data-key="' + r.key + '" data-dir="1"' + (used <= 0 ? ' disabled' : '') + ' aria-label="Get one ' + esc(r.name) + ' back">+</button>';
+      return '<div class="res-row"><div class="main"><b>' + esc(r.name) + '</b><span>' + esc(meta) + '</span></div>' + shown + ctl + '</div>';
+    }).join('') + '</section>';
+  }
+  function useResource(c, key, dir) {
+    var s = c.sheet, r = classResources(normSheet(s)).filter(function (x) { return x.key === key; })[0];
+    if (!r || r.max === 'unlimited') return;
+    if (!s.res || typeof s.res !== 'object') s.res = {};
+    var amt = 1;
+    if (r.pool) { var inp = document.getElementById('res-amt-' + key); amt = Math.max(1, num(inp && inp.value, 1)); }
+    var used = Math.max(0, num(s.res[key], 0));
+    if (dir < 0) { if (r.max - used < amt) return toast('Only ' + (r.max - used) + ' ' + r.name + ' left.'); used += amt; }
+    else used = Math.max(0, used - amt);
+    s.res[key] = used;
+    render(); saveCharSoon(c);
+  }
+  function shortRest(c) {
+    var s = c.sheet, back = classResources(normSheet(s)).filter(function (r) { return r.rest === 'short' && num((s.res || {})[r.key], 0) > 0; });
+    if (!s.res || typeof s.res !== 'object') s.res = {};
+    back.forEach(function (r) { s.res[r.key] = 0; });
+    toast(back.length ? 'Short rest. ' + back.map(function (r) { return r.name; }).join(', ') + ' back.' : 'Short rest. Spend hit dice to heal.');
+    render(); saveCharSoon(c);
   }
   function chargesHtml(s) {
     var hm = hmMax(s.cls, s.level), rc = rcMax(s.cls, s.level);
@@ -1685,8 +1746,9 @@
     s.hp.cur = num(s.hp.max, 0); s.hp.temp = 0;
     s.mana.cur = manaMax(s);
     s.charges.hm = 0; s.charges.rc = 0;
+    s.res = {};
     s.hd.used = Math.max(0, num(s.hd.used, 0) - Math.max(1, Math.floor(num(s.level, 1) / 2)));
-    toast('Rested. Hit points, mana and charges restored.');
+    toast('Rested. Hit points, mana, charges and class resources restored.');
     render(); saveCharSoon(c);
   }
   function spendHitDie(c) {
@@ -3590,6 +3652,8 @@
       case 'pick-toggle': ui.spellPick = !ui.spellPick; render(); break;
       case 'pick-mode': ui.pick = Object.assign(ui.pick || { q: '', pay: true }, { mode: el.getAttribute('data-val') }); render(); break;
       case 'long-rest': if (c) longRest(c); break;
+      case 'short-rest': if (c) shortRest(c); break;
+      case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
       case 'bd-class': case 'bd-species': case 'bd-bg':
