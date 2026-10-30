@@ -902,7 +902,7 @@
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
       mana: { cur: 0, max: 0, regen: '', override: false },
       charges: { hm: 0, rc: 0 }, picks: 0, secretPicks: 0, debts: [], tomes: [],
-      death: { s: 0, f: 0 }, conditions: [], exhaustion: 0, inspiration: false,
+      death: { s: 0, f: 0 }, conditions: [], exhaustion: 0, inspiration: false, oath: '',
       saves: {}, skills: {},
       spells: [], items: [], attacks: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, features: [], notes: '', log: []
     };
@@ -1071,7 +1071,7 @@
   var BUILD_STEPS = ['Name', 'Class', 'Species', 'Background', 'Abilities', 'Skills', 'Spells', 'Review'];
   function buildSteps(b) { var out = BUILD_STEPS.slice(); if (devotionLabel(b.cls)) out.splice(2, 0, devotionLabel(b.cls)); return out; }
   function newBuild() {
-    return { step: 0, patron: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
+    return { step: 0, patron: '', oath: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
   }
   function buildBase(b) {
     var out = {};
@@ -1090,7 +1090,9 @@
   function buildSpellNeeds(b) { var p = RULES.magic.startPicks[casterKind(b.cls)] || [0, 0]; return { cantrips: p[0], first: p[1] }; }
   function buildStepError(b) {
     switch (buildSteps(b)[b.step]) {
-      case 'Deity': case 'Patron': return b.patron || !devotionRequired(b.cls) ? '' : 'Choose who you serve.';
+      case 'Deity': case 'Patron':
+        if (!b.patron && devotionRequired(b.cls)) return 'Choose who you serve.';
+        return b.cls === 'Paladin' && !String(b.oath || '').trim() ? 'Write your oath.' : '';
       case 'Name': return b.name.trim() ? '' : 'Give your character a name.';
       case 'Class': return b.cls ? '' : 'Pick a class.';
       case 'Species': return b.species ? '' : 'Pick a species.';
@@ -1150,6 +1152,8 @@
       var dem = opts.filter(function (o) { return o.kind === 'demon'; });
       if (dem.length) html += '<h2 class="sec-title" style="margin-top:16px">The Hollow Court</h2>' + (isPact ? '' : '<p class="note">Serving a demon lord is heresy in Doresmere. Talk to your DM before you choose one.</p>') + choiceGrid(dem.map(function (o) { return [o.name, o.about]; }), b.patron, 'bd-patron');
       if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">No god</h2>' + choiceGrid([[OATH_ONLY, 'Your power comes from your conviction alone']], b.patron, 'bd-patron');
+      if (b.cls === 'Paladin') html += '<h2 class="sec-title" style="margin-top:16px">Your oath</h2><p class="note">Every paladin swears an oath, and keeps it or breaks it. Write yours in your own words: what you swear to do, what you will never do, and who you answer to.</p>' +
+        '<div class="field"><label for="bd-oath" class="sr">Your oath</label><textarea id="bd-oath" data-build="oath" maxlength="1500" placeholder="I swear to…">' + esc(b.oath || '') + '</textarea></div>';
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
@@ -1255,7 +1259,7 @@
   function buildSheet(b) {
     var cd = RULES.classes[b.cls], sc = buildScores(b), spc = RULES.species[b.species] || {};
     var s = defaultSheet();
-    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : '';
+    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; s.oath = b.cls === 'Paladin' ? String(b.oath || '').trim() : '';
     s.abilities = sc;
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
@@ -1272,6 +1276,7 @@
     var s = buildSheet(b), cd = RULES.classes[b.cls];
     return '<p class="guide">Here’s ' + esc(b.name) + '. Create the character, then add armor, weapons and gear on the sheet.</p>' +
       '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + (s.patron ? ' · ' + (s.patron === OATH_ONLY ? 'sworn to their oath' : (devotionLabel(b.cls) === 'Patron' ? 'pact with ' : 'serves ') + esc(s.patron)) : '') + '</p>' +
+      (s.oath ? '<blockquote class="oath">' + esc(s.oath) + '</blockquote>' : '') +
       '<div class="abilities">' + ABILITIES.map(function (a) { return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + signed(mod(s.abilities[a[0]])) + '</span><span class="score">' + s.abilities[a[0]] + '</span></div>'; }).join('') + '</div>' +
       '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', s.ac) + vital('Speed', s.speed + ' ft') + '</div>' +
       '<div class="tbl" style="margin-top:10px"><div class="tbl-row"><div class="main"><b>Skills</b><span>' + esc(Object.keys(s.skills).sort().join(', ')) + '</span></div></div>' +
@@ -1702,6 +1707,11 @@
           '<p class="note" style="margin-top:12px">Includes crimes charged to the whole party. <a href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open the full tracker</a>.</p>';
       }
     } else if (ui.sheetTab === 'Features') {
+      if (s.cls === 'Paladin' || s.oath) {
+        html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">Oath</h2>' + (can
+          ? '<div class="field"><label for="ch-oath" class="sr">Oath</label><textarea id="ch-oath" data-sf="oath" maxlength="1500" placeholder="I swear to…">' + esc(s.oath || '') + '</textarea><span class="hint">Saves automatically. Break it, and your DM will know.</span></div>'
+          : (s.oath ? '<blockquote class="oath">' + esc(s.oath) + '</blockquote>' : '<div class="empty">No oath written yet.</div>')) + '</section>';
+      }
       if (s.cls === 'Warlock' || s.debts.length) {
         html += '<section class="block debts" style="margin-top:12px"><h2 class="sec-title">Patron debts<small>' + s.debts.filter(function (d) { return !d.paid; }).length + ' owed</small></h2><div class="tbl">';
         if (!s.debts.length) html += '<div class="empty">Nothing owed. Yet.</div>';
@@ -3910,6 +3920,7 @@
       saveLookSoon();
       return;
     }
+    if (t.getAttribute('data-build') === 'oath' && ui.build) { ui.build.oath = t.value; return; }
     if (t.getAttribute('data-build') === 'name' && ui.build) { ui.build.name = t.value; var hint = document.querySelector('.build-nav + .note'); if (hint) hint.hidden = !!t.value.trim(); return; }
     if (t.hasAttribute('data-manual') && ui.build) { ui.build.manual[t.getAttribute('data-manual')] = Math.max(3, Math.min(20, num(t.value, 10))); var sbx = document.getElementById('bd-scores'); if (sbx) sbx.innerHTML = buildScoresHtml(ui.build); return; }
     if (ui.lvl && t.hasAttribute('data-lv') && t.tagName === 'INPUT') { ui.lvl[t.getAttribute('data-lv')] = t.value; return; }

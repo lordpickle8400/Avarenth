@@ -411,3 +411,4 @@ select.input.mini { width: 110px; }
 .carry.over .note { color: #d9534f; }
 .roll-in { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
 .roll-in .input.mini { width: 56px; }
+blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--accent); font-style: italic; white-space: pre-wrap; }
