@@ -2671,22 +2671,25 @@
       return (!shop.campaign_id || x.campaign_id === shop.campaign_id) && (x.character_id === c.id || !x.character_id) && (x.status === 'Wanted' || x.status === 'Suspected');
     });
   }
+  // What they must roll on a d20 to slip past the keeper, by their worst crime.
+  var SLIP_TARGET = { Minor: 8, Moderate: 10, Serious: 12, Major: 14, Royal: 16, Imperial: 18 };
+  // How a keeper who knows them reacts: by crime, and harsher when the crime happened in his own town.
+  var REACTIONS = {
+    away: [['ignore', 'hush', 'guards'], ['hush', 'refuse', 'guards'], ['refuse', 'guards']],
+    local: [['hush', 'refuse', 'guards'], ['refuse', 'guards'], ['guards']]
+  };
+  var REACTION_TEXT = { ignore: 'and doesn’t care.', hush: 'and raises his prices to keep quiet.', refuse: 'and refuses to serve them.', guards: 'and calls the guards.' };
   function notoriety(shop, c) {
     var list = openCrimes(shop, c);
     if (!list.length) return null;
     var place = shop.place_id ? articleById(shop.place_id) : null, pname = place ? place.title.toLowerCase() : '';
-    var worst = 0, wanted = false, local = false;
+    var worst = 0, local = false;
     list.forEach(function (x) {
       worst = Math.max(worst, SEVERITIES.indexOf(x.severity));
-      if (x.status === 'Wanted') wanted = true;
       if (pname && String(x.location || '').toLowerCase().indexOf(pname) >= 0) local = true;
     });
-    var parts = [['Worst crime: ' + SEVERITIES[worst], worst]];
-    if (wanted) parts.push(['Wanted', 2]);
-    if (list.length > 1) parts.push([list.length + ' open crimes', Math.min(3, list.length - 1)]);
-    if (local) parts.push(['Crime here', 4]);
-    if (num(shop.watch, 0)) parts.push(['Watchful keeper', num(shop.watch, 0)]);
-    return { mod: parts.reduce(function (t, x) { return t + x[1]; }, 0), parts: parts, list: list };
+    var sev = SEVERITIES[worst];
+    return { worst: worst, severity: sev, local: local, target: SLIP_TARGET[sev] || 12, list: list };
   }
   function shopKey(shop, c) { return shop.id + '|' + (c ? c.id : ''); }
   function recogMult(shop, c) {
@@ -2694,7 +2697,7 @@
     if (!r || !r.hit) return { blocked: false, sell: 1, buy: 1 };
     if (r.mode === 'hush') return { blocked: false, sell: 1.5, buy: 0.5, hush: true };
     if (r.mode === 'ignore') return { blocked: false, sell: 1, buy: 1 };
-    return { blocked: true, sell: 1, buy: 1 };
+    return { blocked: true, guards: r.mode === 'guards', sell: 1, buy: 1 };
   }
   function priceFor(shop, c, row) {
     var cp = toCp(row.p);
@@ -2823,18 +2826,18 @@
         var rr = (ui.recog || {})[key];
         if (!nt) html += '<p class="note" style="margin:6px 0 0">Nothing on the law’s books. Nobody to recognize.</p>';
         else {
-          html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> <span class="note">The keeper checked their face the moment they walked in.</span></p>' +
+          html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> <span class="note">' + esc(nt.severity) + ' crime' + (nt.local ? ', committed in this town' : '') + '.</span></p>' +
             '<label class="check" style="margin-top:6px"><input type="checkbox" id="shop-disguise" data-shop="' + esc(shop.id) + '"' + (rr && rr.disguised ? ' checked' : '') + '> Disguised (checks again, harder to spot)</label>';
           if (rr) {
-            html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">' + (rr.hit ? 'The keeper recognizes them.' : 'No sign of recognition.') + '</p>';
-            if (rr.hit) html += '<div class="seg wide" role="group" aria-label="What the keeper does">' + [['refuse', 'Refuses service'], ['hush', 'Hush price (×1.5)'], ['ignore', 'Lets it slide']].map(function (o) {
+            html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">' + (rr.hit ? 'The keeper recognizes them, ' + REACTION_TEXT[rr.mode || 'refuse'] : 'No sign of recognition.') + '</p>';
+            if (rr.hit) html += '<p class="note" style="margin:6px 0 2px">Change his reaction:</p><div class="seg wide" role="group" aria-label="What the keeper does">' + [['ignore', 'Doesn’t care'], ['hush', 'Raises prices (×1.5)'], ['refuse', 'Refuses'], ['guards', 'Calls the guards']].map(function (o) {
               return '<button type="button" data-act="shop-recog-mode" data-id="' + esc(shop.id) + '" data-mode="' + o[0] + '" aria-pressed="' + ((rr.mode || 'refuse') === o[0]) + '">' + o[1] + '</button>';
             }).join('') + '</div>';
           }
           html += '</div>';
         }
       }
-      if (rm.blocked) html += '<p class="recog-res hit">They won’t sell or buy while the keeper knows them.</p>';
+      if (rm.blocked) html += '<p class="recog-res hit">' + (rm.guards ? 'The guards are on their way. No trade.' : 'No sale. The keeper won’t deal with them.') + '</p>';
     }
     html += '</section>';
 
@@ -2900,7 +2903,7 @@
       '<div class="field"><label for="sh-place">Where</label><select id="sh-place"><option value="">Nowhere in particular</option>' + setts.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === v.place_id ? ' selected' : '') + '>' + esc(a.title) + '</option>'; }).join('') + '</select></div></div>' +
       '<div class="field"><label for="sh-keeper">Keeper</label><input type="text" id="sh-keeper" maxlength="120" value="' + esc(v.keeper) + '" placeholder="e.g. [[Old Brannoc]], a one-eyed smith"><span class="hint">Use [[Name]] to link an NPC article.</span></div>' +
       '<div class="two"><div class="field"><label for="sh-fac">Answers to</label><select id="sh-fac"><option value="">Nobody (townsfolk)</option>' + facs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === v.faction_id ? ' selected' : '') + '>' + esc(a.title) + '</option>'; }).join('') + '</select><span class="hint">Standing with this faction sets prices.</span></div>' +
-      '<div class="field"><label for="sh-watch">Keeper’s eye</label><select id="sh-watch">' + [[-4, 'Oblivious (−4)'], [-2, 'Distracted (−2)'], [0, 'Ordinary'], [2, 'Sharp (+2)'], [4, 'Knows every face (+4)']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === num(v.watch, 0) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select><span class="hint">Added to the recognition roll.</span></div></div>' +
+      '</div>' +
       '<div class="field"><label for="sh-notes">Notes</label><textarea id="sh-notes" maxlength="2000">' + esc(v.notes) + '</textarea></div>' +
       '<div class="actions"><button type="submit" class="btn primary">' + (shop ? 'Save' : 'Open the shop') + '</button><a class="btn" href="' + (shop ? '#/shop/' + encodeURIComponent(shop.id) : 'javascript:history.back()') + '">Cancel</a>' +
       (shop ? '<button type="button" class="btn danger" data-act="shop-delete" data-id="' + esc(shop.id) + '">' + (ui.pendingDelete === 'shop:' + shop.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div></form></div>';
@@ -2910,7 +2913,7 @@
     var row = {
       name: document.getElementById('sh-name').value.trim().slice(0, 80), kind: document.getElementById('sh-kind').value,
       place_id: document.getElementById('sh-place').value || null, faction_id: document.getElementById('sh-fac').value || null,
-      keeper: document.getElementById('sh-keeper').value.trim().slice(0, 120), watch: num(document.getElementById('sh-watch').value, 0),
+      keeper: document.getElementById('sh-keeper').value.trim().slice(0, 120), watch: 0,
       notes: document.getElementById('sh-notes').value.trim().slice(0, 2000)
     };
     if (!row.name) return toast('Give the shop a name.');
@@ -2994,17 +2997,23 @@
     saveShop(shop, 'Paid ' + c.name + ' ' + money(cp));
     render();
   }
-  // The keeper's check happens on its own: d20 + notoriety against the DC, worst of two if disguised. Only the result is shown.
+  // The check runs on its own when a wanted face walks in: they roll a d20 to slip past, against a target set by their worst crime.
+  // A crime in this town gives the keeper advantage (they keep the worse of two); a disguise gives them advantage. Only the outcome is shown.
   function autoRecog(shop, c, nt, disguised) {
-    var a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20), d = disguised ? Math.min(a, b) : a;
+    var a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20);
+    var edge = (disguised ? 1 : 0) - (nt.local ? 1 : 0);
+    var d = edge > 0 ? Math.max(a, b) : edge < 0 ? Math.min(a, b) : a;
+    var hit = d < nt.target;
+    var tier = nt.worst <= 0 ? 0 : nt.worst === 1 ? 1 : 2;
+    var opts = REACTIONS[nt.local ? 'local' : 'away'][tier];
     ui.recog = ui.recog || {};
-    ui.recog[shopKey(shop, c)] = { hit: d + nt.mod >= RECOG_DC, mode: 'refuse', disguised: !!disguised };
+    ui.recog[shopKey(shop, c)] = { hit: hit, mode: hit ? opts[Math.floor(Math.random() * opts.length)] : 'ignore', disguised: !!disguised };
   }
   function shopRecog(shop, hit) {
     var c = charById(ui.shopChar && ui.shopChar[shop.id]);
     if (!c) return;
     ui.recog = ui.recog || {};
-    ui.recog[shopKey(shop, c)] = { hit: !!hit, mode: 'refuse' };
+    ui.recog[shopKey(shop, c)] = { hit: !!hit, mode: hit ? 'refuse' : 'ignore' };
     render();
   }
 
