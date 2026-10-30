@@ -48,8 +48,8 @@
     T('Campaign & Novel', 'Chapter', 'A chapter of the novel, linked to the lore it uses.', ['Book', 'Chapter #', 'POV character'], ['Prose'], ['Draft notes']),
     T('General', 'Generic Article', 'Anything that does not fit elsewhere.', [], ['Overview'], [])
   ];
-  var CATEGORY_LABEL = { 'People': 'People', 'Places': 'Geography', 'Groups': 'Organizations', 'Lore & Magic': 'Lore & Magic', 'Things': 'Items', 'History': 'History', 'Campaign & Novel': 'Campaign & Novel', 'General': 'General', 'Your templates': 'Your templates', 'Faith': 'Faith' };
-  var CAT_ORDER = ['Places', 'Groups', 'Faith', 'Lore & Magic', 'People', 'Things', 'History', 'Campaign & Novel', 'Your templates', 'General'];
+  var CATEGORY_LABEL = { 'People': 'People', 'Places': 'Geography', 'Groups': 'Organizations', 'Lore & Magic': 'Lore & Magic', 'Things': 'Items', 'History': 'History', 'Campaign & Novel': 'Campaign & Novel', 'General': 'General', 'Your templates': 'Your templates', 'Faith': 'Faith', 'Trash': 'Trash (delete these)' };
+  var CAT_ORDER = ['Places', 'Groups', 'Faith', 'Lore & Magic', 'People', 'Things', 'History', 'Campaign & Novel', 'Your templates', 'General', 'Trash'];
 
   var ABILITIES = [['str', 'Strength'], ['dex', 'Dexterity'], ['con', 'Constitution'], ['int', 'Intelligence'], ['wis', 'Wisdom'], ['cha', 'Charisma']];
   var SKILLS = [['Acrobatics', 'dex'], ['Animal Handling', 'wis'], ['Arcana', 'int'], ['Athletics', 'str'], ['Deception', 'cha'], ['History', 'int'], ['Insight', 'wis'], ['Intimidation', 'cha'], ['Investigation', 'int'], ['Medicine', 'wis'], ['Nature', 'int'], ['Perception', 'wis'], ['Performance', 'cha'], ['Persuasion', 'cha'], ['Religion', 'int'], ['Sleight of Hand', 'dex'], ['Stealth', 'dex'], ['Survival', 'wis']];
@@ -463,7 +463,9 @@
   }
   // Articles with a Faith field ("Akorianism · The Hollow Court") live together under Faith, split by the part after the dot.
   function faithOf(a) { var v = String(((a.fields || {}).Faith) || '').replace(/\[\[|\]\]/g, '').trim(); if (!v) return ''; var i = v.indexOf('·'); return i >= 0 ? v.slice(i + 1).trim() : v; }
-  function groupOf(a) { return faithOf(a) ? 'Faith' : findTemplate(a.template).group; }
+  // Anything marked for deletion (a Trash field, or "(delete me)" in the title) is gathered in a DM-only Trash category.
+  function isTrash(a) { return !!((a.fields || {}).Trash) || /\(delete me\)/i.test(String(a.title || '')); }
+  function groupOf(a) { return isTrash(a) ? 'Trash' : faithOf(a) ? 'Faith' : findTemplate(a.template).group; }
   function typeOf(a) { return faithOf(a) || a.template; }
   // Within a faith, demons and divine beings sort by kind: "Demon lord (Fallen)" goes under Fallen.
   function faithFolder(a) { var sp = String(((a.fields || {}).Species) || ((a.fields || {}).Type) || ''); var m = sp.match(/\(([^)]+)\)/); return m ? m[1].trim() : (a.template === 'Character' ? '' : 'About the faith'); }
@@ -485,6 +487,7 @@
   function articleBrowser(list, scope, emptyText, title) {
     title = title || 'Categories';
     ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
+    if (!dmView()) list = list.filter(function (a) { return !isTrash(a); });
     var groups = {};
     list.forEach(function (a) { var g = groupOf(a); groups[g] = (groups[g] || 0) + 1; });
     var cats = CAT_ORDER.filter(function (g) { return groups[g]; });
