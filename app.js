@@ -1198,13 +1198,16 @@
 
   function buildAbilitiesHtml(b, cd) {
     var html = '<p class="guide">Your six abilities. ' + esc(b.cls) + 's lean on <b>' + esc(cd.primary) + '</b>, so put a high score there. Then add +2 to one ability and +1 to another.</p>' +
-      '<div class="seg wide" role="group" aria-label="How to set scores">' + [['array', 'Standard array'], ['pointbuy', 'Point buy'], ['roll', 'Roll'], ['manual', 'Enter my own']].map(function (m) {
+      '<div class="seg wide" role="group" aria-label="How to set scores">' + [['array', 'Standard array'], ['pointbuy', 'Point buy'], ['roll', 'Rolled at the table'], ['manual', 'Enter my own']].map(function (m) {
         return '<button type="button" data-act="bd-method" data-val="' + m[0] + '" aria-pressed="' + (b.method === m[0]) + '">' + m[1] + '</button>';
       }).join('') + '</div>';
     if (b.method === 'array' || b.method === 'roll') {
-      var vals = b.method === 'roll' ? b.rolls : RULES.standardArray;
-      if (b.method === 'roll') html += '<div class="actions"><button type="button" class="btn" data-act="bd-roll">' + (vals.length ? 'Roll again' : 'Roll 4d6, drop the lowest, six times') + '</button>' + (vals.length ? '<span class="note">Rolled: ' + vals.join(', ') + '</span>' : '') + '</div>';
-      else html += '<p class="note">Assign 15, 14, 13, 12, 10 and 8, one to each ability.</p>';
+      var rolledAll = b.method === 'roll' && b.rolls.length === 6 && b.rolls.every(function (v) { return v >= 3 && v <= 18; });
+      var vals = b.method === 'roll' ? (rolledAll ? b.rolls : []) : RULES.standardArray;
+      if (b.method === 'roll') {
+        html += '<p class="note">Roll 4d6 at the table and drop the lowest die, six times. Type the six totals here, then assign them.</p><div class="roll-in">' +
+          [0, 1, 2, 3, 4, 5].map(function (i) { return '<label class="sr" for="bd-r' + i + '">Score ' + (i + 1) + '</label><input type="number" class="input mini" id="bd-r' + i + '" data-bd-roll="' + i + '" min="3" max="18" inputmode="numeric" value="' + (b.rolls[i] || '') + '">'; }).join('') + '</div>';
+      } else html += '<p class="note">Assign 15, 14, 13, 12, 10 and 8, one to each ability.</p>';
       if (vals.length) {
         var used = {}; ABILITIES.forEach(function (a) { if (num(b.assign[a[0]], 0)) used[b.assign[a[0]]] = a[0]; });
         html += '<div class="ab-assign">' + ABILITIES.map(function (a) {
@@ -1310,9 +1313,9 @@
       (subNow && !needSub ? '<div class="tbl-row"><div class="main"><b>' + esc(s.subclass || cd.subclassLabel) + ' feature</b><span>Your ' + esc(cd.subclassLabel.toLowerCase()) + ' grants a new feature at this level. Add it under Features once you’ve read it.</span></div></div>' : '') +
       '</div></section>';
 
-    html += '<section class="block"><h2 class="sec-title">Hit points</h2><p class="note">Each level you gain a hit die (d' + cd.hd + ') plus your Constitution modifier (' + signed(con) + '). Take the average for a safe number, or roll for it.</p>' +
-      '<div class="seg wide" role="group" aria-label="Hit points">' + '<button type="button" data-act="lv-hp" data-val="avg" aria-pressed="' + (L.hp === 'avg') + '">Average (' + avg + ')</button><button type="button" data-act="lv-hp" data-val="roll" aria-pressed="' + (L.hp === 'roll') + '">Roll d' + cd.hd + '</button></div>' +
-      (L.hp === 'roll' ? '<div class="actions"><button type="button" class="btn" data-act="lv-roll">' + (L.rolled ? 'Rolled ' + L.rolled + '. Roll again' : 'Roll') + '</button></div>' : '') +
+    html += '<section class="block"><h2 class="sec-title">Hit points</h2><p class="note">Each level you gain a hit die (d' + cd.hd + ') plus your Constitution modifier (' + signed(con) + '). Take the average for a safe number, or roll the die at the table.</p>' +
+      '<div class="seg wide" role="group" aria-label="Hit points">' + '<button type="button" data-act="lv-hp" data-val="avg" aria-pressed="' + (L.hp === 'avg') + '">Average (' + avg + ')</button><button type="button" data-act="lv-hp" data-val="roll" aria-pressed="' + (L.hp === 'roll') + '">I rolled the d' + cd.hd + '</button></div>' +
+      (L.hp === 'roll' ? '<div class="field" style="max-width:220px"><label for="lv-rolled">What did the d' + cd.hd + ' show?</label><input type="number" id="lv-rolled" min="1" max="' + cd.hd + '" inputmode="numeric" value="' + (L.rolled || '') + '"></div>' : '') +
       '<p><b>+' + hpGain + ' hit points</b>, for a new maximum of ' + (num(s.hp.max, 0) + hpGain) + '.</p></section>';
 
     if (needSub) {
@@ -1350,7 +1353,7 @@
     $view.innerHTML = html;
   }
   function levelUpError(L, needSub, isAsi, needArc) {
-    if (L.hp === 'roll' && !L.rolled) return 'Roll your hit points, or take the average.';
+    if (L.hp === 'roll' && !L.rolled) return 'Enter what your hit die rolled, or take the average.';
     if (needArc && !L.arc) return 'Choose the spell your patron grants.';
     if (needSub && (!L.sub || (L.sub === 'Other…' && !L.subOther.trim()))) return 'Choose your subclass.';
     if (isAsi) {
@@ -1505,7 +1508,7 @@
     var d = s.death, st = d.f >= 3 ? 'Dead.' : d.s >= 3 ? 'Stable. Unconscious, but no longer dying.' : 'Dying. Roll a death save at the start of each turn.';
     return '<div class="death"><div class="death-top"><span class="k">Death saves</span><span class="note">' + esc(st) + '</span></div>' +
       '<div class="death-pips"><span>Successes <span class="pips">' + pipsOf(3, d.s, 'ok') + '</span></span><span>Failures <span class="pips">' + pipsOf(3, d.f, 'bad') + '</span></span></div>' +
-      (can && d.f < 3 && d.s < 3 ? '<div class="pool-ctl"><button type="button" class="btn small primary" data-act="death" data-kind="roll">Roll</button><button type="button" class="btn small" data-act="death" data-kind="s">+ Success</button><button type="button" class="btn small" data-act="death" data-kind="f">+ Failure</button></div>' : '') +
+      (can && d.f < 3 && d.s < 3 ? '<p class="note" style="margin:0 0 6px">Roll a d20 at the table: 10 or higher is a success.</p><div class="pool-ctl"><button type="button" class="btn small" data-act="death" data-kind="s">Success</button><button type="button" class="btn small" data-act="death" data-kind="f">Failure</button><button type="button" class="btn small" data-act="death" data-kind="nat1">Natural 1</button><button type="button" class="btn small primary" data-act="death" data-kind="nat20">Natural 20</button></div>' : '') +
       (can && (d.s || d.f) ? '<button type="button" class="linkish" data-act="death" data-kind="reset">Clear</button>' : '') + '</div>';
   }
   function conditionHtml(s, can) {
@@ -1826,10 +1829,8 @@
   function spendHitDie(c) {
     var s = c.sheet, cd = classOf(s);
     if (!cd || num(s.hd.used, 0) >= num(s.level, 1)) return;
-    var r = roll(1, cd.hd), heal = Math.max(0, r + mod(s.abilities.con));
     s.hd.used = num(s.hd.used, 0) + 1;
-    s.hp.cur = Math.min(num(s.hp.max, 0), num(s.hp.cur, 0) + heal);
-    toast('Rolled ' + r + ' on a d' + cd.hd + ': healed ' + heal);
+    toast('Hit die spent. Roll a d' + cd.hd + ' ' + signed(mod(s.abilities.con)) + ' at the table, then enter the total and tap Heal.');
     render(); saveCharSoon(c);
   }
   function profBtn(kind, key, lvl, can) {
@@ -2821,9 +2822,10 @@
         if (!nt) html += '<p class="note" style="margin:6px 0 0">Nothing on the law’s books. Nobody to recognize.</p>';
         else {
           html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> Recognition +' + nt.mod + ' vs DC ' + RECOG_DC + ' <span class="note">(' + esc(nt.parts.map(function (x) { return x[0] + ' +' + x[1]; }).join(', ')) + ')</span></p>' +
-            '<div class="pill-row" style="margin-top:6px"><label class="check"><input type="checkbox" id="shop-disguise"' + (ui.disguise ? ' checked' : '') + '> Disguised (roll twice, take the lower)</label><button type="button" class="btn small" data-act="shop-recog" data-id="' + esc(shop.id) + '">Roll: does the keeper know them?</button></div>';
+            '<p class="note" style="margin:4px 0 0">Roll a d20 for the keeper at the table: ' + (RECOG_DC - nt.mod <= 1 ? 'they know them on anything.' : RECOG_DC - nt.mod > 20 ? 'they can\'t place the face.' : 'a ' + (RECOG_DC - nt.mod) + ' or higher means they know them.') + ' Disguised? Roll twice and take the lower.</p>' +
+            '<div class="pill-row" style="margin-top:6px"><button type="button" class="btn small" data-act="shop-recog" data-hit="1" data-id="' + esc(shop.id) + '">They recognize them</button><button type="button" class="btn small" data-act="shop-recog" data-hit="0" data-id="' + esc(shop.id) + '">They don\'t</button></div>';
           if (rr) {
-            html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">Rolled ' + rr.text + ' = <b>' + rr.total + '</b>. ' + (rr.hit ? 'The keeper recognizes them.' : 'No sign of recognition.') + '</p>';
+            html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">' + (rr.hit ? 'The keeper recognizes them.' : 'No sign of recognition.') + '</p>';
             if (rr.hit) html += '<div class="seg wide" role="group" aria-label="What the keeper does">' + [['refuse', 'Refuses service'], ['hush', 'Hush price (×1.5)'], ['ignore', 'Lets it slide']].map(function (o) {
               return '<button type="button" data-act="shop-recog-mode" data-id="' + esc(shop.id) + '" data-mode="' + o[0] + '" aria-pressed="' + ((rr.mode || 'refuse') === o[0]) + '">' + o[1] + '</button>';
             }).join('') + '</div>';
@@ -2991,15 +2993,11 @@
     saveShop(shop, 'Paid ' + c.name + ' ' + money(cp));
     render();
   }
-  function shopRecog(shop) {
+  function shopRecog(shop, hit) {
     var c = charById(ui.shopChar && ui.shopChar[shop.id]);
     if (!c) return;
-    var nt = notoriety(shop, c);
-    if (!nt) return;
-    var a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20), d = ui.disguise ? Math.min(a, b) : a;
-    var total = d + nt.mod;
     ui.recog = ui.recog || {};
-    ui.recog[shopKey(shop, c)] = { total: total, hit: total >= RECOG_DC, mode: 'refuse', text: (ui.disguise ? 'd20 (' + a + ', ' + b + ' → ' + d + ')' : 'd20 (' + d + ')') + ' + ' + nt.mod };
+    ui.recog[shopKey(shop, c)] = { hit: !!hit, mode: 'refuse' };
     render();
   }
 
@@ -3539,7 +3537,7 @@
         srm.stock.splice(num(el.getAttribute('data-i'), -1), 1); saveShop(srm); render(); break;
       case 'shop-sell': var ss1 = shopById(el.getAttribute('data-id')); if (ss1) shopSell(ss1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-buy': var sb1 = shopById(el.getAttribute('data-id')); if (sb1) shopBuy(sb1, num(el.getAttribute('data-i'), -1)); break;
-      case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1); break;
+      case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1, el.getAttribute('data-hit') === '1'); break;
       case 'shop-recog-mode':
         var sr2 = shopById(el.getAttribute('data-id')), rc2 = sr2 && charById((ui.shopChar || {})[sr2.id]);
         if (rc2 && ui.recog && ui.recog[shopKey(sr2, rc2)]) { ui.recog[shopKey(sr2, rc2)].mode = el.getAttribute('data-mode'); render(); }
@@ -3747,13 +3745,8 @@
         if (dk === 'reset') dsv.s = dsv.f = 0;
         else if (dk === 's') dsv.s = Math.min(3, dsv.s + 1);
         else if (dk === 'f') dsv.f = Math.min(3, dsv.f + 1);
-        else {
-          var d20 = roll(1, 20);
-          if (d20 === 20) { c.sheet.hp.cur = 1; c.sheet.death = { s: 0, f: 0 }; toast('Natural 20! Back up with 1 hit point.'); }
-          else if (d20 === 1) { dsv.f = Math.min(3, dsv.f + 2); toast('Natural 1: two failures.'); }
-          else if (d20 >= 10) { dsv.s = Math.min(3, dsv.s + 1); toast('Rolled ' + d20 + ': success.'); }
-          else { dsv.f = Math.min(3, dsv.f + 1); toast('Rolled ' + d20 + ': failure.'); }
-        }
+        else if (dk === 'nat1') { dsv.f = Math.min(3, dsv.f + 2); toast('Natural 1: two failures.'); }
+        else if (dk === 'nat20') { c.sheet.hp.cur = 1; c.sheet.death = { s: 0, f: 0 }; toast('Natural 20! Back up with 1 hit point.'); }
         render(); saveCharSoon(c); break;
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
@@ -3771,9 +3764,6 @@
         ui.build.step = Math.min(buildSteps(ui.build).length - 1, ui.build.step + 1); render(); window.scrollTo(0, 0); break;
       case 'bd-back': ui.build.step = Math.max(0, ui.build.step - 1); render(); window.scrollTo(0, 0); break;
       case 'bd-method': ui.build.method = el.getAttribute('data-val'); ui.build.assign = {}; render(); break;
-      case 'bd-roll':
-        ui.build.rolls = [0, 0, 0, 0, 0, 0].map(function () { var d = [roll(1, 6), roll(1, 6), roll(1, 6), roll(1, 6)].sort(function (x, y) { return x - y; }); return d[1] + d[2] + d[3]; });
-        ui.build.assign = {}; render(); break;
       case 'bd-pb':
         var k = el.getAttribute('data-ab'), v = num(ui.build.pb[k], 8) + num(el.getAttribute('data-dir'), 1);
         if (v >= 8 && v <= 15) { ui.build.pb[k] = v; if (pointsSpent(ui.build) > RULES.pointBuyBudget) { ui.build.pb[k] = v - 1; toast('Out of points.'); } }
@@ -3792,10 +3782,6 @@
         insertCharacter(b2.name.trim(), b2.campaign || null, buildSheet(b2), false).then(function () { ui.build = null; });
         break;
       case 'lv-hp': ui.lvl.hp = el.getAttribute('data-val'); render(); break;
-      case 'lv-roll':
-        var lc = charById(parseRoute().arg), lcd = lc ? classOf(normSheet(lc.sheet)) : null;
-        if (lcd) { ui.lvl.rolled = roll(1, lcd.hd); render(); }
-        break;
       case 'lv-asi': ui.lvl.asi = el.getAttribute('data-val'); ui.lvl.a = ''; ui.lvl.b = ''; render(); break;
       case 'lv-apply': var lc2 = charById(parseRoute().arg); if (lc2) applyLevelUp(lc2); break;
       case 'prof':
@@ -3963,6 +3949,17 @@
       var pf = t.getAttribute('data-pfield'), pp = {};
       pp[pf] = pf === 'size' ? num(t.value, 2) : fnum(t.value, 1);
       return savePlace(t.getAttribute('data-place'), pp);
+    }
+    if (t.hasAttribute('data-bd-roll') && ui.build) {
+      var bri = num(t.getAttribute('data-bd-roll'), 0), brv = num(t.value, 0);
+      ui.build.rolls = (ui.build.rolls || []).slice(); while (ui.build.rolls.length < 6) ui.build.rolls.push(0);
+      ui.build.rolls[bri] = brv >= 3 && brv <= 18 ? brv : 0; ui.build.assign = {};
+      if (ui.build.rolls.every(function (v) { return v; })) render();
+      return;
+    }
+    if (t.id === 'lv-rolled' && ui.lvl) {
+      var lrc = charById(parseRoute().arg), lrd = lrc ? classOf(normSheet(lrc.sheet)) : null, lrv = num(t.value, 0);
+      ui.lvl.rolled = lrd && lrv >= 1 && lrv <= lrd.hd ? lrv : 0; render(); return;
     }
     if (t.hasAttribute('data-iw')) {
       var wc = currentChar(), wi = wc && wc.sheet.items[num(t.getAttribute('data-iw'), -1)];

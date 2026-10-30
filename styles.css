@@ -409,3 +409,5 @@ select.input.mini { width: 110px; }
 .carry { margin-top: 12px; }
 .carry.over .meter i { background: #d9534f; }
 .carry.over .note { color: #d9534f; }
+.roll-in { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; }
+.roll-in .input.mini { width: 56px; }
