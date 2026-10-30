@@ -329,7 +329,7 @@
     // 'good' and 'demon' groups. Starting standing is capped at Allied and Hostile; the DM moves it from there.
     // Crown and noble factions only care about blood: no class or faith pulls them off Neutral.
     // Every faction is wary of the draconic races (one step lower) unless it is draconic itself.
-    draconic: ['Dragonborn', 'Kobold', 'Lizardfolk'],
+    draconic: ['Dragonborn', 'Kobold', 'Lizardfolk', 'Troglodyte'],
     draconicFactions: ['the-red-scales', 'house-ignis'],
     // Which subclasses each patron offers. Classes not listed for a patron (and Druids, Rangers, Monks) can take any.
     // Paladins sworn to their oath alone can take any oath. The DM's custom subclasses say for themselves which patrons grant them.
@@ -362,7 +362,7 @@
       'the-thornwardens': { cls: { Paladin: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
       'the-city-state-of-coralyn': { species: { Elf: 1 }, faith: { Thorum: 1 } },
       'the-tribe-of-orock': { species: { Goliath: 1 }, cls: { Barbarian: 1 } },
-      'clan-anvilborn': { species: { Dwarf: 1 } },
+      'clan-anvilborn': { species: { Dwarf: 1, Troglodyte: 2 } }, // trogs work Stonehelm's mines: +2 cancels the draconic −1, so they start one above neutral
       'house-ignis': { species: { Dragonborn: 1, Kobold: 1 } },
       'the-last-watch': { species: { Dragonborn: -2, Kobold: -2, Lizardfolk: -1 } },
       'the-nine-below': { faith: { 'The Nine Below': 2, Azrul: -1 } }
