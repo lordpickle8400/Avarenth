@@ -362,7 +362,7 @@
       'the-thornwardens': { cls: { Paladin: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
       'the-city-state-of-coralyn': { species: { Elf: 1 }, faith: { Thorum: 1 } },
       'the-tribe-of-orock': { species: { Goliath: 1 }, cls: { Barbarian: 1 } },
-      'house-anvilborn': { species: { Dwarf: 1 } },
+      'clan-anvilborn': { species: { Dwarf: 1 } },
       'house-ignis': { species: { Dragonborn: 1, Kobold: 1 } },
       'the-last-watch': { species: { Dragonborn: -2, Kobold: -2, Lizardfolk: -1 } },
       'the-nine-below': { faith: { 'The Nine Below': 2, Azrul: -1 } }
