@@ -1489,6 +1489,7 @@
     $view.innerHTML = html;
   }
   /* Class resources from the D&D rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
+  var FONT_TO_MANA = 5, FONT_FROM_MANA = 6;   // Font of Magic, traded against mana instead of spell slots
   function byLevel(lvl, table) { var v = 0; table.forEach(function (t) { if (lvl >= t[0]) v = t[1]; }); return v; }
   function classResources(s) {
     var L = num(s.level, 1), cha = mod(s.abilities.cha), out = [];
@@ -1508,7 +1509,7 @@
         add('sense', 'Divine Sense', Math.max(1, 1 + cha), 'long');
         add('cd', 'Channel Divinity', L >= 3 ? 1 : 0, 'short'); break;
       case 'Rogue': add('luck', 'Stroke of Luck', L >= 20 ? 1 : 0, 'short'); break;
-      case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true }); break;
+      case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
     return out;
   }
@@ -1525,6 +1526,7 @@
       if (can) ctl = (r.pool ? '<label class="sr" for="res-amt-' + r.key + '">Amount</label><input type="number" class="input mini" id="res-amt-' + r.key + '" min="1" value="1" inputmode="numeric">' : '') +
         '<button type="button" class="btn small" data-act="res" data-key="' + r.key + '" data-dir="-1"' + (left <= 0 ? ' disabled' : '') + '>Use</button>' +
         '<button type="button" class="btn small quiet" data-act="res" data-key="' + r.key + '" data-dir="1"' + (used <= 0 ? ' disabled' : '') + ' aria-label="Get one ' + esc(r.name) + ' back">+</button>';
+      if (can && r.font) ctl += '<div class="font-row"><button type="button" class="btn small" data-act="font-magic" data-dir="to"' + (left <= 0 ? ' disabled' : '') + '>Points → mana</button><button type="button" class="btn small" data-act="font-magic" data-dir="from"' + (used <= 0 ? ' disabled' : '') + '>Mana → points</button></div>';
       return '<div class="res-row"><div class="main"><b>' + esc(r.name) + '</b><span>' + esc(meta) + '</span></div>' + shown + ctl + '</div>';
     }).join('') + '</section>';
   }
@@ -1538,6 +1540,26 @@
     if (dir < 0) { if (r.max - used < amt) return toast('Only ' + (r.max - used) + ' ' + r.name + ' left.'); used += amt; }
     else used = Math.max(0, used - amt);
     s.res[key] = used;
+    render(); saveCharSoon(c);
+  }
+  // Font of Magic. The amount box is how many sorcery points to trade.
+  function fontOfMagic(c, dir) {
+    var s = c.sheet, ns = normSheet(s), r = classResources(ns).filter(function (x) { return x.key === 'sp'; })[0];
+    if (!r) return;
+    if (!s.res || typeof s.res !== 'object') s.res = {};
+    var inp = document.getElementById('res-amt-sp'), amt = Math.max(1, num(inp && inp.value, 1));
+    var used = Math.max(0, num(s.res.sp, 0)), left = r.max - used, mMax = manaMax(ns), cur = num(s.mana.cur, 0);
+    if (dir === 'to') {
+      amt = Math.min(amt, left, Math.floor((mMax - cur) / FONT_TO_MANA));
+      if (amt <= 0) return toast(left <= 0 ? 'No sorcery points left.' : 'Your mana is already full.');
+      s.res.sp = used + amt; s.mana.cur = cur + amt * FONT_TO_MANA;
+      toast(amt + ' sorcery point' + (amt === 1 ? '' : 's') + ' → ' + amt * FONT_TO_MANA + ' mana');
+    } else {
+      amt = Math.min(amt, used, Math.floor(cur / FONT_FROM_MANA));
+      if (amt <= 0) return toast(used <= 0 ? 'Your sorcery points are already full.' : 'Not enough mana. It takes ' + FONT_FROM_MANA + ' per point.');
+      s.res.sp = used - amt; s.mana.cur = cur - amt * FONT_FROM_MANA;
+      toast(amt * FONT_FROM_MANA + ' mana → ' + amt + ' sorcery point' + (amt === 1 ? '' : 's'));
+    }
     render(); saveCharSoon(c);
   }
   function shortRest(c) {
@@ -3653,6 +3675,7 @@
       case 'pick-mode': ui.pick = Object.assign(ui.pick || { q: '', pay: true }, { mode: el.getAttribute('data-val') }); render(); break;
       case 'long-rest': if (c) longRest(c); break;
       case 'short-rest': if (c) shortRest(c); break;
+      case 'font-magic': if (c) fontOfMagic(c, el.getAttribute('data-dir')); break;
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;

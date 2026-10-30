@@ -393,3 +393,4 @@ select.input.mini { width: 110px; }
 .res-num { font-family: var(--ui); font-weight: 700; font-size: 18px; min-width: 56px; text-align: right; }
 .res-num small { font-weight: 400; opacity: .7; font-size: 13px; }
 .res-row .input.mini { width: 64px; }
+.font-row { flex-basis: 100%; display: flex; gap: 8px; flex-wrap: wrap; }
