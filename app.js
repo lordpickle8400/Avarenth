@@ -3412,8 +3412,8 @@
 
   /* ---------- Day and night rolls: the table rolls, the app reads the result ---------- */
   var TRAVEL_EVENTS = window.AVARENTH_TRAVEL || { bad: [], neutral: [], good: [] };
-  function watchTier(d20) { return d20 <= 5 ? 'bad' : d20 >= 15 ? 'good' : 'neutral'; }
-  var TIER_LABEL = { bad: 'Bad', neutral: 'Something happens', good: 'Good' };
+  function watchTier(d20) { return d20 === 1 ? 'disaster' : d20 === 20 ? 'legendary' : d20 <= 5 ? 'bad' : d20 >= 15 ? 'good' : 'neutral'; }
+  var TIER_LABEL = { disaster: 'Natural 1: disaster', bad: 'Bad', neutral: 'Neutral', good: 'Good', legendary: 'Natural 20: legendary' };
   function watchState(campId, w) {
     ui.watch = ui.watch || {}; var k = campId + '|' + w;
     return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
@@ -3422,7 +3422,8 @@
     var st = watchState(campId, w), d20 = parseInt(st.d20, 10), d100 = parseInt(st.d100, 10);
     if (!(d20 >= 1 && d20 <= 20)) return null;
     var tier = watchTier(d20), list = TRAVEL_EVENTS[tier] || [];
-    var ev = d100 >= 1 && d100 <= 100 ? list[d100 - 1] || null : null;
+    var idx = list.length === 100 ? d100 - 1 : Math.floor((d100 - 1) * list.length / 100);
+    var ev = d100 >= 1 && d100 <= 100 ? list[idx] || null : null;
     return { tier: tier, d20: d20, d100: d100 >= 1 && d100 <= 100 ? d100 : null, text: ev };
   }
   function watchResultHtml(campId, w) {
@@ -3435,7 +3436,7 @@
   function watchBlock(camp) {
     var chars = campaignChars(camp.id);
     return '<section class="block"><h2 class="sec-title">Day and night<small>Rolled at the table</small></h2>' +
-      '<p class="note" style="margin:0 0 8px">Someone rolls a d20 for the day and someone for the night. 5 or lower is bad, 15 or higher is good, anything else is neutral. Then they roll a d100 for what happens.</p>' +
+      '<p class="note" style="margin:0 0 8px">Someone rolls a d20 for the day and someone for the night. 5 or lower is bad, 15 or higher is good, anything else is neutral, and a natural 1 or 20 is a disaster or something legendary. Then they roll a d100 for what happens.</p>' +
       ['Day', 'Night'].map(function (W) {
         var w = W.toLowerCase(), st = watchState(camp.id, w);
         return '<div class="group-box watch-box"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">' + W + '</p>' +

@@ -1,5 +1,5 @@
 /* Avarenth travel events. The table rolls a d20 for the day or night: 5 or lower is bad, 15 or higher is good,
-   anything between is neutral. Then they roll a d100 and the app reads the event from the matching list.
+   anything between is neutral. A natural 1 or 20 uses its own list. Then they roll a d100 and the app reads the event from the matching list.
    Nothing here names anything the party hasn't learned. Edit freely: one event per line, 100 per list. */
 (function () {
   var BAD = [
@@ -312,5 +312,52 @@
     'A caravan master offers the party a place in his convoy: safe travel and three meals a day.'
   ];
 
-  window.AVARENTH_TRAVEL = { bad: BAD, neutral: NEUTRAL, good: GOOD };
+
+  // Natural 1 and natural 20: 20 events each. The d100 still picks: 1–5 is the first, 6–10 the second, and so on.
+  var DISASTER = [
+    'A full war band of raiders surrounds the camp before dawn. There are far too many to fight.',
+    'The bridge collapses mid-crossing. Someone goes into the river, and so does half the gear.',
+    'A young dragon has claimed this valley, and it has seen the party.',
+    'Plague. Someone wakes with the sweats, and it spreads to everyone by nightfall.',
+    'The party is mistaken for murderers. A posse with a warrant and a rope is closing in.',
+    'Every mount and pack animal is dead or gone by morning, and something left claw marks.',
+    'A wildfire races toward them on the wind. Run, now, and leave what can\'t be carried.',
+    'The ground opens into an old cave system. The party falls into the dark, and something down there is awake.',
+    'A noble\'s army takes everything they\'re carrying as "war supplies." Resist, and it\'s treason.',
+    'A mind-numbing fog. When it lifts, a day is gone, someone is missing and nobody remembers why.',
+    'A spirit possesses one of the party during the night. They are not themselves come morning.',
+    'Spider riders, a whole raiding party, and they\'re here to take prisoners.',
+    'A flash flood in the night sweeps away the camp and half the supplies.',
+    'A curse falls on the party from a desecrated grave they camped beside. It lasts until lifted.',
+    'Slavers. Nets, clubs and chains, and they\'ve done this before.',
+    'A terrible storm drives them off the road for two full days. Food runs short.',
+    'Someone they trusted on the road was a spy, and has sold their route to enemies.',
+    'A monster far beyond the party\'s strength is hunting this stretch of road. Hide or run.',
+    'All their coin is gone. Not stolen. Gone. The purses are full of dead leaves.',
+    'An old enemy finds them, rested, ready and with friends.'
+  ];
+  var LEGENDARY = [
+    'A dragon\'s hoard, long abandoned, in a cave just off the road. The dragon is very dead. Mostly.',
+    'A powerful noble owes the party his life by sundown, and he pays his debts.',
+    'A wandering archmage takes a liking to the party and teaches someone a new spell.',
+    'A celestial visits the camp in the night and leaves a blessing on everyone.',
+    'A hidden road from an older age cuts the journey in half.',
+    'A legendary weapon lies in the hands of a long-dead knight beside the trail.',
+    'A merchant prince offers the party a contract worth a fortune.',
+    'Everyone levels up in spirit: a perfect night\'s rest, and every hit die comes back.',
+    'A loyal companion joins them: a warhorse, a hawk or a hound that will not leave their side.',
+    'The party stumbles on the secret meeting of their enemies, and nobody sees them listening.',
+    'A treasure map, clearly real, sewn into the saddle of a horse they rescue.',
+    'A fey lord invites them to a feast and they leave with gifts, and nothing taken.',
+    'A god\'s shrine answers someone\'s prayer, clearly and out loud.',
+    'An army patrol puts the party under its protection all the way to their destination.',
+    'A long-lost relative or friend of someone in the party appears on the road.',
+    'An airship, or something like it, offers them a ride.',
+    'Every rumor in the next town is about the party, and it is all good.',
+    'A magic item, freely given by a stranger who says it was always meant for them.',
+    'They find the ruins of a temple with an untouched vault of offerings.',
+    'The road, the weather and the stars all align. They arrive a day early, rested, and with a story.'
+  ];
+
+  window.AVARENTH_TRAVEL = { bad: BAD, neutral: NEUTRAL, good: GOOD, disaster: DISASTER, legendary: LEGENDARY };
 })();

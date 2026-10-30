@@ -419,4 +419,6 @@ blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(
 .watch-ev { margin: 0; font-size: 16px; line-height: 1.5; }
 .tag.tier-good { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--bg)); }
 .tag.tier-neutral { color: var(--muted); border-color: var(--line); }
-.tag.tier-bad { color: var(--secret); border-color: var(--secret-line); }
+.tag.tier-bad, .tag.tier-disaster { color: var(--secret); border-color: var(--secret-line); }
+.tag.tier-disaster { background: color-mix(in srgb, var(--secret) 14%, transparent); }
+.tag.tier-legendary { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
