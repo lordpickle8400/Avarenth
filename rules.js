@@ -318,7 +318,8 @@
       { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below' },
       { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
       { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
-      { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' }
+      { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' },
+      { name: 'Lull', about: 'Demon of the dead calm', article: 'Lull' }
     ],
     // Where each faction starts with a new character, in steps from Neutral (+1 Friendly, +2 Allied, -1 Cold, -2 Hostile).
     // base applies to everyone; then class, species, background and faith add up. A named god or demon beats the
