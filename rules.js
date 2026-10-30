@@ -301,13 +301,13 @@
     devotionRequired: ['Cleric', 'Paladin', 'Warlock'],   // Paladins may swear to their oath alone instead of a god
     natureOnly: ['Druid'],
     gods: [
-      { name: 'Akoron', good: true, about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akorianism' },
-      { name: 'Roselle', good: true, about: 'Goddess of nature', domains: 'Nature, Life', article: 'Akorianism', nature: true },
-      { name: 'Azrul', about: 'God of death', domains: 'Death, Grave', article: 'Akorianism' },
-      { name: 'Korinth', good: true, about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Akorianism' },
-      { name: 'Thorum', good: true, about: 'God of storms and the ocean', domains: 'Tempest', article: 'Akorianism', nature: true },
-      { name: 'Florin', about: 'God of trickery', domains: 'Trickery', article: 'Akorianism' },
-      { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Akorianism' }
+      { name: 'Akoron', good: true, about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akoron' },
+      { name: 'Roselle', good: true, about: 'Goddess of nature', domains: 'Nature, Life', article: 'Roselle', nature: true },
+      { name: 'Azrul', about: 'God of death', domains: 'Death, Grave', article: 'Azrul' },
+      { name: 'Korinth', good: true, about: 'God of knowledge', domains: 'Knowledge, Arcana', article: 'Korinth' },
+      { name: 'Thorum', good: true, about: 'God of storms and the ocean', domains: 'Tempest', article: 'Thorum', nature: true },
+      { name: 'Florin', about: 'God of trickery', domains: 'Trickery', article: 'Florin' },
+      { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Rook' }
     ],
     demons: [
       { name: 'The Hungering Head', about: 'Ruler of the Hollow Court, eater of the sun', article: 'The Hungering Head' },
