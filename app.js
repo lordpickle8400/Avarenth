@@ -946,6 +946,12 @@
     return out;
   }
   function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
+  // A patron's Tenets section, from their article.
+  function patronTenets(name) {
+    var p = patronInfo(name), art = p ? articleByTitle(p.article) : articleByTitle(name);
+    var sec = art && (art.sections || []).filter(function (x) { return x.h === 'Tenets'; })[0];
+    return sec ? sec.b : '';
+  }
   function patronLine(s) {
     if (!s.patron) return '';
     if (s.patron === OATH_ONLY) return 'Sworn to their oath, not a god';
@@ -1160,7 +1166,10 @@
         '<div class="field"><label for="bd-oath" class="sr">Your oath</label><textarea id="bd-oath" data-build="oath" maxlength="1500" placeholder="I swear to…">' + esc(b.oath || '') + '</textarea></div>' +
         '<h2 class="sec-title" style="margin-top:16px">Its drawbacks</h2><p class="note">What your oath will never allow, and what it costs you.</p>' +
         '<div class="field"><label for="bd-drawbacks" class="sr">Drawbacks</label><textarea id="bd-drawbacks" data-build="drawbacks" maxlength="1500" placeholder="I may never…">' + esc(b.drawbacks || '') + '</textarea></div>';
-      else if (b.cls === 'Paladin' && b.patron) html += '<p class="note" style="margin-top:12px">You follow ' + esc(b.patron) + '’s wishes. Your DM will make them known.</p>';
+      else if (b.cls === 'Paladin' && b.patron) {
+        var bt = patronTenets(b.patron);
+        html += '<h2 class="sec-title" style="margin-top:16px">' + esc(b.patron) + '’s wishes</h2><p class="note">Your oath is to follow them.</p>' + (bt ? '<div class="prose tenets">' + rich(bt) + '</div>' : '<p class="note">Your DM will make them known.</p>');
+      }
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
@@ -1715,7 +1724,8 @@
       }
     } else if (ui.sheetTab === 'Features') {
       if (s.cls === 'Paladin' && s.patron && s.patron !== OATH_ONLY) {
-        html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">Oath</h2><p class="note" style="margin:0">Sworn to ' + esc(s.patron) + '. You follow their wishes.</p></section>';
+        var st = patronTenets(s.patron);
+        html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">Oath</h2><p class="note" style="margin:0">Sworn to ' + esc(s.patron) + '. You follow their wishes.</p>' + (st ? '<div class="prose tenets">' + rich(st) + '</div>' : '') + '</section>';
       } else if ((s.cls === 'Paladin' && s.patron === OATH_ONLY) || s.oath || s.drawbacks) {
         var oathBox = function (key, label, ph) {
           return '<h3 class="kind-h">' + label + '</h3>' + (can
