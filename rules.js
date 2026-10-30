@@ -314,12 +314,12 @@
       { name: 'Kharneth', about: 'Demon of debts', article: 'Kharneth, the Debt-Keeper' },
       { name: 'Drakhar', about: 'Demon of tyranny, the Last Emperor', article: 'Drakhar, the Last Emperor' },
       { name: 'The Pyre-Saint', about: 'Demon of zealotry', article: 'The Pyre-Saint' },
-      { name: 'Sytha', about: 'Demon of spiders and betrayal', article: 'Sytha, the Broodmother' },
+      { name: 'Sytha', about: 'Demon of spiders and betrayal', article: 'Sytha, the Broodmother', nature: true },
       { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below' },
       { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
       { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
       { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' },
-      { name: 'Lull', about: 'Demon of the dead calm', article: 'Lull' }
+      { name: 'Lull', about: 'Demon of the dead calm', article: 'Lull', nature: true }
     ],
     // Where each faction starts with a new character, in steps from Neutral (+1 Friendly, +2 Allied, -1 Cold, -2 Hostile).
     // base applies to everyone; then class, species, background and faith add up. A named god or demon beats the

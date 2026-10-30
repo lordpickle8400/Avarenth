@@ -935,7 +935,8 @@
   function patronOptions(cls) {
     var nature = (RULES.natureOnly || []).indexOf(cls) >= 0;
     var out = (RULES.gods || []).filter(function (g) { return !nature || g.nature; }).map(function (g) { return { name: g.name, about: g.about, domains: g.domains, article: g.article, kind: 'god' }; });
-    if (!nature) (RULES.demons || []).forEach(function (d) { if (articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
+    // Druids keep to nature: nature gods, and the demons that are nature's shadow.
+    (RULES.demons || []).forEach(function (d) { if ((!nature || d.nature) && articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
     return out;
   }
   function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
