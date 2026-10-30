@@ -2818,12 +2818,13 @@
       if (st.why.length) html += '<p class="note" style="margin:0">' + esc(standingWhy(st)) + '</p>';
       if (K.fence) html += '<p class="note" style="margin:6px 0 0">A fence doesn’t care who you are.</p>';
       else {
-        var nt = notoriety(shop, c), key = shopKey(shop, c), rr = (ui.recog || {})[key];
+        var nt = notoriety(shop, c), key = shopKey(shop, c);
+        if (nt && !(ui.recog || {})[key]) autoRecog(shop, c, nt);
+        var rr = (ui.recog || {})[key];
         if (!nt) html += '<p class="note" style="margin:6px 0 0">Nothing on the law’s books. Nobody to recognize.</p>';
         else {
-          html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> Recognition +' + nt.mod + ' vs DC ' + RECOG_DC + ' <span class="note">(' + esc(nt.parts.map(function (x) { return x[0] + ' +' + x[1]; }).join(', ')) + ')</span></p>' +
-            '<p class="note" style="margin:4px 0 0">Roll a d20 for the keeper at the table: ' + (RECOG_DC - nt.mod <= 1 ? 'they know them on anything.' : RECOG_DC - nt.mod > 20 ? 'they can\'t place the face.' : 'a ' + (RECOG_DC - nt.mod) + ' or higher means they know them.') + ' Disguised? Roll twice and take the lower.</p>' +
-            '<div class="pill-row" style="margin-top:6px"><button type="button" class="btn small" data-act="shop-recog" data-hit="1" data-id="' + esc(shop.id) + '">They recognize them</button><button type="button" class="btn small" data-act="shop-recog" data-hit="0" data-id="' + esc(shop.id) + '">They don\'t</button></div>';
+          html += '<div class="recog"><p style="margin:6px 0 0"><span class="tag">' + (nt.list.some(function (x) { return x.status === 'Wanted'; }) ? 'Wanted' : 'Suspected') + '</span> <span class="note">The keeper checked their face the moment they walked in.</span></p>' +
+            '<label class="check" style="margin-top:6px"><input type="checkbox" id="shop-disguise" data-shop="' + esc(shop.id) + '"' + (rr && rr.disguised ? ' checked' : '') + '> Disguised (checks again, harder to spot)</label>';
           if (rr) {
             html += '<p class="recog-res ' + (rr.hit ? 'hit' : 'miss') + '">' + (rr.hit ? 'The keeper recognizes them.' : 'No sign of recognition.') + '</p>';
             if (rr.hit) html += '<div class="seg wide" role="group" aria-label="What the keeper does">' + [['refuse', 'Refuses service'], ['hush', 'Hush price (×1.5)'], ['ignore', 'Lets it slide']].map(function (o) {
@@ -2992,6 +2993,12 @@
     saveCharSoon(c);
     saveShop(shop, 'Paid ' + c.name + ' ' + money(cp));
     render();
+  }
+  // The keeper's check happens on its own: d20 + notoriety against the DC, worst of two if disguised. Only the result is shown.
+  function autoRecog(shop, c, nt, disguised) {
+    var a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20), d = disguised ? Math.min(a, b) : a;
+    ui.recog = ui.recog || {};
+    ui.recog[shopKey(shop, c)] = { hit: d + nt.mod >= RECOG_DC, mode: 'refuse', disguised: !!disguised };
   }
   function shopRecog(shop, hit) {
     var c = charById(ui.shopChar && ui.shopChar[shop.id]);
@@ -3937,7 +3944,11 @@
     if (t.hasAttribute('data-rep')) { var rp = t.getAttribute('data-rep').split('|'); return setStanding(rp[0], rp[1], t.value); }
     if (t.hasAttribute('data-shop-char')) { ui.shopChar = ui.shopChar || {}; ui.shopChar[t.getAttribute('data-shop-char')] = t.value; return render(); }
     if (t.id === 'shop-qty') { ui.shopQty = Math.max(1, num(t.value, 1)); return render(); }
-    if (t.id === 'shop-disguise') { ui.disguise = t.checked; return; }
+    if (t.id === 'shop-disguise') {
+      var dsh = shopById(t.getAttribute('data-shop')), dch = dsh && charById((ui.shopChar || {})[dsh.id]), dnt = dch && notoriety(dsh, dch);
+      if (dnt) { autoRecog(dsh, dch, dnt, t.checked); render(); }
+      return;
+    }
     if (t.id === 'sh-kind') { var skh = document.getElementById('sh-kind-hint'); if (skh) skh.textContent = (ITEMS.shopKinds[t.value] || {}).about || ''; return; }
     if (t.hasAttribute('data-shop-row')) {
       var srow = shopById(t.getAttribute('data-id')), sri = num(t.getAttribute('data-shop-row'), -1), sf = t.getAttribute('data-sfield');
