@@ -941,8 +941,8 @@
   function patronOptions(cls) {
     var nature = (RULES.natureOnly || []).indexOf(cls) >= 0;
     var out = (RULES.gods || []).filter(function (g) { return !nature || g.nature; }).map(function (g) { return { name: g.name, about: g.about, domains: g.domains, article: g.article, kind: 'god' }; });
-    // Druids keep to nature: nature gods, and the demons that are nature's shadow.
-    (RULES.demons || []).forEach(function (d) { if ((!nature || d.nature) && articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
+    // Druids and rangers keep to nature: nature gods, and the demons that are nature's shadow. Paladins only swear to demons with a cause.
+    (RULES.demons || []).forEach(function (d) { if ((!nature || d.nature) && (cls !== 'Paladin' || d.paladin) && articleByTitle(d.article)) out.push({ name: d.name, about: d.about, article: d.article, kind: 'demon' }); });
     return out;
   }
   function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
@@ -1141,10 +1141,10 @@
     } else if (step === 'Deity' || step === 'Patron') {
       var opts = patronOptions(b.cls), isPact = step === 'Patron';
       html += '<p class="guide">' + (isPact ? 'A warlock’s power is borrowed. Who did you make your pact with? Gods can bargain too, but most warlocks deal with the lords of the Hollow Court, and every gift comes with a price.' :
-        b.cls === 'Druid' ? 'Druids draw on the land itself, but many honor a god of nature. Choose one if yours does, or skip this.' :
-        b.cls === 'Paladin' ? 'A paladin’s power comes from their oath. Swear it in a god’s name, or to the oath alone.' :
+        b.cls === 'Druid' ? 'Druids draw on the land itself, but many honor a power of nature: Roselle or Thorum, or their dark shadows. Choose one if yours does, or skip this.' :
+        b.cls === 'Paladin' ? 'A paladin’s power comes from their oath. Swear it in a god’s name, to a dark lord with a cause, or to the oath alone.' :
         b.cls === 'Monk' ? 'Some monasteries serve a god, like the monks of the Blooming Isle who serve Roselle. Choose one if your order does, or skip this.' :
-        b.cls === 'Ranger' ? 'Some rangers honor a god of the wild or the sea. Choose one if yours does, or skip this.' :
+        b.cls === 'Ranger' ? 'Some rangers honor a power of the wild or the sea: Roselle or Thorum, or their dark shadows. Choose one if yours does, or skip this.' :
         'Your power comes from the god you serve. ' + (b.cls === 'Cleric' ? 'Your god shapes which domain fits you best.' : 'Your oath is sworn in their name.')) + '</p>' +
         '<h2 class="sec-title">The gods of Akorianism</h2>' + choiceGrid(opts.filter(function (o) { return o.kind === 'god'; }).map(function (o) { return [o.name, o.about + (b.cls === 'Cleric' && o.domains ? ' · fits ' + o.domains : '')]; }), b.patron, 'bd-patron');
       var dem = opts.filter(function (o) { return o.kind === 'demon'; });

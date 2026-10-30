@@ -298,8 +298,9 @@
     coins: { cp: 'Copper Foxes', sp: 'Silver Stags', gp: 'Golden Eagles' },
     // Who a character serves. Gods of Akorianism, and the lords of the Hollow Court (only those players can read about are offered).
     devotion: { Cleric: 'Deity', Paladin: 'Deity', Warlock: 'Patron', Druid: 'Deity', Ranger: 'Deity', Monk: 'Deity' },
-    devotionRequired: ['Cleric', 'Paladin', 'Warlock'],   // Paladins may swear to their oath alone instead of a god
-    natureOnly: ['Druid'],
+    devotionRequired: ['Cleric', 'Paladin', 'Warlock'],
+    // Paladins can only swear to demons with a cause (paladin: true); clerics and warlocks can serve any.   // Paladins may swear to their oath alone instead of a god
+    natureOnly: ['Druid', 'Ranger'],   // nature gods, and the demons that are nature's shadow
     gods: [
       { name: 'Akoron', good: true, about: 'God of life and leader of the gods', domains: 'Life, Light', article: 'Akoron' },
       { name: 'Roselle', good: true, about: 'Goddess of nature', domains: 'Nature, Life', article: 'Roselle', nature: true },
@@ -310,15 +311,15 @@
       { name: 'Rook', about: 'God of war', domains: 'War, Order', article: 'Rook' }
     ],
     demons: [
-      { name: 'The Hungering Head', about: 'Ruler of the Hollow Court, eater of the sun', article: 'The Hungering Head' },
+      { name: 'The Hungering Head', about: 'Ruler of the Hollow Court, eater of the sun', article: 'The Hungering Head', paladin: true },
       { name: 'Kharneth', about: 'Demon of debts', article: 'Kharneth, the Debt-Keeper' },
-      { name: 'Drakhar', about: 'Demon of tyranny, the Last Emperor', article: 'Drakhar, the Last Emperor' },
-      { name: 'The Pyre-Saint', about: 'Demon of zealotry', article: 'The Pyre-Saint' },
+      { name: 'Drakhar', about: 'Demon of tyranny, the Last Emperor', article: 'Drakhar, the Last Emperor', paladin: true },
+      { name: 'The Pyre-Saint', about: 'Demon of zealotry', article: 'The Pyre-Saint', paladin: true },
       { name: 'Sytha', about: 'Demon of spiders and betrayal', article: 'Sytha, the Broodmother', nature: true },
       { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below' },
       { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
       { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
-      { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin' },
+      { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin', paladin: true },
       { name: 'Lull', about: 'Demon of the dead calm', article: 'Lull', nature: true },
       { name: 'Marrow', about: 'Demon of plague', article: 'Marrow' },
       { name: 'Velvet', about: 'Demon of temptation', article: 'Velvet' }
