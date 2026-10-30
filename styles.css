@@ -422,3 +422,4 @@ blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(
 .tag.tier-bad, .tag.tier-disaster { color: var(--secret); border-color: var(--secret-line); }
 .tag.tier-disaster { background: color-mix(in srgb, var(--secret) 14%, transparent); }
 .tag.tier-legendary { color: var(--on-accent); background: var(--accent); border-color: var(--accent); }
+.new-face { margin-bottom: 12px; border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }

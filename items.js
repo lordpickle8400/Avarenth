@@ -136,5 +136,71 @@
     remote: { about: 'Remote: everything costs more.' }
   };
 
-  window.AVARENTH_ITEMS = { items: ITEMS, shopKinds: SHOP_KINDS, placeTags: PLACE_TAGS, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
+
+  // Wandering merchants: who they are and what they sell. "base" borrows a shop kind's stock; "extra" adds named items;
+  // "odd" is how many oddities they carry (min, max). A trade with no base sells oddities plus a few useful things.
+  var TRADES = {
+    'Curio dealer': { odd: [5, 9], about: 'Oddities, curiosities and whatever caught his eye on the road.' },
+    'Tome seller': { extra: ['Book', 'Spellbook (blank)', 'Ink (1 ounce bottle)', 'Ink pen', 'Paper (one sheet)', 'Parchment (one sheet)', 'Map or scroll case', 'Sealing wax', 'Calligrapher\'s supplies', 'Book of truly terrible poetry', 'Map to a place that may not exist', 'Half a treasure map'], odd: [0, 2], about: 'Books, paper, ink and the odd strange map.' },
+    'Wandering blacksmith': { base: 'Blacksmith', odd: [0, 1], about: 'A forge on wheels: blades, tools and repairs.' },
+    'Roving armorer': { base: 'Armorer', odd: [0, 1], about: 'Armor and shields, a little worn from the road.' },
+    'Traveling alchemist': { base: 'Alchemist', odd: [1, 2], about: 'Potions, acids and things that bubble.' },
+    'Herbalist': { extra: ['Herbalism kit', 'Healer\'s kit', 'Antitoxin (vial)', 'Potion of healing', 'Glowing mushroom', 'Vial', 'Glass bottle', 'Soap', 'Perfume (vial)', 'Rations (1 day)'], odd: [0, 2], about: 'Herbs, poultices and cures, some of them real.' },
+    'Tinker': { base: 'Tinker & toolmaker', odd: [1, 3], about: 'Tools, locks, gadgets and repairs.' },
+    'Relic peddler': { base: 'Temple', odd: [1, 3], about: 'Holy symbols, blessed water and "genuine" relics.' },
+    'Animal trader': { base: 'Stables', odd: [0, 2], about: 'Mounts, pack animals and tack.' },
+    'Bowyer': { base: 'Bowyer & fletcher', odd: [0, 1], about: 'Bows, crossbows and arrows.' },
+    'Cloth merchant': { base: 'Tailor & outfitter', odd: [0, 2], about: 'Clothes, cloaks, packs and tents.' },
+    'Cook with a cart': { extra: ['Rations (1 day)', 'Bread (loaf)', 'Cheese (hunk)', 'Meat (chunk)', 'Ale (gallon)', 'Common wine (pitcher)', 'Fine wine (bottle)', 'Smoked basilisk jerky', 'Iron pot', 'Mess kit', 'Cook\'s utensils'], odd: [0, 1], about: 'Hot food, cold drink and road supplies.' },
+    'Shady dealer': { base: 'Fence', odd: [1, 3], about: 'Doesn\'t ask where you got it. Doesn\'t say where he did.' },
+    'Map seller': { extra: ['Map or scroll case', 'Cartographer\'s tools', 'Navigator\'s tools', 'Map to a place that may not exist', 'Half a treasure map', 'Spyglass', 'Parchment (one sheet)', 'Ink (1 ounce bottle)'], odd: [1, 3], about: 'Maps of everywhere, some of them accurate.' },
+    'Instrument seller': { extra: ['Bagpipes', 'Drum', 'Dulcimer', 'Flute', 'Lute', 'Lyre', 'Horn', 'Pan flute', 'Shawm', 'Viol', 'Music box that plays backwards'], odd: [0, 2], about: 'Instruments, strings and songs for sale.' },
+    'Trinket mage': { base: 'Magic shop', odd: [1, 3], about: 'Foci, components and small magic.' },
+    'Gambler': { extra: ['Dice set', 'Playing card set', 'Dragonchess set', 'Lucky rabbit\'s foot (one toe missing)', 'Coin of a fallen empire', 'Fine wine (bottle)'], odd: [1, 3], about: 'Games of chance, and things won at them.' }
+  };
+  var WANDER_RACES = {
+    'Human': ['Aldous', 'Brenna', 'Cedric', 'Mirela', 'Osric', 'Tamsin', 'Wendel', 'Yara', 'Gideon', 'Hester'],
+    'Dwarf': ['Bofrin', 'Dagny', 'Hargrim', 'Runa', 'Thrain', 'Vistra', 'Orsik', 'Helja'],
+    'Halfling': ['Bramble', 'Cora', 'Pip', 'Merry', 'Tobold', 'Wren', 'Fennick', 'Daisy'],
+    'Gnome': ['Bimble', 'Fizzwick', 'Nissa', 'Orryn', 'Tink', 'Zook', 'Wizzle', 'Ellywick'],
+    'Orc': ['Grosh', 'Murga', 'Thokk', 'Ushna', 'Bazrak', 'Volga'],
+    'Half-Orc': ['Dench', 'Krusk', 'Ovak', 'Sutha', 'Mhurren', 'Engong'],
+    'Goliath': ['Aukan', 'Kuori', 'Maveith', 'Thalai', 'Gae-Al', 'Nalla'],
+    'Tiefling': ['Akmenos', 'Bryseis', 'Criella', 'Damakos', 'Orianna', 'Mordai', 'Rieta', 'Leucis'],
+    'Dragonborn': ['Arjhan', 'Kriv', 'Sora', 'Thava', 'Medrash', 'Nala'],
+    'Kobold': ['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Rikka', 'Skivv'],
+    'Lizardfolk': ['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'],
+    'Tortle': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
+    'Kenku': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
+    'Goblin': ['Nix', 'Grib', 'Skreech', 'Toadbelly', 'Blix', 'Wort'],
+    'Tabaxi': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],
+    'Firbolg': ['Moss', 'Oakhollow', 'Fernwhistle', 'Barrow'],
+    'Bugbear': ['Klarg', 'Grumble', 'Hrud', 'Mog'],
+    'Half-Elf': ['Ilvan', 'Seren', 'Tavian', 'Lirael'],
+    'Gnoll': ['Yeenrik', 'Grawl', 'Hackle']
+  };
+  var QUIRKS = [
+    'Haggles for the joy of it and is disappointed if you pay full price.',
+    'Talks to their pack animal more than to customers.',
+    'Swears every item has a story, and tells all of them.',
+    'Deeply suspicious of anyone with clean boots.',
+    'Speaks only in questions.',
+    'Laughs at their own jokes before finishing them.',
+    'Insists they used to be an adventurer, and has the scars to prove it.',
+    'Collects one strange thing from every customer, and asks for it politely.',
+    'Is clearly running from someone, and keeps checking the road behind.',
+    'Philosophizes about everything, especially the price.',
+    'Whispers prices as if they were secrets.',
+    'Is very, very old and has seen everything twice.',
+    'Owes money to half the merchants in the isles.',
+    'Gives a discount to anyone who can make them laugh.',
+    'Never gives a straight answer about where the goods came from.',
+    'Is unfailingly cheerful, which is unsettling.',
+    'Is traveling with a large, silent bodyguard who never introduces themself.',
+    'Reads fortunes on the side, for a small extra fee.',
+    'Claims everything is "slightly magic." It is not.',
+    'Has a pet that steals small items from customers, and returns them for a fee.'
+  ];
+
+  window.AVARENTH_ITEMS = { trades: TRADES, wanderRaces: WANDER_RACES, quirks: QUIRKS, items: ITEMS, shopKinds: SHOP_KINDS, placeTags: PLACE_TAGS, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
 })();
