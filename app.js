@@ -2706,7 +2706,7 @@
   // The DM opens a shop when the party walks in, picks who's buying, and the app does the money, the stock and the sheet.
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
-  var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Other' };
+  var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
   var KIND_ORDER = ['s', 'f', 'g', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'x', 'z'];
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
@@ -2737,7 +2737,7 @@
     return articles.filter(function (a) { return a.template === 'Settlement' && (!campId || !a.campaign_id || a.campaign_id === campId); })
       .sort(function (a, b) { return String(a.title).localeCompare(b.title); });
   }
-  function shopsAt(placeId) { return shops.filter(function (s) { return s.place_id === placeId; }); }
+  function shopsAt(placeId) { return shops.filter(function (s) { return s.place_id === placeId && !isWanderer(s); }); }
 
   /* ---------- Money ---------- */
   function toCp(gp) { return Math.max(0, Math.round(fnum(gp, 0) * 100)); }
@@ -2759,8 +2759,20 @@
 
   /* ---------- Stocking ---------- */
   function rint(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  // A wandering merchant carries a handful of oddities and a few random useful things, at whatever price he feels like today.
+  function wanderStock() {
+    function pick(list, n) { list = list.slice(); var out = []; while (list.length && out.length < n) out.push(list.splice(Math.floor(Math.random() * list.length), 1)[0]); return out; }
+    var odd = ITEMS.items.filter(function (it) { return it.kind === 'z'; });
+    var useful = ITEMS.items.filter(function (it) { return ['s', 'v', 'b', 'm', 'x', 'z'].indexOf(it.kind) < 0 && it.tags.indexOf('magic') < 0 && it.price <= 100; });
+    var out = [];
+    pick(odd, rint(5, 9)).forEach(function (it) { out.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.6 + Math.random() * 1.2) * 100) / 100, q: 1 }); });
+    pick(useful, rint(3, 7)).forEach(function (it) { out.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.8 + Math.random() * 0.8) * 100) / 100, q: rint(1, 3) }); });
+    return out;
+  }
+  function isWanderer(shop) { return !!(ITEMS.shopKinds[shop.kind] || {}).wander; }
   function stockFor(shop) {
     var K = ITEMS.shopKinds[shop.kind] || ITEMS.shopKinds['General store'];
+    if (K.wander) return wanderStock();
     var p = shop.place_id ? placeOf(shop.place_id) : { size: 2, tags: [], price_mod: 1 };
     var size = Math.max(0, Math.min(4, num(p.size, 2))), eff = size + (hasTag(p, 'trade') ? 1 : 0);
     var armed = hasTag(p, 'forge') || hasTag(p, 'military');
@@ -2936,7 +2948,12 @@
       '<label class="search"><span class="sr">Find a place or shop</span>' + SEARCH_ICON + '<input id="shop-q" type="search" placeholder="Find a place or shop…" value="' + esc(ui.shopQuery || '') + '" autocomplete="off"></label>';
     if (!setts.length) html += '<div class="empty">No settlements' + (q ? ' match' : ' yet. Write a Settlement article first') + '.</div>';
     setts.forEach(function (a) { html += placeShopsBlock(a, camp.id); });
-    var loose = shops.filter(function (s) { return (!s.place_id || !articleById(s.place_id)) && (!s.campaign_id || s.campaign_id === camp.id); });
+    var wand = shops.filter(function (s) { return isWanderer(s) && (!s.campaign_id || s.campaign_id === camp.id) && (!q || s.name.toLowerCase().indexOf(q) >= 0 || String(s.keeper || '').toLowerCase().indexOf(q) >= 0); });
+    html += '<section class="block shops-block"><h2 class="sec-title">Wandering merchants<small>On the road, not in a town</small></h2>' +
+      (wand.length ? shopRows(wand) : '<div class="empty">No wandering merchants yet.</div>') +
+      '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-kind="Wandering merchant" data-campaign="' + esc(camp.id) + '">+ Wandering merchant</button></div>' +
+      '<p class="note" style="margin:6px 0 0">Tap Restock each time the party runs into one, and he has new junk.</p></section>';
+    var loose = shops.filter(function (s) { return !isWanderer(s) && (!s.place_id || !articleById(s.place_id)) && (!s.campaign_id || s.campaign_id === camp.id); });
     if (loose.length) html += '<section class="block"><h2 class="sec-title">Shops with no place</h2>' + shopRows(loose) + '</section>';
     $view.innerHTML = html + '</div>';
   }
@@ -3044,7 +3061,7 @@
     var shop = id && id !== 'new' ? shopById(id) : null;
     if (id && id !== 'new' && !shop) { location.replace('#/wiki'); return; }
     var ns = ui.newShop || {};
-    var v = shop || { name: '', kind: 'General store', place_id: ns.place || '', campaign_id: ns.campaign || '', faction_id: '', keeper: '', notes: '', watch: 0 };
+    var v = shop || { name: '', kind: ns.kind || 'General store', place_id: ns.place || '', campaign_id: ns.campaign || '', faction_id: '', keeper: '', notes: '', watch: 0 };
     var facs = factionsFor(v.campaign_id || null), setts = settlementsFor(v.campaign_id || null);
     $view.innerHTML = '<div class="page narrow"><form class="form" id="shop-form" novalidate data-id="' + esc(shop ? shop.id : '') + '"><div><p class="eyebrow">' + (shop ? 'Edit' : 'New') + ' shop</p><h1 class="page-title">' + (shop ? esc(shop.name) : 'Open a shop') + '</h1></div>' +
       '<div class="field"><label for="sh-name">Name</label><input type="text" id="sh-name" maxlength="80" value="' + esc(v.name) + '" placeholder="e.g. The Bent Nail"></div>' +
@@ -3689,7 +3706,7 @@
         ui.filters = ui.filters || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
-      case 'new-shop': ui.newShop = { place: el.getAttribute('data-place') || '', campaign: el.getAttribute('data-campaign') || '' }; go('#/shop-edit/new'); break;
+      case 'new-shop': ui.newShop = { place: el.getAttribute('data-place') || '', campaign: el.getAttribute('data-campaign') || '', kind: el.getAttribute('data-kind') || '' }; go('#/shop-edit/new'); break;
       case 'shop-stock':
         var stk = shopById(el.getAttribute('data-id'));
         if (!stk) return;

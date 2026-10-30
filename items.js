@@ -2,7 +2,7 @@
    Place sizes: 0 hamlet, 1 village, 2 town, 3 city, 4 capital.
    Kinds: sw simple weapon, mw martial weapon, rw ranged weapon, am ammo, la/ma/ha light/medium/heavy armor, sh shield,
    g gear, c clothing, f food and drink, s service, t artisan's tools, k kit, gm game, i instrument, p potion or alchemy,
-   fo spellcasting focus, h holy, m mount or animal, tk tack, v vehicle, b boat, x contraband.
+   fo spellcasting focus, h holy, m mount or animal, tk tack, v vehicle, b boat, x contraband, z oddity.
    Tags: metal, mining, nautical, survival, farm, luxury, holy, river, sea, shady, lodging, magic. */
 (function () {
   var RAW = [
@@ -78,14 +78,29 @@
     'Meal (squalid)|s|0.03|0|lodging', 'Meal (modest)|s|0.3|0|lodging', 'Meal (comfortable)|s|0.5|1|lodging', 'Meal (wealthy)|s|0.8|2|lodging,luxury',
     'Room for the night (squalid)|s|0.07|0|lodging', 'Room for the night (modest)|s|0.5|0|lodging', 'Room for the night (comfortable)|s|0.8|1|lodging', 'Room for the night (wealthy)|s|2|2|lodging,luxury',
     // Temple services
-    'Healing (Cure Wounds)|s|10|0|holy', 'Lesser Restoration|s|40|1|holy', 'Remove Curse|s|90|2|holy', 'Greater Restoration|s|450|3|holy', 'Raise Dead|s|1250|4|holy'
+    'Healing (Cure Wounds)|s|10|0|holy', 'Lesser Restoration|s|40|1|holy', 'Remove Curse|s|90|2|holy', 'Greater Restoration|s|450|3|holy', 'Raise Dead|s|1250|4|holy',
+    // Oddities: what a wandering merchant picks up on the road. Only wandering merchants carry these.
+    'Fire newt egg|z|25|0|odd', 'Bottled whisper|z|5|0|odd', 'A single left boot|z|0.5|0|odd', 'Jar of very angry bees|z|2|0|odd',
+    'Map to a place that may not exist|z|10|0|odd', 'Seashell that hums at night|z|3|0|odd', 'Petrified troll toe|z|8|0|odd',
+    'Spoon that is always cold|z|1|0|odd', 'Music box that plays backwards|z|15|0|odd', 'Mimic tooth|z|12|0|odd', 'Owlbear feather|z|6|0|odd',
+    'Glass eye (it blinks)|z|20|0|odd', 'Lucky rabbit\'s foot (one toe missing)|z|2|0|odd', 'Ship in a bottle (the crew moves)|z|40|0|odd',
+    'Dragon scale (probably)|z|50|0|odd', 'Smoked basilisk jerky|z|4|0|odd', 'Candle that burns cold|z|3|0|odd',
+    'Compass that points to the nearest cheese|z|7|0|odd', 'Pickled kraken sucker|z|5|0|odd', 'Folding ten-foot pole|z|15|0|odd',
+    'Stuffed jackalope|z|9|0|odd', 'A rock (he swears it\'s special)|z|1|0|odd', 'Bag of assorted teeth|z|2|0|odd',
+    'Creepy doll (probably not cursed)|z|3|0|odd', 'Glowing mushroom|z|2|0|odd', 'Hat with a feather that changes color|z|12|0|odd',
+    'Bottle of mermaid tears (salt water)|z|6|0|odd', 'Bone wind chime|z|3|0|odd', 'Gnomish pocket clock (runs sideways)|z|25|0|odd',
+    'Half a treasure map|z|5|0|odd', 'Locked box, no key|z|10|0|odd', 'Frog that croaks at liars|z|30|0|odd', 'Self-stirring spoon|z|18|0|odd',
+    'Unlabeled potion (who knows)|z|15|0|odd', 'Book of truly terrible poetry|z|1|0|odd', 'Pet rock, named Gerald|z|0.5|0|odd',
+    'Monkey\'s paw (three fingers bent)|z|50|0|odd', 'Snow globe of a city that isn\'t there|z|8|0|odd', 'Coin of a fallen empire|z|5|0|odd',
+    'Kobold firework|z|2|0|odd', 'Wyvern stinger (empty)|z|15|0|odd', 'Ball of string with no end|z|6|0|odd', 'Mummified hand (waves sometimes)|z|20|0|odd',
+    'Jar of fog from a haunted moor|z|8|0|odd', 'Spider silk from the Silken Woods|z|12|0|odd', 'Troglodyte musk (do not open)|z|1|0|odd'
   ];
 
   // Weight in pounds, carried. Potions weigh half a pound; mounts, vehicles, boats and services aren't carried.
   var WEIGHT = {"Club": 2, "Dagger": 1, "Greatclub": 10, "Handaxe": 2, "Javelin": 2, "Light hammer": 2, "Mace": 4, "Quarterstaff": 4, "Sickle": 2, "Spear": 3, "Light crossbow": 5, "Dart": 0.25, "Shortbow": 2, "Sling": 0, "Battleaxe": 4, "Flail": 2, "Glaive": 6, "Greataxe": 7, "Greatsword": 6, "Halberd": 6, "Lance": 6, "Longsword": 3, "Maul": 10, "Morningstar": 4, "Pike": 18, "Rapier": 2, "Scimitar": 3, "Shortsword": 2, "Trident": 4, "War pick": 2, "Warhammer": 2, "Whip": 3, "Blowgun": 1, "Hand crossbow": 3, "Heavy crossbow": 18, "Longbow": 2, "Net": 3, "Arrows (20)": 1, "Blowgun needles (50)": 1, "Crossbow bolts (20)": 1.5, "Sling bullets (20)": 1.5, "Padded armor": 8, "Leather armor": 10, "Studded leather armor": 13, "Hide armor": 12, "Chain shirt": 20, "Scale mail": 45, "Breastplate": 20, "Half plate": 40, "Ring mail": 40, "Chain mail": 55, "Splint armor": 60, "Plate armor": 65, "Shield": 6, "Abacus": 2, "Backpack": 5, "Ball bearings (1,000)": 2, "Barrel": 70, "Basket": 2, "Bedroll": 7, "Bell": 0, "Blanket": 3, "Block and tackle": 5, "Book": 5, "Glass bottle": 2, "Bucket": 2, "Caltrops (20)": 2, "Candle": 0, "Map or scroll case": 1, "Chain (10 feet)": 10, "Chalk": 0, "Chest": 25, "Climber's kit": 12, "Crowbar": 5, "Fishing tackle": 4, "Flask or tankard": 1, "Grappling hook": 4, "Hammer": 3, "Sledgehammer": 10, "Healer's kit": 3, "Hourglass": 1, "Hunting trap": 25, "Ink (1 ounce bottle)": 0, "Ink pen": 0, "Jug or pitcher": 4, "Ladder (10 feet)": 25, "Lamp": 1, "Bullseye lantern": 2, "Hooded lantern": 2, "Lock": 1, "Magnifying glass": 0, "Manacles": 6, "Mess kit": 1, "Steel mirror": 0.5, "Oil (flask)": 1, "Paper (one sheet)": 0, "Parchment (one sheet)": 0, "Perfume (vial)": 0, "Miner's pick": 10, "Piton": 0.25, "Pole (10 feet)": 7, "Iron pot": 10, "Pouch": 1, "Quiver": 1, "Portable ram": 35, "Hempen rope (50 feet)": 10, "Silk rope (50 feet)": 5, "Sack": 0.5, "Merchant's scale": 3, "Sealing wax": 0, "Shovel": 5, "Signal whistle": 0, "Signet ring": 0, "Soap": 0, "Spellbook (blank)": 3, "Iron spikes (10)": 5, "Spyglass": 1, "Two-person tent": 20, "Tinderbox": 1, "Torch": 1, "Vial": 0, "Waterskin": 5, "Whetstone": 1, "Common clothes": 3, "Traveler's clothes": 4, "Costume": 4, "Robes": 4, "Fine clothes": 6, "Cold-weather clothes": 5, "Component pouch": 2, "Arcane focus: crystal": 1, "Arcane focus: orb": 3, "Arcane focus: rod": 2, "Arcane focus: staff": 4, "Arcane focus: wand": 1, "Druidic focus: sprig of mistletoe": 0, "Druidic focus: yew wand": 1, "Holy symbol: amulet": 1, "Holy symbol: emblem": 0, "Holy symbol: reliquary": 2, "Holy water (flask)": 1, "Prayer beads": 0, "Acid (vial)": 1, "Alchemist's fire (flask)": 1, "Antitoxin (vial)": 0, "Alchemist's supplies": 8, "Brewer's supplies": 9, "Calligrapher's supplies": 5, "Carpenter's tools": 6, "Cartographer's tools": 6, "Cobbler's tools": 5, "Cook's utensils": 8, "Glassblower's tools": 5, "Jeweler's tools": 2, "Leatherworker's tools": 5, "Mason's tools": 8, "Painter's supplies": 5, "Potter's tools": 3, "Smith's tools": 8, "Tinker's tools": 10, "Weaver's tools": 5, "Woodcarver's tools": 5, "Disguise kit": 3, "Herbalism kit": 3, "Navigator's tools": 2, "Thieves' tools": 1, "Dice set": 0, "Playing card set": 0, "Dragonchess set": 0.5, "Bagpipes": 6, "Drum": 3, "Dulcimer": 10, "Flute": 1, "Lute": 2, "Lyre": 2, "Horn": 2, "Pan flute": 2, "Shawm": 1, "Viol": 1, "Poisoner's kit": 2, "Forgery kit": 5, "Bit and bridle": 1, "Feed (per day)": 10, "Riding saddle": 25, "Military saddle": 30, "Pack saddle": 15, "Saddlebags": 8, "Ale (gallon)": 8, "Bread (loaf)": 0.5, "Cheese (hunk)": 0.5, "Meat (chunk)": 1, "Common wine (pitcher)": 4, "Fine wine (bottle)": 1.5, "Rations (1 day)": 2};
   var ITEMS = RAW.map(function (line) {
     var p = line.split('|');
-    var w = WEIGHT[p[0]]; if (w === undefined) w = p[1] === 'p' ? 0.5 : (['m', 'v', 'b', 's'].indexOf(p[1]) >= 0 ? null : 0);
+    var w = WEIGHT[p[0]]; if (w === undefined) w = (p[1] === 'p' || p[1] === 'z') ? 0.5 : (['m', 'v', 'b', 's'].indexOf(p[1]) >= 0 ? null : 0);
     return { name: p[0], kind: p[1], price: parseFloat(p[2]), size: parseInt(p[3], 10), tags: p[4] ? p[4].split(',') : [], weight: w };
   });
 
@@ -103,6 +118,7 @@
     'Temple': { kinds: ['h'], tags: ['holy'], extra: ['Potion of healing', 'Healer\'s kit', 'Candle'], skipKinds: ['c'], about: 'Holy goods, healing and rites.' },
     'Magic shop': { kinds: ['fo'], tags: ['magic'], extra: ['Ink (1 ounce bottle)', 'Ink pen', 'Parchment (one sheet)', 'Book'], about: 'Foci, components and potions.' },
     'Tinker & toolmaker': { kinds: ['t', 'k', 'gm', 'i'], extra: ['Lock', 'Abacus', 'Hourglass', 'Magnifying glass', 'Merchant\'s scale'], about: 'Tools, kits, locks and instruments.' },
+    'Wandering merchant': { wander: true, about: 'On the road with whatever he picked up: oddities, curiosities and a few useful things. Different every time you meet him.' },
     'Fence': { kinds: ['x', 'k', 'sw', 'mw', 'rw', 'g', 'p', 'la'], fence: true, about: 'Stolen goods and things the law won\'t sell. Never asks your name.' }
   };
 
