@@ -312,11 +312,11 @@
     ],
     demons: [
       { name: 'The Hungering Head', about: 'Ruler of the Hollow Court, eater of the sun', article: 'The Hungering Head', paladin: true },
-      { name: 'Kharneth', about: 'Demon of debts', article: 'Kharneth, the Debt-Keeper' },
+      { name: 'Kharneth', about: 'Demon of debts', article: 'Kharneth, the Debt-Keeper', paladin: true },
       { name: 'Drakhar', about: 'Demon of tyranny, the Last Emperor', article: 'Drakhar, the Last Emperor', paladin: true },
       { name: 'The Pyre-Saint', about: 'Demon of zealotry', article: 'The Pyre-Saint', paladin: true },
       { name: 'Sytha', about: 'Demon of spiders and betrayal', article: 'Sytha, the Broodmother', nature: true },
-      { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below' },
+      { name: 'The Nine Below', about: 'Demons of death', article: 'The Nine Below', paladin: true },
       { name: 'The Mask', about: 'Demon of lies', article: 'The Mask' },
       { name: 'Veyl', about: 'Demon of forbidden knowledge', article: 'Veyl' },
       { name: 'Vaunt and Ruin', about: 'Demons of war', article: 'Vaunt and Ruin', paladin: true },
