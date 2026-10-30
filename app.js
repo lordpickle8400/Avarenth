@@ -1211,6 +1211,10 @@
         var bt = patronTenets(b.patron);
         html += '<h2 class="sec-title" style="margin-top:16px">' + esc(b.patron) + '’s wishes</h2><p class="note">Your oath is to follow them.</p>' + (bt ? '<div class="prose tenets">' + rich(bt) + '</div>' : '<p class="note">Your DM will make them known.</p>');
       }
+      if (b.cls !== 'Paladin' && b.patron) {
+        var bt2 = patronTenets(b.patron);
+        if (bt2) html += '<h2 class="sec-title" style="margin-top:16px">What ' + esc(b.patron) + ' asks of you</h2><div class="prose tenets">' + rich(bt2) + '</div>';
+      }
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
@@ -1768,6 +1772,12 @@
           '<p class="note" style="margin-top:12px">Includes crimes charged to the whole party. <a href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open the full tracker</a>.</p>';
       }
     } else if (ui.sheetTab === 'Features') {
+      if (s.patron && s.cls !== 'Paladin' && s.patron !== OATH_ONLY) {
+        var pt = patronTenets(s.patron), pinfo = patronInfo(s.patron), part = pinfo ? articleByTitle(pinfo.article) : null;
+        html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + (devotionLabel(s.cls) === 'Patron' ? 'Your pact' : 'Who you serve') + '</h2>' +
+          '<p class="note" style="margin:0">' + (devotionLabel(s.cls) === 'Patron' ? 'Pact with ' : 'You serve ') + (part ? '<a class="link" href="#/a/' + encodeURIComponent(part.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron)) + '.</p>' +
+          (pt ? '<div class="prose tenets">' + rich(pt) + '</div>' : '') + '</section>';
+      }
       if (s.cls === 'Paladin' && s.patron && s.patron !== OATH_ONLY) {
         var st = patronTenets(s.patron);
         html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">Oath</h2><p class="note" style="margin:0">Sworn to ' + esc(s.patron) + '. You follow their wishes.</p>' + (st ? '<div class="prose tenets">' + rich(st) + '</div>' : '') + '</section>';
