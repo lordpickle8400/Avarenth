@@ -254,6 +254,13 @@
       loaded.wiki = true;
     });
   }
+  var customSubs = [];
+  function loadCustomSubs() {
+    return sb.from('custom_subclasses').select('id, class, name, about, patrons, features').order('name').then(function (r) {
+      if (r.error) throw r.error;
+      customSubs = r.data || [];
+    });
+  }
   function loadCharacters() {
     return sb.from('characters').select('id, owner_id, name, sheet, ddb_url, campaign_id, updated_at').order('name').then(function (r) {
       if (r.error) throw r.error;
@@ -293,7 +300,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadShops(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadShops(), loadCustomSubs(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -328,7 +335,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
     var waiting = isDM() && spells ? pendingSpells().length : 0;
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
@@ -343,7 +350,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
-    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit'];
+    var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit', 'subclasses'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
     }
@@ -368,6 +375,7 @@
       case 'join': return renderJoin();
       case 'spells': return renderSpells();
       case 'reputation': return renderReputation(r.arg);
+      case 'subclasses': return renderSubclasses(r.arg);
       case 'shops': return renderShops(r.arg);
       case 'shop': return renderShop(r.arg);
       case 'shop-edit': return renderShopEdit(r.arg);
@@ -946,6 +954,21 @@
     return out;
   }
   function patronInfo(name) { return patronOptions().filter(function (p) { return p.name === name; })[0] || null; }
+  /* ---------- Subclasses: the patron decides which fit ---------- */
+  var SUB_STEP = { Cleric: 'Domain', Warlock: 'Pact', Sorcerer: 'Origin' };
+  function customSub(cls, name) { return customSubs.filter(function (x) { return x.class === cls && x.name === name; })[0] || null; }
+  function subclassOptions(cls, patron) {
+    var cd = RULES.classes[cls];
+    if (!cd) return [];
+    var map = patron && patron !== OATH_ONLY ? ((RULES.patronSubclasses || {})[patron] || {})[cls] : null;
+    var out = cd.subclasses.filter(function (x) { return !map || map.indexOf(x) >= 0; }).map(function (x) { return { name: x, about: '' }; });
+    customSubs.forEach(function (x) {
+      if (x.class !== cls) return;
+      var ps = x.patrons || [];
+      if (!ps.length || (patron && ps.indexOf(patron) >= 0)) out.push({ name: x.name, about: x.about || '', custom: true });
+    });
+    return out;
+  }
   // A patron's Tenets section, from their article.
   function patronTenets(name) {
     var p = patronInfo(name), art = p ? articleByTitle(p.article) : articleByTitle(name);
@@ -989,7 +1012,9 @@
     var out = [], cd = classOf(s), sp = RULES.species[s.species];
     if (cd) {
       cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3] }); });
-      (RULES.subLevels[s.cls] || []).forEach(function (l) {
+      var csub = s.subclass ? customSub(s.cls, s.subclass) : null;
+      if (csub) (csub.features || []).forEach(function (f) { if (num(f.level, 1) <= num(s.level, 1)) out.push({ name: f.name, text: f.text || '', src: s.subclass + ' ' + num(f.level, 1), sub: true }); });
+      else (RULES.subLevels[s.cls] || []).forEach(function (l) {
         if (l <= num(s.level, 1)) out.push({ name: (s.subclass || cd.subclassLabel) + ' feature', text: s.subclass ? 'Your ' + cd.subclassLabel.toLowerCase() + ' grants a feature at level ' + l + '. Add its details below, or ask your DM.' : 'You reach a ' + cd.subclassLabel.toLowerCase() + ' feature at level ' + l + ', once you choose one.', src: s.cls + ' ' + l, sub: true });
       });
     }
@@ -1026,7 +1051,7 @@
         '<div class="field"><label for="nc-campaign">Campaign</label><select id="nc-campaign">' + campaignOptions(ui.newCharCampaign || (myCampaigns()[0] || {}).id, true, 'No campaign yet') + '</select></div>' +
         '<div class="actions"><button type="submit" class="btn primary">Create blank sheet</button><button type="button" class="btn" data-act="newchar-cancel">Cancel</button></div></form>';
     } else {
-      html += '<div class="actions"><a class="btn primary" href="#/build">+ Build a character</a><button type="button" class="btn quiet" data-act="newchar">Blank sheet</button></div>';
+      html += '<div class="actions"><a class="btn primary" href="#/build">+ Build a character</a><button type="button" class="btn quiet" data-act="newchar">Blank sheet</button>' + (dmView() ? '<a class="btn quiet" href="#/subclasses">Custom subclasses</a>' : '') + '</div>';
     }
     var groups = myCampaigns().map(function (c) { return { id: c.id, name: c.name + (c.status === 'finished' ? ' (finished)' : '') }; });
     groups.push({ id: null, name: 'No campaign' });
@@ -1075,9 +1100,14 @@
 
   /* ---------- Character builder ---------- */
   var BUILD_STEPS = ['Name', 'Class', 'Species', 'Background', 'Abilities', 'Skills', 'Spells', 'Review'];
-  function buildSteps(b) { var out = BUILD_STEPS.slice(); if (devotionLabel(b.cls)) out.splice(2, 0, devotionLabel(b.cls)); return out; }
+  function buildSteps(b) {
+    var out = BUILD_STEPS.slice(), at = 2;
+    if (devotionLabel(b.cls)) { out.splice(at, 0, devotionLabel(b.cls)); at++; }
+    if (SUB_STEP[b.cls]) out.splice(at, 0, SUB_STEP[b.cls]);
+    return out;
+  }
   function newBuild() {
-    return { step: 0, patron: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
+    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
   }
   function buildBase(b) {
     var out = {};
@@ -1103,6 +1133,7 @@
           if (!String(b.drawbacks || '').trim()) return 'Write your oath’s drawbacks.';
         }
         return '';
+      case 'Domain': case 'Pact': case 'Origin': return b.sub ? '' : 'Choose your ' + RULES.classes[b.cls].subclassLabel.toLowerCase() + '.';
       case 'Name': return b.name.trim() ? '' : 'Give your character a name.';
       case 'Class': return b.cls ? '' : 'Pick a class.';
       case 'Species': return b.species ? '' : 'Pick a species.';
@@ -1150,6 +1181,16 @@
       html += '<p class="guide">Your class is what you do best. It sets your hit points, your skills, how much mana you have and which spells are on your list.</p>' +
         choiceGrid(Object.keys(RULES.classes).map(function (k) { var c = RULES.classes[k], m = RULES.magic.mana[k]; return [k, 'd' + c.hd + ' hit die · ' + (m ? m[0] + ' mana' : 'no mana') + ' · ' + c.primary]; }), b.cls, 'bd-class');
       if (cd) html += classCard(b.cls);
+    } else if (step === 'Domain' || step === 'Pact' || step === 'Origin') {
+      var sopts = subclassOptions(b.cls, b.patron), scd = RULES.classes[b.cls];
+      html += '<p class="guide">' + (step === 'Domain' ? 'Your domain is the part of ' + (b.patron ? esc(b.patron) + '’s' : 'your god’s') + ' power you carry. It decides your domain spells and your Channel Divinity.' :
+        step === 'Pact' ? 'What kind of pact did you make' + (b.patron ? ' with ' + esc(b.patron) : '') + '? It decides your extra spells and the gifts your patron gives you.' :
+        'Where does your magic come from? Your origin shapes the gifts it gives you.') + '</p>' +
+        choiceGrid(sopts.map(function (o) { return [o.name, o.custom ? (o.about || 'Avarenth') : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the D&D rules']; }), b.sub, 'bd-sub');
+      var csel = b.sub ? customSub(b.cls, b.sub) : null;
+      if (csel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(csel.name) + '</h2>' + (csel.about ? '<p class="note" style="margin-top:0">' + esc(csel.about) + '</p>' : '') +
+        '<div class="tbl">' + (csel.features || []).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + num(f.level, 1) + ': ' + esc(f.name) + '</b><span>' + esc(f.text || '') + '</span></div></div>'; }).join('') + '</div></div>';
+      if (b.patron && scd && sopts.length < scd.subclasses.length) html += '<p class="note">Only the ones ' + esc(b.patron) + ' grants are shown.</p>';
     } else if (step === 'Deity' || step === 'Patron') {
       var opts = patronOptions(b.cls), isPact = step === 'Patron';
       html += '<p class="guide">' + (isPact ? 'A warlock’s power is borrowed. Who did you make your pact with? Gods can bargain too, but most warlocks deal with the lords of the Hollow Court, and every gift comes with a price.' :
@@ -1275,7 +1316,7 @@
   function buildSheet(b) {
     var cd = RULES.classes[b.cls], sc = buildScores(b), spc = RULES.species[b.species] || {};
     var s = defaultSheet();
-    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
+    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; if (SUB_STEP[b.cls]) s.subclass = b.sub || ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
     s.abilities = sc;
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
@@ -1297,7 +1338,7 @@
       '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', s.ac) + vital('Speed', s.speed + ' ft') + '</div>' +
       '<div class="tbl" style="margin-top:10px"><div class="tbl-row"><div class="main"><b>Skills</b><span>' + esc(Object.keys(s.skills).sort().join(', ')) + '</span></div></div>' +
       '<div class="tbl-row"><div class="main"><b>Spells</b><span>' + esc(b.spells.join(', ') || 'None yet') + '</span></div></div>' +
-      '<div class="tbl-row"><div class="main"><b>Next</b><span>' + (cd.subclassLevel === 1 ? 'Choose your ' + cd.subclassLabel.toLowerCase() + ' on the sheet. ' : 'You choose your ' + cd.subclassLabel.toLowerCase() + ' at level ' + cd.subclassLevel + '. ') + 'Add your armor and weapons, and set your armor class if you wear armor.</span></div></div></div></div>';
+      '<div class="tbl-row"><div class="main"><b>Next</b><span>' + (cd.subclassLevel === 1 ? '' : 'You choose your ' + cd.subclassLabel.toLowerCase() + ' at level ' + cd.subclassLevel + '. ') + 'Add your armor and weapons, and set your armor class if you wear armor.</span></div></div></div></div>';
   }
 
   /* ---------- Level-up guide ---------- */
@@ -1331,7 +1372,11 @@
       (rcGain ? '<div class="tbl-row"><div class="main"><b>A Reality Channel</b><span>Once per day, you can cast a 9th-level spell.</span></div></div>' : '') +
       (learnNow > learnBefore ? '<div class="tbl-row"><div class="main"><b>' + ordinal(learnNow) + '-level spells</b><span>You can now learn ' + ordinal(learnNow) + '-level spells' + (learnNow > listCap(s.cls) ? ' from tomes. They aren’t on your class list, so you’ll have to find and pay for them.' : ', from your class list or from tomes.') + '</span></div></div>' : '') +
       gains.map(function (f) { return '<div class="tbl-row"><div class="main"><b>' + esc(f[1]) + (f[3] ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') +
-      (subNow && !needSub ? '<div class="tbl-row"><div class="main"><b>' + esc(s.subclass || cd.subclassLabel) + ' feature</b><span>Your ' + esc(cd.subclassLabel.toLowerCase()) + ' grants a new feature at this level. Add it under Features once you’ve read it.</span></div></div>' : '') +
+      (function () {
+        var cs = s.subclass ? customSub(s.cls, s.subclass) : null;
+        if (cs) return (cs.features || []).filter(function (f) { return num(f.level, 0) === nxt; }).map(function (f) { return '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.text || '') + '</span></div></div>'; }).join('');
+        return subNow && !needSub ? '<div class="tbl-row"><div class="main"><b>' + esc(s.subclass || cd.subclassLabel) + ' feature</b><span>Your ' + esc(cd.subclassLabel.toLowerCase()) + ' grants a new feature at this level. Add it under Features once you’ve read it.</span></div></div>' : '';
+      })() +
       '</div></section>';
 
     html += '<section class="block"><h2 class="sec-title">Hit points</h2><p class="note">Each level you gain a hit die (d' + cd.hd + ') plus your Constitution modifier (' + signed(con) + '). Take the average for a safe number, or roll the die at the table.</p>' +
@@ -1341,7 +1386,7 @@
 
     if (needSub) {
       html += '<section class="block"><h2 class="sec-title">Choose your ' + esc(cd.subclassLabel.toLowerCase()) + '</h2><p class="note">This shapes the rest of your class. Read up on the options, or ask your DM about Avarenth versions.</p>' +
-        '<div class="field"><label for="lv-sub">' + esc(cd.subclassLabel) + '</label><select id="lv-sub" data-lv="sub"><option value="">Choose…</option>' + cd.subclasses.concat(['Other…']).map(function (x) { return '<option' + (L.sub === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="lv-sub">' + esc(cd.subclassLabel) + '</label><select id="lv-sub" data-lv="sub"><option value="">Choose…</option>' + subclassOptions(s.cls, s.patron).map(function (o) { return o.name; }).concat(['Other…']).map(function (x) { return '<option' + (L.sub === x ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' +
         (L.sub === 'Other…' ? '<div class="field"><label for="lv-subo">Name</label><input type="text" id="lv-subo" data-lv="subOther" maxlength="60" value="' + esc(L.subOther) + '"></div>' : '') + '</section>';
     }
     if (isAsi) {
@@ -1469,7 +1514,7 @@
     if (edit) {
       html += '<div class="group-box"><h2>Basics</h2><datalist id="dl-classes">' + Object.keys(RULES.classes).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-species">' + Object.keys(RULES.species).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist>' +
-        '<datalist id="dl-subs">' + (cd ? cd.subclasses.map(function (k) { return '<option value="' + esc(k) + '">'; }).join('') : '') + '</datalist>' +
+        '<datalist id="dl-subs">' + (cd ? subclassOptions(s.cls, s.patron).map(function (o) { return '<option value="' + esc(o.name) + '">'; }).join('') : '') + '</datalist>' +
         '<datalist id="dl-patrons">' + patronOptions(s.cls).map(function (p) { return p.name; }).concat(s.cls === 'Paladin' ? [OATH_ONLY] : []).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-bgs">' + Object.keys(RULES.backgrounds).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist><div class="two">' +
         sheetInput('Species', 'species', s.species, '', 'dl-species') + sheetInput('Class', 'cls', s.cls, '', 'dl-classes') +
@@ -2586,6 +2631,64 @@
     return html;
   }
 
+  /* ================= Custom subclasses (DM) ================= */
+  function renderSubclasses(id) {
+    var classes = Object.keys(RULES.classes);
+    if (ui.subEdit) return renderSubclassForm();
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/characters">Characters</a></p><h1 class="page-title">Custom subclasses</h1>' +
+      '<p class="note">Your own domains, pacts, oaths and the rest. They appear in the builder and at level-up next to the D&D ones, for the patrons you choose, and their features land on the sheet at the right levels.</p>' +
+      '<div class="actions"><button type="button" class="btn primary" data-act="sub-new">+ New subclass</button></div>';
+    var any = false;
+    classes.forEach(function (cls) {
+      var list = customSubs.filter(function (x) { return x.class === cls; });
+      if (!list.length) return;
+      any = true;
+      html += '<section class="block"><h2 class="sec-title">' + esc(cls) + '<small>' + esc(RULES.classes[cls].subclassLabel) + '</small></h2><div class="list">' + list.map(function (x) {
+        var ps = (x.patrons || []).length ? 'Granted by ' + x.patrons.join(', ') : 'Any patron, or none';
+        return '<button type="button" class="row" data-act="sub-edit" data-id="' + esc(x.id) + '" style="text-align:left;width:100%"><span class="row-main"><b>' + esc(x.name) + '</b><span>' + esc(ps + ' · ' + (x.features || []).length + ' features') + '</span></span></button>';
+      }).join('') + '</div></section>';
+    });
+    if (!any) html += '<div class="empty">No custom subclasses yet.</div>';
+    $view.innerHTML = html + '</div>';
+  }
+  function renderSubclassForm() {
+    var e = ui.subEdit, cd = RULES.classes[e.class] || {};
+    var patrons = (RULES.gods || []).map(function (g) { return g.name; }).concat((RULES.demons || []).map(function (d) { return d.name; }));
+    if (e.class === 'Paladin') patrons.push(OATH_ONLY);
+    var html = '<div class="page narrow"><form class="form" id="sub-form" novalidate><div><p class="eyebrow">' + (e.id ? 'Edit' : 'New') + ' subclass</p><h1 class="page-title">' + esc(e.name || 'A subclass of your own') + '</h1></div>' +
+      '<div class="two"><div class="field"><label for="sb-class">Class</label><select id="sb-class" data-subf="class">' + Object.keys(RULES.classes).map(function (k) { return '<option' + (k === e.class ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select><span class="hint">' + esc(cd.subclassLabel || '') + ', chosen at level ' + (cd.subclassLevel || 3) + '</span></div>' +
+      '<div class="field"><label for="sb-name">Name</label><input type="text" id="sb-name" data-subf="name" maxlength="80" value="' + esc(e.name) + '" placeholder="e.g. Oath of the Tide"></div></div>' +
+      '<div class="field"><label for="sb-about">What it is</label><textarea id="sb-about" data-subf="about" maxlength="800">' + esc(e.about) + '</textarea></div>' +
+      '<div class="field"><span class="lbl">Granted by</span><p class="note" style="margin:0 0 6px">Tick none and anyone can take it.</p><div class="chips">' + patrons.map(function (n) {
+        return '<button type="button" class="chip pick" data-act="sub-patron" data-name="' + esc(n) + '" aria-pressed="' + (e.patrons.indexOf(n) >= 0) + '">' + esc(n) + '</button>';
+      }).join('') + '</div></div>' +
+      '<div class="field"><span class="lbl">Features</span><p class="note" style="margin:0 0 6px">D&D gives ' + esc(e.class) + ' subclass features at levels ' + (RULES.subLevels[e.class] || []).join(', ') + '.</p>' +
+      e.features.map(function (f, i) {
+        return '<div class="group-box sub-feat"><div class="two"><div class="field"><label for="sf-l' + i + '">Level</label><input type="number" id="sf-l' + i + '" data-subfeat="level" data-i="' + i + '" min="1" max="20" value="' + num(f.level, 1) + '" inputmode="numeric"></div>' +
+          '<div class="field"><label for="sf-n' + i + '">Feature</label><input type="text" id="sf-n' + i + '" data-subfeat="name" data-i="' + i + '" maxlength="80" value="' + esc(f.name) + '"></div></div>' +
+          '<div class="field"><label for="sf-t' + i + '">What it does</label><textarea id="sf-t' + i + '" data-subfeat="text" data-i="' + i + '" maxlength="1500">' + esc(f.text) + '</textarea></div>' +
+          '<button type="button" class="btn small quiet" data-act="sub-feat-rm" data-i="' + i + '">Remove</button></div>';
+      }).join('') +
+      '<button type="button" class="btn small" data-act="sub-feat-add">+ Add a feature</button></div>' +
+      '<div class="actions"><button type="submit" class="btn primary">Save</button><button type="button" class="btn" data-act="sub-cancel">Cancel</button>' +
+      (e.id ? '<button type="button" class="btn danger" data-act="sub-delete" data-id="' + esc(e.id) + '">' + (ui.pendingDelete === 'sub:' + e.id ? 'Tap again to delete' : 'Delete') + '</button>' : '') + '</div></form></div>';
+    $view.innerHTML = html;
+  }
+  function saveSubclass() {
+    var e = ui.subEdit;
+    if (!e) return;
+    e.name = String(e.name || '').trim();
+    if (!e.name) return toast('Give it a name.');
+    var feats = e.features.filter(function (f) { return String(f.name || '').trim(); }).map(function (f) { return { level: Math.max(1, Math.min(20, num(f.level, 1))), name: String(f.name).trim(), text: String(f.text || '').trim() }; })
+      .sort(function (a, b) { return a.level - b.level; });
+    var row = { class: e.class, name: e.name, about: String(e.about || '').trim(), patrons: e.patrons, features: feats };
+    var op = e.id ? sb.from('custom_subclasses').update(row).eq('id', e.id) : sb.from('custom_subclasses').insert(row);
+    op.then(function (r) {
+      if (r.error) return fail(r.error, r.error.code === '23505' ? 'That class already has a subclass with that name.' : 'Could not save it.');
+      return loadCustomSubs().then(function () { ui.subEdit = null; toast('Saved'); render(); });
+    });
+  }
+
   /* ================= Shops (DM only) ================= */
   // The DM opens a shop when the party walks in, picks who's buying, and the app does the money, the stock and the sheet.
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
@@ -3539,6 +3642,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'travel_log' }, function () { liveRefresh(loadTravel); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'crimes' }, function () { liveRefresh(loadCrimes); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reputation' }, function () { liveRefresh(loadReputation); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'custom_subclasses' }, function () { liveRefresh(loadCustomSubs); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'spells' }, function () { if (spells !== null || isDM()) liveRefresh(loadSpells); })
       .subscribe();
   }
@@ -3639,6 +3743,30 @@
           ui.mapScroll = { id: parseRoute().arg, left: (fr.scrollLeft + fr.clientWidth / 2) * ratio - fr.clientWidth / 2, top: (fr.scrollTop + fr.clientHeight / 2) * ratio - fr.clientHeight / 2 };
         }
         ui.mapZoom = nz; render(); break;
+      case 'sub-new': ui.subEdit = { id: null, class: 'Paladin', name: '', about: '', patrons: [], features: [] }; render(); break;
+      case 'sub-edit':
+        var se = customSubs.filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+        if (se) { ui.subEdit = { id: se.id, class: se.class, name: se.name, about: se.about || '', patrons: (se.patrons || []).slice(), features: (se.features || []).map(function (f) { return Object.assign({}, f); }) }; render(); }
+        break;
+      case 'sub-cancel': ui.subEdit = null; render(); break;
+      case 'sub-patron':
+        if (!ui.subEdit) return;
+        var spn = el.getAttribute('data-name'), spi = ui.subEdit.patrons.indexOf(spn);
+        if (spi >= 0) ui.subEdit.patrons.splice(spi, 1); else ui.subEdit.patrons.push(spn);
+        el.setAttribute('aria-pressed', spi < 0); break;
+      case 'sub-feat-add':
+        if (!ui.subEdit) return;
+        var nextL = (RULES.subLevels[ui.subEdit.class] || [3]).filter(function (l) { return !ui.subEdit.features.some(function (f) { return num(f.level, 0) === l; }); })[0] || 3;
+        ui.subEdit.features.push({ level: nextL, name: '', text: '' }); render(); break;
+      case 'sub-feat-rm': if (ui.subEdit) { ui.subEdit.features.splice(num(el.getAttribute('data-i'), -1), 1); render(); } break;
+      case 'sub-delete':
+        var sdid2 = el.getAttribute('data-id');
+        if (ui.pendingDelete !== 'sub:' + sdid2) { ui.pendingDelete = 'sub:' + sdid2; el.textContent = 'Tap again to delete'; return; }
+        sb.from('custom_subclasses').delete().eq('id', sdid2).then(function (r) {
+          if (r.error) return fail(r.error, 'Could not delete it.');
+          ui.pendingDelete = null; ui.subEdit = null; loadCustomSubs().then(function () { toast('Deleted'); render(); });
+        });
+        break;
       case 'shop-pin':
         if (ui.placing) return;
         ui.selectedShop = el.getAttribute('data-id'); ui.selectedMarker = null; ui.pendingPin = null;
@@ -3802,11 +3930,15 @@
       case 'spend-hd': if (c) spendHitDie(c); break;
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
-        if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; } bb.cls = val; }
+        if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
         else if (act === 'bd-species') { if (bb.species !== val) bb.skills = []; bb.species = val; }
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
-      case 'bd-patron': ui.build.patron = el.getAttribute('data-val'); render(); break;
+      case 'bd-patron':
+        ui.build.patron = el.getAttribute('data-val');
+        if (ui.build.sub && !subclassOptions(ui.build.cls, ui.build.patron).some(function (o) { return o.name === ui.build.sub; })) ui.build.sub = '';
+        render(); break;
+      case 'bd-sub': ui.build.sub = el.getAttribute('data-val'); render(); break;
       case 'bd-next':
         var berr = buildStepError(ui.build);
         if (berr) return toast(berr);
@@ -3943,6 +4075,8 @@
       saveLookSoon();
       return;
     }
+    if (ui.subEdit && t.hasAttribute('data-subf') && t.tagName !== 'SELECT') { ui.subEdit[t.getAttribute('data-subf')] = t.value; return; }
+    if (ui.subEdit && t.hasAttribute('data-subfeat')) { var sfi = ui.subEdit.features[num(t.getAttribute('data-i'), -1)]; if (sfi) sfi[t.getAttribute('data-subfeat')] = t.value; return; }
     if (t.getAttribute('data-build') === 'oath' && ui.build) { ui.build.oath = t.value; return; }
     if (t.getAttribute('data-build') === 'drawbacks' && ui.build) { ui.build.drawbacks = t.value; return; }
     if (t.getAttribute('data-build') === 'name' && ui.build) { ui.build.name = t.value; var hint = document.querySelector('.build-nav + .note'); if (hint) hint.hidden = !!t.value.trim(); return; }
@@ -4005,6 +4139,7 @@
       pp[pf] = pf === 'size' ? num(t.value, 2) : fnum(t.value, 1);
       return savePlace(t.getAttribute('data-place'), pp);
     }
+    if (ui.subEdit && t.id === 'sb-class') { ui.subEdit.class = t.value; if (t.value !== 'Paladin') ui.subEdit.patrons = ui.subEdit.patrons.filter(function (n) { return n !== OATH_ONLY; }); render(); return; }
     if (t.hasAttribute('data-bd-roll') && ui.build) {
       var bri = num(t.getAttribute('data-bd-roll'), 0), brv = num(t.value, 0);
       ui.build.rolls = (ui.build.rolls || []).slice(); while (ui.build.rolls.length < 6) ui.build.rolls.push(0);
@@ -4061,6 +4196,7 @@
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
       case 'spell-form': return saveSpellForm(f);
+      case 'sub-form': return saveSubclass();
       case 'shop-form': return saveShopForm(f);
       case 'shop-add':
         var sadd = shopById(f.getAttribute('data-id')), san = document.getElementById('sa-name').value.trim().slice(0, 80);

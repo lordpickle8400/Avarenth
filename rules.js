@@ -331,6 +331,29 @@
     // Every faction is wary of the draconic races (one step lower) unless it is draconic itself.
     draconic: ['Dragonborn', 'Kobold', 'Lizardfolk'],
     draconicFactions: ['the-red-scales', 'house-ignis'],
+    // Which subclasses each patron offers. Classes not listed for a patron (and Druids, Rangers, Monks) can take any.
+    // Paladins sworn to their oath alone can take any oath. The DM's custom subclasses say for themselves which patrons grant them.
+    patronSubclasses: {
+      'Akoron': { Cleric: ['Life Domain', 'Light Domain', 'Peace Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Redemption'] },
+      'Roselle': { Cleric: ['Nature Domain', 'Life Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Ancients', 'Oath of Redemption'] },
+      'Azrul': { Cleric: ['Death Domain', 'Grave Domain', 'Twilight Domain'], Warlock: ['The Celestial', 'The Undead'], Paladin: ['Oath of the Watchers', 'Oath of Devotion'] },
+      'Korinth': { Cleric: ['Knowledge Domain', 'Arcana Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Watchers', 'Oath of Devotion'] },
+      'Thorum': { Cleric: ['Tempest Domain'], Warlock: ['The Celestial', 'The Fathomless'], Paladin: ['Oath of Vengeance', 'Oath of Glory'] },
+      'Florin': { Cleric: ['Trickery Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Glory', 'Oath of Redemption'] },
+      'Rook': { Cleric: ['War Domain', 'Order Domain', 'Forge Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Conquest', 'Oath of Glory'] },
+      'The Hungering Head': { Cleric: ['Death Domain', 'Twilight Domain'], Warlock: ['The Great Old One'], Paladin: ['Oathbreaker', 'Oath of Conquest'] },
+      'Kharneth': { Cleric: ['Order Domain', 'Knowledge Domain'], Warlock: ['The Fiend'], Paladin: ['Oath of Conquest', 'Oath of Vengeance'] },
+      'Drakhar': { Cleric: ['War Domain', 'Order Domain'], Warlock: ['The Hexblade', 'The Fiend'], Paladin: ['Oath of Conquest'] },
+      'The Pyre-Saint': { Cleric: ['Light Domain', 'War Domain'], Warlock: ['The Celestial', 'The Fiend'], Paladin: ['Oath of Vengeance', 'Oath of Conquest'] },
+      'Marrow': { Cleric: ['Death Domain', 'Nature Domain'], Warlock: ['The Undead', 'The Great Old One'] },
+      'Velvet': { Cleric: ['Trickery Domain', 'Twilight Domain'], Warlock: ['The Archfey'] },
+      'Sytha': { Cleric: ['Trickery Domain', 'Nature Domain'], Warlock: ['The Archfey', 'The Great Old One'] },
+      'The Nine Below': { Cleric: ['Grave Domain', 'Death Domain'], Warlock: ['The Undead'], Paladin: ['Oathbreaker', 'Oath of Vengeance'] },
+      'The Mask': { Cleric: ['Trickery Domain'], Warlock: ['The Archfey', 'The Great Old One'] },
+      'Veyl': { Cleric: ['Knowledge Domain', 'Arcana Domain'], Warlock: ['The Great Old One'] },
+      'Vaunt and Ruin': { Cleric: ['War Domain'], Warlock: ['The Hexblade', 'The Fiend'], Paladin: ['Oath of Glory', 'Oath of Conquest', 'Oathbreaker'] },
+      'Lull': { Cleric: ['Tempest Domain', 'Death Domain'], Warlock: ['The Fathomless'] }
+    },
     factionStart: {
       'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },
       'the-red-scales': { base: -2, species: { Dragonborn: 3, Kobold: 2, Lizardfolk: 1 } },
