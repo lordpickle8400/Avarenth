@@ -902,6 +902,7 @@
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
       mana: { cur: 0, max: 0, regen: '', override: false },
       charges: { hm: 0, rc: 0 }, picks: 0, secretPicks: 0, debts: [], tomes: [],
+      death: { s: 0, f: 0 }, conditions: [], exhaustion: 0, inspiration: false,
       saves: {}, skills: {},
       spells: [], items: [], attacks: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, features: [], notes: '', log: []
     };
@@ -921,6 +922,10 @@
     ['saves', 'skills'].forEach(function (k) { if (!out[k] || typeof out[k] !== 'object') out[k] = {}; });
     ['spells', 'items', 'features', 'attacks', 'log', 'debts', 'tomes'].forEach(function (k) { if (!Array.isArray(out[k])) out[k] = []; });
     if (!out.res || typeof out.res !== 'object' || Array.isArray(out.res)) out.res = {};
+    out.death = Object.assign({ s: 0, f: 0 }, s.death || {});
+    if (!Array.isArray(out.conditions)) out.conditions = [];
+    out.exhaustion = Math.max(0, Math.min(6, num(out.exhaustion, 0)));
+    out.inspiration = !!out.inspiration;
     return out;
   }
   function mod(score) { return Math.floor((num(score, 10) - 10) / 2); }
@@ -1469,6 +1474,7 @@
       '<section class="pool" aria-label="Hit points"><div class="pool-top"><span class="k">Hit points</span><span class="v">' + num(s.hp.cur, 0) + ' <small>/ ' + num(s.hp.max, 0) + (num(s.hp.temp, 0) ? ' · ' + num(s.hp.temp, 0) + ' temp' : '') + '</small></span></div>' +
       '<div class="meter" role="img" aria-label="' + hpPct + '% health"><i style="width:' + hpPct + '%"></i></div>' +
       (can ? '<div class="pool-ctl"><label class="sr" for="hp-amt">Amount</label><input type="number" id="hp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small danger" data-act="hp" data-dir="-1">Damage</button><button type="button" class="btn small" data-act="hp" data-dir="1">Heal</button></div>' : '') +
+      deathSavesHtml(s, can) +
       (cd ? '<p class="note" style="margin:6px 0 0">Hit dice: ' + hdLeft + ' of ' + num(s.level, 1) + ' (d' + cd.hd + ')' + (can && hdLeft ? ' · <button type="button" class="linkish" data-act="spend-hd">Spend one on a short rest</button>' : '') + '</p>' : '') +
       (edit ? '<div class="pool-edit"><label for="hp-max">Max</label><input type="number" id="hp-max" data-pool="hp.max" value="' + num(s.hp.max, 0) + '"><label for="hp-temp">Temp</label><input type="number" id="hp-temp" data-pool="hp.temp" value="' + num(s.hp.temp, 0) + '"></div>' : '') + '</section>' +
       '<section class="pool" aria-label="Mana"><div class="pool-top"><span class="k">Mana</span><span class="v">' + num(s.mana.cur, 0) + ' <small>/ ' + mMax + '</small></span></div>' +
@@ -1477,6 +1483,7 @@
       (can ? '<div class="pool-ctl"><label class="sr" for="mp-amt">Amount</label><input type="number" id="mp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small" data-act="mp" data-dir="-1">Spend</button><button type="button" class="btn small" data-act="mp" data-dir="1">Restore</button></div>' : '') +
       (edit ? '<div class="pool-edit"><label class="check"><input type="checkbox" id="mp-ovr" data-mana-override' + (s.mana.override ? ' checked' : '') + '> Set max by hand</label>' + (s.mana.override ? '<label for="mp-max">Max</label><input type="number" id="mp-max" data-pool="mana.max" value="' + num(s.mana.max, 0) + '">' : '<span class="note">' + (autoMana(s.cls, s.level) !== null ? 'Worked out from class and level.' : 'Set a class to work it out.') + '</span>') + '</div>' : '') + '</section></div>';
     html += resourcesHtml(s, can);
+    html += conditionHtml(s, can);
     if (can) html += '<div class="actions rest-row"><button type="button" class="btn" data-act="short-rest">Short rest</button><button type="button" class="btn" data-act="long-rest">Long rest</button><span class="note">A long rest refills everything and gives back half your hit dice.</span></div>';
 
     var tabs = ['Actions', 'Spells', 'Skills', 'Inventory', 'Features', 'Reputation', 'Record', 'Notes'];
@@ -1489,6 +1496,40 @@
     $view.innerHTML = html;
   }
   /* Class resources from the D&D rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
+  /* ---------- Conditions, exhaustion, inspiration, death saves, carrying ---------- */
+  var CONDITIONS = ['Blinded', 'Charmed', 'Deafened', 'Frightened', 'Grappled', 'Incapacitated', 'Invisible', 'Paralyzed', 'Petrified', 'Poisoned', 'Prone', 'Restrained', 'Stunned', 'Unconscious'];
+  var EXHAUSTION = ['None', 'Disadvantage on ability checks', 'Speed halved', 'Disadvantage on attacks and saving throws', 'Hit point maximum halved', 'Speed reduced to 0', 'Death'];
+  function pipsOf(n, filled, cls) { var out = ''; for (var i = 0; i < n; i++) out += '<i class="pip ' + cls + (i < filled ? ' on' : '') + '"></i>'; return out; }
+  function deathSavesHtml(s, can) {
+    if (num(s.hp.cur, 0) > 0) return '';
+    var d = s.death, st = d.f >= 3 ? 'Dead.' : d.s >= 3 ? 'Stable. Unconscious, but no longer dying.' : 'Dying. Roll a death save at the start of each turn.';
+    return '<div class="death"><div class="death-top"><span class="k">Death saves</span><span class="note">' + esc(st) + '</span></div>' +
+      '<div class="death-pips"><span>Successes <span class="pips">' + pipsOf(3, d.s, 'ok') + '</span></span><span>Failures <span class="pips">' + pipsOf(3, d.f, 'bad') + '</span></span></div>' +
+      (can && d.f < 3 && d.s < 3 ? '<div class="pool-ctl"><button type="button" class="btn small primary" data-act="death" data-kind="roll">Roll</button><button type="button" class="btn small" data-act="death" data-kind="s">+ Success</button><button type="button" class="btn small" data-act="death" data-kind="f">+ Failure</button></div>' : '') +
+      (can && (d.s || d.f) ? '<button type="button" class="linkish" data-act="death" data-kind="reset">Clear</button>' : '') + '</div>';
+  }
+  function conditionHtml(s, can) {
+    var active = s.conditions.filter(function (x) { return CONDITIONS.indexOf(x) >= 0; }), ex = s.exhaustion;
+    var html = '<section class="pool cond-pool" aria-label="Condition"><div class="pool-top"><span class="k">Condition</span>' +
+      (can ? '<button type="button" class="chip pick insp" data-act="inspiration" aria-pressed="' + s.inspiration + '">' + (s.inspiration ? '★ Inspired' : '☆ Inspiration') + '</button>' : (s.inspiration ? '<span class="tag ok">★ Inspired</span>' : '')) + '</div>';
+    html += '<div class="res-row"><div class="main"><b>Exhaustion ' + ex + '</b><span>' + esc(ex ? EXHAUSTION.slice(1, ex + 1).join('; ') : 'None') + '</span></div>' +
+      (can ? '<button type="button" class="btn small" data-act="exhaustion" data-dir="-1"' + (ex <= 0 ? ' disabled' : '') + ' aria-label="One less exhaustion">−</button><button type="button" class="btn small" data-act="exhaustion" data-dir="1"' + (ex >= 6 ? ' disabled' : '') + ' aria-label="One more exhaustion">+</button>' : '') + '</div>';
+    if (can) html += '<div class="chips cond-chips">' + CONDITIONS.map(function (x) { return '<button type="button" class="chip pick" data-act="condition" data-name="' + x + '" aria-pressed="' + (active.indexOf(x) >= 0) + '">' + x + '</button>'; }).join('') + '</div>';
+    else html += active.length ? '<div class="chips">' + active.map(function (x) { return '<span class="tag">' + x + '</span>'; }).join('') + '</div>' : '<p class="note" style="margin:6px 0 0">No conditions.</p>';
+    return html + '</section>';
+  }
+  function itemWeight(it) {
+    if (typeof it.w === 'number') return it.w;
+    var k = String(it.name || '').toLowerCase(), cat = (window.AVARENTH_ITEMS || { items: [] }).items.filter(function (x) { return x.name.toLowerCase() === k; })[0];
+    return cat && cat.weight ? cat.weight : 0;
+  }
+  function carrying(s) {
+    var items = s.items.reduce(function (t, it) { return t + itemWeight(it) * Math.max(0, num(it.qty, 1)); }, 0);
+    var coins = (num(s.coins.cp, 0) + num(s.coins.sp, 0) + num(s.coins.gp, 0) + num(s.coins.pp, 0)) / 50;
+    var sp = RULES.species[s.species] || {}, powerful = (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });
+    var cap = num(s.abilities.str, 10) * 15 * (powerful ? 2 : 1) * (sp.size === 'Small' ? 1 : 1);
+    return { total: Math.round((items + coins) * 10) / 10, coins: Math.round(coins * 10) / 10, cap: cap, powerful: powerful };
+  }
   var FONT_TO_MANA = 5, FONT_FROM_MANA = 6;   // Font of Magic, traded against mana instead of spell slots
   function byLevel(lvl, table) { var v = 0; table.forEach(function (t) { if (lvl >= t[0]) v = t[1]; }); return v; }
   function classResources(s) {
@@ -1629,15 +1670,22 @@
       var coinKeys = ['cp', 'sp', 'gp'].concat(num(s.coins.pp, 0) ? ['pp'] : []);
       html += '<div class="coins" style="margin-top:12px">' + coinKeys.map(function (k) {
         return '<div class="vital"><label class="k" for="coin-' + k + '">' + esc(coinName(k)) + '</label>' + (can ? '<input type="number" id="coin-' + k + '" data-coin="' + k + '" min="0" value="' + num(s.coins[k], 0) + '" inputmode="numeric">' : '<span class="v">' + num(s.coins[k], 0) + '</span>') + '</div>';
-      }).join('') + '</div><div class="tbl" style="margin-top:12px">';
+      }).join('') + '</div>';
+      var carry = carrying(s), over = carry.total > carry.cap;
+      html += '<div class="carry' + (over ? ' over' : '') + '"><div class="pool-top"><span class="k">Carrying</span><span class="v">' + carry.total + ' <small>/ ' + carry.cap + ' lb</small></span></div>' +
+        '<div class="meter" role="img" aria-label="' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '% of carrying capacity"><i style="width:' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '%"></i></div>' +
+        '<p class="note" style="margin:4px 0 0">' + (over ? 'Over capacity: speed drops to 5 feet until you lighten the load.' : 'Strength × 15' + (carry.powerful ? ', doubled for Powerful Build' : '') + '.') + (carry.coins ? ' Coins weigh ' + carry.coins + ' lb.' : '') + '</p></div>';
+      html += '<div class="tbl" style="margin-top:12px">';
       if (!s.items.length) html += '<div class="empty">Nothing carried yet.</div>';
       s.items.forEach(function (it, i) {
-        html += '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b>' + (it.notes ? '<span>' + esc(it.notes) + '</span>' : '') + '</div>' +
+        var iw = itemWeight(it);
+        html += '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b>' + ((it.notes || iw) ? '<span>' + esc([it.notes, iw ? iw + ' lb' + (num(it.qty, 1) > 1 ? ' each' : '') : ''].filter(Boolean).join(' · ')) + '</span>' : '') + '</div>' +
+          (edit ? '<label class="sr" for="iw-' + i + '">Weight in pounds</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (iw || 'lb') + '" min="0" step="0.25" inputmode="decimal">' : '') +
           (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><span class="num" style="min-width:28px;text-align:center">' + num(it.qty, 1) + '</span><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<span class="num">×' + num(it.qty, 1) + '</span>') +
           (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button>' : '') + '</div>';
       });
       html += '</div>';
-      if (can) html += '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field"><label for="it-name">Item</label><input type="text" id="it-name" maxlength="80"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div><div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></form>';
+      if (can) html += '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field"><label for="it-name">Item</label><input type="text" id="it-name" maxlength="80"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div><div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><div class="field"><label for="it-w">Lb each</label><input type="number" id="it-w" min="0" step="0.25" inputmode="decimal" placeholder="auto"></div><button type="submit" class="btn primary">Add</button></form>';
     } else if (ui.sheetTab === 'Reputation') {
       html += standingTabHtml(c, s);
     } else if (ui.sheetTab === 'Record') {
@@ -1769,6 +1817,8 @@
     s.mana.cur = manaMax(s);
     s.charges.hm = 0; s.charges.rc = 0;
     s.res = {};
+    s.death = { s: 0, f: 0 };
+    if (num(s.exhaustion, 0) > 0) s.exhaustion = num(s.exhaustion, 0) - 1;
     s.hd.used = Math.max(0, num(s.hd.used, 0) - Math.max(1, Math.floor(num(s.level, 1) / 2)));
     toast('Rested. Hit points, mana, charges and class resources restored.');
     render(); saveCharSoon(c);
@@ -3660,8 +3710,15 @@
         var dir = num(el.getAttribute('data-dir'), 1);
         if (act === 'hp') {
           var hp = c.sheet.hp;
-          if (dir < 0) { var fromTemp = Math.min(num(hp.temp, 0), amt); hp.temp = num(hp.temp, 0) - fromTemp; hp.cur = Math.max(0, num(hp.cur, 0) - (amt - fromTemp)); }
-          else hp.cur = Math.min(num(hp.max, 0), num(hp.cur, 0) + amt);
+          var wasDown = num(hp.cur, 0) <= 0;
+          c.sheet.death = Object.assign({ s: 0, f: 0 }, c.sheet.death || {});
+          if (dir < 0) {
+            var fromTemp = Math.min(num(hp.temp, 0), amt); hp.temp = num(hp.temp, 0) - fromTemp; hp.cur = Math.max(0, num(hp.cur, 0) - (amt - fromTemp));
+            if (wasDown && amt - fromTemp > 0) { c.sheet.death.f = Math.min(3, c.sheet.death.f + 1); toast('Hit while down: one failed death save. A critical hit is two.'); }
+          } else {
+            hp.cur = Math.min(num(hp.max, 0), num(hp.cur, 0) + amt);
+            if (wasDown && hp.cur > 0) c.sheet.death = { s: 0, f: 0 };
+          }
         } else {
           var mp = c.sheet.mana;
           mp.cur = Math.max(0, Math.min(num(mp.max, 0), num(mp.cur, 0) + dir * amt));
@@ -3676,6 +3733,28 @@
       case 'long-rest': if (c) longRest(c); break;
       case 'short-rest': if (c) shortRest(c); break;
       case 'font-magic': if (c) fontOfMagic(c, el.getAttribute('data-dir')); break;
+      case 'inspiration': if (!c) return; c.sheet.inspiration = !c.sheet.inspiration; render(); saveCharSoon(c); break;
+      case 'exhaustion': if (!c) return; c.sheet.exhaustion = Math.max(0, Math.min(6, num(c.sheet.exhaustion, 0) + num(el.getAttribute('data-dir'), 1))); render(); saveCharSoon(c); break;
+      case 'condition':
+        if (!c) return;
+        if (!Array.isArray(c.sheet.conditions)) c.sheet.conditions = [];
+        var cn = el.getAttribute('data-name'), ci = c.sheet.conditions.indexOf(cn);
+        if (ci >= 0) c.sheet.conditions.splice(ci, 1); else c.sheet.conditions.push(cn);
+        render(); saveCharSoon(c); break;
+      case 'death':
+        if (!c) return;
+        var dsv = c.sheet.death = Object.assign({ s: 0, f: 0 }, c.sheet.death || {}), dk = el.getAttribute('data-kind');
+        if (dk === 'reset') dsv.s = dsv.f = 0;
+        else if (dk === 's') dsv.s = Math.min(3, dsv.s + 1);
+        else if (dk === 'f') dsv.f = Math.min(3, dsv.f + 1);
+        else {
+          var d20 = roll(1, 20);
+          if (d20 === 20) { c.sheet.hp.cur = 1; c.sheet.death = { s: 0, f: 0 }; toast('Natural 20! Back up with 1 hit point.'); }
+          else if (d20 === 1) { dsv.f = Math.min(3, dsv.f + 2); toast('Natural 1: two failures.'); }
+          else if (d20 >= 10) { dsv.s = Math.min(3, dsv.s + 1); toast('Rolled ' + d20 + ': success.'); }
+          else { dsv.f = Math.min(3, dsv.f + 1); toast('Rolled ' + d20 + ': failure.'); }
+        }
+        render(); saveCharSoon(c); break;
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
@@ -3885,6 +3964,12 @@
       pp[pf] = pf === 'size' ? num(t.value, 2) : fnum(t.value, 1);
       return savePlace(t.getAttribute('data-place'), pp);
     }
+    if (t.hasAttribute('data-iw')) {
+      var wc = currentChar(), wi = wc && wc.sheet.items[num(t.getAttribute('data-iw'), -1)];
+      if (!wi) return;
+      if (t.value === '') delete wi.w; else wi.w = Math.max(0, parseFloat(t.value) || 0);
+      saveCharSoon(wc); return;
+    }
     if (t.hasAttribute('data-spell-rarity')) return setSpellRarity(t.getAttribute('data-spell-rarity'), t.value);
     if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
     if (t.hasAttribute('data-travel') || t.hasAttribute('data-travel-text')) {
@@ -3968,7 +4053,10 @@
         if (!c) return;
         var iname = document.getElementById('it-name').value.trim();
         if (!iname) return toast('Name the item first.');
-        c.sheet.items.push({ name: iname, notes: document.getElementById('it-notes').value.trim(), qty: Math.max(1, num(document.getElementById('it-qty').value, 1)) });
+        var iwv = document.getElementById('it-w') ? document.getElementById('it-w').value : '';
+        var newItem = { name: iname, notes: document.getElementById('it-notes').value.trim(), qty: Math.max(1, num(document.getElementById('it-qty').value, 1)) };
+        if (iwv !== '' && !isNaN(parseFloat(iwv))) newItem.w = Math.max(0, parseFloat(iwv));
+        c.sheet.items.push(newItem);
         render(); saveCharSoon(c); var n2 = document.getElementById('it-name'); if (n2) n2.focus(); return;
       case 'add-feature':
         if (!c) return;

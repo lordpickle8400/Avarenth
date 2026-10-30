@@ -394,3 +394,18 @@ select.input.mini { width: 110px; }
 .res-num small { font-weight: 400; opacity: .7; font-size: 13px; }
 .res-row .input.mini { width: 64px; }
 .font-row { flex-basis: 100%; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Death saves, condition, carrying */
+.death { margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid #d9534f66; }
+.death-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.death-pips { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0; font-family: var(--ui); font-size: 13px; }
+.pip.ok { border-color: #3fae5a; } .pip.ok.on { background: #3fae5a; }
+.pip.bad { border-color: #d9534f; } .pip.bad.on { background: #d9534f; }
+.cond-pool { margin-top: 12px; }
+.cond-pool .pool-top { align-items: center; }
+.cond-chips { margin-top: 8px; }
+.cond-chips .chip { font-size: 13px; min-height: 36px; }
+.chip.insp[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.carry { margin-top: 12px; }
+.carry.over .meter i { background: #d9534f; }
+.carry.over .note { color: #d9534f; }
