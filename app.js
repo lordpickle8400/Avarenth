@@ -3410,6 +3410,56 @@
       (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>';
   }
 
+  /* ---------- Day and night rolls: the table rolls, the app reads the result ---------- */
+  var TRAVEL_EVENTS = window.AVARENTH_TRAVEL || { bad: [], neutral: [], good: [] };
+  function watchTier(d20) { return d20 <= 5 ? 'bad' : d20 >= 15 ? 'good' : 'neutral'; }
+  var TIER_LABEL = { bad: 'Bad', neutral: 'Something happens', good: 'Good' };
+  function watchState(campId, w) {
+    ui.watch = ui.watch || {}; var k = campId + '|' + w;
+    return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
+  }
+  function watchResult(campId, w) {
+    var st = watchState(campId, w), d20 = parseInt(st.d20, 10), d100 = parseInt(st.d100, 10);
+    if (!(d20 >= 1 && d20 <= 20)) return null;
+    var tier = watchTier(d20), list = TRAVEL_EVENTS[tier] || [];
+    var ev = d100 >= 1 && d100 <= 100 ? list[d100 - 1] || null : null;
+    return { tier: tier, d20: d20, d100: d100 >= 1 && d100 <= 100 ? d100 : null, text: ev };
+  }
+  function watchResultHtml(campId, w) {
+    var r = watchResult(campId, w);
+    if (!r) return '<p class="note" style="margin:0">Enter their d20.</p>';
+    var html = '<p style="margin:0 0 4px"><span class="tag tier-' + r.tier + '">' + TIER_LABEL[r.tier] + '</span></p>';
+    html += r.text ? '<p class="watch-ev">' + esc(r.text) + '</p>' : '<p class="note" style="margin:0">Now they roll a d100.</p>';
+    return html;
+  }
+  function watchBlock(camp) {
+    var chars = campaignChars(camp.id);
+    return '<section class="block"><h2 class="sec-title">Day and night<small>Rolled at the table</small></h2>' +
+      '<p class="note" style="margin:0 0 8px">Someone rolls a d20 for the day and someone for the night. 5 or lower is bad, 15 or higher is good, anything else is neutral. Then they roll a d100 for what happens.</p>' +
+      ['Day', 'Night'].map(function (W) {
+        var w = W.toLowerCase(), st = watchState(camp.id, w);
+        return '<div class="group-box watch-box"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">' + W + '</p>' +
+          '<div class="two"><div class="field"><label for="wt-who-' + w + '">Who rolls</label><select id="wt-who-' + w + '" data-watch="' + w + '" data-wfield="who" data-camp="' + esc(camp.id) + '"><option value="">Someone</option>' +
+          chars.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === st.who ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="two"><div class="field"><label for="wt-d20-' + w + '">d20</label><input type="number" id="wt-d20-' + w + '" min="1" max="20" inputmode="numeric" value="' + esc(st.d20) + '" data-watch="' + w + '" data-wfield="d20" data-camp="' + esc(camp.id) + '"></div>' +
+          '<div class="field"><label for="wt-d100-' + w + '">d100</label><input type="number" id="wt-d100-' + w + '" min="1" max="100" inputmode="numeric" value="' + esc(st.d100) + '" data-watch="' + w + '" data-wfield="d100" data-camp="' + esc(camp.id) + '"></div></div></div>' +
+          '<div id="wt-res-' + w + '">' + watchResultHtml(camp.id, w) + '</div>' +
+          '<div class="actions"><button type="button" class="btn small" data-act="log-watch" data-watch="' + w + '" data-camp="' + esc(camp.id) + '">Add to journey log</button><button type="button" class="btn small quiet" data-act="clear-watch" data-watch="' + w + '" data-camp="' + esc(camp.id) + '">Clear</button></div></div>';
+      }).join('') + '</section>';
+  }
+  function logWatch(campId, w) {
+    var t = travel[campId], r = watchResult(campId, w), st = watchState(campId, w);
+    if (!t) return;
+    if (!r || !r.text) return toast('Enter both rolls first.');
+    var who = st.who ? charById(st.who) : null;
+    var text = (w === 'day' ? 'Day' : 'Night') + (who ? ' (' + who.name + ' rolled ' + r.d20 + ')' : ' (rolled ' + r.d20 + ')') + ': ' + r.text;
+    sb.from('travel_log').insert({ campaign_id: campId, day: t.day, miles: 0, food_used: 0, map_id: t.map_id || null, text: text }).then(function (res) {
+      if (res.error) throw res.error;
+      ui.watch[campId + '|' + w] = { who: st.who, d20: '', d100: '' };
+      return loadTravel();
+    }).then(function () { toast('Logged'); render(); }).catch(function (e) { fail(e, 'Could not log that.'); });
+  }
+
   function renderTravel(slug) {
     if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var camp = campaignBySlug(slug);
@@ -3426,7 +3476,8 @@
       return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
-    if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last day</button></div>';
+    if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
+    if (dm) html += watchBlock(camp);
     var gridOn = j.map && grids[j.map.id];
     var boat = boatOf(t);
     var modeSel = dm ? '<div class="field"><label for="tr-mode">Mode</label><select id="tr-mode" data-travel="mode"><optgroup label="Over land">' +
@@ -3591,7 +3642,7 @@
     }).then(function (r) {
       if (r.error) throw r.error;
       return Promise.all([loadTravel(), last.map_id ? loadMarkers(last.map_id) : null]);
-    }).then(function () { toast('Back to day ' + last.day); render(); })
+    }).then(function () { toast(Number(last.miles) || last.from_x != null || Number(last.food_used) ? 'Back to day ' + last.day : 'Removed the last entry'); render(); })
       .catch(function (e) { fail(e, 'Could not undo the last day.'); });
   }
 
@@ -3746,6 +3797,8 @@
       case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
       case 'next-day': el.disabled = true; rememberMapScroll(); nextDay(el.getAttribute('data-camp')); break;
       case 'undo-day': el.disabled = true; undoDay(el.getAttribute('data-camp')); break;
+      case 'log-watch': el.disabled = true; logWatch(el.getAttribute('data-camp'), el.getAttribute('data-watch')); break;
+      case 'clear-watch': ui.watch = ui.watch || {}; ui.watch[el.getAttribute('data-camp') + '|' + el.getAttribute('data-watch')] = { who: '', d20: '', d100: '' }; render(); break;
       case 'clear-dest': saveTravel(el.getAttribute('data-camp'), { dest_x: null, dest_y: null }).then(render); break;
       case 'delete-crime':
         var crid = el.getAttribute('data-id');
@@ -4055,6 +4108,13 @@
 
   document.addEventListener('input', function (e) {
     var t = e.target;
+    if (t.hasAttribute && t.hasAttribute('data-watch')) {
+      var wcamp = t.getAttribute('data-camp'), ww = t.getAttribute('data-watch');
+      watchState(wcamp, ww)[t.getAttribute('data-wfield')] = t.value;
+      var wres = document.getElementById('wt-res-' + ww);
+      if (wres) wres.innerHTML = watchResultHtml(wcamp, ww);
+      return;
+    }
     if (t.id === 'home-search') {
       ui.homeQuery = t.value;
       var pos = t.selectionStart;
@@ -4138,6 +4198,7 @@
   // Recalculate derived numbers once a field is finished.
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
     if (t.hasAttribute('data-spell-filter')) {
       ui.spellFilter[t.getAttribute('data-spell-filter')] = t.value;
       var sbox = document.getElementById('spell-list');

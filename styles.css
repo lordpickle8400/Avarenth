@@ -413,3 +413,10 @@ select.input.mini { width: 110px; }
 .roll-in .input.mini { width: 56px; }
 blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(--accent); font-style: italic; white-space: pre-wrap; }
 .sub-feat { margin-bottom: 8px; }
+
+/* Travel: day and night rolls */
+.watch-box { margin-bottom: 10px; }
+.watch-ev { margin: 0; font-size: 16px; line-height: 1.5; }
+.tag.tier-good { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--bg)); }
+.tag.tier-neutral { color: var(--muted); border-color: var(--line); }
+.tag.tier-bad { color: var(--secret); border-color: var(--secret-line); }
