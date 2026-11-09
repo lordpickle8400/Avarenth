@@ -314,7 +314,7 @@
   }
   function loadTravel() {
     return Promise.all([
-      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person'),
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival'),
       sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -2145,6 +2145,8 @@
       Promise.all([list ? null : loadMarkers(m.id), ensureGrid(m.id)]).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
       return;
     }
+    var stopCount = list.filter(function (mk) { return mk.kind === 'stop'; }).length;
+    list = list.filter(function (mk) { return mk.kind !== 'stop' || (dm && ui.showTowns); });
     if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || m.show_markers; });
     var placing = ui.placing && ui.placing.mapId === m.id ? ui.placing : null;
     var chars = camp ? campaignChars(camp.id) : characters;
@@ -2161,9 +2163,11 @@
         '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
         (tcamp ? '<button type="button" class="btn small' + (placing && placing.kind === 'dest' ? ' primary' : '') + '" data-act="place" data-kind="dest">Set destination</button>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind && placing.kind.indexOf('cal') === 0 ? ' primary' : '') + '" data-act="place" data-kind="cal1">Calibrate scale</button>' +
+        (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns (' + stopCount + ')</button>' : '') +
         '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>' +
         (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
       if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
+      if (tstate && tstate.map_id === m.id) html += arrivalBlock(tcamp, true);
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
       if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
@@ -2214,7 +2218,7 @@
     }
 
     if (dm && loaded.shops) html += mapShopsSection(m);
-    var people = list.filter(function (mk) { return mk.kind !== 'place'; });
+    var people = list.filter(function (mk) { return mk.kind !== 'place' && mk.kind !== 'stop'; });
     if (dm || m.show_markers) {
       html += '<section class="block"><h2 class="sec-title">Who’s here<small>' + (dm ? (m.show_markers ? 'Players can see these' : 'Only you can see these') : '') + '</small></h2>' +
         (people.length ? '<div class="pill-row">' + people.map(function (mk) { return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="marker" data-id="' + esc(mk.id) + '">' + esc(markerLabel(mk)) + '</button>'; }).join('') + '</div>' : '<div class="empty">Nobody placed on this map yet.' + (dm ? ' Use “Move party” or pick a character above, then tap the map.' : '') + '</div>') + '</section>';
@@ -2236,7 +2240,7 @@
       Object.keys(travel).forEach(function (cid) { if (!tc && travel[cid].map_id === m.id) tc = cid; });
       if (!tc && m.campaign_id && travel[m.campaign_id]) tc = m.campaign_id;
       if (!tc) return toast('This map isn’t part of a campaign journey.');
-      var near = (markers[m.id] || []).filter(function (mk) { return mk.kind === 'place'; }).sort(function (a, b) { return Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y); })[0];
+      var near = (markers[m.id] || []).filter(function (mk) { return mk.kind === 'place' || mk.kind === 'stop'; }).sort(function (a, b) { return Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y); })[0];
       var label = near && Math.hypot(near.x - x, near.y - y) < 0.04 ? near.label : (travel[tc].dest_label || '');
       if (near && label === near.label) { x = near.x; y = near.y; }
       return saveTravel(tc, { map_id: m.id, dest_x: x, dest_y: y, dest_label: label }).then(function () { toast('Destination set'); render(); });
@@ -3502,12 +3506,13 @@
       return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '</h2><div class="empty">Checking the road…</div></section>';
     }
     var j = journey(t);
+    var arr = arrivalBlock(camp);
     var line = boatOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + (j.byMap ? ' · route over water' : ' · ' + fmtMiles(j.mpd) + ' a day')
       : j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
     var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
     return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
       '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
-      (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>';
+      (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>' + arr;
   }
 
   /* ---------- Day and night rolls: the table rolls, the app reads the result ---------- */
@@ -3578,6 +3583,7 @@
     };
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
+    html += arrivalBlock(camp);
     if (dm) html += watchBlock(camp);
     var gridOn = j.map && grids[j.map.id];
     var boat = boatOf(t);
@@ -3672,58 +3678,163 @@
     });
   }
 
-  function nextDay(campId) {
+  /* ---------- Towns on the road: stop or go through ---------- */
+  var STOP_MILES = 2;   // how close the road has to come to a town for the party to meet it
+  function townsOn(mapId) { return (markers[mapId] || []).filter(function (mk) { return mk.kind === 'stop' || mk.kind === 'place'; }); }
+  function mapMiles(m, ax, ay, bx, by) { var ratio = m.width && m.height ? m.height / m.width : 1; return Math.hypot(bx - ax, (by - ay) * ratio) * Number(m.miles_across); }
+  // One day's movement (or part of one): where they end up, how far, over what ground, and the path walked with the day-fraction at each point.
+  function dayMove(t, j, budget) {
+    var out = { miles: 0, byGround: {}, path: [], arrived: false };
+    if (j.byMap && j.route) {
+      var pts = j.route.pts, legs = j.route.legs, left = budget, used = 0, pos = pts[0];
+      out.path.push({ x: pos.x, y: pos.y, d: 0 });
+      for (var k = 0; k < legs.length && left > 1e-9; k++) {
+        var lg = legs[k], frac = Math.min(1, left / lg.days);
+        pos = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * frac, y: pts[k].y + (pts[k + 1].y - pts[k].y) * frac };
+        out.miles += lg.miles * frac; left -= lg.days * frac; used += lg.days * frac;
+        var gname = groundName(t, lg.ground);
+        out.byGround[gname] = (out.byGround[gname] || 0) + lg.miles * frac;
+        out.path.push({ x: pos.x, y: pos.y, d: used });
+      }
+      out.arrived = left > 1e-9;
+      if (out.arrived) pos = { x: t.dest_x, y: t.dest_y };
+      out.pos = pos;
+    } else {
+      var step = Math.min(j.mpd * budget, j.remaining), f = step / j.remaining;
+      out.arrived = step >= j.remaining - 0.05;
+      out.pos = out.arrived ? { x: t.dest_x, y: t.dest_y } : { x: j.party.x + (t.dest_x - j.party.x) * f, y: j.party.y + (t.dest_y - j.party.y) * f };
+      out.miles = step;
+      out.path = [{ x: j.party.x, y: j.party.y, d: 0 }, { x: out.pos.x, y: out.pos.y, d: j.mpd > 0 ? step / j.mpd : 0 }];
+    }
+    return out;
+  }
+  // Towns the day's road comes within reach of, in the order they meet them. Leaves out where they start and where they're headed.
+  function dayTowns(t, j, mv) {
+    var m = j.map, ratio = m.width && m.height ? m.height / m.width : 1, W = Number(m.miles_across), hits = [];
+    var destTown = nearTown(m.id, t.dest_x, t.dest_y);
+    townsOn(m.id).forEach(function (tw) {
+      if (mapMiles(m, j.party.x, j.party.y, tw.x, tw.y) <= STOP_MILES) return;
+      if (destTown && destTown.id === tw.id) return;
+      var best = null;
+      for (var i = 1; i < mv.path.length; i++) {
+        var a = mv.path[i - 1], b = mv.path[i];
+        var ax = a.x * W, ay = a.y * ratio * W, bx = b.x * W, by = b.y * ratio * W, px = tw.x * W, py = tw.y * ratio * W;
+        var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy, u = len2 ? Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / len2)) : 0;
+        var dist = Math.hypot(ax + vx * u - px, ay + vy * u - py);
+        if (!best || dist < best.dist) best = { dist: dist, d: a.d + (b.d - a.d) * u, miles: 0 };
+      }
+      if (best && best.dist <= STOP_MILES) hits.push({ id: tw.id, label: tw.label, slug: tw.article_slug || '', x: tw.x, y: tw.y, d: Math.max(0.01, best.d) });
+    });
+    return hits.sort(function (a, b) { return a.d - b.d; });
+  }
+  function nearTown(mapId, x, y) {
+    var m = mapById(mapId); if (!m || x == null || !Number(m.miles_across)) return null;
+    var best = null, bd = Infinity;
+    townsOn(mapId).forEach(function (tw) { var d = mapMiles(m, x, y, tw.x, tw.y); if (d < bd) { bd = d; best = tw; } });
+    return bd <= STOP_MILES ? best : null;
+  }
+  function townWhat(slug) {
+    var a = slug ? articleBySlug(slug) : null;
+    if (!a) return '';
+    return (a.fields && a.fields.Type ? String(a.fields.Type).replace(/\[\[|\]\]/g, '') + ' · ' : '') + String(a.summary || '').replace(/\[\[|\]\]/g, '');
+  }
+  function drawStopAsk() {
+    var box = document.getElementById('stop-ask');
+    var s = ui.stopAsk;
+    if (!s) { if (box) box.remove(); return; }
+    if (!box) { box = document.createElement('div'); box.id = 'stop-ask'; box.className = 'ask-wrap'; document.body.appendChild(box); }
+    var tw = s.list[s.i], t = travel[s.campId];
+    var when = tw.d < 0.34 ? 'early in the day' : tw.d < 0.67 ? 'around midday' : 'late in the day';
+    box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + (s.list.length > 1 ? ' · town ' + (s.i + 1) + ' of ' + s.list.length : '') + '</p>' +
+      '<h2 id="ask-h">The road reaches ' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">They get there ' + when + '.' + (s.passed.length ? ' Already went through ' + esc(s.passed.join(', ')) + '.' : '') + '</p>' +
+      (townWhat(tw.slug) ? '<p style="margin:0 0 10px">' + esc(townWhat(tw.slug)) + '</p>' : '') +
+      '<p style="margin:0 0 12px"><b>Are they stopping or going through?</b></p>' +
+      '<div class="actions" style="margin:0"><button type="button" class="btn primary" data-act="town-stop">Stop here</button><button type="button" class="btn" data-act="town-pass">Go through</button><button type="button" class="btn quiet" data-act="town-cancel">Cancel</button></div></div>';
+  }
+  function townDecide(stop) {
+    var s = ui.stopAsk; if (!s) return;
+    var tw = s.list[s.i];
+    if (stop) { ui.stopAsk = null; drawStopAsk(); return nextDay(s.campId, { decided: true, passed: s.passed, stop: tw }); }
+    s.passed.push(tw.label); s.i++;
+    if (s.i < s.list.length) return drawStopAsk();
+    ui.stopAsk = null; drawStopAsk();
+    nextDay(s.campId, { decided: true, passed: s.passed });
+  }
+  // They found it: the page opens up to players.
+  function discover(slug) {
+    var a = slug ? articleBySlug(slug) : null;
+    if (!a || !a.hidden) return Promise.resolve();
+    return sb.from('articles').update({ hidden: false }).eq('id', a.id).then(function (r) { if (r.error) throw r.error; a.hidden = false; });
+  }
+
+  function nextDay(campId, opt) {
+    opt = opt || {};
     var t = travel[campId];
     ensureTravelMarkers(t).then(function () {
       var j = journey(t);
       var day = t.day;
       var entry = { campaign_id: campId, day: day, miles: 0, map_id: t.map_id || null };
-      var moveOp = Promise.resolve({});
-      if (j.byMap && j.route && j.remaining >= 0.1) {
-        var budget = 1, miles = 0, byGround = {}, pts = j.route.pts, legs = j.route.legs, pos = pts[0];
-        for (var k = 0; k < legs.length && budget > 1e-9; k++) {
-          var lg = legs[k], frac = Math.min(1, budget / lg.days);
-          pos = { x: pts[k].x + (pts[k + 1].x - pts[k].x) * frac, y: pts[k].y + (pts[k + 1].y - pts[k].y) * frac };
-          miles += lg.miles * frac; budget -= lg.days * frac;
-          var gname = groundName(t, lg.ground);
-          byGround[gname] = (byGround[gname] || 0) + lg.miles * frac;
+      var moveOp = Promise.resolve({}), arrival, moving = j.remaining != null && j.remaining >= 0.1 && ((j.byMap && j.route) || j.mpd > 0);
+      if (moving) {
+        var mv = dayMove(t, j, opt.stop ? opt.stop.d : 1);
+        if (!opt.decided) {
+          var towns = dayTowns(t, j, mv);
+          if (towns.length) { ui.stopAsk = { campId: campId, list: towns, i: 0, passed: [] }; drawStopAsk(); render(); return; }
         }
-        var arrivedR = budget > 1e-9;
-        if (arrivedR) pos = { x: t.dest_x, y: t.dest_y };
-        var mix = Object.keys(byGround).sort(function (a, b) { return byGround[b] - byGround[a]; }).filter(function (k2) { return byGround[k2] >= 0.5; })
-          .map(function (k2) { return k2.toLowerCase() + ' (' + fmtMiles(byGround[k2]) + ')'; });
-        entry.miles = Math.round(miles * 10) / 10;
+        var pos = opt.stop ? { x: opt.stop.x, y: opt.stop.y } : mv.pos, arrived = !opt.stop && mv.arrived;
+        var mix = Object.keys(mv.byGround).sort(function (a, b) { return mv.byGround[b] - mv.byGround[a]; }).filter(function (k2) { return mv.byGround[k2] >= 0.5; })
+          .map(function (k2) { return k2.toLowerCase() + ' (' + fmtMiles(mv.byGround[k2]) + ')'; });
+        entry.miles = Math.round(mv.miles * 10) / 10;
         entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = pos.x; entry.to_y = pos.y;
-        entry.text = 'Traveled ' + fmtMiles(miles) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather' : ' at a ' + t.pace.toLowerCase() + ' pace') + (mix.length ? ': ' + mix.join(', ') : '') + '.' + (arrivedR ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+        entry.text = 'Traveled ' + fmtMiles(mv.miles) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather' : j.byMap ? ' at a ' + t.pace.toLowerCase() + ' pace' : ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace') + (mix.length ? ': ' + mix.join(', ') : '') + '.' +
+          ((opt.passed || []).length ? ' Went through ' + opt.passed.join(', ') + '.' : '') +
+          (opt.stop ? ' Stopped at ' + opt.stop.label + '.' : arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
         moveOp = sb.from('map_markers').update({ x: pos.x, y: pos.y }).eq('id', j.party.id);
-      } else if (j.remaining != null && j.mpd > 0 && j.remaining >= 0.1) {
-        var step = Math.min(j.mpd, j.remaining);
-        var f = step / j.remaining;
-        var nx = j.party.x + (t.dest_x - j.party.x) * f, ny = j.party.y + (t.dest_y - j.party.y) * f;
-        var arrived = step >= j.remaining - 0.05;
-        if (arrived) { nx = t.dest_x; ny = t.dest_y; }
-        entry.miles = Math.round(step * 10) / 10;
-        entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = nx; entry.to_y = ny;
-        entry.text = 'Traveled ' + fmtMiles(step) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather.' : ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace.') + (arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
-        moveOp = sb.from('map_markers').update({ x: nx, y: ny }).eq('id', j.party.id);
+        var town = opt.stop || (arrived ? nearTown(j.map.id, t.dest_x, t.dest_y) : null);
+        arrival = town ? { label: town.label, slug: town.slug || town.article_slug || '', day: day + 1 } : (arrived && t.dest_label ? { label: t.dest_label, slug: '', day: day + 1 } : null);
       } else {
-        entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
+        entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.arrival ? ' in ' + t.arrival.label : t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
       }
       var need = foodPerDay(t), have = Number(t.food || 0);
       var used = Math.min(need, have);
       entry.food_used = used;
       if (need > 0) entry.text += used < need ? ' Ran out of food (short ' + (Math.round((need - used) * 10) / 10) + ').' : ' Ate ' + used + ' food, ' + (Math.round((have - used) * 10) / 10) + ' left.';
+      var patch = { day: day + 1, food: Math.round((have - used) * 10) / 10 };
+      if (moving) patch.arrival = arrival;
       return moveOp.then(function (r) {
         if (r.error) throw r.error;
         return sb.from('travel_log').insert(entry);
       }).then(function (r) {
         if (r.error) throw r.error;
-        return sb.from('travel_state').update({ day: day + 1, food: Math.round((have - used) * 10) / 10 }).eq('campaign_id', campId);
+        return sb.from('travel_state').update(patch).eq('campaign_id', campId);
       }).then(function (r) {
         if (r.error) throw r.error;
+        return arrival ? discover(arrival.slug) : null;
+      }).then(function () {
         return Promise.all([loadTravel(), t.map_id ? loadMarkers(t.map_id) : null]);
-      }).then(function () { toast('Day ' + (day + 1)); render(); });
+      }).then(function () { toast(arrival ? 'Arrived at ' + arrival.label : 'Day ' + (day + 1)); render(); });
     }).catch(function (e) { fail(e, 'Could not advance the day.'); });
+  }
+
+  // What the party knows about the town they just stopped in. The DM also gets the shops to pick from.
+  function arrivalBlock(camp, compact) {
+    var t = travel[camp.id], ar = t && t.arrival;
+    if (!ar) return '';
+    var dm = dmView(), a = ar.slug ? articleBySlug(ar.slug) : null, known = a && (dm || !a.hidden);
+    var facts = known ? ['Type', 'Region', 'Holder', 'Ruler', 'Population'].filter(function (k) { return a.fields && a.fields[k]; }).map(function (k) { return '<span><b>' + esc(k) + ':</b> ' + inline(String(a.fields[k])) + '</span>'; }) : [];
+    var html = '<section class="block arrival"><h2 class="sec-title">You’ve arrived at ' + esc(ar.label) + '<small>Day ' + esc(ar.day) + '</small></h2><div class="group-box">' +
+      (known ? (a.summary ? '<p style="margin:0 0 6px">' + inline(a.summary) + '</p>' : '') + (facts.length ? '<p class="arr-facts">' + facts.join('') + '</p>' : '') + '<div class="actions" style="margin:6px 0 0"><a class="btn small" href="#/a/' + encodeURIComponent(a.slug) + '">Read about ' + esc(a.title) + '</a></div>'
+        : '<p class="note" style="margin:0">' + (dm ? 'No wiki page for ' + esc(ar.label) + ' yet.' : 'Nothing written about this place yet.') + '</p>');
+    if (dm && !compact) {
+      if (a) html += '<p class="note" style="margin:8px 0 0">' + (a.hidden ? 'Players can’t see this page.' : 'Players can see this page now.') + ' <button type="button" class="btn small quiet" data-act="arr-hide" data-id="' + esc(a.id) + '">' + (a.hidden ? 'Show it to them' : 'Hide it again') + '</button></p>';
+      if (a && loaded.shops) {
+        var here = shopsAt(a.id);
+        html += '<p class="eyebrow" style="margin:12px 0 4px;font-size:11px">Shops here · tap one to open it</p>' + (here.length ? shopRows(here) : '<div class="empty">No shops written for ' + esc(a.title) + ' yet.</div>') +
+          '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(a.id) + '" data-campaign="' + esc(camp.id) + '">+ Add a shop</button>' + meetButton(camp.id, false) + '</div>';
+      }
+      html += '<div class="actions"><button type="button" class="btn small quiet" data-act="arr-leave" data-camp="' + esc(camp.id) + '">Done in town</button></div>';
+    }
+    return html + '</div></section>';
   }
 
   function undoDay(campId) {
@@ -3739,7 +3850,9 @@
       return sb.from('travel_log').delete().eq('id', last.id);
     }).then(function (r) {
       if (r.error) throw r.error;
-      return sb.from('travel_state').update({ day: last.day, food: Number(travel[campId].food || 0) + Number(last.food_used || 0) }).eq('campaign_id', campId);
+      var up = { day: last.day, food: Number(travel[campId].food || 0) + Number(last.food_used || 0) };
+      if (last.from_x != null) up.arrival = null;
+      return sb.from('travel_state').update(up).eq('campaign_id', campId);
     }).then(function (r) {
       if (r.error) throw r.error;
       return Promise.all([loadTravel(), last.map_id ? loadMarkers(last.map_id) : null]);
@@ -3903,6 +4016,12 @@
       case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
       case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
       case 'next-day': el.disabled = true; rememberMapScroll(); nextDay(el.getAttribute('data-camp')); break;
+      case 'show-towns': ui.showTowns = !ui.showTowns; rememberMapScroll(); render(); break;
+      case 'town-stop': townDecide(true); break;
+      case 'town-pass': townDecide(false); break;
+      case 'town-cancel': ui.stopAsk = null; drawStopAsk(); render(); break;
+      case 'arr-leave': saveTravel(el.getAttribute('data-camp'), { arrival: null }).then(render); break;
+      case 'arr-hide': (function () { var a = articleById(el.getAttribute('data-id')); if (!a) return; var h = !a.hidden; sb.from('articles').update({ hidden: h }).eq('id', a.id).then(function (r) { if (r.error) return fail(r.error); a.hidden = h; toast(h ? 'Hidden from players' : 'Players can see it'); render(); }); })(); break;
       case 'undo-day': el.disabled = true; undoDay(el.getAttribute('data-camp')); break;
       case 'log-watch': el.disabled = true; logWatch(el.getAttribute('data-camp'), el.getAttribute('data-watch')); break;
       case 'clear-watch': ui.watch = ui.watch || {}; ui.watch[el.getAttribute('data-camp') + '|' + el.getAttribute('data-watch')] = { who: '', d20: '', d100: '' }; render(); break;

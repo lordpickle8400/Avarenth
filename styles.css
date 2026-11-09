@@ -435,3 +435,14 @@ blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(
 .sec-title small { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 [data-browser] { scroll-margin-top: 120px; }
 .wiki-list { margin: 0 0 1em; padding-left: 1.3em; } .wiki-list li { margin: 0 0 .35em; } .wiki-list li::marker { color: var(--accent-ink); }
+
+/* ---------- Towns on the road ---------- */
+.ask-wrap { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); background: rgba(0,0,0,.55); }
+@media (min-width: 640px) { .ask-wrap { align-items: center; } }
+.ask { width: 100%; max-width: 460px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel, var(--bg)); box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.ask h2 { margin: 0 0 6px; font-size: 22px; }
+.ask .actions .btn { flex: 1 1 auto; }
+.arrival .group-box { border-color: var(--accent); }
+.arr-facts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-family: var(--ui); font-size: 13px; }
+.pin-stop::after { width: 10px; height: 10px; background: var(--muted, #998); }
+.pin-stop span { font-size: 10px; font-weight: 500; opacity: .85; }
