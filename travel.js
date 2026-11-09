@@ -161,7 +161,7 @@
     'A field of flax being retted in a pond. The stink is unbelievable, and the villagers swear you get used to it.',
     'An inn\'s yard full of carters, drovers and a pardoner selling forgiveness by the sin.',
     'A churchyard where a village is burying its old smith. Half the parish is there, and the ale afterward is free.',
-    'A crossroads shrine to Akor, freshly painted, with fresh bread left on the ledge by the morning\'s travelers.',
+    'A crossroads shrine to Akoron, freshly painted, with fresh bread left on the ledge by the morning\'s travelers.',
     'A miller\'s boy runs past with news of a fire two villages over. By the next village the fire has doubled in the telling.',
     'Beekeepers in veils move their skeps to the heather. One of them sells comb honey for a copper a chunk.',
     'A lord\'s men have closed the road for an hour while a wagon of something heavy, under canvas, is hauled across.',

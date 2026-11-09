@@ -373,6 +373,7 @@
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (!isMember()) return renderPending();
     var r = parseRoute();
+    if (r.name !== 'shop') ui.freshened = null;
     var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit', 'subclasses'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
@@ -2791,7 +2792,7 @@
   }
   function hasTag(p, t) { return (p.tags || []).indexOf(t) >= 0; }
   function settlementsFor(campId) {
-    return articles.filter(function (a) { return a.template === 'Settlement' && (!campId || !a.campaign_id || a.campaign_id === campId); })
+    return articles.filter(function (a) { return (a.template === 'Settlement' || places.some(function (x) { return x.article_id === a.id; }) || shops.some(function (x) { return x.place_id === a.id; })) && (!campId || !a.campaign_id || a.campaign_id === campId); })
       .sort(function (a, b) { return String(a.title).localeCompare(b.title); });
   }
   function shopsAt(placeId) { return shops.filter(function (s) { return s.place_id === placeId && !isWanderer(s); }); }
@@ -2872,6 +2873,57 @@
     }).catch(function (e) { fail(e, 'Could not find a merchant.'); render(); });
   }
   function meetButton(campId, primary, label) { return '<button type="button" class="btn small' + (primary ? ' primary' : '') + '" data-act="meet-wanderer" data-campaign="' + esc(campId) + '">' + (label || 'Meet a wandering merchant') + '</button>'; }
+  // The journey's day count is the shop's clock.
+  function gameDay(shop) {
+    var t = shop && shop.campaign_id && travel[shop.campaign_id];
+    if (!t) { var k = Object.keys(travel)[0]; t = k ? travel[k] : null; }
+    return t ? num(t.day, 1) : null;
+  }
+  // While the party is away, the shelves move: things sell out, some come back, new goods arrive and prices drift.
+  function driftStock(shop, days) {
+    var fresh = stockFor(shop), by = {}, p = Math.min(1, days / 10), log = { out: 0, back: 0, gone: 0, added: 0 };
+    fresh.forEach(function (r) { by[r.n] = r; });
+    var out = [];
+    (shop.stock || []).forEach(function (r) {
+      if (r.q === null || r.q === undefined) { out.push(r); return; }
+      var f = by[r.n], q = num(r.q, 0);
+      if (!f && Math.random() < 0.5 * p) { log.gone++; return; }
+      if (q <= 0) { if (f && Math.random() < 0.3 + 0.5 * p) { q = f.q; log.back++; } }
+      else { q = Math.max(0, Math.round(q * (1 + (Math.random() * 2 - 1) * (0.3 + 0.5 * p)))); if (q === 0) log.out++; }
+      var price = Number(r.p) * (1 + (Math.random() * 2 - 1) * 0.06 * Math.min(1, days / 5));
+      if (f && Math.random() < 0.3 * p) price = Number(f.p);
+      out.push({ n: r.n, k: r.k, p: niceCp(price * 100) / 100, q: q });
+    });
+    var have = {}; out.forEach(function (r) { have[r.n] = 1; });
+    fresh.forEach(function (f) { if (!have[f.n] && Math.random() < 0.15 + 0.35 * p) { out.push(f); log.added++; } });
+    shop.stock = out;
+    return log;
+  }
+  // Opening a shop: empty shelves get stocked, and shelves left alone for a couple of days or more drift.
+  function freshenShop(shop) {
+    if (!dmView() || isWanderer(shop)) return;
+    var day = gameDay(shop);
+    ui.shopNews = ui.shopNews || {};
+    delete ui.shopNews[shop.id];
+    if (!(shop.stock || []).length) {
+      shop.stock = stockFor(shop); shop.stocked_at = new Date().toISOString(); shop.stock_day = day;
+      ui.shopNews[shop.id] = 'Stocked for the first time' + (day != null ? ' (day ' + day + ')' : '') + '.';
+      saveShop(shop); return;
+    }
+    if (day == null) return;
+    if (shop.stock_day == null) { shop.stock_day = day; saveShop(shop); return; }
+    var gap = day - num(shop.stock_day, day);
+    if (gap >= 2) {
+      var lg = driftStock(shop, gap); shop.stock_day = day;
+      var bits = [];
+      if (lg.out) bits.push(lg.out + ' sold out');
+      if (lg.gone) bits.push(lg.gone + ' gone for good');
+      if (lg.back) bits.push(lg.back + ' back in');
+      if (lg.added) bits.push(lg.added + ' new');
+      ui.shopNews[shop.id] = gap + ' days since anyone looked: ' + (bits.length ? bits.join(', ') + ', and prices have moved.' : 'counts and prices have moved a little.');
+      saveShop(shop);
+    } else if (gap < 0) { shop.stock_day = day; saveShop(shop); }
+  }
   function stockFor(shop) {
     var K = ITEMS.shopKinds[shop.kind] || ITEMS.shopKinds['General store'];
     if (K.wander) return wanderStock(shop);
@@ -3049,7 +3101,18 @@
       '<p class="note">Only you see these. When the party walks into a shop, open it, pick who’s buying, and tap Sell. Coins and gear update on their sheet.</p>' +
       '<label class="search"><span class="sr">Find a place or shop</span>' + SEARCH_ICON + '<input id="shop-q" type="search" placeholder="Find a place or shop…" value="' + esc(ui.shopQuery || '') + '" autocomplete="off"></label>';
     if (!setts.length) html += '<div class="empty">No settlements' + (q ? ' match' : ' yet. Write a Settlement article first') + '.</div>';
-    setts.forEach(function (a) { html += placeShopsBlock(a, camp.id); });
+    // Grouped by district, each place folded so 100 towns stay readable.
+    var byReg = {};
+    setts.forEach(function (a) { var rg = String((a.fields || {}).Region || 'Elsewhere').replace(/\[\[|\]\]/g, ''); (byReg[rg] = byReg[rg] || []).push(a); });
+    Object.keys(byReg).sort().forEach(function (rg) {
+      var list = byReg[rg], n = list.reduce(function (t, a) { return t + shopsAt(a.id).length; }, 0);
+      html += '<details class="folder shop-reg"' + (q ? ' open' : '') + '><summary><span>' + esc(rg) + '</span><small>' + list.length + ' places · ' + n + ' shops</small></summary>';
+      list.forEach(function (a) {
+        var hs = shopsAt(a.id);
+        html += '<details class="shop-place"' + (q ? ' open' : '') + '><summary><b>' + esc(a.title) + '</b><small>' + esc(placeSummary(placeOf(a.id))) + ' · ' + hs.length + (hs.length === 1 ? ' shop' : ' shops') + '</small></summary>' + placeShopsBlock(a, camp.id) + '</details>';
+      });
+      html += '</details>';
+    });
     var wand = shops.filter(function (s) { return isWanderer(s) && s.saved !== false && (!s.campaign_id || s.campaign_id === camp.id) && (!q || s.name.toLowerCase().indexOf(q) >= 0 || String(s.keeper || '').toLowerCase().indexOf(q) >= 0); });
     html += '<section class="block shops-block"><h2 class="sec-title">Wandering merchants<small>On the road, not in a town</small></h2>' +
       (wand.length ? shopRows(wand) : '<div class="empty">No wandering merchants yet.</div>') +
@@ -3064,6 +3127,7 @@
     if (!loaded.wiki || !loaded.shops || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the shop…</div></div>'; return; }
     var shop = shopById(id);
     if (!shop) { $view.innerHTML = '<div class="page narrow"><div class="empty">That shop is gone.</div></div>'; return; }
+    if (ui.freshened !== shop.id) { ui.freshened = shop.id; freshenShop(shop); }
     var place = shop.place_id ? articleById(shop.place_id) : null, camp = shop.campaign_id ? campaignById(shop.campaign_id) : null;
     var K = ITEMS.shopKinds[shop.kind] || {};
     var chars = camp ? campaignChars(camp.id) : characters;
@@ -3075,6 +3139,8 @@
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
+    if (ui.shopNews && ui.shopNews[shop.id]) html += '<p class="note shop-news">' + esc(ui.shopNews[shop.id]) + '</p>';
+    else if (shop.stock_day != null && !isWanderer(shop)) html += '<p class="note shop-news">Shelves as of day ' + esc(shop.stock_day) + '. Come back after 2 days or more and they’ll have changed.</p>';
     var smap = shop.map_id ? mapById(shop.map_id) : null;
     html += '<div class="actions">' + (smap ? '<a class="btn" href="#/map/' + encodeURIComponent(smap.id) + '">On the ' + esc(smap.name) + ' map</a>' : '') + '<a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
       '<button type="button" class="btn quiet" data-act="shop-edit-toggle" aria-pressed="' + !!ui.shopEdit + '">' + (ui.shopEdit ? 'Done editing' : 'Edit stock') + '</button></div>';
@@ -3199,13 +3265,13 @@
       if (i >= 0) shops[i] = r.data; else shops.push(r.data);
       ui.newShop = null;
       // A brand-new shop gets stocked straight away.
-      if (!id) { r.data.stock = stockFor(r.data); r.data.stocked_at = new Date().toISOString(); saveShop(r.data, 'Opened and stocked'); }
+      if (!id) { r.data.stock = stockFor(r.data); r.data.stocked_at = new Date().toISOString(); r.data.stock_day = gameDay(r.data); saveShop(r.data, 'Opened and stocked'); }
       else toast('Saved');
       go('#/shop/' + encodeURIComponent(r.data.id));
     });
   }
   function saveShop(shop, msg) {
-    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], stocked_at: shop.stocked_at || null }).eq('id', shop.id).then(function (r) {
+    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day }).eq('id', shop.id).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save the shop.');
       if (msg) toast(msg);
     });
@@ -3976,7 +4042,7 @@
         var stk = shopById(el.getAttribute('data-id'));
         if (!stk) return;
         if ((stk.stock || []).length && ui.pendingDelete !== 'restock:' + stk.id) { ui.pendingDelete = 'restock:' + stk.id; el.textContent = 'Tap again to replace the stock'; return; }
-        ui.pendingDelete = null; stk.stock = stockFor(stk); stk.stocked_at = new Date().toISOString();
+        ui.pendingDelete = null; stk.stock = stockFor(stk); stk.stocked_at = new Date().toISOString(); stk.stock_day = gameDay(stk);
         saveShop(stk, 'Stocked: ' + stk.stock.length + ' items'); render(); break;
       case 'meet-wanderer': el.disabled = true; meetWanderer(el.getAttribute('data-campaign')); break;
       case 'shop-keep':

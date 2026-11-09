@@ -446,3 +446,15 @@ blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(
 .arr-facts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-family: var(--ui); font-size: 13px; }
 .pin-stop::after { width: 10px; height: 10px; background: var(--muted, #998); }
 .pin-stop span { font-size: 10px; font-weight: 500; opacity: .85; }
+
+/* ---------- Shops by district ---------- */
+.shop-reg > summary span { opacity: 1; font-family: var(--display, var(--serif)); font-size: 17px; color: var(--accent-ink, var(--accent)); flex: 1; }
+.shop-reg > summary small { opacity: .7; font-size: 12px; }
+.shop-place { border-top: 1px solid var(--line, rgba(127,127,127,.25)); }
+.shop-place > summary { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 10px 14px; min-height: 44px; cursor: pointer; list-style: none; font-family: var(--ui); font-size: 14px; }
+.shop-place > summary::-webkit-details-marker { display: none; }
+.shop-place > summary small { opacity: .65; font-size: 12px; text-align: right; }
+.shop-place[open] > summary { background: color-mix(in srgb, var(--text) 4%, transparent); }
+.shop-place .shops-block { margin: 0; padding: 4px 14px 12px; }
+.shop-place .shops-block > .sec-title { display: none; }
+.shop-news { margin: 0 0 8px; padding: 6px 10px; border-left: 3px solid var(--accent); }
