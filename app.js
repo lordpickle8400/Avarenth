@@ -26,10 +26,11 @@
   var TEMPLATES = [
     T('People', 'Character', 'Anyone in your world, from kings to dockhands.', ['Species', 'Age', 'Faction', 'Home', 'Status'], ['Appearance', 'Personality', 'History', 'Relationships'], ['True motives', 'Secrets', 'Stat block']),
     T('People', 'Species', 'A people or creature kind and what makes them tick.', ['Lifespan', 'Size', 'Homeland', 'Languages'], ['Biology', 'Society', 'History'], ['Hidden origins']),
-    T('People', 'Culture', 'How a group lives: customs, values, food, names.', ['Region', 'Language', 'Religion'], ['Customs', 'Values', 'Food & dress', 'Naming'], ['Tensions']),
+    T('Lore & Magic', 'Culture', 'How a group lives: customs, values, food, names.', ['Region', 'Language', 'Religion'], ['Customs', 'Values', 'Food & dress', 'Naming'], ['Tensions']),
     T('People', 'Rank / Title', 'A position someone can hold, and what comes with it.', ['Organization', 'Held by', 'Succession'], ['Duties', 'Privileges', 'History'], ['Who really holds power']),
     T('Places', 'Settlement', 'Cities, towns and villages, districts and all.', ['Region', 'Population', 'Ruler', 'Factions present', 'Status'], ['Overview', 'Districts', 'Government', 'Trade', 'Notable places'], ['Hidden factions', 'Plot hooks']),
     T('Places', 'Location', 'A single place: a tavern, temple, ruin or fortress.', ['Type', 'Settlement', 'Owner', 'Status'], ['Description', 'History', 'Who you find there'], ['Traps & secrets']),
+    T('Places', 'District', 'One of the realms of a kingdom, with its own ruling house, seat and purpose.', ['Ruler', 'Ruling house', 'Seat', 'Purpose', 'Exports', 'Density', 'Baronies'], ['Overview', 'Economy', 'People', 'Politics', 'Holdings'], ['Secrets', 'Plot hooks']),
     T('Places', 'Region', 'Islands, coasts, forests and seas.', ['Climate', 'Terrain', 'Settlements'], ['Geography', 'Wildlife', 'Dangers'], ['Undiscovered places']),
     T('Places', 'Country', 'Realms, empires and kingdoms.', ['Capital', 'Ruler', 'Government', 'Allies', 'Enemies', 'Status'], ['Overview', 'History', 'Politics', 'Military', 'Economy'], ['Coming conflicts']),
     T('Groups', 'Organization', 'Factions, guilds, cults, noble houses and conspiracies.', ['Type', 'Leader', 'Members', 'Seat of power', 'Goal', 'Allies', 'Rivals', 'Status'], ['Goals', 'Methods', 'History', 'Structure', 'Relations'], ['Secret agenda', 'Infiltrators']),
@@ -49,6 +50,7 @@
     T('General', 'Generic Article', 'Anything that does not fit elsewhere.', [], ['Overview'], [])
   ];
   var CATEGORY_LABEL = { 'People': 'People', 'Places': 'Geography', 'Groups': 'Organizations', 'Lore & Magic': 'Lore & Magic', 'Things': 'Items', 'History': 'History', 'Campaign & Novel': 'Campaign & Novel', 'General': 'General', 'Your templates': 'Your templates', 'Faith': 'Faith', 'Trash': 'Trash (delete these)' };
+  var CATEGORY_HINT = { 'Places': 'Realms, regions, towns and castles', 'Groups': 'Houses, clans, armies and cults', 'Faith': 'The gods and what lies below', 'Lore & Magic': 'Magic, cultures and languages', 'People': 'Everyone worth knowing', 'Things': 'Coin, steel and relics', 'History': 'Wars and turning points', 'Campaign & Novel': 'Sessions and chapters', 'General': 'Everything else', 'Your templates': 'Your own kinds of article', 'Trash': 'Marked for deletion' };
   var CAT_ORDER = ['Places', 'Groups', 'Faith', 'Lore & Magic', 'People', 'Things', 'History', 'Campaign & Novel', 'Your templates', 'General', 'Trash'];
 
   var ABILITIES = [['str', 'Strength'], ['dex', 'Dexterity'], ['con', 'Constitution'], ['int', 'Intelligence'], ['wis', 'Wisdom'], ['cha', 'Charisma']];
@@ -118,7 +120,8 @@
   var USER_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>';
 
   function allTemplates() {
-    return TEMPLATES.concat(customTemplates.map(function (t) { return Object.assign({}, t, { group: 'Your templates', custom: true }); }));
+    var builtIn = {}; TEMPLATES.forEach(function (t) { builtIn[t.name] = true; });
+    return TEMPLATES.concat(customTemplates.filter(function (t) { return !builtIn[t.name]; }).map(function (t) { return Object.assign({}, t, { group: 'Your templates', custom: true }); }));
   }
   function findTemplate(name) {
     var all = allTemplates();
@@ -164,8 +167,16 @@
         return '<div class="wiki-table-wrap"><table class="wiki-table"><thead><tr>' + cells(lines[0]).map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('') + '</tr></thead><tbody>' +
           lines.slice(1).map(function (l) { return '<tr>' + cells(l).map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
       }
-      var html = links(esc(p.trim()).replace(/\n/g, '<br>'));
-      return html ? '<p>' + html + '</p>' : '';
+      // Lines starting with "- " are a bulleted list; anything around them stays a paragraph.
+      var out = '', para = [], items = [];
+      var flushP = function () { if (para.length) out += '<p>' + links(esc(para.join('\n')).replace(/\n/g, '<br>')) + '</p>'; para = []; };
+      var flushL = function () { if (items.length) out += '<ul class="wiki-list">' + items.map(function (i) { return '<li>' + links(esc(i)) + '</li>'; }).join('') + '</ul>'; items = []; };
+      p.trim().split('\n').forEach(function (l) {
+        var m = /^\s*[-•*]\s+(.*)$/.exec(l);
+        if (m) { flushP(); items.push(m[1]); } else { flushL(); para.push(l.trim()); }
+      });
+      flushP(); flushL();
+      return out;
     }).join('');
   }
   function inline(t) { return rich(t).replace(/^<p>/, '').replace(/<\/p>$/, '').replace(/<\/p><p>/g, '<br>'); }
@@ -177,6 +188,17 @@
     var n = parseInt(m[1], 16);
     var c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  // The accent as used for words: if it is too dark (or light) to read on the background, mix it toward the text colour until it is.
+  function hexMix(a, b, t) {
+    var x = parseInt(a.slice(1), 16), y = parseInt(b.slice(1), 16);
+    var c = [16, 8, 0].map(function (sh) { var u = (x >> sh) & 255, v = (y >> sh) & 255; return Math.round(u + (v - u) * t); });
+    return '#' + c.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+  }
+  function contrast(a, b) { var la = luminance(a) + 0.05, lb = luminance(b) + 0.05; return la > lb ? la / lb : lb / la; }
+  function readableInk(accent, text, bg) {
+    for (var t = 0; t <= 1.0001; t += 0.05) { var c = hexMix(accent, text, t); if (contrast(c, bg) >= 4.5) return c; }
+    return text;
   }
   function palette() {
     return (look.preset === 'Custom' && look.custom) ? look.custom : (PRESETS[look.preset] || PRESETS['Dark ink']);
@@ -201,6 +223,7 @@
     root.setProperty('--text', p.text);
     root.setProperty('--accent', p.accent);
     root.setProperty('--on-accent', luminance(p.accent) > 0.32 ? '#15120C' : '#FFFFFF');
+    root.setProperty('--accent-ink', readableInk(p.accent, p.text, p.bg));
     root.setProperty('--secret', dark ? '#E08A7D' : '#9A3B2E');
     root.setProperty('--good', dark ? '#8FC28A' : '#3E7A39');
     root.setProperty('--mana', dark ? '#6FA3E0' : '#2C5F9E');
@@ -454,12 +477,25 @@
   }
 
   // Browse one scope (the world, or one campaign) by drilling down: category, then type, then folders.
-  var TYPE_PLURAL = { 'Character': 'Characters', 'Species': 'Species', 'Culture': 'Cultures', 'Rank / Title': 'Ranks & titles', 'Settlement': 'Settlements', 'Location': 'Locations', 'Region': 'Regions', 'Country': 'Countries', 'Organization': 'Organizations', 'Religion': 'Religions', 'Spell': 'Spells', 'Magic System': 'Magic systems', 'Myth / Legend': 'Myths & legends', 'Tradition': 'Traditions', 'Language': 'Languages', 'Item': 'Items', 'Ship': 'Ships', 'Document': 'Documents', 'Historical Event': 'Historical events', 'Conflict': 'Conflicts', 'Session Notes': 'Session notes', 'Chapter': 'Chapters', 'Generic Article': 'Articles' };
+  var TYPE_PLURAL = { 'Character': 'Characters', 'Species': 'Species', 'Culture': 'Cultures', 'Rank / Title': 'Ranks & titles', 'Settlement': 'Settlements', 'Location': 'Locations', 'District': 'Districts', 'Region': 'Regions', 'Country': 'Countries', 'Organization': 'Organizations', 'Religion': 'Religions', 'Spell': 'Spells', 'Magic System': 'Magic systems', 'Myth / Legend': 'Myths & legends', 'Tradition': 'Traditions', 'Language': 'Languages', 'Item': 'Items', 'Ship': 'Ships', 'Document': 'Documents', 'Historical Event': 'Historical events', 'Conflict': 'Conflicts', 'Session Notes': 'Session notes', 'Chapter': 'Chapters', 'Generic Article': 'Articles' };
   // What a long list gets sorted into: characters by faction, organizations by type, places by region.
   function folderOf(a) {
     var f = a.fields || {}, t = a.template;
-    var v = t === 'Character' ? f.Faction : t === 'Organization' ? f.Type : (t === 'Settlement' || t === 'Region') ? f.Region : t === 'Location' ? (f.Settlement || f.Region) : t === 'Item' ? f.Type : '';
+    var v = t === 'Character' ? f.Faction : t === 'Organization' ? orgKind(f.Type) : t === 'Settlement' ? f.Region : t === 'Region' ? f.Type : t === 'Location' ? (f.Region || f.Settlement) : t === 'Item' ? f.Type : '';
     return String(v || '').replace(/\[\[|\]\]/g, '').split(/[,(;]/)[0].trim();
+  }
+  // Organizations sort by what they are, not by every wording of their Type field.
+  function orgKind(type) {
+    var t = String(type || '').toLowerCase();
+    if (!t) return '';
+    if (/clan/.test(t)) return 'Clans';
+    if (/house|court|royal house/.test(t) && !/guard/.test(t)) return 'Houses & courts';
+    if (/army|navy|guard|levy|garrison|watch/.test(t)) return 'Armies & guards';
+    if (/cult|criminal|ring|faction|conspir/.test(t)) return 'Cults & conspiracies';
+    if (/order|paladin|monaster|church/.test(t)) return 'Orders';
+    if (/tribe|city-state|kingdom|people|empire/.test(t)) return 'Peoples & realms';
+    if (/guild|company|merc/.test(t)) return 'Guilds & companies';
+    return 'Other';
   }
   // Articles with a Faith field ("Akorianism · The Hollow Court") live together under Faith, split by the part after the dot.
   function faithOf(a) { var v = String(((a.fields || {}).Faith) || '').replace(/\[\[|\]\]/g, '').trim(); if (!v) return ''; var i = v.indexOf('·'); return i >= 0 ? v.slice(i + 1).trim() : v; }
@@ -469,11 +505,17 @@
   function typeOf(a) { return faithOf(a) || a.template; }
   // Within a faith, demons and divine beings sort by kind: "Demon lord (Fallen)" goes under Fallen.
   function faithFolder(a) { var sp = String(((a.fields || {}).Species) || ((a.fields || {}).Type) || ''); var m = sp.match(/\(([^)]+)\)/); return m ? m[1].trim() : (a.template === 'Character' ? '' : 'About the faith'); }
+  var FOLD_KEEP = ['About the faith', 'Firstborn', 'Fallen', 'Made'];
   function articleFolders(list, scope) {
     var sorted = list.slice().sort(function (x, y) { return String(x.title).localeCompare(String(y.title)); });
     var keys = {};
     sorted.forEach(function (a) { var k = (faithOf(a) ? faithFolder(a) : folderOf(a)) || 'Other'; (keys[k] = keys[k] || []).push(a); });
     var names = Object.keys(keys);
+    if (names.length > 4) {
+      names.forEach(function (k) { if (k !== 'Other' && keys[k].length === 1 && FOLD_KEEP.indexOf(k) < 0) { (keys.Other = keys.Other || []).push(keys[k][0]); delete keys[k]; } });
+      if (keys.Other) keys.Other.sort(function (x, y) { return String(x.title).localeCompare(String(y.title)); });
+      names = Object.keys(keys);
+    }
     if (sorted.length <= 8 || names.length < 2) return '<div class="list">' + sorted.map(function (a) { return articleRow(a, false); }).join('') + '</div>';
     var FIRST = ['About the faith', 'Firstborn', 'Fallen', 'Made'];
     names.sort(function (x, y) { var fx = FIRST.indexOf(x), fy = FIRST.indexOf(y); if (fx >= 0 || fy >= 0) return (fx < 0 ? 99 : fx) - (fy < 0 ? 99 : fy); return (x === 'Other') - (y === 'Other') || keys[y].length - keys[x].length || x.localeCompare(y); });
@@ -483,6 +525,11 @@
       return '<details class="folder" data-folder="' + esc(id) + '"' + (ui.openFolders[id] ? ' open' : '') + '><summary><b>' + esc(k) + '</b><span>' + keys[k].length + '</span></summary><div class="list">' +
         keys[k].map(function (a) { return articleRow(a, false); }).join('') + '</div></details>';
     }).join('');
+  }
+  // After drilling in or out of a category, keep the browser's heading on screen.
+  function keepBrowserInView(scope) {
+    var sec = document.querySelector('[data-browser="' + String(scope).replace(/"/g, '') + '"]');
+    if (sec && sec.getBoundingClientRect().top < 0) sec.scrollIntoView({ block: 'start' });
   }
   function articleBrowser(list, scope, emptyText, title) {
     title = title || 'Categories';
@@ -494,17 +541,18 @@
     if (!cats.length) return '<section class="block"><h2 class="sec-title">' + esc(title) + '</h2><div class="empty">' + esc(emptyText) + '</div></section>';
     var group = ui.filters[scope] && groups[ui.filters[scope]] ? ui.filters[scope] : (cats.length === 1 ? cats[0] : null);
     if (!group) {
-      return '<section class="block"><h2 class="sec-title">' + esc(title) + '<small>' + list.length + ' articles</small></h2><div class="cats">' + cats.map(function (g) {
-        return '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="false"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b><span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
+      return '<section class="block" data-browser="' + esc(scope) + '"><h2 class="sec-title">' + esc(title) + '<small>' + list.length + ' articles</small></h2><div class="cats">' + cats.map(function (g) {
+        return '<button type="button" class="cat" data-act="filter" data-scope="' + esc(scope) + '" data-group="' + esc(g) + '" aria-pressed="false"><b>' + esc(CATEGORY_LABEL[g] || g) + '</b>' + (CATEGORY_HINT[g] ? '<i>' + esc(CATEGORY_HINT[g]) + '</i>' : '') + '<span>' + groups[g] + (groups[g] === 1 ? ' article' : ' articles') + '</span></button>';
       }).join('') + '</div></section>';
     }
     var inGroup = list.filter(function (a) { return groupOf(a) === group; });
     var types = {};
     inGroup.forEach(function (a) { var t = typeOf(a); types[t] = (types[t] || 0) + 1; });
-    var typeNames = Object.keys(types).sort(function (x, y) { return (y === 'The Gods') - (x === 'The Gods') || types[y] - types[x] || x.localeCompare(y); });
+    var TYPE_ORDER = ['The Gods', 'Country', 'District', 'Region', 'Settlement', 'Location', 'Organization', 'Religion', 'Character', 'Species', 'Culture', 'Language'];
+    var typeNames = Object.keys(types).sort(function (x, y) { var ox = TYPE_ORDER.indexOf(x), oy = TYPE_ORDER.indexOf(y); if (ox >= 0 || oy >= 0) return (ox < 0 ? 99 : ox) - (oy < 0 ? 99 : oy); return types[y] - types[x] || x.localeCompare(y); });
     var type = ui.subs[scope] && types[ui.subs[scope]] ? ui.subs[scope] : (typeNames.length === 1 ? typeNames[0] : null);
     var back = cats.length > 1 ? '<button type="button" class="btn small quiet" data-act="filter" data-scope="' + esc(scope) + '" data-group="">← All categories</button>' : '';
-    var html = '<section class="block"><h2 class="sec-title">' + esc(title) + '<small>' + back + '</small></h2>';
+    var html = '<section class="block" data-browser="' + esc(scope) + '"><h2 class="sec-title">' + esc(title) + '<small>' + back + '</small></h2>';
     html += '<p class="crumbs browse-crumbs">' + esc(CATEGORY_LABEL[group] || group) + (type && typeNames.length > 1 ? ' › ' + esc(TYPE_PLURAL[type] || type) : '') + '</p>';
     if (!type) {
       html += '<div class="cats">' + typeNames.map(function (t) {
@@ -584,22 +632,27 @@
     var cq = (ui.campQuery || '').trim().toLowerCase();
     html += '<label class="search"><span class="sr">Search this campaign and world lore</span>' + SEARCH_ICON +
       '<input id="camp-search" type="search" placeholder="Search this campaign and world lore…" value="' + esc(ui.campQuery || '') + '" autocomplete="off"></label>';
+    var cmaps = mapsFor(camp.id);
     if (cq) {
       var hits = list.concat(world).filter(function (a) { return String(a.title || '').toLowerCase().indexOf(cq) >= 0; });
       html += '<section class="block"><h2 class="sec-title">Search results<small>' + hits.length + '</small></h2>' +
         (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
     } else {
-      html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.');
-      html += articleBrowser(world, 'cw-' + camp.id, 'No world lore yet.', 'World reference');
+      html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '</h2>' +
+        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
+      html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
+      html += '</section>';
+      html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
+        (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
+      html += articleBrowser(list, 'c-' + camp.id, dmView() ? 'No articles in this campaign yet.' : 'Nothing has been revealed in this campaign yet.', 'Lore');
+      var record = crimeSummary(crimes.filter(function (c) { return c.campaign_id === camp.id && (dmView() || !c.dm_only); }));
+      if (record.count || dmView()) html += '<section class="block"><h2 class="sec-title">Criminal Record<small><a class="btn small quiet" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open tracker</a></small></h2>' + summaryVitals(record) + '</section>';
+      ui.openFolders = ui.openFolders || {};
+      var wid = 'cw-' + camp.id;
+      html += '<details class="folder world-ref" data-folder="' + esc(wid) + '"' + (ui.openFolders[wid] || ui.filters && ui.filters[wid] ? ' open' : '') + '><summary><b>World reference</b><span>' + world.length + '</span></summary>' +
+        articleBrowser(world, wid, 'No world lore yet.', 'World reference') + '</details>';
     }
-    var record = crimeSummary(crimes.filter(function (c) { return c.campaign_id === camp.id && (dmView() || !c.dm_only); }));
-    html += '<section class="block"><h2 class="sec-title">Criminal Record<small><a class="btn small quiet" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open tracker</a></small></h2>' + summaryVitals(record) + '</section>';
-    var cmaps = mapsFor(camp.id);
-    html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
-      (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
-    html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '<small>' + (dmView() ? '<a class="btn small quiet" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small quiet" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<button type="button" class="btn small quiet" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></small></h2>';
-    html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
-    html += '</section></div>';
+    html += '</div>';
     $view.innerHTML = html;
   }
 
@@ -3796,11 +3849,11 @@
         ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('aria-pressed') === 'true' ? null : (el.getAttribute('data-group') || null);
         ui.subs[el.getAttribute('data-scope')] = null;
-        render(); break;
+        render(); keepBrowserInView(el.getAttribute('data-scope')); break;
       case 'subfilter':
         ui.subs = ui.subs || {};
         ui.subs[el.getAttribute('data-scope')] = el.getAttribute('data-type') || null;
-        render(); break;
+        render(); keepBrowserInView(el.getAttribute('data-scope')); break;
       case 'filter-home':
         ui.filters = ui.filters || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
