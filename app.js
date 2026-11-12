@@ -4479,8 +4479,14 @@
     return null;
   }
   // Where a mover actually is today: a ship that has finished coming home counts as moored there.
+  // Price and build time for a new commission. Matches the Ships and Commissions page.
+  var COMMISSION = { 'Rowboat': [50, 2], 'River barge': [3000, 30], 'Cog': [8000, 60], 'Sailing ship': [10000, 90], 'Galley': [30000, 180], 'Airship': [60000, 360], caravan: [600, 7] };
+  function commissionOf(kind, vessel) { return COMMISSION[kind === 'caravan' ? 'caravan' : vessel] || null; }
+  // The table's d20 each month an airship is on the slips: the dwarves and gnomes have to share a yard.
+  function yardRoll(r) { return r <= 2 ? { days: 60, t: 'The dwarves and gnomes fell out and the yard stood empty all month. The work is set back two months.' } : r <= 6 ? { days: 14, t: 'Arguments in the yard. Work went slowly.' } : r >= 20 ? { days: -30, t: 'The two crews found a rhythm. The work is a month ahead.' } : r >= 17 ? { days: -7, t: 'A good month in the yard.' } : { days: 0, t: 'The work goes on.' }; }
   function holdMode(h) {
     var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0;
+    if (d.mode === 'building') return num(d.ready, 0) > day ? { mode: 'building', at: d.yard || '', since: day, free: false } : { mode: 'moored', at: d.yard || d.at || '', since: num(d.ready, day), free: false };
     if (d.mode === 'returning' && num(d.ret_day, 0) <= day) return { mode: 'moored', at: d.ret_to || d.at || '', since: num(d.ret_day, day), free: !!d.ret_free };
     return { mode: d.mode || (HOLD_MOVES[h.kind] ? 'party' : 'home'), at: d.at || '', since: num(d.moor_since, day), free: !!d.moor_free };
   }
@@ -4589,6 +4595,7 @@
       bits.push((d.wealth || 'Modest') + (d.at ? ' · ' + d.at : ''));
     } else if (st.mode === 'party') bits.push('With the party');
     else if (st.mode === 'trading') bits.push('Out trading' + (d.port ? ' from ' + d.port : ''));
+    else if (st.mode === 'building') { var lb = num(d.ready, day) - day; bits.push('Being built' + (d.yard ? ' at ' + d.yard : '') + ', ready in ' + lb + (lb === 1 ? ' day' : ' days')); }
     else if (st.mode === 'returning') { var left = num(d.ret_day, day) - day; bits.push('Coming home to ' + (d.ret_to || 'port') + ', ' + left + (left === 1 ? ' day' : ' days')); }
     else if (st.mode === 'moored') bits.push('Moored at ' + (st.at || 'port') + (st.free ? ' (own holding, free)' : ''));
     if (h.kind === 'ship' || h.kind === 'airship') bits.unshift(d.vessel || (h.kind === 'airship' ? 'Airship' : 'Ship'));
@@ -4679,7 +4686,7 @@
     }
     if (dm) {
       var acts = [];
-      if (HOLD_MOVES[h.kind]) {
+      if (HOLD_MOVES[h.kind] && st.mode !== 'building') {
         var places = holdPlaces(camp.id), pick = '<select class="input rar-sel" id="hp-' + esc(h.id) + '" aria-label="Where">' + places.map(function (p) { return '<option' + (p === (d.at || d.port) ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('') + '</select>';
         if (st.mode === 'party' || st.mode === 'moored') {
           if (!warn) acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="trading">Send trading from…</button>');
@@ -4770,6 +4777,11 @@
       '<div class="field"><label for="hd-lh">Sworn to</label><select id="hd-lh"><option value="">(dues wait in his coffer)</option>' + others.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === d.liege_hid ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select><span class="hint">His dues go into that holding’s coffer.</span></div>';
     else html += numF('hd-crew', HOLD_LAND[kind] ? 'Household' : 'Crew', v('crew')) + numF('hd-wages', 'Wages a month (all of them), gp', v('wages')) + numF('hd-upkeep', 'Upkeep a month, gp', v('upkeep')) +
       numF('hd-income', HOLD_LAND[kind] ? 'Base income a month, gp' : 'Trade profit on a fair run, gp', v('income'), 1, HOLD_LAND[kind] ? 'Times the area’s wealth, plus extras.' : 'The d20 on payday scales this.');
+    if (HOLD_MOVES[kind] && isNew) {
+      var cm = commissionOf(kind, vname), tday = t ? t.day : 0;
+      html += '<div class="field"><label class="check"><input type="checkbox" id="hd-comm"> Commissioned: still being built</label><span class="hint">' + (cm ? 'New, about ' + cm[0].toLocaleString() + ' gp and ' + cm[1] + ' days. ' : '') + 'No wages or upkeep until it’s done.</span></div>' +
+        numF('hd-ready', 'Ready on day', tday + (cm ? cm[1] : 30)) + '<div class="field"><label for="hd-yard">Built at</label><input type="text" id="hd-yard" maxlength="60" placeholder="e.g. Keelhaven"></div>';
+    }
     if (HOLD_MOVES[kind]) html += numF('hd-moor', kind === 'caravan' ? 'Stabling a day, gp' : 'Mooring a day, gp', v('moor'), 0.1, 'Free at your own holding.');
     if (HOLD_LAND[kind]) {
       html += '<div class="field"><label for="hd-wealth">Area wealth</label><select id="hd-wealth">' + WEALTH.map(function (w) { return '<option' + (w[0] === (d.wealth || 'Modest') ? ' selected' : '') + '>' + w[0] + '</option>'; }).join('') + '</select><span class="hint">Shifts on its own over time with how it’s run.</span></div>' +
@@ -4832,6 +4844,7 @@
     var gained = val('hd-gained');
     if (gained && GAINED[gained]) { d.gained = gained; d.unrest = GAINED[gained].unrest; d.tax = 'Normal'; }
     if (!h && HOLD_MOVES[kind]) d.mode = 'party';
+    if (!h && document.getElementById('hd-comm') && document.getElementById('hd-comm').checked) { d.mode = 'building'; d.ready = Math.round(n('hd-ready', 0)); d.yard = (val('hd-yard') || '').trim().slice(0, 60); d.at = d.yard; }
     var secret = { crew: num(val('hd-loy-crew'), gained && GAINED[gained] ? GAINED[gained].crew : 5) }; if (val('hd-loy-garrison') != null) secret.garrison = num(val('hd-loy-garrison'), 5);
     if (!h && gained && GAINED[gained]) { secret.crew = GAINED[gained].crew; secret.garrison = GAINED[gained].crew; }
     var t = travel[campId], e = estateOf(campId);
@@ -4880,11 +4893,12 @@
       html += '<div class="tbl-row"><div class="main"><b>' + esc(h.name) + '</b><span>' + esc(ownerName(h) + ' · coffer ' + gp(cofferOf(h))) + '</span></div></div>';
       unitsOf(h).forEach(function (u) {
         var uu = unitOf(h, u), w = unitWages(h, u);
-        if (!w && !uu.owed) return;
+        if ((!w && !uu.owed) || st.mode === 'building') return;
         html += '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + '</b><span>' + esc(gp(w) + ' due' + (uu.owed ? ', ' + gp(uu.owed) + ' owed' : '') + ' · ' + band(loyOf(h, u))) + '</span></div>' +
           '<select class="input rar-sel" data-pay="' + esc(h.id + '|' + u) + '" aria-label="Wages for ' + esc(h.name) + ' ' + esc(unitName(h, u)) + '"><option value="auto">Pay from coffer</option><option value="skip">Hold wages</option></select></div>';
       });
       if (hasPeople(h)) html += '<div class="tbl-row"><div class="main"><b>How the month went</b><span>d20 · leave blank for a quiet month</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-hroll="' + esc(h.id) + '" placeholder="d20"></div>';
+      if (st.mode === 'building' && h.kind === 'airship') html += '<div class="tbl-row"><div class="main"><b>The yard this month</b><span>d20 · 1–2 the crews fall out, 20 a month ahead</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-yroll="' + esc(h.id) + '" placeholder="d20"></div>';
       if (HOLD_MOVES[h.kind] && st.mode === 'trading') html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
     });
     return html + '</div><div class="actions"><button type="submit" class="btn primary">Settle payday</button></div></form></section>';
@@ -4903,6 +4917,15 @@
       var d = clone(h.data || {}), st = holdMode(h), secret = {}, rep = [], cof = cofferOf(h), start = cof, short = false;
       d.units = d.units || {};
       if (d.mode === 'returning' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = st.free; }
+      if (d.mode === 'building' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = false; rep.push('Finished and afloat at ' + (st.at || 'the yard') + '. The crew now draw wages.'); }
+      if (st.mode === 'building') {
+        var yr = f.querySelector('[data-yroll="' + h.id + '"]'), yv = yr ? num(yr.value, 0) : 0;
+        if (yv >= 1 && yv <= 20) { var yy = yardRoll(yv); d.ready = Math.max(day + 1, num(d.ready, day) + yy.days); rep.push(yy.t); }
+        var lb = num(d.ready, day) - day; rep.push('Ready in about ' + lb + (lb === 1 ? ' day.' : ' days.'));
+        d.reports = (d.reports || []).concat([{ day: day, text: rep }]).slice(-6);
+        done[h.id] = { h: h, d: d, secret: {}, start: start };
+        return;
+      }
       var crewBand = band(loyOf(h, 'crew'));
       // Money in first: the month's income or the trading run.
       var inc = 0, ev = null, unrest = num(d.unrest, 2), evUnrest = 0;
