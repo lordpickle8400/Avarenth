@@ -4390,7 +4390,7 @@
 
   function loadHoldings() {
     return Promise.all([
-      sb.from('holdings').select('id, campaign_id, name, kind, data, created_at').order('created_at'),
+      sb.from('holdings').select('id, campaign_id, name, kind, data, owner_char, created_at').order('created_at'),
       sb.from('estates').select('campaign_id, treasury, payday, ledger'),
       isDM() ? sb.from('holding_secrets').select('holding_id, dm') : Promise.resolve({ data: [] })
     ]).then(function (res) {
@@ -4483,7 +4483,7 @@
       var l = secret && secret[u] != null ? secret[u] : loyOf(h, u);
       d[u === 'crew' ? 'mood' : 'gmood'] = MOOD[band(l)];
     });
-    var ops = [sb.from('holdings').update({ name: h.name, data: d }).eq('id', h.id)];
+    var ops = [sb.from('holdings').update({ name: h.name, data: d, owner_char: h.owner_char || null }).eq('id', h.id)];
     if (secret) ops.push(sb.from('holding_secrets').upsert({ holding_id: h.id, dm: Object.assign({}, holdSecrets[h.id] || {}, secret) }));
     return Promise.all(ops).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -4491,6 +4491,41 @@
     });
   }
 
+  function cofferOf(h) { return Math.round(Number((h.data || {}).coffer || 0) * 100) / 100; }
+  function ownerName(h) { var c = h.owner_char ? charById(h.owner_char) : null; return c ? c.name + '’s' : h.owner_char ? 'Personal' : 'Party'; }
+  function canTouch(h) { if (isDM()) return true; if (!h.owner_char) return true; var c = charById(h.owner_char); return !!(c && c.owner_id === uid()); }
+  // Where you have to be to get at a holding's coffer. Null means they're there (or it's with them).
+  function holdAway(h) {
+    var st = holdMode(h), d = h.data || {}, t = travel[h.campaign_id];
+    if (st.mode === 'party') return null;
+    if (st.mode === 'trading') return 'It’s out trading. Call it home first.';
+    if (st.mode === 'returning') return 'It’s on its way home.';
+    var place = HOLD_LAND[h.kind] ? d.at : st.at;
+    if (!place) return null;
+    var here = '';
+    if (t && t.map_id) { var pm = partyMarker(t.map_id), tw = pm ? nearTown(t.map_id, pm.x, pm.y) : null; here = tw ? tw.label : ''; }
+    if (!here && t && t.arrival) here = t.arrival.label;
+    return here === place ? null : 'You have to be at ' + place + ' to get at the coffer.';
+  }
+  function holdMoney(h, dir) {
+    var box = document.getElementById('hc-' + h.id), amt = box ? Math.round(parseFloat(box.value) * 100) / 100 : NaN;
+    if (!(amt > 0)) return toast('Enter an amount in gp.');
+    var away = holdAway(h);
+    if (away && !dmView()) return toast(away);
+    var t = travel[h.campaign_id], day = t ? t.day : 0, delta = dir === 'out' ? amt : -amt;
+    var c = h.owner_char ? charById(h.owner_char) : null;
+    if (dir === 'out' && amt > cofferOf(h)) return toast('There’s only ' + gp(cofferOf(h)) + ' in the coffer.');
+    if (dir === 'in' && c && walletCp(c.sheet) < amt * 100) return toast(c.name + ' doesn’t have ' + gp(amt) + '.');
+    if (dir === 'in' && !h.owner_char && Number(estateOf(h.campaign_id).treasury || 0) < amt) return toast('The party treasury doesn’t have ' + gp(amt) + '.');
+    sb.rpc('holding_collect', { hid: h.id, amount: delta, day: day }).then(function (r) {
+      if (r.error) throw r.error;
+      if (c) { setWallet(c.sheet, Math.max(0, walletCp(c.sheet) + delta * 100)); return sb.from('characters').update({ sheet: c.sheet }).eq('id', c.id); }
+    }).then(function (r) {
+      if (r && r.error) throw r.error;
+      return loadHoldings();
+    }).then(function () { toast((dir === 'out' ? 'Took ' : 'Put in ') + gp(amt) + (c ? (dir === 'out' ? ' for ' : ' from ') + c.name : dir === 'out' ? ' for the party' : ' from the party')); render(); })
+      .catch(function (err) { fail(err, String(err && err.message || '').indexOf('Not') === 0 ? err.message : 'Could not move that money.'); });
+  }
   function holdStatusText(h) {
     var d = h.data || {}, st = holdMode(h), t = travel[h.campaign_id], day = t ? t.day : 0, bits = [];
     if (HOLD_LAND[h.kind]) {
@@ -4526,7 +4561,7 @@
     var dm = dmView(), e = estateOf(camp.id), list = holdingsFor(camp.id), day = t ? t.day : 0;
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Holdings</h1></div></section><div class="page">';
     var due = paydayDue(camp.id), left = e.payday != null ? e.payday - day : null;
-    html += '<section class="block"><h2 class="sec-title">Treasury<small>' + (e.payday == null ? 'No payday set' : due ? 'Payday is due' : 'Payday in ' + left + (left === 1 ? ' day' : ' days')) + '</small></h2>' +
+    html += '<section class="block"><h2 class="sec-title">Party treasury<small>' + (e.payday == null ? 'No payday set' : due ? 'Payday is due' : 'Payday in ' + left + (left === 1 ? ' day' : ' days')) + '</small></h2>' +
       '<div class="vitals sum">' + vital('Treasury', gp(e.treasury)) + vital('Holdings', list.length) + vital('Next payday', e.payday == null ? '—' : 'Day ' + e.payday) + '</div>' +
       (Number(e.treasury) < 0 ? '<p class="err" style="margin:0">In debt.</p>' : '');
     if (dm) html += '<form class="two" id="estate-form" novalidate data-camp="' + esc(camp.id) + '" style="align-items:end">' +
@@ -4538,7 +4573,7 @@
     if (dm && due) html += paydayHtml(camp, list);
 
     html += '<section class="block"><h2 class="sec-title">What they own<small>' + list.length + '</small></h2>';
-    if (!list.length) html += '<div class="empty">' + (dm ? 'Nothing yet. Add a ship, caravan, manor, castle, lordship or workshop when the party gets one.' : 'The party doesn’t own anything yet.') + '</div>';
+    if (!list.length) html += '<div class="empty">' + (dm ? 'Nothing yet. Add a ship, caravan, manor, castle, lordship or workshop when the party gets one.' : 'Nothing you can see is owned yet.') + '</div>';
     list.forEach(function (h) { html += ui.holdEdit === h.id && dm ? holdFormHtml(camp, h) : holdCardHtml(camp, h); });
     if (dm) {
       if (ui.holdEdit === 'new') html += holdFormHtml(camp, null);
@@ -4546,10 +4581,10 @@
     }
     html += '</section>';
 
-    var ledger = (e.ledger || []).slice(-15).reverse();
+    var ledger = (e.ledger || []).filter(function (l) { return dm || !l.dm; }).slice(-15).reverse();
     html += '<section class="block"><h2 class="sec-title">Ledger<small>' + (e.ledger || []).length + ' entries</small></h2>' +
       (ledger.length ? '<div class="tbl">' + ledger.map(function (l) {
-        return '<div class="tbl-row"><div class="main"><b>Day ' + esc(l.day) + ' · ' + esc(l.text) + '</b>' + ((l.lines || []).length ? '<span>' + esc(l.lines.join(' · ')) + '</span>' : '') + '</div><span class="tag ' + (Number(l.amt) < 0 ? 'tier-bad' : 'ok') + '">' + (Number(l.amt) >= 0 ? '+' : '') + esc(gp(l.amt)) + '</span></div>';
+        return '<div class="tbl-row"><div class="main"><b>Day ' + esc(l.day) + ' · ' + esc(l.text) + '</b>' + ((l.lines || []).length ? '<span>' + esc(l.lines.join(' · ')) + '</span>' : '') + '</div>' + (l.dm ? '' : '<span class="tag ' + (Number(l.amt) < 0 ? 'tier-bad' : 'ok') + '">' + (Number(l.amt) >= 0 ? '+' : '') + esc(gp(l.amt)) + '</span>') + '</div>';
       }).join('') + '</div>' : '<div class="empty">Nothing recorded yet.</div>') + '</section>';
     html += '<p class="note">' + (dm ? 'Loyalty numbers are only shown to you. Players see the mood. Wages buy steadiness; deeds buy devotion.' : 'Crews and households have moods. Keep them paid and treat them well.') + '</p></div>';
     $view.innerHTML = html;
@@ -4568,8 +4603,19 @@
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
       (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') +
+      '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
+    var reps = (d.reports || []).slice().reverse();
+    if (reps.length) html += '<div class="report"><p class="note" style="margin:8px 0 2px"><b>Latest report, day ' + esc(reps[0].day) + '</b></p><p class="note" style="margin:0">' + esc((reps[0].text || []).join(' ')) + '</p>' +
+      (reps.length > 1 ? '<details><summary class="note">Earlier reports</summary>' + reps.slice(1).map(function (rp) { return '<p class="note" style="margin:6px 0 0"><b>Day ' + esc(rp.day) + ':</b> ' + esc((rp.text || []).join(' ')) + '</p>'; }).join('') + '</details>' : '') + '</div>';
+    if (canTouch(h)) {
+      var away = holdAway(h);
+      html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><input class="input mini" type="number" min="0" step="1" inputmode="decimal" id="hc-' + esc(h.id) + '" placeholder="gp" aria-label="Amount for ' + esc(h.name) + '">' +
+        '<button type="button" class="btn small" data-act="hold-cash" data-dir="out" data-id="' + esc(h.id) + '"' + (away && !dm ? ' disabled' : '') + '>Collect</button>' +
+        '<button type="button" class="btn small" data-act="hold-cash" data-dir="in" data-id="' + esc(h.id) + '"' + (away && !dm ? ' disabled' : '') + '>Put in</button></div>' +
+        (away ? '<p class="note" style="margin:0">' + esc(away) + (dm ? ' (You can still move it as DM.)' : '') + '</p>' : '');
+    }
     if (dm) {
       var acts = [];
       if (HOLD_MOVES[h.kind]) {
@@ -4596,7 +4642,9 @@
     var numF = function (id, label, val, step, hint) { return '<div class="field"><label for="' + id + '">' + label + '</label><input type="number" id="' + id + '" min="0" step="' + (step || 1) + '" value="' + esc(val) + '" inputmode="decimal">' + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</div>'; };
     var html = '<form class="form group-box" id="hold-form" novalidate data-camp="' + esc(camp.id) + '" data-id="' + esc(h ? h.id : '') + '" style="margin-bottom:12px"><h2>' + (isNew ? 'New holding' : 'Edit ' + esc(h.name)) + '</h2>';
     if (isNew) html += '<div class="field"><label for="hd-kind">Kind</label><select id="hd-kind">' + HOLD_KINDS.map(function (k) { return '<option value="' + k[0] + '"' + (k[0] === kind ? ' selected' : '') + '>' + k[1] + '</option>'; }).join('') + '</select></div>';
-    html += '<div class="field"><label for="hd-name">Name</label><input type="text" id="hd-name" maxlength="60" value="' + esc(h ? h.name : '') + '" placeholder="e.g. The Salt Hen"></div><div class="two">';
+    html += '<div class="field"><label for="hd-name">Name</label><input type="text" id="hd-name" maxlength="60" value="' + esc(h ? h.name : '') + '" placeholder="e.g. The Salt Hen"></div><div class="two">' +
+      '<div class="field"><label for="hd-owner">Owner</label><select id="hd-owner"><option value="">The party</option>' + campaignChars(camp.id).map(function (c) { return '<option value="' + esc(c.id) + '"' + (h && h.owner_char === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select><span class="hint">Personal holdings are only seen by their owner and you.</span></div>' +
+      numF('hd-coffer', isNew ? 'Starting coffer, gp' : 'Coffer, gp', h ? cofferOf(h) : 0, 1, 'Wages and upkeep come out of this.');
     if (kind === 'ship' && r) html += '<div class="field"><label for="hd-vessel">Vessel</label><select id="hd-vessel">' + r.boats.map(function (b) { return '<option' + (b.name === vname ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></div>';
     if (kind === 'airship' && r) html += '<div class="field"><label for="hd-vessel">Airship</label><select id="hd-vessel">' + r.airships.map(function (a) { return '<option' + (a.name === vname ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') + '</select></div>';
     html += numF('hd-crew', HOLD_LAND[kind] ? 'Household' : 'Crew', v('crew')) + numF('hd-wages', 'Wages a month (all of them), gp', v('wages')) + numF('hd-upkeep', 'Upkeep a month, gp', v('upkeep')) +
@@ -4636,14 +4684,16 @@
     if (document.getElementById('hd-gnome')) d.gnome = document.getElementById('hd-gnome').checked;
     if (document.getElementById('hd-hull')) d.hull = document.getElementById('hd-hull').checked;
     d.notes = (val('hd-notes') || '').slice(0, 400);
+    d.coffer = n('hd-coffer', 0);
+    var owner = val('hd-owner') || null;
     if (!h && HOLD_MOVES[kind]) d.mode = 'party';
     var secret = { crew: num(val('hd-loy-crew'), 5) }; if (val('hd-loy-garrison') != null) secret.garrison = num(val('hd-loy-garrison'), 5);
     var t = travel[campId], e = estateOf(campId);
-    var first = !h ? sb.from('holdings').insert({ campaign_id: campId, kind: kind, name: name, data: {} }).select('id, campaign_id, name, kind, data, created_at').single() : Promise.resolve({ data: h });
+    var first = !h ? sb.from('holdings').insert({ campaign_id: campId, kind: kind, name: name, data: {} }).select('id, campaign_id, name, kind, data, owner_char, created_at').single() : Promise.resolve({ data: h });
     first.then(function (r) {
       if (r.error) throw r.error;
       var row = r.data; if (!h) holdings.push(row);
-      row.name = name;
+      row.name = name; row.owner_char = owner;
       return saveHolding(row, d, secret);
     }).then(function () {
       if (e.payday == null) return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0), payday: (t ? t.day : 1) + PAY_EVERY, ledger: e.ledger || [] });
@@ -4678,16 +4728,15 @@
   }
 
   function paydayHtml(camp, list) {
-    var html = '<section class="block"><h2 class="sec-title">Payday<small>Every ' + PAY_EVERY + ' days</small></h2><p class="note" style="margin-top:0">For each crew: pay everything owed, pay just this month, or skip. Anything out trading needs the table’s d20.</p><form id="payday-form" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
+    var html = '<section class="block"><h2 class="sec-title">Payday<small>Every ' + PAY_EVERY + ' days</small></h2><p class="note" style="margin-top:0">Each holding pays its own people and upkeep from its coffer. If the coffer runs short, someone goes unpaid. Hold wages only if the owner has ordered it. Anything out trading needs the table’s d20.</p><form id="payday-form" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
     list.forEach(function (h) {
       var st = holdMode(h);
-      html += '<div class="tbl-row" style="flex-wrap:wrap"><div class="main"><b>' + esc(h.name) + '</b><span>' + esc(holdStatusText(h)) + '</span></div></div>';
+      html += '<div class="tbl-row"><div class="main"><b>' + esc(h.name) + '</b><span>' + esc(ownerName(h) + ' · coffer ' + gp(cofferOf(h))) + '</span></div></div>';
       unitsOf(h).forEach(function (u) {
         var uu = unitOf(h, u), w = unitWages(h, u);
         if (!w && !uu.owed) return;
-        html += '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + '</b><span>This month ' + esc(gp(w)) + (uu.owed ? ', owed ' + esc(gp(uu.owed)) + ' from ' + uu.missed + ' missed' : '') + ' · ' + esc(band(loyOf(h, u))) + '</span></div>' +
-          '<select class="input rar-sel" data-pay="' + esc(h.id + '|' + u) + '" aria-label="Pay ' + esc(h.name) + ' ' + esc(unitName(h, u)) + '">' +
-          '<option value="all">Pay ' + esc(gp(w + uu.owed)) + (uu.owed ? ' (all owed)' : '') + '</option>' + (uu.owed ? '<option value="month">Pay this month only (' + esc(gp(w)) + ')</option>' : '') + '<option value="skip">Skip</option></select></div>';
+        html += '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + '</b><span>' + esc(gp(w) + ' due' + (uu.owed ? ', ' + gp(uu.owed) + ' owed' : '') + ' · ' + band(loyOf(h, u))) + '</span></div>' +
+          '<select class="input rar-sel" data-pay="' + esc(h.id + '|' + u) + '" aria-label="Wages for ' + esc(h.name) + ' ' + esc(unitName(h, u)) + '"><option value="auto">Pay from coffer</option><option value="skip">Hold wages</option></select></div>';
       });
       if (HOLD_MOVES[h.kind] && st.mode === 'trading') html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
     });
@@ -4696,61 +4745,83 @@
 
   function settlePayday(f) {
     var campId = f.getAttribute('data-camp'), e = estateOf(campId), t = travel[campId], day = t ? t.day : 0;
-    var list = holdingsFor(campId), lines = [], total = 0, missingRoll = null, rolls = {};
+    var list = holdingsFor(campId), missingRoll = null, rolls = {};
     list.forEach(function (h) {
       var el = f.querySelector('[data-troll="' + h.id + '"]');
       if (el) { var r = num(el.value, 0); if (r < 1 || r > 20) missingRoll = missingRoll || h.name; rolls[h.id] = r; }
     });
     if (missingRoll) return toast('Enter the d20 for ' + missingRoll + '.');
-    var periodStart = Number(e.payday) - PAY_EVERY, jobs = [];
+    var periodStart = Number(e.payday) - PAY_EVERY, jobs = [], summary = [];
     list.forEach(function (h) {
-      var d = clone(h.data || {}), st = holdMode(h), secret = {}, net = 0, bits = [];
+      var d = clone(h.data || {}), st = holdMode(h), secret = {}, rep = [], cof = cofferOf(h), start = cof, short = false;
       d.units = d.units || {};
       if (d.mode === 'returning' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = st.free; }
-      var crewBand = band(loyOf(h, 'crew')), crewChoice = 'all';
+      var crewBand = band(loyOf(h, 'crew'));
+      // Money in first: the month's income or the trading run.
+      var inc = 0;
+      if (HOLD_LAND[h.kind]) { inc = baseIncome(h); if (inc) rep.push('Brought in ' + gp(inc) + '.'); }
+      else if (rolls[h.id]) {
+        var tr = tradeRoll(h, rolls[h.id]); inc = Number(d.income || 0) * tr.mul;
+        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') : tr.label + ': made ' + gp(inc) + '.');
+      }
+      if (inc > 0 && SKIM[crewBand]) { var lost = inc * SKIM[crewBand]; inc -= lost; d.skimmed = Number(d.skimmed || 0) + lost; }
+      cof += inc;
+      // Then upkeep and mooring.
+      var costs = Number(d.upkeep || 0);
+      if (HOLD_MOVES[h.kind] && d.mode === 'moored' && !d.moor_free) {
+        var mdays = Math.max(0, Number(e.payday) - Math.max(num(d.moor_since, periodStart), periodStart));
+        if (mdays) { costs += mdays * holdMoorRate(h); rep.push('Mooring at ' + (d.at || 'port') + ', ' + mdays + ' days.'); }
+      }
+      if (costs) {
+        if (cof >= costs) { cof -= costs; rep.push('Upkeep paid: ' + gp(costs) + '.'); }
+        else { rep.push('Upkeep came up ' + gp(costs - cof) + ' short. Things are being let go.'); cof = 0; short = true; }
+      }
+      // Then the people, crew before garrison. Pay back what's owed if the coffer stretches to it.
       unitsOf(h).forEach(function (u) {
-        var sel = f.querySelector('[data-pay="' + h.id + '|' + u + '"]'), choice = sel ? sel.value : 'all';
-        var uu = unitOf(h, u), w = unitWages(h, u), l = loyOf(h, u), had = uu.owed;
-        if (choice === 'all') { net -= w + uu.owed; if (had > 0) l += 1; uu.owed = 0; uu.missed = 0; uu.hurt = 0; uu.streak = had > 0 ? 0 : uu.streak + 1; if (uu.streak >= 3 && l < 7) { l += 1; uu.streak = 0; } }
-        else if (choice === 'month') { net -= w; uu.streak = 0; }
-        else {
-          uu.owed += w; uu.missed += 1; uu.streak = 0;
+        var sel = f.querySelector('[data-pay="' + h.id + '|' + u + '"]'), held = sel && sel.value === 'skip';
+        var uu = unitOf(h, u), w = unitWages(h, u), l = loyOf(h, u), had = uu.owed, nm = unitName(h, u);
+        if (!w && !had) { secret[u] = l; d.units[u] = uu; return; }
+        if (!held && cof >= w + had) {
+          cof -= w + had;
+          if (had > 0) { l += 1; rep.push(nm + ' paid, back pay too. They noticed.'); } else rep.push(nm + ' paid.');
+          uu.streak = had > 0 ? 0 : uu.streak + 1; uu.owed = 0; uu.missed = 0; uu.hurt = 0;
+          if (uu.streak >= 3 && l < 7) { l += 1; uu.streak = 0; }
+        } else if (!held && cof >= w) {
+          cof -= w; uu.streak = 0; rep.push(nm + ' paid this month. Still owed ' + gp(had) + '.');
+        } else {
+          var paid = held ? 0 : Math.max(0, cof); cof -= paid;
+          uu.owed += w - paid; uu.missed += 1; uu.streak = 0;
           if (uu.missed > GRACE[band(l)]) { uu.hurt += 1; l -= uu.hurt; }
-          bits.push(unitName(h, u) + ' unpaid (' + uu.missed + ' missed)');
+          rep.push(nm + (held ? ' not paid, on your orders.' : paid ? ' only got ' + gp(paid) + '. The coffer is empty.' : ' went unpaid. The coffer is empty.') + ' Owed ' + gp(uu.owed) + '.');
+          if (u === 'crew') short = true;
         }
         l = Math.max(1, Math.min(10, l));
-        if (band(l) !== band(loyOf(h, u))) bits.push(unitName(h, u) + ' now ' + MOOD[band(l)].toLowerCase());
         secret[u] = l; d.units[u] = uu;
-        if (u === 'crew') { crewBand = band(l); crewChoice = choice; }
+        if (u === 'crew') crewBand = band(l);
+        rep.push(nm + ' seem ' + MOOD[band(l)].toLowerCase() + '.');
       });
-      var inc = 0;
-      if (HOLD_LAND[h.kind]) inc = baseIncome(h);
-      else if (rolls[h.id]) { var tr = tradeRoll(h, rolls[h.id]); inc = Number(d.income || 0) * tr.mul; bits.push(tr.label + ' (d20 ' + rolls[h.id] + ')' + (tr.mul === 0 ? ': nothing earned, describe the loss' : '')); }
-      if (inc > 0 && SKIM[crewBand]) { bits.push(Math.round(SKIM[crewBand] * 100) + '% skimmed'); inc *= 1 - SKIM[crewBand]; }
-      net += inc - Number(d.upkeep || 0);
-      if (HOLD_MOVES[h.kind] && (d.mode === 'moored') && !d.moor_free) {
-        var days = Math.max(0, Number(e.payday) - Math.max(num(d.moor_since, periodStart), periodStart));
-        if (days) { var fee = days * holdMoorRate(h); net -= fee; bits.push('mooring ' + days + ' days'); }
-      }
       if (HOLD_LAND[h.kind]) {
         var p = num(d.prosper, 0);
-        p += crewBand === 'Treacherous' ? -2 : crewBand === 'Restless' || crewChoice === 'skip' ? -1 : 1;
+        p += crewBand === 'Treacherous' ? -2 : crewBand === 'Restless' || short ? -1 : 1;
         var wi = WEALTH.map(function (w) { return w[0]; }).indexOf(d.wealth || 'Modest');
-        if (p >= 3 && wi < WEALTH.length - 1) { d.wealth = WEALTH[wi + 1][0]; p = 0; bits.push('grew to ' + d.wealth); }
-        else if (p <= -3 && wi > 0) { d.wealth = WEALTH[wi - 1][0]; p = 0; bits.push('fell to ' + d.wealth); }
+        if (p >= 3 && wi < WEALTH.length - 1) { d.wealth = WEALTH[wi + 1][0]; p = 0; rep.push('The place is doing well: now ' + d.wealth.toLowerCase() + '.'); }
+        else if (p <= -3 && wi > 0) { d.wealth = WEALTH[wi - 1][0]; p = 0; rep.push('The place is slipping: now ' + d.wealth.toLowerCase() + '.'); }
         d.prosper = Math.max(-3, Math.min(3, p));
       }
-      total += net;
-      lines.push(h.name + ' ' + (net >= 0 ? '+' : '') + gp(net) + (bits.length ? ' (' + bits.join(', ') + ')' : ''));
+      cof = Math.round(cof * 100) / 100;
+      d.coffer = cof;
+      rep.push('Coffer: ' + gp(cof) + '.');
+      d.reports = (d.reports || []).concat([{ day: day, text: rep }]).slice(-6);
+      summary.push(h.name + ' ' + gp(start) + ' → ' + gp(cof));
       jobs.push(function () { return saveHolding(h, d, secret); });
     });
-    var ledger = (e.ledger || []).concat([{ day: day, text: 'Payday', amt: Math.round(total * 100) / 100, lines: lines }]).slice(-200);
+    var ledger = (e.ledger || []).concat([{ day: day, text: 'Payday', amt: 0, lines: summary, dm: true }]).slice(-200);
     Promise.all(jobs.map(function (j) { return j(); })).then(function () {
-      return sb.from('estates').upsert({ campaign_id: campId, treasury: Math.round((Number(e.treasury || 0) + total) * 100) / 100, payday: Number(e.payday) + PAY_EVERY, ledger: ledger });
+      return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0), payday: Number(e.payday) + PAY_EVERY, ledger: ledger });
     }).then(function (r) {
       if (r.error) throw r.error;
       return loadHoldings();
-    }).then(function () { toast('Payday settled: ' + (total >= 0 ? '+' : '') + gp(total)); render(); })
+    }).then(function () { toast('Payday settled. Reports sent.'); render(); })
       .catch(function (err) { fail(err, 'Could not settle payday.'); });
   }
 
@@ -4793,6 +4864,7 @@
       case 'hold-cancel': ui.holdEdit = null; ui.holdDel = null; render(); break;
       case 'hold-del': var hdel = holdingById(el.getAttribute('data-id')); if (hdel) holdDelete(hdel); break;
       case 'hold-loy': var hloy = holdingById(el.getAttribute('data-id')); if (hloy) holdLoyalty(hloy, el.getAttribute('data-unit'), num(el.getAttribute('data-d'), 0)); break;
+      case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
         preview = el.getAttribute('data-mode');
