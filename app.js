@@ -374,6 +374,7 @@
     if (!isMember()) return renderPending();
     var r = parseRoute();
     if (r.name !== 'shop') ui.freshened = null;
+    if (r.name !== 'shops') ui.marketTicked = null;
     var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit', 'subclasses'];
     if (dmOnly.indexOf(r.name) >= 0 && !dmView()) {
       if (!(r.name === 'members' && isDM())) { location.replace('#/wiki'); return; }
@@ -2904,7 +2905,7 @@
     fresh.forEach(function (r) { by[r.n] = r; });
     var out = [];
     (shop.stock || []).forEach(function (r) {
-      if (r.q === null || r.q === undefined) { out.push(r); return; }
+      if (r.used || r.q === null || r.q === undefined) { out.push(r); return; }
       var f = by[r.n], q = num(r.q, 0);
       if (!f && Math.random() < 0.5 * p) { log.gone++; return; }
       if (q <= 0) { if (f && Math.random() < 0.3 + 0.5 * p) { q = f.q; log.back++; } }
@@ -2918,6 +2919,58 @@
     shop.stock = out;
     return log;
   }
+  /* ---------- Second-hand goods: what the party sells stays on the shelf until someone buys it ---------- */
+  var USED_RATE = 0.04, IMP_RATE = 0.01;   // chance a day that someone else buys it
+  var USED_MOVE = 0.3;                      // chance an ordinary piece turns up in another shop when it's bought; important ones always do
+  function onShelf(row, day) { return !(row.hold != null && day != null && row.hold > day); }
+  // Runs over every shop in the campaign. Each piece keeps its own clock, so it doesn't matter which shop is opened.
+  function marketTick(campId) {
+    var t = campId && travel[campId]; if (!t || !dmView()) return;
+    var day = num(t.day, 1), news = ui.marketNews = ui.marketNews || {}, dirty = {};
+    var pool = shops.filter(function (sh) { return !isWanderer(sh) && sh.campaign_id === campId; });
+    function say(id, txt) { (news[id] = news[id] || []).push(txt); }
+    pool.forEach(function (sh) {
+      (sh.stock || []).slice().forEach(function (r) {
+        if (!r.used) return;
+        if (r.hold != null && r.hold > day) return;
+        if (r.hold != null && !r.arrived) { r.arrived = true; dirty[sh.id] = sh; say(sh.id, 'New in: ' + r.n + (r.came ? ', which turned up from ' + r.came : '') + '.'); }
+        var seen = r.seen == null ? day : num(r.seen, day), gap = day - seen;
+        if (r.seen !== day) { r.seen = day; dirty[sh.id] = sh; }
+        if (gap <= 0) return;
+        var chance = 1 - Math.pow(1 - (r.imp ? IMP_RATE : USED_RATE), gap);
+        if (Math.random() >= chance) return;
+        sh.stock.splice(sh.stock.indexOf(r), 1); dirty[sh.id] = sh;
+        var others = pool.filter(function (o) { return o.id !== sh.id; });
+        if (others.length && (r.imp || Math.random() < USED_MOVE)) {
+          var fits = others.filter(function (o) { return ((ITEMS.shopKinds[o.kind] || {}).kinds || []).indexOf(r.k) >= 0; });
+          if (!fits.length) fits = others.filter(function (o) { return o.kind === sh.kind; });
+          if (!fits.length) fits = others;
+          var to = fits[Math.floor(Math.random() * fits.length)], hold = day + rint(3, 12);
+          var moved = Object.assign({}, r, { hold: hold, seen: hold, arrived: false, came: sh.name, hops: num(r.hops, 0) + 1 });
+          (to.stock = to.stock || []).push(moved); dirty[to.id] = to;
+          say(sh.id, r.n + (r.by ? ' (sold here by ' + r.by + ')' : '') + ' was bought by someone passing through. It will turn up at ' + to.name + ' around day ' + hold + '.');
+        } else say(sh.id, r.n + (r.by ? ' (sold here by ' + r.by + ')' : '') + ' was bought, and it’s gone for good.');
+      });
+    });
+    Object.keys(dirty).forEach(function (k) { saveShop(dirty[k]); });
+  }
+  function toggleImportant(shop, i) {
+    var r = (shop.stock || [])[i]; if (!r) return;
+    r.imp = !r.imp; saveShop(shop, r.imp ? 'Marked important: it sells slowly and never vanishes' : 'No longer marked important'); render();
+  }
+  function usedGoodsSection(campId) {
+    var day = travel[campId] ? num(travel[campId].day, 1) : null, rows = [];
+    shops.filter(function (sh) { return sh.campaign_id === campId; }).forEach(function (sh) {
+      (sh.stock || []).forEach(function (r) { if (r.used) rows.push({ r: r, sh: sh }); });
+    });
+    if (!rows.length) return '';
+    rows.sort(function (a, b) { return (b.r.imp ? 1 : 0) - (a.r.imp ? 1 : 0) || a.r.n.localeCompare(b.r.n); });
+    return '<section class="block"><h2 class="sec-title">Second-hand goods<small>What the party has sold, and where it is now</small></h2><div class="tbl">' + rows.map(function (x) {
+      var away = !onShelf(x.r, day);
+      return '<a class="tbl-row" href="#/shop/' + encodeURIComponent(x.sh.id) + '" style="color:inherit;text-decoration:none"><div class="main"><b>' + (x.r.imp ? '★ ' : '') + esc(x.r.n) + '</b><span>' + esc(away ? 'On its way to ' + x.sh.name + ' (day ' + x.r.hold + ')' : 'At ' + x.sh.name) + (x.r.by ? ' · sold by ' + esc(x.r.by) : '') + (x.r.hops ? ' · changed hands ' + x.r.hops + (x.r.hops === 1 ? ' time' : ' times') : '') + '</span></div></a>';
+    }).join('') + '</div><p class="note" style="margin:6px 0 0">Anything the party sells stays on the shelf until someone buys it. Most of it is bought within a few weeks; now and then it turns up in another shop. ★ Important pieces sell slowly, and when they do sell they always turn up somewhere else.</p></section>';
+  }
+
   // Opening a shop: empty shelves get stocked, and shelves left alone for a couple of days or more drift.
   function freshenShop(shop) {
     if (!dmView() || isWanderer(shop)) return;
@@ -3137,6 +3190,8 @@
       (wand.length ? shopRows(wand) : '<div class="empty">No wandering merchants yet.</div>') +
       '<div class="actions">' + meetButton(camp.id, true) + '<button type="button" class="btn small" data-act="new-shop" data-kind="Wandering merchant" data-campaign="' + esc(camp.id) + '">+ Make one yourself</button></div>' +
       '<p class="note" style="margin:6px 0 0">Meet a wandering merchant picks one of these or a brand-new stranger, all equally likely, with fresh wares. Keep the strangers you like.</p></section>';
+    if (ui.marketTicked !== camp.id) { ui.marketTicked = camp.id; marketTick(camp.id); }
+    html += usedGoodsSection(camp.id);
     var loose = shops.filter(function (s) { return !isWanderer(s) && (!s.place_id || !articleById(s.place_id)) && (!s.campaign_id || s.campaign_id === camp.id); });
     if (loose.length) html += '<section class="block"><h2 class="sec-title">Shops with no place</h2>' + shopRows(loose) + '</section>';
     $view.innerHTML = html + '</div>';
@@ -3146,7 +3201,7 @@
     if (!loaded.wiki || !loaded.shops || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the shop…</div></div>'; return; }
     var shop = shopById(id);
     if (!shop) { $view.innerHTML = '<div class="page narrow"><div class="empty">That shop is gone.</div></div>'; return; }
-    if (ui.freshened !== shop.id) { ui.freshened = shop.id; freshenShop(shop); }
+    if (ui.freshened !== shop.id) { ui.freshened = shop.id; if (ui.marketNews) delete ui.marketNews[shop.id]; marketTick(shop.campaign_id); freshenShop(shop); }
     var place = shop.place_id ? articleById(shop.place_id) : null, camp = shop.campaign_id ? campaignById(shop.campaign_id) : null;
     var K = ITEMS.shopKinds[shop.kind] || {};
     var chars = camp ? campaignChars(camp.id) : characters;
@@ -3159,6 +3214,7 @@
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
     if (ui.shopNews && ui.shopNews[shop.id]) html += '<p class="note shop-news">' + esc(ui.shopNews[shop.id]) + '</p>';
+    if (ui.marketNews && (ui.marketNews[shop.id] || []).length) html += ui.marketNews[shop.id].map(function (t) { return '<p class="note shop-news">' + esc(t) + '</p>'; }).join('');
     else if (shop.stock_day != null && !isWanderer(shop)) html += '<p class="note shop-news">Shelves as of day ' + esc(shop.stock_day) + '. Come back after 2 days or more and they’ll have changed.</p>';
     var smap = shop.map_id ? mapById(shop.map_id) : null;
     html += '<div class="actions">' + (smap ? '<a class="btn" href="#/map/' + encodeURIComponent(smap.id) + '">On the ' + esc(smap.name) + ' map</a>' : '') + '<a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
@@ -3196,10 +3252,11 @@
     html += '</section>';
 
     // Stock
-    var stock = (shop.stock || []).slice();
+    var stock = (shop.stock || []).slice(), today = gameDay(shop), coming = 0;
     var groups = {};
-    stock.forEach(function (row, i) { var k = KIND_LABEL[row.k] ? row.k : 'z'; (groups[k] = groups[k] || []).push({ row: row, i: i }); });
-    html += '<section class="block"><h2 class="sec-title">For sale<small>' + stock.length + ' items</small></h2>';
+    stock.forEach(function (row, i) { if (!onShelf(row, today)) { coming++; return; } var k = KIND_LABEL[row.k] ? row.k : 'z'; (groups[k] = groups[k] || []).push({ row: row, i: i }); });
+    html += '<section class="block"><h2 class="sec-title">For sale<small>' + (stock.length - coming) + ' items</small></h2>';
+    if (coming) html += '<p class="note" style="margin:0 0 8px">' + coming + (coming === 1 ? ' second-hand piece is' : ' second-hand pieces are') + ' on the way here. Shoppers can’t see ' + (coming === 1 ? 'it' : 'them') + ' yet.</p>';
     if (!stock.length) html += '<div class="empty">Empty shelves. Tap “Stock it” to fill them for a ' + esc(place ? SIZES[num(placeOf(place.id).size, 2)].toLowerCase() : 'town') + '.</div>';
     var blocked = c ? recogMult(shop, c).blocked : false;
     KIND_ORDER.forEach(function (k) {
@@ -3212,7 +3269,9 @@
           '<label class="sr" for="sq-' + g.i + '">How many</label><input type="number" class="input mini" id="sq-' + g.i + '" data-shop-row="' + g.i + '" data-sfield="q" data-id="' + esc(shop.id) + '" value="' + (row.q === null || row.q === undefined ? '' : row.q) + '" placeholder="∞" min="0" inputmode="numeric">' +
           '<button type="button" class="btn small quiet" data-act="shop-rm" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-label="Remove ' + esc(row.n) + '">✕</button></div>';
         var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(row.n) + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + '</span></div>' +
+        var used = row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
+        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
+          (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
       }).join('') + '</div>';
     });
@@ -3325,6 +3384,7 @@
       if (mine) mine.qty = num(mine.qty, 1) + q; else s.items.push({ name: row.n, notes: '', qty: q });
     }
     if (limited) row.q = num(row.q, 0) - q;
+    if (row.used && num(row.q, 0) <= 0) shop.stock.splice(i, 1);
     c.sheet = s;
     ledgerAdd(shop, { who: c.name, what: row.n, qty: q, cp: cost, dir: 'sold' });
     saveCharSoon(c);
@@ -3345,7 +3405,7 @@
     // It goes on the shelf at about list price.
     var cat = itemByName(it.name), row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === it.name.toLowerCase(); })[0];
     if (row) { if (row.q !== null && row.q !== undefined) row.q = num(row.q, 0) + 1; }
-    else (shop.stock = shop.stock || []).push({ n: it.name, k: cat ? cat.kind : 'z', p: cat ? cat.price : Math.round(cp * 2) / 100, q: 1 });
+    else (shop.stock = shop.stock || []).push({ n: it.name, k: cat ? cat.kind : 'z', p: cat ? cat.price : Math.round(cp * 2) / 100, q: 1, used: true, by: c.name, seen: gameDay(shop) });
     c.sheet = s;
     ledgerAdd(shop, { who: c.name, what: it.name, qty: 1, cp: cp, dir: 'bought' });
     saveCharSoon(c);
@@ -4172,6 +4232,7 @@
         srm.stock.splice(num(el.getAttribute('data-i'), -1), 1); saveShop(srm); render(); break;
       case 'shop-sell': var ss1 = shopById(el.getAttribute('data-id')); if (ss1) shopSell(ss1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-buy': var sb1 = shopById(el.getAttribute('data-id')); if (sb1) shopBuy(sb1, num(el.getAttribute('data-i'), -1)); break;
+      case 'shop-imp': var si1 = shopById(el.getAttribute('data-id')); if (si1) toggleImportant(si1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1, el.getAttribute('data-hit') === '1'); break;
       case 'shop-recog-mode':
         var sr2 = shopById(el.getAttribute('data-id')), rc2 = sr2 && charById((ui.shopChar || {})[sr2.id]);
