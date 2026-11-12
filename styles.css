@@ -448,6 +448,8 @@ blockquote.oath { margin: 8px 0; padding: 10px 14px; border-left: 3px solid var(
 .pin-stop span { font-size: 10px; font-weight: 500; opacity: .85; }
 .pin-toll::after { width: 11px; height: 11px; border-radius: 2px; transform: rotate(45deg); background: #c9a227; border: 1px solid #3a2c05; }
 .pin-toll span { font-size: 10px; font-weight: 600; }
+.pin-ruin::after { width: 12px; height: 12px; border-radius: 50%; background: #6b5a4a; border: 2px dashed #e8d9c0; }
+.pin-ruin span { font-style: italic; font-size: 10px; }
 
 /* ---------- Shops by district ---------- */
 .shop-reg > summary span { opacity: 1; font-family: var(--display, var(--serif)); font-size: 17px; color: var(--accent-ink, var(--accent)); flex: 1; }

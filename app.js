@@ -307,7 +307,7 @@
     });
   }
   function loadMarkers(mapId) {
-    return sb.from('map_markers').select('id, map_id, kind, character_id, label, x, y, article_slug, target_map_id, toll').eq('map_id', mapId).then(function (r) {
+    return sb.from('map_markers').select('id, map_id, kind, character_id, label, x, y, article_slug, target_map_id, toll, info').eq('map_id', mapId).then(function (r) {
       if (r.error) throw r.error;
       markers[mapId] = r.data || [];
     });
@@ -2147,9 +2147,10 @@
       Promise.all([list ? null : loadMarkers(m.id), ensureGrid(m.id)]).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
       return;
     }
-    var stopCount = list.filter(function (mk) { return mk.kind === 'stop' || mk.kind === 'toll'; }).length;
-    list = list.filter(function (mk) { return (mk.kind !== 'stop' && mk.kind !== 'toll') || (dm && ui.showTowns); });
-    if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || (m.show_markers && mk.kind !== 'toll'); });
+    var hiddenKind = function (mk) { return mk.kind === 'stop' || mk.kind === 'toll' || mk.kind === 'ruin'; };
+    var stopCount = list.filter(hiddenKind).length;
+    list = list.filter(function (mk) { return !hiddenKind(mk) || (dm && ui.showTowns) || (!dm && mk.kind === 'ruin' && mk.info && mk.info.found); });
+    if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || (mk.kind === 'ruin' && mk.info && mk.info.found) || (m.show_markers && mk.kind !== 'toll' && mk.kind !== 'ruin'); });
     var placing = ui.placing && ui.placing.mapId === m.id ? ui.placing : null;
     var chars = camp ? campaignChars(camp.id) : characters;
     // The journey (if any) that uses this map.
@@ -2164,15 +2165,16 @@
         (chars.length ? '<label class="sr" for="place-char">Move a character</label><select class="input" id="place-char" style="width:auto;min-height:36px;font-size:13px;padding:4px 8px"><option value="">Move character…</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('') + '</select>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
         '<button type="button" class="btn small' + (placing && placing.kind === 'toll' ? ' primary' : '') + '" data-act="place" data-kind="toll">+ Toll</button>' +
+        '<button type="button" class="btn small' + (placing && placing.kind === 'ruin' ? ' primary' : '') + '" data-act="place" data-kind="ruin">+ Ruin</button>' +
         (tcamp ? '<button type="button" class="btn small' + (placing && placing.kind === 'dest' ? ' primary' : '') + '" data-act="place" data-kind="dest">Set destination</button>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind && placing.kind.indexOf('cal') === 0 ? ' primary' : '') + '" data-act="place" data-kind="cal1">Calibrate scale</button>' +
-        (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns & tolls (' + stopCount + ')</button>' : '') +
+        (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns, tolls & ruins (' + stopCount + ')</button>' : '') +
         '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>' +
         (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
       if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
       if (tstate && tstate.map_id === m.id) html += arrivalBlock(tcamp, true);
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
-      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.kind === 'toll' ? 'the toll (on the bridge itself)' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.kind === 'toll' ? 'the toll (on the bridge itself)' : placing.kind === 'ruin' ? 'the ruin' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
     html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
       '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
@@ -2207,6 +2209,17 @@
       html += '<section class="group-box"><h2>' + esc(ssel.name) + '</h2><p class="note" style="margin:0">' + esc([ssel.kind, ssel.keeper.replace(/\[\[|\]\]/g, '')].filter(Boolean).join(' · ')) + ' · ' + (ssel.stock || []).length + ' items</p><div class="actions">' +
         '<a class="btn small primary" href="#/shop/' + encodeURIComponent(ssel.id) + '">Open shop</a><button type="button" class="btn small" data-act="shop-place" data-id="' + esc(ssel.id) + '">Move</button>' +
         '<button type="button" class="btn small" data-act="shop-unpin" data-id="' + esc(ssel.id) + '">Take off map</button><button type="button" class="btn small quiet" data-act="shop-close">Close</button></div></section>';
+    } else if (sel && sel.kind === 'ruin' && dm) {
+      var ri = sel.info || {};
+      html += '<form class="form group-box" id="ruin-form" novalidate data-id="' + esc(sel.id) + '"><h2>' + esc(sel.label || 'Ruin') + '</h2>' +
+        '<p class="note" style="margin:0 0 8px">' + (ri.found ? 'The party has found this. Players see the pin.' : 'Only you see this until the party stops here.') + ' When their road passes close by, the day stops to ask whether they explore it.</p>' +
+        '<div class="field"><label for="ru-name">Name</label><input type="text" id="ru-name" maxlength="80" value="' + esc(sel.label || '') + '"></div>' +
+        '<div class="field"><label for="ru-desc">What’s there (only you see this)</label><textarea id="ru-desc" rows="4" maxlength="2000">' + esc(ri.desc || '') + '</textarea></div>' +
+        '<label class="check"><input type="checkbox" id="ru-found"' + (ri.found ? ' checked' : '') + '> Found: players can see it</label>' +
+        '<div class="actions"><button type="submit" class="btn primary">Save ruin</button><button type="button" class="btn small" data-act="marker-move" data-id="' + esc(sel.id) + '">Move</button>' +
+        '<button type="button" class="btn small danger" data-act="marker-delete" data-id="' + esc(sel.id) + '">' + (ui.pendingDelete === sel.id ? 'Tap again' : 'Remove') + '</button><button type="button" class="btn small quiet" data-act="marker-close">Close</button></div></form>';
+    } else if (sel && sel.kind === 'ruin') {
+      html += '<div class="group-box"><h2 style="margin:0 0 4px">' + esc(sel.label || 'A ruin') + '</h2><p class="note" style="margin:0">The party found this place.</p><div class="actions"><button type="button" class="btn small quiet" data-act="marker-close">Close</button></div></div>';
     } else if (sel && sel.kind === 'toll' && dm) {
       var tl = tollOf(sel);
       html += '<form class="form group-box" id="toll-form" novalidate data-id="' + esc(sel.id) + '"><h2>' + esc(sel.label || 'Toll') + '</h2>' +
@@ -2231,7 +2244,7 @@
     }
 
     if (dm && loaded.shops) html += mapShopsSection(m);
-    var people = list.filter(function (mk) { return mk.kind !== 'place' && mk.kind !== 'stop' && mk.kind !== 'toll'; });
+    var people = list.filter(function (mk) { return mk.kind !== 'place' && mk.kind !== 'stop' && mk.kind !== 'toll' && mk.kind !== 'ruin'; });
     if (dm || m.show_markers) {
       html += '<section class="block"><h2 class="sec-title">Who’s here<small>' + (dm ? (m.show_markers ? 'Players can see these' : 'Only you can see these') : '') + '</small></h2>' +
         (people.length ? '<div class="pill-row">' + people.map(function (mk) { return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="marker" data-id="' + esc(mk.id) + '">' + esc(markerLabel(mk)) + '</button>'; }).join('') + '</div>' : '<div class="empty">Nobody placed on this map yet.' + (dm ? ' Use “Move party” or pick a character above, then tap the map.' : '') + '</div>') + '</section>';
@@ -2272,6 +2285,14 @@
       return go('#/shop-edit/new');
     }
     if (p.kind === 'place' && !p.markerId) { ui.pendingPin = { mapId: m.id, x: x, y: y }; ui.selectedMarker = null; return render(); }
+    if (p.kind === 'ruin' && !p.markerId) {
+      ui.showTowns = true;
+      return sb.from('map_markers').insert({ map_id: m.id, kind: 'ruin', label: 'A ruin', info: { desc: '', found: false }, x: x, y: y }).select('id').single().then(function (r) {
+        if (r.error) return fail(r.error, 'Could not place the ruin.');
+        ui.selectedMarker = r.data.id;
+        loadMarkers(m.id).then(function () { toast('Ruin placed. Name it and describe it below.'); render(); });
+      });
+    }
     if (p.kind === 'toll' && !p.markerId) {
       ui.showTowns = true;
       return sb.from('map_markers').insert({ map_id: m.id, kind: 'toll', label: 'Toll bridge', toll: { foot: TOLL_DEFAULT.foot, mount: TOLL_DEFAULT.mount }, x: x, y: y }).select('id').single().then(function (r) {
@@ -3888,6 +3909,39 @@
       ui.selectedMarker = null; toast('Toll saved'); rememberMapScroll(); render();
     });
   }
+  function saveRuin(form) {
+    var id = form.getAttribute('data-id');
+    var patch = { label: document.getElementById('ru-name').value.trim().slice(0, 80) || 'A ruin', info: { desc: document.getElementById('ru-desc').value.trim().slice(0, 2000), found: document.getElementById('ru-found').checked } };
+    sb.from('map_markers').update(patch).eq('id', id).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the ruin.');
+      Object.keys(markers).forEach(function (k) { (markers[k] || []).forEach(function (mk) { if (mk.id === id) Object.assign(mk, patch); }); });
+      ui.selectedMarker = null; toast('Ruin saved'); rememberMapScroll(); render();
+    });
+  }
+  function midLabel(l) { return String(l || '').replace(/^(A|An|The) /, function (w) { return w.toLowerCase(); }); }
+  function dayRuins(t, j, mv) {
+    var m = j.map, ratio = m.width && m.height ? m.height / m.width : 1, W = Number(m.miles_across), hits = [];
+    (markers[m.id] || []).filter(function (mk) { return mk.kind === 'ruin'; }).forEach(function (rw) {
+      if (mapMiles(m, j.party.x, j.party.y, rw.x, rw.y) <= STOP_MILES) return;
+      var best = null;
+      for (var i = 1; i < mv.path.length; i++) {
+        var a = mv.path[i - 1], b = mv.path[i];
+        var ax = a.x * W, ay = a.y * ratio * W, bx = b.x * W, by = b.y * ratio * W, px = rw.x * W, py = rw.y * ratio * W;
+        var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy, u = len2 ? Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / len2)) : 0;
+        var dist = Math.hypot(ax + vx * u - px, ay + vy * u - py);
+        if (!best || dist < best.dist) best = { dist: dist, d: a.d + (b.d - a.d) * u };
+      }
+      if (best && best.dist <= STOP_MILES) hits.push({ ruin: true, id: rw.id, label: rw.label || 'A ruin', desc: (rw.info || {}).desc || '', found: !!(rw.info || {}).found, x: rw.x, y: rw.y, d: Math.max(0.01, best.d) });
+    });
+    return hits;
+  }
+  // They found the ruin: players can see its pin from now on.
+  function findRuin(id) {
+    var mk = null; Object.keys(markers).forEach(function (k) { (markers[k] || []).forEach(function (x) { if (x.id === id) mk = x; }); });
+    if (!mk || (mk.info && mk.info.found)) return Promise.resolve();
+    var info = Object.assign({}, mk.info || {}, { found: true });
+    return sb.from('map_markers').update({ info: info }).eq('id', id).then(function (r) { if (r.error) throw r.error; mk.info = info; });
+  }
   // Takes the toll out of their purses (or puts it back, sign -1). Returns the saves.
   function moveCoins(shares, sign) {
     return (shares || []).map(function (sh) {
@@ -3961,6 +4015,14 @@
     var tw = s.list[s.i], t = travel[s.campId];
     var when = tw.d < 0.34 ? 'early in the day' : tw.d < 0.67 ? 'around midday' : 'late in the day';
     var step = s.list.length > 1 ? ' · ' + (s.i + 1) + ' of ' + s.list.length : '';
+    if (tw.ruin) {
+      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
+        '<h2 id="ask-h">' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">Their road passes close to it ' + when + '.' + (tw.found ? ' They have been here before.' : ' They don’t know it’s there.') + '</p>' +
+        (tw.desc ? '<p style="margin:0 0 10px;white-space:pre-line">' + esc(tw.desc) + '</p>' : '') +
+        '<div class="actions" style="margin:0"><button type="button" class="btn primary" data-act="town-stop">Stop and explore</button><button type="button" class="btn" data-act="town-pass">Walk on by</button><button type="button" class="btn quiet" data-act="town-cancel">Cancel</button></div>' +
+        '<p class="note" style="margin:8px 0 0">Only you see this. If they stop, the day ends there and the pin shows up for players.</p></div>';
+      return;
+    }
     if (tw.toll) {
       var chars = campaignChars(s.campId), purse = chars.reduce(function (a, c) { return a + walletCp(c.sheet); }, 0);
       box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
@@ -3982,7 +4044,8 @@
     var s = ui.stopAsk; if (!s) return;
     var tw = s.list[s.i];
     if (stop) { ui.stopAsk = null; drawStopAsk(); return nextDay(s.campId, { decided: true, passed: s.passed, stop: tw, tolls: s.tolls }); }
-    s.passed.push(tw.label); s.i++;
+    if (!tw.ruin) s.passed.push(tw.label);
+    s.i++;
     if (s.i < s.list.length) return drawStopAsk();
     ui.stopAsk = null; drawStopAsk();
     nextDay(s.campId, { decided: true, passed: s.passed, tolls: s.tolls });
@@ -4011,7 +4074,7 @@
       if (moving) {
         var mv = dayMove(t, j, opt.stop ? opt.stop.d : 1);
         if (!opt.decided) {
-          var towns = dayTowns(t, j, mv).concat(dayTolls(t, j, mv)).sort(function (a, b) { return a.d - b.d; });
+          var towns = dayTowns(t, j, mv).concat(dayTolls(t, j, mv), dayRuins(t, j, mv)).sort(function (a, b) { return a.d - b.d; });
           if (towns.length) { ui.stopAsk = { campId: campId, list: towns, i: 0, passed: [], tolls: [] }; drawStopAsk(); render(); return; }
         }
         var pos = opt.stop ? { x: opt.stop.x, y: opt.stop.y } : mv.pos, arrived = !opt.stop && mv.arrived;
@@ -4022,10 +4085,10 @@
         entry.text = 'Traveled ' + fmtMiles(mv.miles) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather' : j.byMap ? ' at a ' + t.pace.toLowerCase() + ' pace' : ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace') + (mix.length ? ': ' + mix.join(', ') : '') + '.' +
           ((opt.passed || []).length ? ' Went through ' + opt.passed.join(', ') + '.' : '') +
           tollText(opt.tolls) +
-          (opt.stop ? ' Stopped at ' + opt.stop.label + '.' : arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
+          (opt.stop ? ' Stopped at ' + midLabel(opt.stop.label) + '.' : arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
         moveOp = sb.from('map_markers').update({ x: pos.x, y: pos.y }).eq('id', j.party.id);
         var town = opt.stop || (arrived ? nearTown(j.map.id, t.dest_x, t.dest_y) : null);
-        arrival = town ? { label: town.label, slug: town.slug || town.article_slug || '', day: day + 1 } : (arrived && t.dest_label ? { label: t.dest_label, slug: '', day: day + 1 } : null);
+        arrival = town ? { label: town.label, slug: town.slug || town.article_slug || '', day: day + 1, ruin: town.ruin ? town.id : undefined } : (arrived && t.dest_label ? { label: t.dest_label, slug: '', day: day + 1 } : null);
       } else {
         entry.text = j.remaining != null && j.remaining < 0.1 ? 'Stayed' + (t.arrival ? ' in ' + t.arrival.label : t.dest_label ? ' at ' + t.dest_label : '') + '.' : 'A day passed.';
       }
@@ -4049,10 +4112,10 @@
         return sb.from('travel_state').update(patch).eq('campaign_id', campId);
       }).then(function (r) {
         if (r.error) throw r.error;
-        return arrival ? discover(arrival.slug) : null;
+        return arrival ? (arrival.ruin ? findRuin(arrival.ruin) : discover(arrival.slug)) : null;
       }).then(function () {
         return Promise.all([loadTravel(), t.map_id ? loadMarkers(t.map_id) : null]);
-      }).then(function () { toast(arrival ? 'Arrived at ' + arrival.label : 'Day ' + (day + 1)); render(); });
+      }).then(function () { toast(arrival ? 'Arrived at ' + midLabel(arrival.label) : 'Day ' + (day + 1)); render(); });
     }).catch(function (e) { fail(e, 'Could not advance the day.'); });
   }
 
@@ -4061,6 +4124,12 @@
     var t = travel[camp.id], ar = t && t.arrival;
     if (!ar) return '';
     var dm = dmView(), a = ar.slug ? articleBySlug(ar.slug) : null, known = a && (dm || !a.hidden);
+    if (ar.ruin) {
+      var rm = null; Object.keys(markers).forEach(function (k) { (markers[k] || []).forEach(function (x) { if (x.id === ar.ruin) rm = x; }); });
+      return '<section class="block arrival"><h2 class="sec-title">They stopped at ' + esc(midLabel(ar.label)) + '<small>Day ' + esc(ar.day) + '</small></h2><div class="group-box">' +
+        (dm && rm && rm.info && rm.info.desc ? '<p style="margin:0;white-space:pre-line">' + esc(rm.info.desc) + '</p>' : '<p class="note" style="margin:0">A place off the road, not a town.</p>') +
+        (dm && !compact ? '<div class="actions"><button type="button" class="btn small quiet" data-act="arr-leave" data-camp="' + esc(camp.id) + '">Done here</button></div>' : '') + '</div></section>';
+    }
     var facts = known ? ['Type', 'Region', 'Holder', 'Ruler', 'Population'].filter(function (k) { return a.fields && a.fields[k]; }).map(function (k) { return '<span><b>' + esc(k) + ':</b> ' + inline(String(a.fields[k])) + '</span>'; }) : [];
     var html = '<section class="block arrival"><h2 class="sec-title">You’ve arrived at ' + esc(ar.label) + '<small>Day ' + esc(ar.day) + '</small></h2><div class="group-box">' +
       (known ? (a.summary ? '<p style="margin:0 0 6px">' + inline(a.summary) + '</p>' : '') + (facts.length ? '<p class="arr-facts">' + facts.join('') + '</p>' : '') + '<div class="actions" style="margin:6px 0 0"><a class="btn small" href="#/a/' + encodeURIComponent(a.slug) + '">Read about ' + esc(a.title) + '</a></div>'
@@ -4774,6 +4843,7 @@
       case 'scale-form': return saveScale();
       case 'pin-form': return savePin();
       case 'toll-form': return saveToll(f);
+      case 'ruin-form': return saveRuin(f);
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
       case 'account-form':
