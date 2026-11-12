@@ -3689,25 +3689,65 @@
     ui.watch = ui.watch || {}; var k = campId + '|' + w;
     return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
   }
+  /* Where the party is decides which list the d100 reads: 1 to 60 the region's, 61 to 100 the all-isles list. */
+  var REGION_LABEL = { west: 'The West', mournfells: 'The Mournfells', north: 'The North', central: 'The Central District', capital: 'The Crown Lands', south: 'The South and the coast', sea: 'At sea' };
+  function autoRegion(campId) {
+    var t = travel[campId]; if (!t || !t.map_id) return null;
+    var pm = partyMarker(t.map_id); if (!pm) return null;
+    var g = grids[t.map_id];
+    if (g) {
+      var cx = Math.min(g.w - 1, Math.max(0, Math.floor(pm.x * g.w))), cy = Math.min(g.h - 1, Math.max(0, Math.floor(pm.y * g.h))), i = cy * g.w + cx;
+      var wat = g.water ? g.water[i] : '-';
+      if (boatOf(t) && (wat === 'c' || wat === 'd')) return 'sea';
+      if (g.cells[i] === 'm' && pm.x > 0.36 && pm.x < 0.66 && pm.y > 0.36 && pm.y < 0.6) return 'mournfells';
+    } else if (boatOf(t)) return 'sea';
+    var best = null, bd = Infinity;
+    (markers[t.map_id] || []).forEach(function (mk) {
+      if ((mk.kind !== 'place' && mk.kind !== 'stop') || !mk.article_slug) return;
+      var a = articleBySlug(mk.article_slug), reg = a && a.fields && (a.fields.Region || a.fields.District || '');
+      if (!reg) return;
+      var d = Math.hypot(mk.x - pm.x, mk.y - pm.y);
+      if (d < bd) { bd = d; best = String(reg); }
+    });
+    if (!best) return null;
+    return /west/i.test(best) ? 'west' : /central/i.test(best) ? 'central' : /capital|crown/i.test(best) ? 'capital' : /north/i.test(best) ? 'north' : /south/i.test(best) ? 'south' : null;
+  }
+  function watchRegion(campId) { var pick = (ui.regionPick || {})[campId]; return pick || autoRegion(campId); }
   function watchResult(campId, w) {
     var st = watchState(campId, w), d20 = parseInt(st.d20, 10), d100 = parseInt(st.d100, 10);
     if (!(d20 >= 1 && d20 <= 20)) return null;
-    var tier = watchTier(d20), list = TRAVEL_EVENTS[tier] || [];
-    var idx = list.length === 100 ? d100 - 1 : Math.floor((d100 - 1) * list.length / 100);
-    var ev = d100 >= 1 && d100 <= 100 ? list[idx] || null : null;
-    return { tier: tier, d20: d20, d100: d100 >= 1 && d100 <= 100 ? d100 : null, text: ev };
+    var tier = watchTier(d20), ok = d100 >= 1 && d100 <= 100, ev = null, from = null;
+    var reg = watchRegion(campId), regs = TRAVEL_EVENTS.regions || {}, isl = TRAVEL_EVENTS.isles;
+    if (ok && (tier === 'bad' || tier === 'neutral' || tier === 'good') && isl) {
+      var list;
+      if (d100 <= 60 && reg && regs[reg]) { list = regs[reg][w][tier] || []; ev = list[Math.floor((d100 - 1) * list.length / 60)] || null; from = REGION_LABEL[reg]; }
+      else if (d100 > 60) { list = isl[w][tier] || []; ev = list[Math.floor((d100 - 61) * list.length / 40)] || null; from = 'Anywhere on the isles'; }
+    }
+    if (ok && !ev) {
+      var old = TRAVEL_EVENTS[tier] || [];
+      ev = old[old.length === 100 ? d100 - 1 : Math.floor((d100 - 1) * old.length / 100)] || null;
+    }
+    return { tier: tier, d20: d20, d100: ok ? d100 : null, text: ev, from: from };
   }
   function watchResultHtml(campId, w) {
     var r = watchResult(campId, w);
     if (!r) return '<p class="note" style="margin:0">Enter their d20.</p>';
     var html = '<p style="margin:0 0 4px"><span class="tag tier-' + r.tier + '">' + TIER_LABEL[r.tier] + '</span></p>';
-    html += r.text ? '<p class="watch-ev">' + esc(r.text) + '</p>' : '<p class="note" style="margin:0">Now they roll a d100.</p>';
+    if (r.text) {
+      var parts = String(r.text).split(' Play: ');
+      html += '<p class="watch-ev">' + esc(parts[0]) + '</p>' + (parts[1] && dmView() ? '<p class="note watch-play" style="margin:4px 0 0"><b>Play:</b> ' + esc(parts.slice(1).join(' Play: ')) + '</p>' : '') + (r.from ? '<p class="note" style="margin:4px 0 0;font-size:12px">' + esc(r.from) + '</p>' : '');
+    } else html += '<p class="note" style="margin:0">Now they roll a d100.</p>';
     return html;
   }
   function watchBlock(camp) {
     var chars = campaignChars(camp.id);
     return '<section class="block"><h2 class="sec-title">Day and night<small>Rolled at the table</small></h2>' +
       '<p class="note" style="margin:0 0 8px">Someone rolls a d20 for the day and someone for the night. 5 or lower is bad, 15 or higher is good, anything else is neutral, and a natural 1 or 20 is a disaster or something legendary. Then they roll a d100 for what happens.</p>' +
+      (dmView() ? (function () {
+        var auto = autoRegion(camp.id), pick = (ui.regionPick || {})[camp.id] || '';
+        return '<div class="field" style="margin:0 0 8px"><label for="wt-region">Where they are</label><select id="wt-region" data-camp="' + esc(camp.id) + '"><option value="">' + esc(auto ? 'Worked out from the map: ' + REGION_LABEL[auto] : 'Not sure: use the all-isles lists') + '</option>' +
+          Object.keys(REGION_LABEL).map(function (k) { return '<option value="' + k + '"' + (pick === k ? ' selected' : '') + '>' + esc(REGION_LABEL[k]) + '</option>'; }).join('') + '</select></div>';
+      })() : '') +
       ['Day', 'Night'].map(function (W) {
         var w = W.toLowerCase(), st = watchState(camp.id, w);
         return '<div class="group-box watch-box"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">' + W + '</p>' +
@@ -3724,7 +3764,7 @@
     if (!t) return;
     if (!r || !r.text) return toast('Enter both rolls first.');
     var who = st.who ? charById(st.who) : null;
-    var text = (w === 'day' ? 'Day' : 'Night') + (who ? ' (' + who.name + ' rolled ' + r.d20 + ')' : ' (rolled ' + r.d20 + ')') + ': ' + r.text;
+    var text = (w === 'day' ? 'Day' : 'Night') + (who ? ' (' + who.name + ' rolled ' + r.d20 + ')' : ' (rolled ' + r.d20 + ')') + ': ' + String(r.text).split(' Play: ')[0];
     sb.from('travel_log').insert({ campaign_id: campId, day: t.day, miles: 0, food_used: 0, map_id: t.map_id || null, text: text }).then(function (res) {
       if (res.error) throw res.error;
       ui.watch[campId + '|' + w] = { who: st.who, d20: '', d100: '' };
@@ -4739,6 +4779,11 @@
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
+    if (t.id === 'wt-region') {
+      ui.regionPick = ui.regionPick || {}; ui.regionPick[t.getAttribute('data-camp')] = t.value;
+      ['day', 'night'].forEach(function (w2) { var rb = document.getElementById('wt-res-' + w2); if (rb) rb.innerHTML = watchResultHtml(t.getAttribute('data-camp'), w2); });
+      return;
+    }
     if (t.hasAttribute('data-spell-filter')) {
       ui.spellFilter[t.getAttribute('data-spell-filter')] = t.value;
       var sbox = document.getElementById('spell-list');
