@@ -323,7 +323,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadShops(), loadCustomSubs(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadHoldings(), loadShops(), loadCustomSubs(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -3468,6 +3468,18 @@
     }
     out.boats = boatsOf(r);
     out.airships = airshipsOf(r);
+    // The party's own ships, with whatever is fitted to them, travel as modes of their own.
+    if (t && t.campaign_id && typeof holdings !== 'undefined') holdings.forEach(function (h) {
+      if (h.campaign_id !== t.campaign_id || (h.kind !== 'ship' && h.kind !== 'airship') || holdMode(h).mode !== 'party' || cantSail(h)) return;
+      var d = h.data || {}, st = shipStats(h);
+      if (h.kind === 'ship') {
+        var b = out.boats.filter(function (x) { return x.name === d.vessel; })[0]; if (!b) return;
+        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, own: true });
+      } else {
+        var a = out.airships.filter(function (x) { return x.name === (d.vessel || 'Airship'); })[0] || out.airships[0]; if (!a) return;
+        out.airships.push({ name: h.name, mi: Math.round(a.mi * (1 + st.speed) * 10) / 10, ceiling: a.ceiling + st.ceiling, storm: st.storm > 0, own: true });
+      }
+    });
     out.skies = r.skies && Object.keys(r.skies).length ? r.skies : Object.assign({}, DEFAULT_SKY);
     out.weathers = r.weathers && Object.keys(r.weathers).length ? r.weathers : Object.assign({}, DEFAULT_WEATHER);
     var cur = r.current || {};
@@ -3510,7 +3522,7 @@
     });
   }
   function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
-  function weatherMul(t, r) { r = r || rulesOf(t); var tab = airOf(t) ? r.skies : r.weathers, v = Number(tab[t.weather]); return isFinite(v) && t.weather in tab ? v : 1; }
+  function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; return air && air.storm && v === 0 ? 0.5 : v; }
   function groundName(t, c) { return airOf(t) ? 'Air' : boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
   var GROUND_NAMES = { R: 'Main roads', r: 'Other roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
   var GROUND_KEYS = ['R', 'r', 'g', 'f', 'm'];
@@ -3828,8 +3840,9 @@
     var boat = boatOf(t), air = airOf(t);
     var modeSel = dm ? '<div class="field"><label for="tr-mode">Mode</label><select id="tr-mode" data-travel="mode"><optgroup label="Over land">' +
       r.modes.map(function (k) { return '<option' + (k === t.mode ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</optgroup>' +
-      (r.boats.length ? '<optgroup label="By boat">' + r.boats.map(function (b) { return '<option' + (b.name === t.mode ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</optgroup>' : '') +
-      (r.airships.length ? '<optgroup label="By air">' + r.airships.map(function (a) { return '<option' + (a.name === t.mode ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') + '</optgroup>' : '') + '</select></div>'
+      (r.boats.some(function (b) { return b.own; }) || r.airships.some(function (a) { return a.own; }) ? '<optgroup label="Your own">' + r.boats.concat(r.airships).filter(function (b) { return b.own; }).map(function (b) { return '<option' + (b.name === t.mode ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</optgroup>' : '') +
+      (r.boats.length ? '<optgroup label="By boat">' + r.boats.filter(function (b) { return !b.own; }).map(function (b) { return '<option' + (b.name === t.mode ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</optgroup>' : '') +
+      (r.airships.length ? '<optgroup label="By air">' + r.airships.filter(function (a) { return !a.own; }).map(function (a) { return '<option' + (a.name === t.mode ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') + '</optgroup>' : '') + '</select></div>'
       : sel('tr-mode', 'Mode', r.modes);
     var fitText = function (b) {
       var riv = { s: 'any river or stream', v: 'rivers and great rivers', b: 'great rivers only' }[b.river], sea = { c: 'coastal water', d: 'coastal and deep water' }[b.sea];
@@ -3837,7 +3850,7 @@
     };
     html += '<section class="block"><h2 class="sec-title">How they’re traveling<small>' + (air ? fmtMiles(j.mpd) + ' a day by air' : boat ? fmtMiles(j.mpd) + ' a day before current' : gridOn ? 'Terrain read from the map' : fmtMiles(j.mpd) + ' a day') + '</small></h2><div class="' + (dm ? 'two' : 'vitals') + '"' + (dm ? '' : ' style="grid-template-columns:repeat(3,minmax(0,1fr))"') + '>' +
       modeSel + (air ? sel('tr-weather', 'Weather', r.skies) : boat ? sel('tr-weather', 'Weather', r.weathers) : sel('tr-pace', 'Pace', r.paces)) + (gridOn || boat || air ? '' : sel('tr-terrain', 'Terrain', r.terrains)) + '</div>' +
-      (air ? '<p class="note" style="margin:0">The ' + esc(air.name.toLowerCase()) + ' flies over anything lower than ' + air.ceiling + ' m and goes round anything higher.' + (gridOn && !grids[j.map.id].height ? ' (The heights for ' + esc(j.map.name) + ' aren’t loaded, so it flies straight.)' : '') + ' A storm grounds it.</p>'
+      (air ? '<p class="note" style="margin:0">The ' + esc(air.name.toLowerCase()) + ' flies over anything lower than ' + air.ceiling + ' m and goes round anything higher.' + (gridOn && !grids[j.map.id].height ? ' (The heights for ' + esc(j.map.name) + ' aren’t loaded, so it flies straight.)' : '') + (air.storm ? ' Its storm keel lets it fly through storms at half speed.' : ' A storm grounds it.') + '</p>'
         : boat ? '<p class="note" style="margin:0">A ' + esc(boat.name.toLowerCase()) + ' ' + esc(fitText(boat)) + '. Downstream is ×' + r.current.down + ', upstream ×' + r.current.up + '.' + (gridOn && grids[j.map.id].water ? ' The route follows water it can use on ' + esc(j.map.name) + '.' : '') + '</p>'
         : gridOn ? '<p class="note" style="margin:0">The route follows the roads on ' + esc(j.map.name) + ' and each day’s distance uses the ground they actually cross: ' + GROUND_KEYS.map(function (c) { return GROUND_NAMES[c].toLowerCase() + ' as ' + esc(r.ground[c]); }).join(', ') + '.</p>'
         : (dm ? '<p class="note" style="margin:0">Change terrain as they move from road to forest to hills. Each day uses whatever is set when you tap Next day.</p>' : '')) + '</section>';
@@ -3893,7 +3906,7 @@
       html += '</div>';
       var opt = function (list, v) { return list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === v ? ' selected' : '') + '>' + o[1] + '</option>'; }).join(''); };
       html += '<div class="field"><span class="lbl">Boats</span><div class="grid-wrap"><table class="grid"><thead><tr><th scope="col">Boat</th><th scope="col">Miles a day</th><th scope="col">Rivers</th><th scope="col">Sea</th></tr></thead><tbody>' +
-        r.boats.concat([{ name: '', mi: '', river: 's', sea: 'c' }]).map(function (b, i) {
+        r.boats.filter(function (b) { return !b.own; }).concat([{ name: '', mi: '', river: 's', sea: 'c' }]).map(function (b, i) {
           return '<tr data-boat><td><input type="text" class="input" data-boat-name value="' + esc(b.name) + '" placeholder="' + (b.name ? '' : 'Add a boat…') + '" maxlength="30" aria-label="Boat name"></td>' +
             '<td><input type="number" class="input" data-boat-mi min="0" step="1" value="' + esc(b.mi) + '" aria-label="Miles a day" inputmode="decimal"></td>' +
             '<td><select class="input" data-boat-river aria-label="Rivers it fits">' + opt(RIVER_FIT, b.river) + '</select></td>' +
@@ -3905,7 +3918,7 @@
           '<label class="sr" for="wv' + i + '">Multiplier</label><input type="number" class="input" id="wv' + i + '" data-weather-val step="0.05" min="0" value="' + (k ? esc(r.weathers[k]) : '') + '" placeholder="multiplier" inputmode="decimal"></div>';
       });
       html += '</div><div class="field"><span class="lbl">Airships</span><div class="grid-wrap"><table class="grid"><thead><tr><th scope="col">Airship</th><th scope="col">Miles a day</th><th scope="col">Ceiling (m)</th></tr></thead><tbody>' +
-        r.airships.concat([{ name: '', mi: '', ceiling: '' }]).map(function (a) {
+        r.airships.filter(function (a) { return !a.own; }).concat([{ name: '', mi: '', ceiling: '' }]).map(function (a) {
           return '<tr data-air><td><input type="text" class="input" data-air-name value="' + esc(a.name) + '" placeholder="' + (a.name ? '' : 'Add an airship…') + '" maxlength="30" aria-label="Airship name"></td>' +
             '<td><input type="number" class="input" data-air-mi min="0" step="1" value="' + esc(a.mi) + '" aria-label="Miles a day" inputmode="decimal"></td>' +
             '<td><input type="number" class="input" data-air-ceil min="0" step="50" value="' + esc(a.ceiling) + '" aria-label="Highest ground it can clear, in metres" inputmode="numeric"></td></tr>';
@@ -4357,7 +4370,7 @@
   // Payday comes every 28 days on the travel day counter. The table rolls a d20 for anything out trading.
   var holdings = [], holdSecrets = {}, estates = {};
   var PAY_EVERY = 28;
-  var HOLD_KINDS = [['ship', 'Ship'], ['airship', 'Airship'], ['caravan', 'Wagon caravan'], ['manor', 'Manor'], ['castle', 'Castle'], ['town', 'Town lordship'], ['workshop', 'Workshop'], ['vassal', 'Sworn lord (vassal)']];
+  var HOLD_KINDS = [['ship', 'Ship'], ['airship', 'Airship'], ['caravan', 'Wagons'], ['manor', 'Manor'], ['castle', 'Castle'], ['town', 'Town lordship'], ['workshop', 'Workshop'], ['vassal', 'Sworn lord (vassal)']];
   var HOLD_LABEL = {}; HOLD_KINDS.forEach(function (k) { HOLD_LABEL[k[0]] = k[1]; });
   var HOLD_LAND = { manor: 1, castle: 1, town: 1, workshop: 1 };
   var HOLD_MOVES = { ship: 1, airship: 1, caravan: 1 };
@@ -4409,7 +4422,12 @@
   }
   function buildSum(h, key) { var b = builtOf(h), n = 0; Object.keys(b).forEach(function (k) { n += Number((BUILD[k] || {})[key] || 0); }); return n; }
   function defenseOf(h) { var d = h.data || {}, s = num(d.soldiers, 0); return buildSum(h, 'def') + (s >= 10 ? 1 : 0) + (s >= 40 ? 1 : 0); }
-  function upkeepOf(h) { return Number((h.data || {}).upkeep || 0) + (hasPeople(h) ? buildSum(h, 'up') : 0); }
+  function upkeepOf(h) {
+    var d = h.data || {};
+    if (h.kind === 'caravan') return num(d.wagons, 1) * WAGON.feed;
+    if (h.kind === 'ship' || h.kind === 'airship') return Math.round(Number(d.upkeep || 0) * Math.max(0, 1 + shipStats(h).upkeep));
+    return Number(d.upkeep || 0) + (hasPeople(h) ? buildSum(h, 'up') : 0);
+  }
   function titleOf(h) { var d = h.data || {}; if (d.title) return d.title; return h.kind === 'castle' ? 'Knight of ' + h.name : h.kind === 'town' ? 'Baron of ' + (d.at || h.name) : h.kind === 'manor' ? 'Lord of ' + h.name : ''; }
   // The table's d20 for a land holding's month. raid: averted at that defense. stores: a granary halves it.
   var HOLD_EVENTS = [null,
@@ -4463,7 +4481,13 @@
   function moodTag(word) { var cls = { Devoted: 'tier-good', Content: 'tier-neutral', Grumbling: 'warn', Mutinous: 'tier-disaster' }[word] || 'plain'; return '<span class="tag ' + cls + '">' + esc(word) + '</span>'; }
   function loyOf(h, unit) { var s = holdSecrets[h.id] || {}; return Math.max(1, Math.min(10, num(s[unit], 5))); }
   function unitOf(h, unit) { var u = ((h.data || {}).units || {})[unit] || {}; return { owed: Number(u.owed || 0), missed: num(u.missed, 0), hurt: num(u.hurt, 0), streak: num(u.streak, 0) }; }
-  function unitWages(h, unit) { var d = h.data || {}; return unit === 'garrison' ? num(d.soldiers, 0) * Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE) : Number(d.wages || 0); }
+  function unitWages(h, unit) {
+    var d = h.data || {};
+    if (unit === 'garrison') return num(d.soldiers, 0) * Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE);
+    if (h.kind === 'caravan') return num(d.wagons, 1) * WAGON.driver + num(d.guards, 0) * WAGON.guard;
+    if (h.kind === 'ship' || h.kind === 'airship') return Math.round(Number(d.wages || 0) * (1 + shipStats(h).marines));
+    return Number(d.wages || 0);
+  }
   function unitsOf(h) { var d = h.data || {}, u = ['crew']; if (HOLD_LAND[h.kind] && num(d.soldiers, 0) > 0) u.push('garrison'); return u; }
   function unitName(h, unit) { return unit === 'garrison' ? 'Garrison' : h.kind === 'vassal' ? 'The lord himself' : HOLD_LAND[h.kind] ? 'Household' : 'Crew'; }
   var FAVOR = [[-3, 'Declared a rebel'], [-2, 'Angry'], [-1, 'Displeased'], [0, 'In good standing'], [1, 'Trusted'], [2, 'Favoured']];
@@ -4480,7 +4504,7 @@
   }
   // Where a mover actually is today: a ship that has finished coming home counts as moored there.
   // Price and build time for a new commission. Matches the Ships and Commissions page.
-  var COMMISSION = { 'Rowboat': [50, 2], 'River barge': [3000, 30], 'Cog': [8000, 60], 'Sailing ship': [10000, 90], 'Galley': [30000, 180], 'Airship': [60000, 360], caravan: [600, 7] };
+  var COMMISSION = { 'Rowboat': [50, 2], 'River barge': [3000, 30], 'Cog': [8000, 60], 'Sailing ship': [10000, 90], 'Galley': [30000, 180], 'Airship': [60000, 360], caravan: [150, 3] };
   function commissionOf(kind, vessel) { return COMMISSION[kind === 'caravan' ? 'caravan' : vessel] || null; }
   // The table's d20 each month an airship is on the slips: the dwarves and gnomes have to share a yard.
   function yardRoll(r) { return r <= 2 ? { days: 60, t: 'The dwarves and gnomes fell out and the yard stood empty all month. The work is set back two months.' } : r <= 6 ? { days: 14, t: 'Arguments in the yard. Work went slowly.' } : r >= 20 ? { days: -30, t: 'The two crews found a rhythm. The work is a month ahead.' } : r >= 17 ? { days: -7, t: 'A good month in the yard.' } : { days: 0, t: 'The work goes on.' }; }
@@ -4490,14 +4514,57 @@
     if (d.mode === 'returning' && num(d.ret_day, 0) <= day) return { mode: 'moored', at: d.ret_to || d.at || '', since: num(d.ret_day, day), free: !!d.ret_free };
     return { mode: d.mode || (HOLD_MOVES[h.kind] ? 'party' : 'home'), at: d.at || '', since: num(d.moor_since, day), free: !!d.moor_free };
   }
+  /* Attachments: what's fitted to a ship or airship decides what it's good for. pct = cost as a share of the hull's new price.
+     profit/speed/upkeep are fractions; def softens bad trade rolls; fight helps raids and pays in crown service; marines add fighting crew. */
+  var ATTACH = [
+    { n: 'Extra hold', on: 'both', pct: 10, days: 14, profit: 0.25, speed: -0.1, what: '+25% trade profit, 10% slower' },
+    { n: 'New rigging', on: 'ship', pct: 10, days: 14, speed: 0.15, what: '15% faster' },
+    { n: 'Gnome trim-vanes', on: 'air', pct: 12, days: 30, speed: 0.15, what: '15% faster' },
+    { n: 'Copper sheathing', on: 'ship', pct: 15, days: 21, speed: 0.05, upkeep: -0.25, what: '5% faster, a quarter less upkeep' },
+    { n: 'Reinforced hull', on: 'both', pct: 15, days: 21, def: 1, what: 'Defense +1' },
+    { n: 'Ballistae', on: 'both', pct: 10, days: 14, def: 1, fight: 1, what: 'Defense +1, fight +1' },
+    { n: 'Ram', on: 'ship', pct: 10, days: 14, fight: 1, what: 'Fight +1' },
+    { n: 'Marine berths', on: 'both', pct: 5, days: 7, marines: 0.5, fight: 2, what: 'Half again as many crew, as marines. Fight +2, higher wages' },
+    { n: 'Passenger cabins', on: 'both', pct: 10, days: 14, profit: 0.1, what: '+10% trade profit, and the odd interesting passenger' },
+    { n: 'Shallow draft', on: 'ship', pct: 15, days: 21, river: 'v', what: 'Can go up ordinary rivers' },
+    { n: 'Blessed figurehead', on: 'ship', pct: 2, days: 3, grace: 1, what: 'The crew wait out one more missed payday' },
+    { n: 'Second lift rune', on: 'air', pct: 20, days: 60, ceiling: 500, what: 'Flies 500 m higher. Dwarf work' },
+    { n: 'Storm keel', on: 'air', pct: 15, days: 45, storm: 1, what: 'Flies through storms at half speed' }
+  ];
+  var ATT = {}; ATTACH.forEach(function (a) { ATT[a.n] = a; });
+  function attachFits(h, a) { return a.on === 'both' ? (h.kind === 'ship' || h.kind === 'airship') : a.on === 'air' ? h.kind === 'airship' : h.kind === 'ship'; }
+  function hullPrice(h) { var c = commissionOf(h.kind, (h.data || {}).vessel || (h.kind === 'airship' ? 'Airship' : 'Cog')); return c ? c[0] : 8000; }
+  function attachCost(h, a) { return Math.max(1, Math.round(hullPrice(h) * a.pct / 100)); }
+  // Fitted attachments (done) and their summed effects. Wagons get defense from their guards.
+  function shipStats(h) {
+    var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0;
+    var out = { list: [], fitting: [], profit: 0, speed: 0, upkeep: 0, def: 0, fight: 0, marines: 0, grace: 0, ceiling: 0, storm: 0, river: '' };
+    (d.fits || []).forEach(function (f) {
+      var a = ATT[f.name]; if (!a) return;
+      if (num(f.done, 0) > day) { out.fitting.push(f); return; }
+      out.list.push(a.n);
+      ['profit', 'speed', 'upkeep', 'def', 'fight', 'marines', 'grace', 'ceiling', 'storm'].forEach(function (k) { if (a[k]) out[k] += a[k]; });
+      if (a.river) out.river = a.river;
+    });
+    if (h.kind === 'caravan') { var w = num(d.wagons, 1), g = num(d.guards, 0); out.def = g >= w ? 2 : g > 0 ? 1 : 0; out.fight = g > 0 ? 1 : 0; }
+    return out;
+  }
+  // Wagons are bought one at a time; their costs and takings follow the count.
+  var WAGON = { price: 150, days: 3, driver: 6, guard: 10, feed: 3, profit: 50, min: 3 };
+  // A ship in the king's pay: 3% of its price a month, more for a fighting ship.
+  function crownPay(h) { return Math.round(hullPrice(h) * 0.03 * (1 + 0.1 * shipStats(h).fight)); }
+  var RAID_ROLL = [[3, 0, 'Took a beating'], [8, 0, 'Nothing worth taking'], [14, 1.5, 'Took a prize'], [19, 2.5, 'A fat prize'], [99, 4, 'A treasure ship']];
   function cantSail(h) {
     var d = h.data || {};
     if (h.kind === 'airship' && !d.gnome) return 'Grounded: no gnome first mate or technician aboard.';
+    if (shipStats(h).fitting.length) return 'In the yard: ' + shipStats(h).fitting.map(function (f) { return f.name.toLowerCase(); }).join(', ') + ' being fitted.';
     if ((h.kind === 'ship' || h.kind === 'airship') && d.hull) return 'Hull damaged: needs a dwarf shipwright' + (h.kind === 'ship' ? ' or a dry dock' : '') + ' before it can go out.';
     return '';
   }
   function baseIncome(h) {
     var d = h.data || {};
+    if (h.kind === 'caravan') return num(d.wagons, 1) >= WAGON.min ? num(d.wagons, 1) * (d.wagon_profit != null ? Number(d.wagon_profit) : WAGON.profit) : 0;
+    if (h.kind === 'ship' || h.kind === 'airship') return Number(d.income || 0) * (1 + shipStats(h).profit);
     if (!HOLD_LAND[h.kind]) return Number(d.income || 0);
     var inc = Number(d.income || 0) * wealthMul(d.wealth || 'Modest');
     if (!hasPeople(h)) return inc;
@@ -4505,7 +4572,8 @@
     return inc * (TAX[d.tax || 'Normal'] || TAX.Normal).mul * folkOf(d.unrest).mul;
   }
   function tradeRoll(h, d20) {
-    var tab = TRADE_ROLL[h.kind === 'caravan' ? 'caravan' : 'sea'];
+    var tab = TRADE_ROLL[h.kind === 'caravan' ? 'caravan' : 'sea'], def = shipStats(h).def;
+    if (def && d20 <= 5) d20 = Math.min(6, d20 + def);
     for (var i = 0; i < tab.length; i++) if (d20 <= tab[i][0]) return { mul: tab[i][1], label: tab[i][2] };
     return { mul: 1, label: 'Fair run' };
   }
@@ -4561,7 +4629,7 @@
   function holdAway(h) {
     var st = holdMode(h), d = h.data || {}, t = travel[h.campaign_id];
     if (st.mode === 'party') return null;
-    if (st.mode === 'trading') return 'It’s out trading. Call it home first.';
+    if (st.mode === 'trading' || st.mode === 'raiding' || st.mode === 'crown') return 'It’s away ' + ({ trading: 'trading', raiding: 'raiding', crown: 'in the king’s service' })[st.mode] + '. Call it home first.';
     if (st.mode === 'returning') return 'It’s on its way home.';
     var place = HOLD_LAND[h.kind] ? d.at : st.at;
     if (!place) return null;
@@ -4595,10 +4663,13 @@
       bits.push((d.wealth || 'Modest') + (d.at ? ' · ' + d.at : ''));
     } else if (st.mode === 'party') bits.push('With the party');
     else if (st.mode === 'trading') bits.push('Out trading' + (d.port ? ' from ' + d.port : ''));
+    else if (st.mode === 'raiding') bits.push('Out raiding under the king’s letter' + (d.port ? ', from ' + d.port : ''));
+    else if (st.mode === 'crown') bits.push('In the king’s service' + (d.port ? ' out of ' + d.port : ''));
     else if (st.mode === 'building') { var lb = num(d.ready, day) - day; bits.push('Being built' + (d.yard ? ' at ' + d.yard : '') + ', ready in ' + lb + (lb === 1 ? ' day' : ' days')); }
     else if (st.mode === 'returning') { var left = num(d.ret_day, day) - day; bits.push('Coming home to ' + (d.ret_to || 'port') + ', ' + left + (left === 1 ? ' day' : ' days')); }
     else if (st.mode === 'moored') bits.push('Moored at ' + (st.at || 'port') + (st.free ? ' (own holding, free)' : ''));
     if (h.kind === 'ship' || h.kind === 'airship') bits.unshift(d.vessel || (h.kind === 'airship' ? 'Airship' : 'Ship'));
+    else if (h.kind === 'caravan') bits.unshift(num(d.wagons, 1) + (num(d.wagons, 1) === 1 ? ' wagon' : ' wagons') + (num(d.guards, 0) ? ', ' + num(d.guards, 0) + ' guards' : ''));
     else bits.unshift(HOLD_LABEL[h.kind]);
     return bits.join(' · ');
   }
@@ -4607,7 +4678,9 @@
     var inc = baseIncome(h);
     if (HOLD_LAND[h.kind]) parts.push('Earns ~' + gp(Math.round(inc)));
     else if (h.kind === 'vassal') parts.push('Pays ~' + gp(inc) + ' in dues');
-    else if (st.mode === 'trading') parts.push('Trades for ~' + gp(inc) + ' on a fair run');
+    else if (st.mode === 'trading') parts.push(inc ? 'Trades for ~' + gp(Math.round(inc)) + ' on a fair run' : 'Too few wagons to trade (' + WAGON.min + ' needed)');
+    else if (st.mode === 'raiding') parts.push('Raids: anything from a beating to ~' + gp(Math.round(Number(d.income || 0) * 4)));
+    else if (st.mode === 'crown') parts.push('The crown pays ' + gp(crownPay(h)));
     var wages = unitsOf(h).reduce(function (s, u) { return s + unitWages(h, u); }, 0);
     if (wages || h.kind !== 'vassal') parts.push('Wages ' + gp(wages));
     if (upkeepOf(h)) parts.push('Upkeep ' + gp(upkeepOf(h)));
@@ -4670,7 +4743,7 @@
     var html = '<div class="group-box" style="margin-bottom:12px"><h2 style="margin-top:0">' + esc(h.name || HOLD_LABEL[h.kind]) + '</h2>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
-      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') +
+      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + fitHtml(h) +
       '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + landHtml(h) +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
@@ -4690,9 +4763,11 @@
         var places = holdPlaces(camp.id), pick = '<select class="input rar-sel" id="hp-' + esc(h.id) + '" aria-label="Where">' + places.map(function (p) { return '<option' + (p === (d.at || d.port) ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('') + '</select>';
         if (st.mode === 'party' || st.mode === 'moored') {
           if (!warn) acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="trading">Send trading from…</button>');
+          if (!warn && d.marque) acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="raiding">Send raiding from…</button>');
+          if (!warn && d.commission) acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="crown">Into the king’s service at…</button>');
           if (st.mode === 'party') acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="moored">' + (h.kind === 'caravan' ? 'Stable at…' : 'Moor at…') + '</button>');
           else acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="party">Rejoin the party</button>');
-        } else if (st.mode === 'trading') acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="recall">Call home to…</button>');
+        } else if (st.mode === 'trading' || st.mode === 'raiding' || st.mode === 'crown') acts.push('<button type="button" class="btn small" data-act="hold-mode" data-id="' + esc(h.id) + '" data-mode="recall">Call home to…</button>');
         else if (st.mode === 'returning') acts.push('<span class="note">On its way.</span>');
         if (places.length && st.mode !== 'returning') acts.unshift('<label class="note" style="display:flex;gap:6px;align-items:center">' + pick + '<span><input type="checkbox" id="hf-' + esc(h.id) + '"> Our holding (free)</span></label>');
       }
@@ -4702,6 +4777,39 @@
     return html + '</div>';
   }
 
+  function fitHtml(h) {
+    if (h.kind !== 'ship' && h.kind !== 'airship' && h.kind !== 'caravan') return '';
+    var d = h.data || {}, st = shipStats(h), t = travel[h.campaign_id], day = t ? t.day : 0, bits = [];
+    if (h.kind !== 'caravan') {
+      if (st.speed) bits.push((st.speed > 0 ? '+' : '') + Math.round(st.speed * 100) + '% speed');
+      if (st.profit) bits.push('+' + Math.round(st.profit * 100) + '% profit');
+      if (st.ceiling) bits.push('ceiling +' + st.ceiling + ' m');
+      if (st.storm) bits.push('flies in storms');
+      if (st.marines) bits.push(Math.round(num(d.crew, 0) * st.marines) + ' marines');
+    }
+    if (st.def) bits.push('defense ' + st.def);
+    if (st.fight) bits.push('fight ' + st.fight);
+    var royal = [d.marque ? 'letter of marque' : '', d.commission ? 'king’s commission' : ''].filter(Boolean);
+    var html = (st.list.length || bits.length || royal.length ? '<p class="note" style="margin:0 0 6px">' + (st.list.length ? 'Fitted: ' + esc(st.list.join(', ')) + '. ' : '') + (bits.length ? esc(bits.join(' · ')) + '. ' : '') + (royal.length ? 'Holds a ' + esc(royal.join(' and a ')) + '.' : '') + '</p>' : '');
+    if (st.fitting.length) html += '<p class="note" style="margin:0 0 6px">Being fitted: ' + esc(st.fitting.map(function (f) { var l = num(f.done, 0) - day; return f.name + ' (' + l + (l === 1 ? ' day' : ' days') + ')'; }).join(', ')) + '.</p>';
+    if (dmView() && h.kind !== 'caravan') {
+      var have = (d.fits || []).map(function (f) { return f.name; }), can = ATTACH.filter(function (a) { return attachFits(h, a) && have.indexOf(a.n) < 0; });
+      if (can.length) html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><select class="input" style="flex:1 1 100%;max-width:100%;min-width:0" id="hfit-' + esc(h.id) + '" aria-label="Attachment">' + can.map(function (a) { return '<option value="' + esc(a.n) + '">' + esc(a.n + ' · ' + attachCost(h, a).toLocaleString() + ' gp · ' + a.days + 'd') + '</option>'; }).join('') + '</select><p class="note" style="margin:0;flex:1 1 100%">' + can.map(function (a) { return '<b>' + esc(a.n) + ':</b> ' + esc(a.what); }).join(' · ') + '</p>' +
+        '<label class="note"><input type="checkbox" id="hfitpay-' + esc(h.id) + '" checked> Pay from coffer</label><button type="button" class="btn small" data-act="hold-fit" data-id="' + esc(h.id) + '">Fit it</button>' +
+        (have.length ? '<button type="button" class="btn small quiet" data-act="hold-unfit" data-id="' + esc(h.id) + '">Strip the last one</button>' : '') + '</div>';
+    }
+    return html;
+  }
+  function holdFit(h, strip) {
+    var d = h.data || {}, fits = (d.fits || []).slice(), t = travel[h.campaign_id], day = t ? t.day : 0, patch = {};
+    if (strip) { var gone = fits.pop(); patch.fits = fits; return saveHolding(h, patch).then(function () { toast((gone ? gone.name : 'Nothing') + ' stripped from ' + h.name); render(); }).catch(function (e) { fail(e); }); }
+    var name = (document.getElementById('hfit-' + h.id) || {}).value, a = ATT[name]; if (!a) return;
+    var cost = attachCost(h, a), pay = (document.getElementById('hfitpay-' + h.id) || {}).checked;
+    if (pay && cofferOf(h) < cost) return toast('The coffer needs ' + gp(cost) + ' for that.');
+    fits.push({ name: a.n, start: day, done: day + a.days, cost: cost });
+    patch.fits = fits; if (pay) patch.coffer = cofferOf(h) - cost;
+    saveHolding(h, patch).then(function () { toast(a.n + ' going onto ' + h.name + ', ready in ' + a.days + ' days'); render(); }).catch(function (e) { fail(e); });
+  }
   function fealtyHtml(h) {
     var d = h.data || {}, html = '', dm = dmView(), touch = canTouch(h);
     if (h.kind === 'vassal') {
@@ -4769,12 +4877,15 @@
     html += '<div class="field"><label for="hd-name">Name</label><input type="text" id="hd-name" maxlength="60" value="' + esc(h ? h.name : '') + '" placeholder="e.g. The Salt Hen"></div><div class="two">' +
       '<div class="field"><label for="hd-owner">Owner</label><select id="hd-owner"><option value="">The party</option>' + campaignChars(camp.id).map(function (c) { return '<option value="' + esc(c.id) + '"' + (h && h.owner_char === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select><span class="hint">Personal holdings are only seen by their owner and you.</span></div>' +
       numF('hd-coffer', isNew ? 'Starting coffer, gp' : 'Coffer, gp', h ? cofferOf(h) : 0, 1, 'Wages and upkeep come out of this.');
-    if (kind === 'ship' && r) html += '<div class="field"><label for="hd-vessel">Vessel</label><select id="hd-vessel">' + r.boats.map(function (b) { return '<option' + (b.name === vname ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></div>';
-    if (kind === 'airship' && r) html += '<div class="field"><label for="hd-vessel">Airship</label><select id="hd-vessel">' + r.airships.map(function (a) { return '<option' + (a.name === vname ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') + '</select></div>';
+    if (kind === 'ship' && r) html += '<div class="field"><label for="hd-vessel">Vessel</label><select id="hd-vessel">' + r.boats.filter(function (b) { return !b.own; }).map(function (b) { return '<option' + (b.name === vname ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></div>';
+    if (kind === 'airship' && r) html += '<div class="field"><label for="hd-vessel">Airship</label><select id="hd-vessel">' + r.airships.filter(function (a) { return !a.own; }).map(function (a) { return '<option' + (a.name === vname ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('') + '</select></div>';
     var others = holdingsFor(camp.id).filter(function (x) { return (!h || x.id !== h.id) && hasPeople(x); });
     if (kind === 'vassal') html += numF('hd-income', 'Dues he pays a month, gp', v('income'), 1, 'He holds back some if he’s restless.') + numF('hd-vsold', 'Soldiers he can bring', num(d.soldiers, 0)) +
       '<div class="field"><label for="hd-at">His seat</label><input type="text" id="hd-at" maxlength="60" value="' + esc(d.at || '') + '" placeholder="e.g. Dyer’s Ford"></div>' +
       '<div class="field"><label for="hd-lh">Sworn to</label><select id="hd-lh"><option value="">(dues wait in his coffer)</option>' + others.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === d.liege_hid ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select><span class="hint">His dues go into that holding’s coffer.</span></div>';
+    else if (kind === 'caravan') html += numF('hd-wagons', 'Wagons', num(d.wagons, 1), 1, 'About ' + WAGON.price + ' gp each with two draught horses. ' + WAGON.min + ' or more can trade.') +
+      numF('hd-guards', 'Guards', num(d.guards, 0), 1, WAGON.guard + ' gp a month each. One per wagon turns ambushes into poor runs.') +
+      numF('hd-wprofit', 'Profit per wagon on a fair run, gp', d.wagon_profit != null ? d.wagon_profit : WAGON.profit);
     else html += numF('hd-crew', HOLD_LAND[kind] ? 'Household' : 'Crew', v('crew')) + numF('hd-wages', 'Wages a month (all of them), gp', v('wages')) + numF('hd-upkeep', 'Upkeep a month, gp', v('upkeep')) +
       numF('hd-income', HOLD_LAND[kind] ? 'Base income a month, gp' : 'Trade profit on a fair run, gp', v('income'), 1, HOLD_LAND[kind] ? 'Times the area’s wealth, plus extras.' : 'The d20 on payday scales this.');
     if (HOLD_MOVES[kind] && isNew) {
@@ -4800,6 +4911,8 @@
         (isNew ? '' : numF('hd-unrest', 'Unrest, 0–10', num(d.unrest, 2), 1, '4+ uneasy, 6+ angry, 8+ rioting, 10 in revolt.')) + '</div>' +
         '<div class="field"><span class="k">Already standing when they got it</span>' + BUILDINGS.map(function (b) { return '<label class="check"><input type="checkbox" data-extra="' + esc(b.n) + '"' + ((d.extras || {})[b.n] ? ' checked' : '') + '> ' + b.n + ' <span class="note">(' + esc(b.what) + ')</span></label>'; }).join('') + '</div>';
     }
+    if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-marque"' + (d.marque ? ' checked' : '') + '> Letter of marque from the king (may raid his enemies)</label>' +
+      '<label class="check"><input type="checkbox" id="hd-commission"' + (d.commission ? ' checked' : '') + '> The king’s commission (may serve the crown for pay)</label>';
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-gnome"' + (d.gnome ? ' checked' : '') + '> A gnome first mate or technician is aboard</label>';
     if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-hull"' + (d.hull ? ' checked' : '') + '> Hull damaged (needs a dwarf to fix)</label>';
     var loyF = function (unit, label) { if (isNew && POP_DEF[kind]) return ''; var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
@@ -4818,7 +4931,8 @@
     var d = Object.assign({}, h ? h.data : {});
     var n = function (k, fallback) { var x = parseFloat(val(k)); return isNaN(x) ? fallback : Math.max(0, x); };
     if (val('hd-vessel') != null) d.vessel = val('hd-vessel');
-    d.crew = n('hd-crew', 0); d.wages = n('hd-wages', 0); d.upkeep = n('hd-upkeep', 0); d.income = n('hd-income', 0);
+    if (val('hd-crew') != null) { d.crew = n('hd-crew', 0); d.wages = n('hd-wages', 0); d.upkeep = n('hd-upkeep', 0); }
+    if (val('hd-income') != null) d.income = n('hd-income', 0);
     if (val('hd-moor') != null) d.moor = n('hd-moor', 0);
     if (val('hd-wealth') != null) d.wealth = val('hd-wealth');
     if (val('hd-at') != null) d.at = val('hd-at').trim().slice(0, 60);
@@ -4835,6 +4949,9 @@
     var ex = f.querySelectorAll('[data-extra]'); if (ex.length) { d.extras = {}; Array.prototype.forEach.call(ex, function (c) { if (c.checked) d.extras[c.getAttribute('data-extra')] = true; }); }
     if (document.getElementById('hd-gnome')) d.gnome = document.getElementById('hd-gnome').checked;
     if (document.getElementById('hd-hull')) d.hull = document.getElementById('hd-hull').checked;
+    if (document.getElementById('hd-marque')) d.marque = document.getElementById('hd-marque').checked;
+    if (document.getElementById('hd-commission')) d.commission = document.getElementById('hd-commission').checked;
+    if (val('hd-wagons') != null) { d.wagons = Math.max(1, Math.round(n('hd-wagons', 1))); d.guards = Math.round(n('hd-guards', 0)); d.wagon_profit = n('hd-wprofit', WAGON.profit); d.crew = d.wagons; }
     d.notes = (val('hd-notes') || '').slice(0, 400);
     d.coffer = n('hd-coffer', 0);
     var owner = val('hd-owner') || null;
@@ -4868,8 +4985,8 @@
     var d = h.data || {}, st = holdMode(h), t = travel[h.campaign_id], day = t ? t.day : 0;
     var pick = document.getElementById('hp-' + h.id), place = pick ? pick.value : '', free = !!(document.getElementById('hf-' + h.id) || {}).checked;
     var patch = {};
-    if ((mode === 'trading' || mode === 'moored' || mode === 'recall') && !place) return toast('Put some towns on the travel map first.');
-    if (mode === 'trading') { patch = { mode: 'trading', port: place, at: place }; }
+    if ((mode === 'trading' || mode === 'raiding' || mode === 'crown' || mode === 'moored' || mode === 'recall') && !place) return toast('Put some towns on the travel map first.');
+    if (mode === 'trading' || mode === 'raiding' || mode === 'crown') { patch = { mode: mode, port: place, at: place }; }
     else if (mode === 'moored') { patch = { mode: 'moored', at: place, moor_since: day, moor_free: free }; }
     else if (mode === 'party') { patch = { mode: 'party' }; }
     else if (mode === 'recall') {
@@ -4881,7 +4998,7 @@
     }
     if (st.mode === 'moored' && d.mode === 'returning') patch.moor_since = patch.moor_since != null ? patch.moor_since : st.since;
     saveHolding(h, patch).then(function () {
-      toast(mode === 'recall' ? h.name + ' will be home in ' + (patch.ret_day - day) + ' days' : mode === 'trading' ? h.name + ' is out trading' : mode === 'moored' ? h.name + ' is moored at ' + place : h.name + ' is with the party');
+      toast(mode === 'recall' ? h.name + ' will be home in ' + (patch.ret_day - day) + ' days' : mode === 'trading' ? h.name + ' is out trading' : mode === 'raiding' ? h.name + ' is out raiding' : mode === 'crown' ? h.name + ' is in the king’s service' : mode === 'moored' ? h.name + ' is moored at ' + place : h.name + ' is with the party');
       render();
     }).catch(function (err) { fail(err, 'Could not change that.'); });
   }
@@ -4899,7 +5016,8 @@
       });
       if (hasPeople(h)) html += '<div class="tbl-row"><div class="main"><b>How the month went</b><span>d20 · leave blank for a quiet month</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-hroll="' + esc(h.id) + '" placeholder="d20"></div>';
       if (st.mode === 'building' && h.kind === 'airship') html += '<div class="tbl-row"><div class="main"><b>The yard this month</b><span>d20 · 1–2 the crews fall out, 20 a month ahead</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-yroll="' + esc(h.id) + '" placeholder="d20"></div>';
-      if (HOLD_MOVES[h.kind] && st.mode === 'trading') html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
+      if (HOLD_MOVES[h.kind] && st.mode === 'raiding') html += '<div class="tbl-row"><div class="main"><b>Raid roll</b><span>1–3 a beating, 20 a treasure ship · fight +' + Math.floor(shipStats(h).fight / 2) + '</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
+      if (HOLD_MOVES[h.kind] && st.mode === 'trading' && baseIncome(h) > 0) html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
     });
     return html + '</div><div class="actions"><button type="submit" class="btn primary">Settle payday</button></div></form></section>';
   }
@@ -4928,7 +5046,7 @@
       }
       var crewBand = band(loyOf(h, 'crew'));
       // Money in first: the month's income or the trading run.
-      var inc = 0, ev = null, unrest = num(d.unrest, 2), evUnrest = 0;
+      var inc = 0, ev = null, unrest = num(d.unrest, 2), evUnrest = 0, crewMod = 0;
       if (hasPeople(h)) {
         // Finished buildings first, so they count this month.
         var still = [];
@@ -4959,8 +5077,16 @@
         if (inc) rep.push('Brought in ' + gp(inc) + '.');
       }
       else if (h.kind === 'vassal') { inc = Number(d.income || 0); }
+      else if (st.mode === 'crown') { inc = crownPay(h); rep.push('In the king’s service: the crown paid ' + gp(inc) + '.'); }
+      else if (rolls[h.id] && st.mode === 'raiding') {
+        var rr = Math.min(20, rolls[h.id] + Math.floor(shipStats(h).fight / 2)), rx = RAID_ROLL.filter(function (x) { return rr <= x[0]; })[0];
+        inc = Number(d.income || 0) * rx[1];
+        if (rx[0] === 3) { d.hull = true; crewMod -= 1; rep.push('Took a beating: the hull is damaged and the crew are shaken. Nothing taken.'); }
+        else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money.' : '.'));
+        if (rx[1] >= 2.5) { crewMod += 1; rep.push('The crew drank to their shares.'); }
+      }
       else if (rolls[h.id]) {
-        var tr = tradeRoll(h, rolls[h.id]); inc = Number(d.income || 0) * tr.mul;
+        var tr = tradeRoll(h, rolls[h.id]); inc = baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul;
         rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') : tr.label + ': made ' + gp(inc) + '.');
       }
       var levyN = hasPeople(h) && d.levy ? num(d.levy.n, 0) : 0;
@@ -5017,10 +5143,11 @@
         } else {
           var paid = held ? 0 : Math.max(0, cof); cof -= paid;
           uu.owed += w - paid; uu.missed += 1; uu.streak = 0;
-          if (uu.missed > GRACE[band(l)]) { uu.hurt += 1; l -= uu.hurt; }
+          if (uu.missed > GRACE[band(l)] + (u === 'crew' ? shipStats(h).grace : 0)) { uu.hurt += 1; l -= uu.hurt; }
           rep.push(nm + (held ? ' not paid, on your orders.' : paid ? ' only got ' + gp(paid) + '. The coffer is empty.' : ' went unpaid. The coffer is empty.') + ' Owed ' + gp(uu.owed) + '.');
           if (u === 'crew') short = true;
         }
+        if (u === 'crew') l += crewMod;
         l = Math.max(1, Math.min(10, l));
         secret[u] = l; d.units[u] = uu;
         if (u === 'crew') crewBand = band(l);
@@ -5110,6 +5237,7 @@
       case 'hold-build': var hbd = holdingById(el.getAttribute('data-id')); if (hbd) holdOrder(hbd, 'build'); break;
       case 'hold-levy': case 'hold-disband': case 'hold-answer': case 'hold-scutage': case 'hold-call':
         var hfe = holdingById(el.getAttribute('data-id')); if (hfe) holdOrder(hfe, act.slice(5)); break;
+      case 'hold-fit': case 'hold-unfit': var hft = holdingById(el.getAttribute('data-id')); if (hft) holdFit(hft, act === 'hold-unfit'); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
