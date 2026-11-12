@@ -307,7 +307,7 @@
     });
   }
   function loadMarkers(mapId) {
-    return sb.from('map_markers').select('id, map_id, kind, character_id, label, x, y, article_slug, target_map_id').eq('map_id', mapId).then(function (r) {
+    return sb.from('map_markers').select('id, map_id, kind, character_id, label, x, y, article_slug, target_map_id, toll').eq('map_id', mapId).then(function (r) {
       if (r.error) throw r.error;
       markers[mapId] = r.data || [];
     });
@@ -315,7 +315,7 @@
   function loadTravel() {
     return Promise.all([
       sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival'),
-      sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, created_at').order('created_at', { ascending: false }).limit(500)
+      sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, paid, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
       travel = {};
@@ -2146,9 +2146,9 @@
       Promise.all([list ? null : loadMarkers(m.id), ensureGrid(m.id)]).then(function () { if (parseRoute().arg === m.id) render(); }).catch(function (e) { fail(e); });
       return;
     }
-    var stopCount = list.filter(function (mk) { return mk.kind === 'stop'; }).length;
-    list = list.filter(function (mk) { return mk.kind !== 'stop' || (dm && ui.showTowns); });
-    if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || m.show_markers; });
+    var stopCount = list.filter(function (mk) { return mk.kind === 'stop' || mk.kind === 'toll'; }).length;
+    list = list.filter(function (mk) { return (mk.kind !== 'stop' && mk.kind !== 'toll') || (dm && ui.showTowns); });
+    if (!dm) list = list.filter(function (mk) { return mk.kind === 'place' || (m.show_markers && mk.kind !== 'toll'); });
     var placing = ui.placing && ui.placing.mapId === m.id ? ui.placing : null;
     var chars = camp ? campaignChars(camp.id) : characters;
     // The journey (if any) that uses this map.
@@ -2162,15 +2162,16 @@
       html += '<div class="actions"><button type="button" class="btn small' + (placing && placing.kind === 'party' ? ' primary' : '') + '" data-act="place" data-kind="party">Move party</button>' +
         (chars.length ? '<label class="sr" for="place-char">Move a character</label><select class="input" id="place-char" style="width:auto;min-height:36px;font-size:13px;padding:4px 8px"><option value="">Move character…</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>'; }).join('') + '</select>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind === 'place' ? ' primary' : '') + '" data-act="place" data-kind="place">+ Pin</button>' +
+        '<button type="button" class="btn small' + (placing && placing.kind === 'toll' ? ' primary' : '') + '" data-act="place" data-kind="toll">+ Toll</button>' +
         (tcamp ? '<button type="button" class="btn small' + (placing && placing.kind === 'dest' ? ' primary' : '') + '" data-act="place" data-kind="dest">Set destination</button>' : '') +
         '<button type="button" class="btn small' + (placing && placing.kind && placing.kind.indexOf('cal') === 0 ? ' primary' : '') + '" data-act="place" data-kind="cal1">Calibrate scale</button>' +
-        (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns (' + stopCount + ')</button>' : '') +
+        (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns & tolls (' + stopCount + ')</button>' : '') +
         '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>' +
         (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
       if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
       if (tstate && tstate.map_id === m.id) html += arrivalBlock(tcamp, true);
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
-      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
+      if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.kind === 'toll' ? 'the toll (on the bridge itself)' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
     }
     html += '<div class="map-frame" id="map-frame"><div class="map-inner" id="map-inner" style="width:' + (zoom * 100) + '%"' + (placing ? ' data-placing="1"' : '') + '>' +
       '<img id="map-img" alt="' + esc(m.name) + '" draggable="false" style="aspect-ratio:' + (m.width && m.height ? m.width + '/' + m.height : 'auto') + '">';
@@ -2205,6 +2206,16 @@
       html += '<section class="group-box"><h2>' + esc(ssel.name) + '</h2><p class="note" style="margin:0">' + esc([ssel.kind, ssel.keeper.replace(/\[\[|\]\]/g, '')].filter(Boolean).join(' · ')) + ' · ' + (ssel.stock || []).length + ' items</p><div class="actions">' +
         '<a class="btn small primary" href="#/shop/' + encodeURIComponent(ssel.id) + '">Open shop</a><button type="button" class="btn small" data-act="shop-place" data-id="' + esc(ssel.id) + '">Move</button>' +
         '<button type="button" class="btn small" data-act="shop-unpin" data-id="' + esc(ssel.id) + '">Take off map</button><button type="button" class="btn small quiet" data-act="shop-close">Close</button></div></section>';
+    } else if (sel && sel.kind === 'toll' && dm) {
+      var tl = tollOf(sel);
+      html += '<form class="form group-box" id="toll-form" novalidate data-id="' + esc(sel.id) + '"><h2>' + esc(sel.label || 'Toll') + '</h2>' +
+        '<p class="note" style="margin:0 0 8px">Only you see tolls. When the party’s road crosses one, the day stops to ask whether they pay.</p>' +
+        '<div class="field"><label for="tl-name">Name</label><input type="text" id="tl-name" maxlength="60" value="' + esc(sel.label || '') + '" placeholder="e.g. Crownsgate bridge"></div>' +
+        '<div class="two"><div class="field"><label for="tl-foot">Each on foot (cp)</label><input type="number" id="tl-foot" min="0" step="1" value="' + tl.foot + '" inputmode="numeric"></div>' +
+        '<div class="field"><label for="tl-mount">Each riding or with a cart (cp)</label><input type="number" id="tl-mount" min="0" step="1" value="' + tl.mount + '" inputmode="numeric"></div></div>' +
+        '<p class="note" style="margin:0">' + esc(coinName('cp')) + ': 1 cp. ' + esc(coinName('sp')) + ': 10 cp.</p>' +
+        '<div class="actions"><button type="submit" class="btn primary">Save toll</button><button type="button" class="btn small" data-act="marker-move" data-id="' + esc(sel.id) + '">Move</button>' +
+        '<button type="button" class="btn small danger" data-act="marker-delete" data-id="' + esc(sel.id) + '">' + (ui.pendingDelete === sel.id ? 'Tap again' : 'Remove') + '</button><button type="button" class="btn small quiet" data-act="marker-close">Close</button></div></form>';
     } else if (sel) {
       var art = null;
       if (sel.article_slug) art = articleBySlug(sel.article_slug);
@@ -2219,7 +2230,7 @@
     }
 
     if (dm && loaded.shops) html += mapShopsSection(m);
-    var people = list.filter(function (mk) { return mk.kind !== 'place' && mk.kind !== 'stop'; });
+    var people = list.filter(function (mk) { return mk.kind !== 'place' && mk.kind !== 'stop' && mk.kind !== 'toll'; });
     if (dm || m.show_markers) {
       html += '<section class="block"><h2 class="sec-title">Who’s here<small>' + (dm ? (m.show_markers ? 'Players can see these' : 'Only you can see these') : '') + '</small></h2>' +
         (people.length ? '<div class="pill-row">' + people.map(function (mk) { return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="marker" data-id="' + esc(mk.id) + '">' + esc(markerLabel(mk)) + '</button>'; }).join('') + '</div>' : '<div class="empty">Nobody placed on this map yet.' + (dm ? ' Use “Move party” or pick a character above, then tap the map.' : '') + '</div>') + '</section>';
@@ -2260,6 +2271,14 @@
       return go('#/shop-edit/new');
     }
     if (p.kind === 'place' && !p.markerId) { ui.pendingPin = { mapId: m.id, x: x, y: y }; ui.selectedMarker = null; return render(); }
+    if (p.kind === 'toll' && !p.markerId) {
+      ui.showTowns = true;
+      return sb.from('map_markers').insert({ map_id: m.id, kind: 'toll', label: 'Toll bridge', toll: { foot: TOLL_DEFAULT.foot, mount: TOLL_DEFAULT.mount }, x: x, y: y }).select('id').single().then(function (r) {
+        if (r.error) return fail(r.error, 'Could not place the toll.');
+        ui.selectedMarker = r.data.id;
+        loadMarkers(m.id).then(function () { toast('Toll placed. Name it and set the price below.'); render(); });
+      });
+    }
     var list = markers[m.id] || [];
     var existing = p.markerId ? list.filter(function (mk) { return mk.id === p.markerId; })[0]
       : list.filter(function (mk) { return mk.kind === p.kind && (p.kind !== 'character' || mk.character_id === p.characterId); })[0];
@@ -3747,6 +3766,76 @@
   /* ---------- Towns on the road: stop or go through ---------- */
   var STOP_MILES = 2;   // how close the road has to come to a town for the party to meet it
   function townsOn(mapId) { return (markers[mapId] || []).filter(function (mk) { return mk.kind === 'stop' || mk.kind === 'place'; }); }
+
+  /* ---------- Tolls on the road ---------- */
+  var TOLL_MILES = 1;   // how close the road has to pass a toll to cross it
+  var TOLL_DEFAULT = { foot: 1, mount: 10 };   // copper a head on foot; a head riding or with a cart
+  function tollOf(mk) { var t = mk && mk.toll || {}; return { foot: Math.max(0, num(t.foot, TOLL_DEFAULT.foot)), mount: Math.max(0, num(t.mount, TOLL_DEFAULT.mount)) }; }
+  function mounted(t) { return /horse|ride|riding|mount|cart|wagon|pony|carriage/i.test(String(t.mode || '')); }
+  function tollCost(t, mk) { var tl = tollOf(mk); return (mounted(t) ? tl.mount : tl.foot) * partySize(t); }
+  // Splits a toll across purses: even shares, with anyone short covered by whoever has the most left. Null if they can't cover it between them.
+  function tollShares(chars, total, payer) {
+    if (total <= 0) return [];
+    if (payer) { var pc = chars.filter(function (c) { return c.id === payer; })[0]; return pc && walletCp(pc.sheet) >= total ? [{ c: pc.id, cp: total }] : null; }
+    var have = chars.map(function (c) { return { c: c.id, left: walletCp(c.sheet), cp: 0 }; });
+    if (!have.length || have.reduce(function (a, h) { return a + h.left; }, 0) < total) return null;
+    var owed = total;
+    while (owed > 0) {
+      var able = have.filter(function (h) { return h.left > 0; });
+      var each = Math.max(1, Math.floor(owed / able.length));
+      able.forEach(function (h) { if (owed <= 0) return; var take = Math.min(each, h.left, owed); h.cp += take; h.left -= take; owed -= take; });
+    }
+    return have.filter(function (h) { return h.cp > 0; }).map(function (h) { return { c: h.c, cp: h.cp }; });
+  }
+  function dayTolls(t, j, mv) {
+    var m = j.map, ratio = m.width && m.height ? m.height / m.width : 1, W = Number(m.miles_across), hits = [];
+    (markers[m.id] || []).filter(function (mk) { return mk.kind === 'toll'; }).forEach(function (tw) {
+      if (mapMiles(m, j.party.x, j.party.y, tw.x, tw.y) <= TOLL_MILES) return;
+      var best = null;
+      for (var i = 1; i < mv.path.length; i++) {
+        var a = mv.path[i - 1], b = mv.path[i];
+        var ax = a.x * W, ay = a.y * ratio * W, bx = b.x * W, by = b.y * ratio * W, px = tw.x * W, py = tw.y * ratio * W;
+        var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy, u = len2 ? Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / len2)) : 0;
+        var dist = Math.hypot(ax + vx * u - px, ay + vy * u - py);
+        if (!best || dist < best.dist) best = { dist: dist, d: a.d + (b.d - a.d) * u };
+      }
+      if (best && best.dist <= TOLL_MILES) hits.push({ toll: true, id: tw.id, label: tw.label || 'Toll', cp: tollCost(t, tw), x: tw.x, y: tw.y, d: Math.max(0.005, best.d) });
+    });
+    return hits;
+  }
+  function tollDecide(how) {
+    var s = ui.stopAsk; if (!s) return;
+    var tw = s.list[s.i], t = travel[s.campId];
+    var rec = { label: tw.label, how: how, cp: tw.cp };
+    if (how === 'paid') {
+      var sel = document.getElementById('toll-payer'), payer = sel ? sel.value : '';
+      var shares = tollShares(campaignChars(s.campId), tw.cp, payer);
+      if (!shares) return toast(payer ? 'They don’t have enough on them.' : 'The party doesn’t have enough between them.');
+      rec.shares = shares; rec.payer = payer;
+    }
+    (s.tolls = s.tolls || []).push(rec);
+    s.i++;
+    if (s.i < s.list.length) return drawStopAsk();
+    ui.stopAsk = null; drawStopAsk();
+    nextDay(s.campId, { decided: true, passed: s.passed, tolls: s.tolls });
+  }
+  function saveToll(form) {
+    var id = form.getAttribute('data-id');
+    var patch = { label: document.getElementById('tl-name').value.trim().slice(0, 60) || 'Toll', toll: { foot: Math.max(0, Math.round(num(document.getElementById('tl-foot').value, 0))), mount: Math.max(0, Math.round(num(document.getElementById('tl-mount').value, 0))) } };
+    sb.from('map_markers').update(patch).eq('id', id).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not save the toll.');
+      Object.keys(markers).forEach(function (k) { (markers[k] || []).forEach(function (mk) { if (mk.id === id) Object.assign(mk, patch); }); });
+      ui.selectedMarker = null; toast('Toll saved'); rememberMapScroll(); render();
+    });
+  }
+  // Takes the toll out of their purses (or puts it back, sign -1). Returns the saves.
+  function moveCoins(shares, sign) {
+    return (shares || []).map(function (sh) {
+      var c = characters.filter(function (x) { return x.id === sh.c; })[0]; if (!c) return null;
+      setWallet(c.sheet, Math.max(0, walletCp(c.sheet) - sign * sh.cp));
+      return sb.from('characters').update({ sheet: c.sheet }).eq('id', c.id);
+    }).filter(Boolean);
+  }
   function mapMiles(m, ax, ay, bx, by) { var ratio = m.width && m.height ? m.height / m.width : 1; return Math.hypot(bx - ax, (by - ay) * ratio) * Number(m.miles_across); }
   // One day's movement (or part of one): where they end up, how far, over what ground, and the path walked with the day-fraction at each point.
   function dayMove(t, j, budget) {
@@ -3811,7 +3900,19 @@
     if (!box) { box = document.createElement('div'); box.id = 'stop-ask'; box.className = 'ask-wrap'; document.body.appendChild(box); }
     var tw = s.list[s.i], t = travel[s.campId];
     var when = tw.d < 0.34 ? 'early in the day' : tw.d < 0.67 ? 'around midday' : 'late in the day';
-    box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + (s.list.length > 1 ? ' · town ' + (s.i + 1) + ' of ' + s.list.length : '') + '</p>' +
+    var step = s.list.length > 1 ? ' · ' + (s.i + 1) + ' of ' + s.list.length : '';
+    if (tw.toll) {
+      var chars = campaignChars(s.campId), purse = chars.reduce(function (a, c) { return a + walletCp(c.sheet); }, 0);
+      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
+        '<h2 id="ask-h">Toll at ' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">They reach it ' + when + '.</p>' +
+        '<p style="margin:0 0 10px">The toll is <b>' + esc(money(tw.cp)) + '</b>: ' + partySize(t) + ' ' + (mounted(t) ? 'riding' : 'on foot') + '.</p>' +
+        (chars.length ? '<div class="field" style="margin:0 0 10px"><label for="toll-payer">Who pays</label><select id="toll-payer"><option value="">Split across the party</option>' +
+          chars.map(function (c) { var w = walletCp(c.sheet); return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (' + esc(w > 0 ? money(w) : 'no coin') + ')</option>'; }).join('') + '</select><p class="note" style="margin:4px 0 0">' + esc(purse > 0 ? money(purse) : 'No coin') + ' between them.</p></div>' : '') +
+        '<div class="actions" style="margin:0"><button type="button" class="btn primary" data-act="toll-pay">Pay</button><button type="button" class="btn" data-act="toll-talk">Talk their way past</button><button type="button" class="btn" data-act="toll-around">Go around</button><button type="button" class="btn quiet" data-act="town-cancel">Cancel</button></div>' +
+        '<p class="note" style="margin:8px 0 0">Talking past or going around: you run it at the table. The log just notes it.</p></div>';
+      return;
+    }
+    box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
       '<h2 id="ask-h">The road reaches ' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">They get there ' + when + '.' + (s.passed.length ? ' Already went through ' + esc(s.passed.join(', ')) + '.' : '') + '</p>' +
       (townWhat(tw.slug) ? '<p style="margin:0 0 10px">' + esc(townWhat(tw.slug)) + '</p>' : '') +
       '<p style="margin:0 0 12px"><b>Are they stopping or going through?</b></p>' +
@@ -3820,11 +3921,11 @@
   function townDecide(stop) {
     var s = ui.stopAsk; if (!s) return;
     var tw = s.list[s.i];
-    if (stop) { ui.stopAsk = null; drawStopAsk(); return nextDay(s.campId, { decided: true, passed: s.passed, stop: tw }); }
+    if (stop) { ui.stopAsk = null; drawStopAsk(); return nextDay(s.campId, { decided: true, passed: s.passed, stop: tw, tolls: s.tolls }); }
     s.passed.push(tw.label); s.i++;
     if (s.i < s.list.length) return drawStopAsk();
     ui.stopAsk = null; drawStopAsk();
-    nextDay(s.campId, { decided: true, passed: s.passed });
+    nextDay(s.campId, { decided: true, passed: s.passed, tolls: s.tolls });
   }
   // They found it: the page opens up to players.
   function discover(slug) {
@@ -3833,6 +3934,12 @@
     return sb.from('articles').update({ hidden: false }).eq('id', a.id).then(function (r) { if (r.error) throw r.error; a.hidden = false; });
   }
 
+  function tollText(tolls) {
+    return (tolls || []).map(function (tl) {
+      if (tl.how === 'paid') { var who = tl.payer ? charName(tl.payer) : ''; return ' Paid ' + money(tl.cp) + ' toll at ' + tl.label + (who ? ' (' + who + ' paid)' : '') + '.'; }
+      return tl.how === 'talked' ? ' Talked their way past the toll at ' + tl.label + '.' : ' Went around the toll at ' + tl.label + '.';
+    }).join('');
+  }
   function nextDay(campId, opt) {
     opt = opt || {};
     var t = travel[campId];
@@ -3844,8 +3951,8 @@
       if (moving) {
         var mv = dayMove(t, j, opt.stop ? opt.stop.d : 1);
         if (!opt.decided) {
-          var towns = dayTowns(t, j, mv);
-          if (towns.length) { ui.stopAsk = { campId: campId, list: towns, i: 0, passed: [] }; drawStopAsk(); render(); return; }
+          var towns = dayTowns(t, j, mv).concat(dayTolls(t, j, mv)).sort(function (a, b) { return a.d - b.d; });
+          if (towns.length) { ui.stopAsk = { campId: campId, list: towns, i: 0, passed: [], tolls: [] }; drawStopAsk(); render(); return; }
         }
         var pos = opt.stop ? { x: opt.stop.x, y: opt.stop.y } : mv.pos, arrived = !opt.stop && mv.arrived;
         var mix = Object.keys(mv.byGround).sort(function (a, b) { return mv.byGround[b] - mv.byGround[a]; }).filter(function (k2) { return mv.byGround[k2] >= 0.5; })
@@ -3854,6 +3961,7 @@
         entry.from_x = j.party.x; entry.from_y = j.party.y; entry.to_x = pos.x; entry.to_y = pos.y;
         entry.text = 'Traveled ' + fmtMiles(mv.miles) + ' by ' + t.mode.toLowerCase() + (boatOf(t) ? ' in ' + (t.weather || 'Fair').toLowerCase() + ' weather' : j.byMap ? ' at a ' + t.pace.toLowerCase() + ' pace' : ' through ' + t.terrain.toLowerCase() + ' at a ' + t.pace.toLowerCase() + ' pace') + (mix.length ? ': ' + mix.join(', ') : '') + '.' +
           ((opt.passed || []).length ? ' Went through ' + opt.passed.join(', ') + '.' : '') +
+          tollText(opt.tolls) +
           (opt.stop ? ' Stopped at ' + opt.stop.label + '.' : arrived ? ' Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') + '.' : '');
         moveOp = sb.from('map_markers').update({ x: pos.x, y: pos.y }).eq('id', j.party.id);
         var town = opt.stop || (arrived ? nearTown(j.map.id, t.dest_x, t.dest_y) : null);
@@ -3867,8 +3975,14 @@
       if (need > 0) entry.text += used < need ? ' Ran out of food (short ' + (Math.round((need - used) * 10) / 10) + ').' : ' Ate ' + used + ' food, ' + (Math.round((have - used) * 10) / 10) + ' left.';
       var patch = { day: day + 1, food: Math.round((have - used) * 10) / 10 };
       if (moving) patch.arrival = arrival;
+      var paid = [];
+      (opt.tolls || []).forEach(function (tl) { (tl.shares || []).forEach(function (sh) { paid.push(sh); }); });
+      if (paid.length) entry.paid = paid;
       return moveOp.then(function (r) {
         if (r.error) throw r.error;
+        return Promise.all(moveCoins(paid, 1));
+      }).then(function (res) {
+        (res || []).forEach(function (r) { if (r && r.error) throw r.error; });
         return sb.from('travel_log').insert(entry);
       }).then(function (r) {
         if (r.error) throw r.error;
@@ -3907,6 +4021,7 @@
     var last = travelLog.filter(function (l) { return l.campaign_id === campId; })[0];
     if (!last) return;
     var steps = [];
+    if (last.paid && last.paid.length) steps = steps.concat(moveCoins(last.paid, -1));
     if (last.map_id && last.from_x != null) {
       var pm = partyMarker(last.map_id);
       if (pm) steps.push(sb.from('map_markers').update({ x: last.from_x, y: last.from_y }).eq('id', pm.id));
@@ -4086,6 +4201,9 @@
       case 'town-stop': townDecide(true); break;
       case 'town-pass': townDecide(false); break;
       case 'town-cancel': ui.stopAsk = null; drawStopAsk(); render(); break;
+      case 'toll-pay': tollDecide('paid'); break;
+      case 'toll-talk': tollDecide('talked'); break;
+      case 'toll-around': tollDecide('around'); break;
       case 'arr-leave': saveTravel(el.getAttribute('data-camp'), { arrival: null }).then(render); break;
       case 'arr-hide': (function () { var a = articleById(el.getAttribute('data-id')); if (!a) return; var h = !a.hidden; sb.from('articles').update({ hidden: h }).eq('id', a.id).then(function (r) { if (r.error) return fail(r.error); a.hidden = h; toast(h ? 'Hidden from players' : 'Players can see it'); render(); }); })(); break;
       case 'undo-day': el.disabled = true; undoDay(el.getAttribute('data-camp')); break;
@@ -4594,6 +4712,7 @@
       case 'food-form': return saveFood(f);
       case 'scale-form': return saveScale();
       case 'pin-form': return savePin();
+      case 'toll-form': return saveToll(f);
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
       case 'account-form':
