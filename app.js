@@ -4380,7 +4380,58 @@
     workshop: { crew: 3, wages: 10, upkeep: 5, income: 40 }
   };
   var WEALTH = [['Wretched', 0.25], ['Poor', 0.5], ['Modest', 1], ['Rich', 1.5], ['Thriving', 2]];
-  var EXTRAS = [['Market', 50], ['Mill', 20], ['Toll bridge', 30], ['Port', 40]];
+  // What an owner can build on their land. Costs and days must match holding_order() in the database.
+  var BUILDINGS = [
+    { n: 'Market', cost: 800, days: 45, inc: 50, up: 5, what: '+50 gp a month' },
+    { n: 'Mill', cost: 300, days: 30, inc: 20, up: 2, what: '+20 gp a month' },
+    { n: 'Toll bridge', cost: 500, days: 30, inc: 30, up: 2, what: '+30 gp a month' },
+    { n: 'Port', cost: 1500, days: 90, inc: 40, up: 10, what: '+40 gp a month, and your ships moor free' },
+    { n: 'Chapel', cost: 600, days: 45, up: 3, calm: 1, what: 'Unrest eases 1 more each month' },
+    { n: 'Granary', cost: 400, days: 30, up: 2, stores: 1, what: 'Bad harvests and sickness hit half as hard' },
+    { n: 'Watchtower', cost: 200, days: 20, up: 1, def: 1, what: 'Defense +1' },
+    { n: 'Walls', cost: 2500, days: 120, up: 10, def: 2, what: 'Defense +2' },
+    { n: 'Barracks', cost: 700, days: 40, up: 5, order: 1, what: 'Soldiers count double for keeping order' }
+  ];
+  var BUILD = {}; BUILDINGS.forEach(function (b) { BUILD[b.n] = b; });
+  var TAX = { Low: { mul: 0.75, unrest: -1 }, Normal: { mul: 1, unrest: 0 }, High: { mul: 1.25, unrest: 1 }, Crushing: { mul: 1.5, unrest: 2 } };
+  var POP_DEF = { manor: 200, castle: 500, town: 3000 };
+  var GAINED = { Bought: { crew: 5, unrest: 2 }, Granted: { crew: 5, unrest: 2 }, Inherited: { crew: 6, unrest: 2 }, Taken: { crew: 3, unrest: 6 } };
+  function folkOf(u) { u = num(u, 0); return u >= 10 ? { w: 'In revolt', mul: 0 } : u >= 8 ? { w: 'Rioting', mul: 0.5 } : u >= 6 ? { w: 'Angry', mul: 0.75 } : u >= 4 ? { w: 'Uneasy', mul: 0.9 } : { w: 'Content', mul: 1 }; }
+  function folkTag(u) { var f = folkOf(u), cls = { Content: 'tier-good', Uneasy: 'tier-neutral', Angry: 'warn', Rioting: 'tier-bad', 'In revolt': 'tier-disaster' }[f.w]; return '<span class="tag ' + cls + '">' + esc(f.w) + '</span>'; }
+  function hasPeople(h) { return h.kind === 'manor' || h.kind === 'castle' || h.kind === 'town'; }
+  // Buildings standing today: the ones marked built, plus any project whose finish day has come.
+  function builtOf(h) {
+    var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0, out = {};
+    Object.keys(d.extras || {}).forEach(function (k) { if (d.extras[k]) out[k] = true; });
+    (d.projects || []).forEach(function (p) { if (num(p.done, 0) <= day) out[p.name] = true; });
+    return out;
+  }
+  function buildSum(h, key) { var b = builtOf(h), n = 0; Object.keys(b).forEach(function (k) { n += Number((BUILD[k] || {})[key] || 0); }); return n; }
+  function defenseOf(h) { var d = h.data || {}, s = num(d.soldiers, 0); return buildSum(h, 'def') + (s >= 10 ? 1 : 0) + (s >= 40 ? 1 : 0); }
+  function upkeepOf(h) { return Number((h.data || {}).upkeep || 0) + (hasPeople(h) ? buildSum(h, 'up') : 0); }
+  function titleOf(h) { var d = h.data || {}; if (d.title) return d.title; return h.kind === 'castle' ? 'Knight of ' + h.name : h.kind === 'town' ? 'Baron of ' + (d.at || h.name) : h.kind === 'manor' ? 'Lord of ' + h.name : ''; }
+  // The table's d20 for a land holding's month. raid: averted at that defense. stores: a granary halves it.
+  var HOLD_EVENTS = [null,
+    { t: 'Fire in the hall or the barns. A quarter of the coffer goes on rebuilding.', cofPct: -0.25, unrest: 1 },
+    { t: 'Raiders hit the outlying farms and carry off what they can.', inc: -0.3, unrest: 1, raid: 2, safe: 'Raiders came close, saw the defenses, and went elsewhere.' },
+    { t: 'Sickness in the villages. Some die, and the rest work slow.', pop: -0.05, inc: -0.25, unrest: 1, stores: 1 },
+    { t: 'A bad harvest. Bellies will be thin this winter.', inc: -0.5, unrest: 1, stores: 1 },
+    { t: 'Two villages are feuding over a field boundary. Someone has to judge it, and both sides expect to win.', unrest: 1 },
+    { t: 'The steward has been helping himself to the coffer.', cofPct: -0.1, onlyIf: 'restless', safe: 'The steward finds a mistake in the books. Nothing missing, this time.' },
+    { t: 'A tax collector was beaten and left in a ditch.', unrest: 1, onlyIf: 'hightax', safe: 'Grumbling about the tax, nothing more.' },
+    { t: 'The folk send a petition: a bridge, a judgement, a lighter tax. Granting it would ease them.' },
+    { t: 'A stranger arrives asking for shelter and work, and won’t say where from.' },
+    { t: 'A quiet month.' }, { t: 'A quiet month.' },
+    { t: 'A wedding at the hall. The lord is expected to pay for the ale.', cof: -20, unrest: -1 },
+    { t: 'Travelling merchants stop a while. Trade is brisk.', inc: 0.1 },
+    { t: 'New families settle on empty land.', pop: 0.05 },
+    { t: 'A good harvest. The barns are full.', inc: 0.25 },
+    { t: 'Busy market days all month.', inc: 0.25 },
+    { t: 'A skilled craftsman settles here and takes on apprentices.', inc: 0.1, unrest: -1 },
+    { t: 'Ploughmen turn up an old coin hoard.', hoard: 100 },
+    { t: 'A festival day. Everyone remembers why they like it here.', unrest: -2 },
+    { t: 'A great month: a vein of ore, a rich patron, or a royal favour.', inc: 1, prosper: 1 }
+  ];
   var SOLDIER_WAGE = 6;
   var TRADE_ROLL = {
     sea: [[1, 0, 'Disaster'], [5, 0.25, 'Poor run'], [14, 1, 'Fair run'], [19, 1.5, 'Good run'], [20, 2.5, 'Windfall']],
@@ -4438,8 +4489,9 @@
     var d = h.data || {};
     if (!HOLD_LAND[h.kind]) return Number(d.income || 0);
     var inc = Number(d.income || 0) * wealthMul(d.wealth || 'Modest');
-    if (h.kind !== 'workshop') EXTRAS.forEach(function (x) { if ((d.extras || {})[x[0]]) inc += x[1]; });
-    return inc;
+    if (!hasPeople(h)) return inc;
+    inc += buildSum(h, 'inc');
+    return inc * (TAX[d.tax || 'Normal'] || TAX.Normal).mul * folkOf(d.unrest).mul;
   }
   function tradeRoll(h, d20) {
     var tab = TRADE_ROLL[h.kind === 'caravan' ? 'caravan' : 'sea'];
@@ -4541,11 +4593,11 @@
   function holdMonthLine(h) {
     var d = h.data || {}, st = holdMode(h), parts = [];
     var inc = baseIncome(h);
-    if (HOLD_LAND[h.kind]) parts.push('Earns ~' + gp(inc));
+    if (HOLD_LAND[h.kind]) parts.push('Earns ~' + gp(Math.round(inc)));
     else if (st.mode === 'trading') parts.push('Trades for ~' + gp(inc) + ' on a fair run');
     var wages = unitsOf(h).reduce(function (s, u) { return s + unitWages(h, u); }, 0);
     parts.push('Wages ' + gp(wages));
-    if (Number(d.upkeep || 0)) parts.push('Upkeep ' + gp(d.upkeep));
+    if (upkeepOf(h)) parts.push('Upkeep ' + gp(upkeepOf(h)));
     if (HOLD_MOVES[h.kind] && st.mode === 'moored' && !st.free) parts.push('Mooring ' + gp(holdMoorRate(h)) + '/day');
     return parts.join(' · ') + ' a month';
   }
@@ -4603,7 +4655,7 @@
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
       (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') +
-      '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' +
+      '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + landHtml(h) +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
     var reps = (d.reports || []).slice().reverse();
@@ -4634,6 +4686,36 @@
     return html + '</div>';
   }
 
+  function landHtml(h) {
+    if (!hasPeople(h)) return '';
+    var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0, built = Object.keys(builtOf(h));
+    var going = (d.projects || []).filter(function (p) { return num(p.done, 0) > day; });
+    var html = '<p class="note" style="margin:6px 0"><b>' + esc(titleOf(h)) + '</b>' + (d.gained ? ' · ' + esc(d.gained) : '') + '</p>' +
+      '<div class="tbl"><div class="tbl-row"><div class="main"><b>The folk</b><span>' + esc(num(d.pop, POP_DEF[h.kind]).toLocaleString() + ' people · ' + (d.tax || 'Normal') + ' tax · defense ' + defenseOf(h) + (dmView() ? ' · unrest ' + num(d.unrest, 2) + '/10' : '')) + '</span></div>' + folkTag(d.unrest) + '</div></div>';
+    html += '<p class="note" style="margin:6px 0 0">' + (built.length ? 'Standing: ' + esc(built.join(', ')) + '.' : 'Nothing built yet.') +
+      (going.length ? ' Being built: ' + esc(going.map(function (p) { var l = num(p.done, 0) - day; return p.name + ' (' + l + (l === 1 ? ' day' : ' days') + ')'; }).join(', ')) + '.' : '') + '</p>';
+    if (canTouch(h)) {
+      var can = BUILDINGS.filter(function (b) { return built.indexOf(b.n) < 0 && !going.some(function (p) { return p.name === b.n; }); });
+      html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center;margin-top:6px">' +
+        '<select class="input rar-sel" id="htax-' + esc(h.id) + '" aria-label="Tax rate">' + Object.keys(TAX).map(function (k) { return '<option' + (k === (d.tax || 'Normal') ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select>' +
+        '<button type="button" class="btn small" data-act="hold-tax" data-id="' + esc(h.id) + '">Set tax</button>' +
+        (can.length ? '<select class="input rar-sel" id="hbuild-' + esc(h.id) + '" aria-label="Build">' + can.map(function (b) { return '<option value="' + esc(b.n) + '">' + esc(b.n + ' · ' + b.cost.toLocaleString() + ' gp · ' + b.days + ' days') + '</option>'; }).join('') + '</select>' +
+          '<button type="button" class="btn small" data-act="hold-build" data-id="' + esc(h.id) + '">Build</button>' : '') + '</div>' +
+        '<p class="note" style="margin:4px 0 0">Orders go by letter, so you don’t have to be there. Building is paid from the coffer up front. Low tax eases the folk, high tax angers them.</p>';
+    }
+    return html;
+  }
+  function holdOrder(h, what) {
+    var el = document.getElementById((what === 'tax' ? 'htax-' : 'hbuild-') + h.id), arg = el ? el.value : '';
+    if (!arg) return;
+    var t = travel[h.campaign_id], day = t ? t.day : 0;
+    if (what === 'build' && BUILD[arg] && cofferOf(h) < BUILD[arg].cost) return toast('The coffer needs ' + gp(BUILD[arg].cost) + ' for that.');
+    sb.rpc('holding_order', { hid: h.id, what: what, arg: arg, day: day }).then(function (r) {
+      if (r.error) throw r.error;
+      return loadHoldings();
+    }).then(function () { toast(what === 'tax' ? h.name + ': tax set to ' + arg.toLowerCase() : 'Work on the ' + arg.toLowerCase() + ' at ' + h.name + ' has begun'); render(); })
+      .catch(function (err) { fail(err, String(err && err.message || '').indexOf('Not') === 0 ? err.message : 'Could not send that order.'); });
+  }
   function holdFormHtml(camp, h) {
     var isNew = !h, kind = h ? h.kind : (ui.holdKind || 'ship'), d = h ? h.data || {} : {}, t = travel[camp.id], r = t ? rulesOf(t) : null;
     var vname = d.vessel || (kind === 'airship' ? 'Airship' : 'Cog');
@@ -4656,10 +4738,16 @@
       if (kind !== 'workshop') html += numF('hd-soldiers', 'Garrison soldiers', num(d.soldiers, 0)) + numF('hd-swage', 'Pay a soldier a month, gp', d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE);
     }
     html += '</div>';
-    if (HOLD_LAND[kind] && kind !== 'workshop') html += '<div class="field"><span class="k">Extras</span>' + EXTRAS.map(function (x) { return '<label class="check"><input type="checkbox" data-extra="' + esc(x[0]) + '"' + ((d.extras || {})[x[0]] ? ' checked' : '') + '> ' + x[0] + ' (+' + x[1] + ' gp)' + (x[0] === 'Port' ? ', ships moor free' : '') + '</label>'; }).join('') + '</div>';
+    if (POP_DEF[kind]) {
+      html += '<div class="two">' + (isNew ? '<div class="field"><label for="hd-gained">How they got it</label><select id="hd-gained">' + Object.keys(GAINED).map(function (g) { return '<option>' + g + '</option>'; }).join('') + '</select><span class="hint">Taken by force starts angry, with a wary household.</span></div>' : '') +
+        '<div class="field"><label for="hd-title">Title it carries</label><input type="text" id="hd-title" maxlength="60" value="' + esc(d.title || '') + '" placeholder="' + esc(h ? titleOf(h) : kind === 'castle' ? 'Knight of …' : kind === 'town' ? 'Baron of …' : 'Lord of …') + '"></div>' +
+        numF('hd-pop', 'Population', d.pop != null ? d.pop : POP_DEF[kind]) +
+        (isNew ? '' : numF('hd-unrest', 'Unrest, 0–10', num(d.unrest, 2), 1, '4+ uneasy, 6+ angry, 8+ rioting, 10 in revolt.')) + '</div>' +
+        '<div class="field"><span class="k">Already standing when they got it</span>' + BUILDINGS.map(function (b) { return '<label class="check"><input type="checkbox" data-extra="' + esc(b.n) + '"' + ((d.extras || {})[b.n] ? ' checked' : '') + '> ' + b.n + ' <span class="note">(' + esc(b.what) + ')</span></label>'; }).join('') + '</div>';
+    }
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-gnome"' + (d.gnome ? ' checked' : '') + '> A gnome first mate or technician is aboard</label>';
     if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-hull"' + (d.hull ? ' checked' : '') + '> Hull damaged (needs a dwarf to fix)</label>';
-    var loyF = function (unit, label) { var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
+    var loyF = function (unit, label) { if (isNew && POP_DEF[kind]) return ''; var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
     html += '<div class="two">' + loyF('crew', HOLD_LAND[kind] ? 'Household' : 'Crew') + (HOLD_LAND[kind] && kind !== 'workshop' ? loyF('garrison', 'Garrison') : '') + '</div>';
     html += '<div class="field"><label for="hd-notes">Notes (players see these)</label><textarea id="hd-notes" rows="2" maxlength="400">' + esc(d.notes || '') + '</textarea></div>';
     html += '<div class="actions"><button type="submit" class="btn primary">' + (isNew ? 'Add holding' : 'Save') + '</button><button type="button" class="btn" data-act="hold-cancel">Cancel</button>' +
@@ -4686,8 +4774,14 @@
     d.notes = (val('hd-notes') || '').slice(0, 400);
     d.coffer = n('hd-coffer', 0);
     var owner = val('hd-owner') || null;
+    if (val('hd-title') != null) d.title = val('hd-title').trim().slice(0, 60);
+    if (val('hd-pop') != null) d.pop = Math.round(n('hd-pop', 0));
+    if (val('hd-unrest') != null) d.unrest = Math.max(0, Math.min(10, Math.round(n('hd-unrest', 2))));
+    var gained = val('hd-gained');
+    if (gained && GAINED[gained]) { d.gained = gained; d.unrest = GAINED[gained].unrest; d.tax = 'Normal'; }
     if (!h && HOLD_MOVES[kind]) d.mode = 'party';
-    var secret = { crew: num(val('hd-loy-crew'), 5) }; if (val('hd-loy-garrison') != null) secret.garrison = num(val('hd-loy-garrison'), 5);
+    var secret = { crew: num(val('hd-loy-crew'), gained && GAINED[gained] ? GAINED[gained].crew : 5) }; if (val('hd-loy-garrison') != null) secret.garrison = num(val('hd-loy-garrison'), 5);
+    if (!h && gained && GAINED[gained]) { secret.crew = GAINED[gained].crew; secret.garrison = GAINED[gained].crew; }
     var t = travel[campId], e = estateOf(campId);
     var first = !h ? sb.from('holdings').insert({ campaign_id: campId, kind: kind, name: name, data: {} }).select('id, campaign_id, name, kind, data, owner_char, created_at').single() : Promise.resolve({ data: h });
     first.then(function (r) {
@@ -4738,6 +4832,7 @@
         html += '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + '</b><span>' + esc(gp(w) + ' due' + (uu.owed ? ', ' + gp(uu.owed) + ' owed' : '') + ' · ' + band(loyOf(h, u))) + '</span></div>' +
           '<select class="input rar-sel" data-pay="' + esc(h.id + '|' + u) + '" aria-label="Wages for ' + esc(h.name) + ' ' + esc(unitName(h, u)) + '"><option value="auto">Pay from coffer</option><option value="skip">Hold wages</option></select></div>';
       });
+      if (hasPeople(h)) html += '<div class="tbl-row"><div class="main"><b>How the month went</b><span>d20 · leave blank for a quiet month</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-hroll="' + esc(h.id) + '" placeholder="d20"></div>';
       if (HOLD_MOVES[h.kind] && st.mode === 'trading') html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
     });
     return html + '</div><div class="actions"><button type="submit" class="btn primary">Settle payday</button></div></form></section>';
@@ -4758,8 +4853,35 @@
       if (d.mode === 'returning' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = st.free; }
       var crewBand = band(loyOf(h, 'crew'));
       // Money in first: the month's income or the trading run.
-      var inc = 0;
-      if (HOLD_LAND[h.kind]) { inc = baseIncome(h); if (inc) rep.push('Brought in ' + gp(inc) + '.'); }
+      var inc = 0, ev = null, unrest = num(d.unrest, 2), evUnrest = 0;
+      if (hasPeople(h)) {
+        // Finished buildings first, so they count this month.
+        var still = [];
+        (d.projects || []).forEach(function (p) { if (num(p.done, 0) <= day) { d.extras = d.extras || {}; d.extras[p.name] = true; rep.push('The ' + p.name.toLowerCase() + ' is finished.'); } else still.push(p); });
+        d.projects = still;
+        var hr = f.querySelector('[data-hroll="' + h.id + '"]'), roll = hr ? num(hr.value, 0) : 0;
+        if (roll >= 1 && roll <= 20) ev = HOLD_EVENTS[roll];
+      }
+      if (HOLD_LAND[h.kind]) {
+        inc = baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d });
+        if (ev) {
+          var half = ev.stores && builtOf({ campaign_id: h.campaign_id, data: d }).Granary ? 0.5 : 1;
+          var hit = (ev.onlyIf === 'restless' && GRACE[crewBand] > 0) || (ev.onlyIf === 'hightax' && !/High|Crushing/.test(d.tax || '')) || (ev.raid && defenseOf({ campaign_id: h.campaign_id, data: d }) >= ev.raid);
+          if (hit) rep.push(ev.safe || ev.t);
+          else {
+            rep.push(ev.t + (half < 1 ? ' The granary softens it.' : ''));
+            if (ev.inc) inc *= Math.max(0, 1 + ev.inc * (ev.inc < 0 ? half : 1));
+            if (ev.cofPct) cof += cof * ev.cofPct;
+            if (ev.cof) cof += ev.cof;
+            if (ev.hoard) cof += ev.hoard * wealthMul(d.wealth || 'Modest');
+            if (ev.pop) d.pop = Math.round(num(d.pop, POP_DEF[h.kind]) * (1 + ev.pop * (ev.pop < 0 ? half : 1)));
+            if (ev.unrest) evUnrest += ev.unrest;
+            if (ev.prosper) d.prosper = num(d.prosper, 0) + ev.prosper;
+          }
+        } else if (hasPeople(h)) rep.push('A quiet month.');
+        inc = Math.round(inc); cof = Math.round(cof);
+        if (inc) rep.push('Brought in ' + gp(inc) + '.');
+      }
       else if (rolls[h.id]) {
         var tr = tradeRoll(h, rolls[h.id]); inc = Number(d.income || 0) * tr.mul;
         rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') : tr.label + ': made ' + gp(inc) + '.');
@@ -4767,7 +4889,7 @@
       if (inc > 0 && SKIM[crewBand]) { var lost = inc * SKIM[crewBand]; inc -= lost; d.skimmed = Number(d.skimmed || 0) + lost; }
       cof += inc;
       // Then upkeep and mooring.
-      var costs = Number(d.upkeep || 0);
+      var costs = upkeepOf(h);
       if (HOLD_MOVES[h.kind] && d.mode === 'moored' && !d.moor_free) {
         var mdays = Math.max(0, Number(e.payday) - Math.max(num(d.moor_since, periodStart), periodStart));
         if (mdays) { costs += mdays * holdMoorRate(h); rep.push('Mooring at ' + (d.at || 'port') + ', ' + mdays + ' days.'); }
@@ -4800,9 +4922,18 @@
         if (u === 'crew') crewBand = band(l);
         rep.push(nm + ' seem ' + MOOD[band(l)].toLowerCase() + '.');
       });
+      if (hasPeople(h)) {
+        var keep = num(d.soldiers, 0) * (builtOf({ campaign_id: h.campaign_id, data: d }).Barracks ? 2 : 1);
+        var garUnpaid = (d.units.garrison || {}).missed > 0 && unitOf({ data: d }, 'garrison').owed > 0;
+        var du = evUnrest + (TAX[d.tax || 'Normal'] || TAX.Normal).unrest - buildSum({ campaign_id: h.campaign_id, data: d }, 'calm') + (keep >= num(d.pop, POP_DEF[h.kind]) / 50 ? -1 : 0) + (short ? 1 : 0) + (garUnpaid ? 1 : 0);
+        var was = folkOf(unrest).w; unrest = Math.max(0, Math.min(10, unrest + du)); d.unrest = unrest;
+        var now = folkOf(unrest).w;
+        rep.push(now === 'In revolt' ? 'The folk have risen and hold the place against you.' : now !== was ? 'The folk are ' + now.toLowerCase() + ' now.' : 'The folk are ' + now.toLowerCase() + '.');
+      }
       if (HOLD_LAND[h.kind]) {
         var p = num(d.prosper, 0);
         p += crewBand === 'Treacherous' ? -2 : crewBand === 'Restless' || short ? -1 : 1;
+        if (hasPeople(h) && unrest >= 6) p -= 1;
         var wi = WEALTH.map(function (w) { return w[0]; }).indexOf(d.wealth || 'Modest');
         if (p >= 3 && wi < WEALTH.length - 1) { d.wealth = WEALTH[wi + 1][0]; p = 0; rep.push('The place is doing well: now ' + d.wealth.toLowerCase() + '.'); }
         else if (p <= -3 && wi > 0) { d.wealth = WEALTH[wi - 1][0]; p = 0; rep.push('The place is slipping: now ' + d.wealth.toLowerCase() + '.'); }
@@ -4864,6 +4995,8 @@
       case 'hold-cancel': ui.holdEdit = null; ui.holdDel = null; render(); break;
       case 'hold-del': var hdel = holdingById(el.getAttribute('data-id')); if (hdel) holdDelete(hdel); break;
       case 'hold-loy': var hloy = holdingById(el.getAttribute('data-id')); if (hloy) holdLoyalty(hloy, el.getAttribute('data-unit'), num(el.getAttribute('data-d'), 0)); break;
+      case 'hold-tax': var htx = holdingById(el.getAttribute('data-id')); if (htx) holdOrder(htx, 'tax'); break;
+      case 'hold-build': var hbd = holdingById(el.getAttribute('data-id')); if (hbd) holdOrder(hbd, 'build'); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
