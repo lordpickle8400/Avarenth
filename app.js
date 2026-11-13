@@ -3474,10 +3474,12 @@
       var d = h.data || {}, st = shipStats(h);
       if (h.kind === 'ship') {
         var b = out.boats.filter(function (x) { return x.name === d.vessel; })[0]; if (!b) return;
-        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, own: true });
+        var cr = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
+        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * cr * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, own: true });
       } else {
         var a = out.airships.filter(function (x) { return x.name === (d.vessel || 'Airship'); })[0] || out.airships[0]; if (!a) return;
-        out.airships.push({ name: h.name, mi: Math.round(a.mi * (1 + st.speed) * 10) / 10, ceiling: a.ceiling + st.ceiling, storm: st.storm > 0, own: true });
+        var cra = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
+        out.airships.push({ name: h.name, mi: Math.round(a.mi * (1 + st.speed) * cra * 10) / 10, ceiling: a.ceiling + st.ceiling, storm: st.storm > 0, own: true });
       }
     });
     out.skies = r.skies && Object.keys(r.skies).length ? r.skies : Object.assign({}, DEFAULT_SKY);
@@ -4491,7 +4493,7 @@
     if (unit === 'garrison') return num(d.soldiers, 0) * Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE);
     if (h.kind === 'caravan') return num(d.wagons, 1) * WAGON.driver + num(d.guards, 0) * WAGON.guard;
     if (h.kind === 'siege') return Math.round(num(d.crew, (SIEGE[vesselName(h)] || {}).crew || 10) * SIEGE_WAGE * (1 + shipStats(h).wages));
-    if (h.kind === 'ship' || h.kind === 'airship') { var ss = shipStats(h); return Math.round(Number(d.wages || 0) * (1 + ss.marines + ss.wages)); }
+    if (h.kind === 'ship' || h.kind === 'airship') { var ss = shipStats(h); return Math.round(Number(d.wages || 0) * (1 + ss.marines + ss.wages)) + (h.kind === 'airship' && d.dwarves ? 30 : 0); }
     return Number(d.wages || 0);
   }
   function unitsOf(h) { var d = h.data || {}, u = ['crew']; if (HOLD_LAND[h.kind] && num(d.soldiers, 0) > 0) u.push('garrison'); return u; }
@@ -4622,7 +4624,9 @@
     var d = h.data || {};
     if (h.kind === 'airship' && !d.gnome) return 'Grounded: no gnome first mate or technician aboard.';
     if (shipStats(h).fitting.length) return 'In the yard: ' + shipStats(h).fitting.map(function (f) { return f.name.toLowerCase(); }).join(', ') + ' being fitted.';
-    if ((h.kind === 'ship' || h.kind === 'airship') && d.hull) return 'Hull damaged: needs a dwarf shipwright' + (h.kind === 'ship' ? ' or a dry dock' : '') + ' before it can go out.';
+    var tt = travel[h.campaign_id]; if (d.repair && num(d.repair.done, 0) > (tt ? tt.day : 0)) return 'In the yard for repairs.';
+    var so = statOf(h); if (so && so.hp <= 0) return so.cond + ': needs ' + (h.kind === 'airship' ? 'dwarf shipwrights' : 'a yard') + ' before it can go anywhere.';
+    if ((h.kind === 'ship' || h.kind === 'airship') && d.hull && !so) return 'Hull damaged: needs a dwarf shipwright' + (h.kind === 'ship' ? ' or a dry dock' : '') + ' before it can go out.';
     return '';
   }
   function baseIncome(h) {
@@ -4811,7 +4815,7 @@
     var html = '<div class="group-box" style="margin-bottom:12px"><h2 style="margin-top:0">' + esc(h.name || HOLD_LABEL[h.kind]) + '</h2>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
-      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + fitHtml(h) +
+      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + statHtml(h) + fitHtml(h) +
       '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + landHtml(h) +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
@@ -4845,6 +4849,101 @@
     return html + '</div>';
   }
 
+  /* Stat blocks for running vehicles in ordinary combat: one hull, with AC, hit points and a damage threshold
+     (a hit that deals less than the threshold does nothing). Weapons fitted to it become its attacks. */
+  var STATS = {
+    'Rowboat': { ac: 11, hp: 50, dt: 0 }, 'River barge': { ac: 13, hp: 100, dt: 10 }, 'Cog': { ac: 14, hp: 250, dt: 15 },
+    'Sailing ship': { ac: 15, hp: 300, dt: 15 }, 'Galley': { ac: 15, hp: 500, dt: 20 }, 'Airship': { ac: 13, hp: 300, dt: 15 },
+    wagon: { ac: 12, hp: 50, dt: 0 }, warwagon: { ac: 15, hp: 80, dt: 10 },
+    'Battering ram': { ac: 15, hp: 100, dt: 10, atk: { n: 'Ram', hit: 8, dmg: '3d10 bludgeoning', range: 'reach 5 ft.', note: 'Against gates and doors' } },
+    'Siege tower': { ac: 15, hp: 200, dt: 10, atk: null, note: 'Carries 20 up to the wall top under cover' },
+    'Catapult': { ac: 15, hp: 100, dt: 10, atk: { n: 'Stone', hit: 5, dmg: '4d10 bludgeoning', dice: 4, range: '150/600 ft.' } },
+    'Mangonel': { ac: 15, hp: 100, dt: 10, atk: { n: 'Stone', hit: 5, dmg: '5d10 bludgeoning', dice: 5, range: '200/800 ft. (not within 60 ft.)' } },
+    'Trebuchet': { ac: 15, hp: 150, dt: 10, atk: { n: 'Great stone', hit: 5, dmg: '8d10 bludgeoning', dice: 8, range: '300/1,200 ft. (not within 60 ft.)' } },
+    'Ballista cart': { ac: 15, hp: 50, dt: 10, atk: { n: 'Bolt', hit: 6, dmg: '3d10 piercing', range: '120/480 ft.' } }
+  };
+  var WEAPON_ATK = {
+    'Ballista': { hit: 6, dmg: '3d10 piercing', range: '120/480 ft.', crew: 3 },
+    'Scorpions': { hit: 5, dmg: '2d10 piercing', range: '100/400 ft.', crew: 2, note: 'Two shots a round at anyone boarding' },
+    'Fire pots': { hit: 4, dmg: '2d6 fire', range: '60 ft.', crew: 2, note: 'Sets the target alight: 1d6 fire each round until put out' },
+    'Ram': { hit: 8, dmg: '4d10 bludgeoning', range: 'ramming', crew: 0, note: 'Ignores the damage threshold. The rammer takes half' }
+  };
+  var HULL_BONUS = { 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
+  function statOf(h) {
+    var d = h.data || {}, v = vesselName(h), base = h.kind === 'caravan' ? (fitIn(h, 'body') === 'War wagons' ? STATS.warwagon : STATS.wagon) : STATS[v];
+    if (!base) return null;
+    var st = shipStats(h), ac = base.ac, hpMul = 1, notes = [], atks = [];
+    st.list.forEach(function (n) { var b = HULL_BONUS[n]; if (!b) return; ac += b.ac || 0; hpMul += b.hp || 0; if (b.note) notes.push(b.note); });
+    var each = Math.round(base.hp * hpMul), max = h.kind === 'caravan' ? each * num(d.wagons, 1) : each;
+    if (base.atk) {
+      var a = Object.assign({}, base.atk), extra = st.attack - ((SIEGE[v] || {}).attack || 0) - (st.list.indexOf('Trained engineers') >= 0 ? 1 : 0);
+      if (a.dice && extra > 0) a.dmg = (a.dice + extra) + 'd10 bludgeoning';
+      else if (v === 'Battering ram' && extra > 0) a.dmg = (3 + extra) + 'd10 bludgeoning';
+      if (st.list.indexOf('Trained engineers') >= 0) a.hit += 2;
+      atks.push(a);
+    }
+    (d.fits || []).forEach(function (f) {
+      var w = WEAPON_ATK[f.name]; if (!w || st.list.indexOf(f.name) < 0) return;
+      atks.push(Object.assign({ n: f.name }, w));
+    });
+    if (base.note) notes.push(base.note);
+    var hp = d.hp == null ? max : Math.max(0, Math.min(max, num(d.hp, max)));
+    return { ac: ac, max: max, each: each, hp: hp, dt: base.dt, atks: atks, notes: notes, cond: condOf(h, hp, max) };
+  }
+  function condOf(h, hp, max) {
+    if (hp <= 0) return h.kind === 'ship' ? 'Sinking' : h.kind === 'airship' ? 'Crashed' : 'Wrecked';
+    return hp < max * 0.25 ? 'Crippled' : hp < max * 0.75 ? 'Damaged' : 'Sound';
+  }
+  // How much a crew can patch in a day of rest, and how far. Dwarf hull-wrights aboard an airship mend it fully, and twice as fast.
+  function patchOf(h) {
+    var s = statOf(h); if (!s) return null;
+    var dw = h.kind === 'airship' && (h.data || {}).dwarves;
+    return { per: Math.max(1, Math.round(s.max * (dw ? 0.2 : 0.1))), cap: dw ? s.max : Math.round(s.max * 0.75), dwarves: dw };
+  }
+  function repairCost(h) { var s = statOf(h); if (!s || s.hp >= s.max) return { gp: 0, days: 0 }; var miss = s.max - s.hp; return { gp: Math.round(hullPrice(h) / s.max * miss * 0.5), days: Math.max(1, Math.ceil(miss / (s.max / 10))) }; }
+  function statHtml(h) {
+    var s = statOf(h); if (!s) return '';
+    var dm = dmView(), d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0;
+    var html = '<div class="tbl" style="margin-bottom:6px"><div class="tbl-row" style="flex-wrap:wrap"><div class="main"><b>AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · Threshold ' + s.dt : '') + '</b><span>' +
+      esc((h.kind === 'caravan' ? 'Each wagon AC ' + s.ac + ', ' + s.each + ' HP. ' : '') + (s.notes.length ? s.notes.join('. ') + '.' : '')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' })[s.cond] + (s.hp <= 0 ? ' tier-disaster' : '') + '">' + esc(s.cond) + '</span></div>';
+    s.atks.forEach(function (a) {
+      html += '<div class="tbl-row"><div class="main"><b>' + esc(a.n) + '</b><span>' + esc('+' + a.hit + ' to hit, ' + a.range + ', ' + a.dmg + (a.crew ? '. Crew ' + a.crew : '') + (a.note ? '. ' + a.note : '')) + '</span></div></div>';
+    });
+    html += '</div>';
+    if (d.repair && num(d.repair.done, 0) > day) html += '<p class="note" style="margin:0 0 6px">In the yard for repairs, done in ' + (num(d.repair.done, 0) - day) + ' days.</p>';
+    if (dm) {
+      var pt = patchOf(h), rc = repairCost(h);
+      html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="hhp-' + esc(h.id) + '" placeholder="HP" aria-label="Hit points">' +
+        '<button type="button" class="btn small" data-act="hold-hp" data-dir="-1" data-id="' + esc(h.id) + '">Damage</button><button type="button" class="btn small" data-act="hold-hp" data-dir="1" data-id="' + esc(h.id) + '">Heal</button>' +
+        (s.hp < pt.cap ? '<button type="button" class="btn small quiet" data-act="hold-patch" data-id="' + esc(h.id) + '">Crew patch a day (+' + Math.min(pt.per, pt.cap - s.hp) + ')</button>' : '') +
+        (rc.gp ? '<button type="button" class="btn small quiet" data-act="hold-repair" data-id="' + esc(h.id) + '">' + (h.kind === 'airship' ? 'Dwarf shipwrights' : 'Yard') + ' repair: ' + gp(rc.gp) + ', ' + rc.days + 'd</button>' : '') + '</div>' +
+        '<p class="note" style="margin:0 0 6px">The crew can patch ' + pt.per + ' HP a day at rest, up to ' + (pt.dwarves ? 'full' : 'three-quarters') + '.' + (h.kind === 'airship' && !pt.dwarves ? ' Trained dwarves aboard would mend it fully, twice as fast.' : '') + ' Past that it needs a yard.</p>';
+    }
+    return html;
+  }
+  function holdHp(h, mode) {
+    var s = statOf(h); if (!s) return;
+    var t = travel[h.campaign_id], day = t ? t.day : 0, patch = {}, msg;
+    if (mode === 'patch') { var pt = patchOf(h); patch.hp = Math.min(pt.cap, s.hp + pt.per); msg = h.name + ' patched to ' + patch.hp + ' HP'; }
+    else if (mode === 'repair') {
+      var rc = repairCost(h), pel = document.getElementById('hfitpay-' + h.id), pay = pel ? pel.checked : true;
+      if (pay && cofferOf(h) < rc.gp) return toast('The coffer needs ' + gp(rc.gp) + ' for that.');
+      patch.hp = s.max; patch.repair = { done: day + rc.days, gp: rc.gp }; if (pay) patch.coffer = cofferOf(h) - rc.gp;
+      msg = h.name + ' goes in for repairs: ' + rc.days + ' days';
+    } else {
+      var n = num((document.getElementById('hhp-' + h.id) || {}).value, 0); if (n < 1) return toast('How many HP?');
+      if (mode < 0 && s.dt && n < s.dt) return toast('Under the damage threshold (' + s.dt + '): no effect.');
+      patch.hp = Math.max(0, Math.min(s.max, s.hp + mode * n));
+      msg = h.name + ': ' + patch.hp + '/' + s.max + ' HP, ' + condOf(h, patch.hp, s.max).toLowerCase();
+    }
+    saveHolding(h, patch).then(function () { toast(msg); render(); }).catch(function (e) { fail(e); });
+  }
+  // Hit the hull for a share of its max HP (trade disasters, raids gone wrong). Returns a line for the report.
+  function hullHit(h, d, share) {
+    var s = statOf({ kind: h.kind, campaign_id: h.campaign_id, data: d }); if (!s) return '';
+    var lost = Math.round(s.max * share); d.hp = Math.max(0, s.hp - lost);
+    return ' The hull took ' + lost + ' damage (' + d.hp + '/' + s.max + ' HP).';
+  }
   function fitHtml(h) {
     if (!SLOTS[h.kind]) return '';
     var d = h.data || {}, st = shipStats(h), t = travel[h.campaign_id], day = t ? t.day : 0, bits = [], dm = dmView();
@@ -4996,7 +5095,7 @@
     if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-marque"' + (d.marque ? ' checked' : '') + '> Letter of marque from the king (may raid his enemies)</label>' +
       '<label class="check"><input type="checkbox" id="hd-commission"' + (d.commission ? ' checked' : '') + '> The king’s commission (may serve the crown for pay)</label>';
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-gnome"' + (d.gnome ? ' checked' : '') + '> A gnome first mate or technician is aboard</label>';
-    if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-hull"' + (d.hull ? ' checked' : '') + '> Hull damaged (needs a dwarf to fix)</label>';
+    if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-dwarves"' + (d.dwarves ? ' checked' : '') + '> Trained dwarf hull-wrights aboard (+30 gp a month; they can mend the hull fully)</label>';
     var loyF = function (unit, label) { if (isNew && POP_DEF[kind]) return ''; var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
     html += '<div class="two">' + loyF('crew', HOLD_LAND[kind] ? 'Household' : 'Crew') + (HOLD_LAND[kind] && kind !== 'workshop' ? loyF('garrison', 'Garrison') : '') + '</div>';
     html += '<div class="field"><label for="hd-notes">Notes (players see these)</label><textarea id="hd-notes" rows="2" maxlength="400">' + esc(d.notes || '') + '</textarea></div>';
@@ -5030,7 +5129,8 @@
     if (val('hd-favor') != null) d.favor = num(val('hd-favor'), 0);
     var ex = f.querySelectorAll('[data-extra]'); if (ex.length) { d.extras = {}; Array.prototype.forEach.call(ex, function (c) { if (c.checked) d.extras[c.getAttribute('data-extra')] = true; }); }
     if (document.getElementById('hd-gnome')) d.gnome = document.getElementById('hd-gnome').checked;
-    if (document.getElementById('hd-hull')) d.hull = document.getElementById('hd-hull').checked;
+    if (document.getElementById('hd-dwarves')) d.dwarves = document.getElementById('hd-dwarves').checked;
+    d.hull = false;
     if (document.getElementById('hd-marque')) d.marque = document.getElementById('hd-marque').checked;
     if (document.getElementById('hd-commission')) d.commission = document.getElementById('hd-commission').checked;
     if (val('hd-wagons') != null) { d.wagons = Math.max(1, Math.round(n('hd-wagons', 1))); d.guards = Math.round(n('hd-guards', 0)); d.wagon_profit = n('hd-wprofit', WAGON.profit); d.crew = d.wagons; }
@@ -5164,13 +5264,13 @@
         var rr0 = rolls[h.id] <= 3 ? rolls[h.id] + shipStats(h).luck : rolls[h.id];
         var rr = Math.min(20, rr0 + Math.floor(shipStats(h).fight / 2)), rx = RAID_ROLL.filter(function (x) { return rr <= x[0]; })[0];
         inc = Number(d.income || 0) * rx[1];
-        if (rx[0] === 3) { d.hull = true; crewMod -= 1; rep.push('Took a beating: the hull is damaged and the crew are shaken. Nothing taken.'); }
+        if (rx[0] === 3) { crewMod -= 1; rep.push('Took a beating: the crew are shaken and nothing was taken.' + hullHit(h, d, 0.25)); }
         else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money.' : '.'));
         if (rx[1] >= 2.5) { crewMod += 1; rep.push('The crew drank to their shares.'); }
       }
       else if (rolls[h.id]) {
         var tr = tradeRoll(h, rolls[h.id]); inc = baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul;
-        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') : tr.label + ': made ' + gp(inc) + '.');
+        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + hullHit(h, d, 0.25) : tr.label + ': made ' + gp(inc) + '.');
       }
       var levyN = hasPeople(h) && d.levy ? num(d.levy.n, 0) : 0;
       if (levyN) {
@@ -5321,6 +5421,7 @@
       case 'hold-levy': case 'hold-disband': case 'hold-answer': case 'hold-scutage': case 'hold-call':
         var hfe = holdingById(el.getAttribute('data-id')); if (hfe) holdOrder(hfe, act.slice(5)); break;
       case 'hold-fit': case 'hold-unfit': var hft = holdingById(el.getAttribute('data-id')); if (hft) holdFit(hft, el.getAttribute('data-slot'), act === 'hold-unfit' ? el.getAttribute('data-name') : ''); break;
+      case 'hold-hp': case 'hold-patch': case 'hold-repair': var hhp = holdingById(el.getAttribute('data-id')); if (hhp) holdHp(hhp, act === 'hold-hp' ? num(el.getAttribute('data-dir'), -1) : act.slice(5)); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
