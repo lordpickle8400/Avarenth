@@ -3475,7 +3475,7 @@
       if (h.kind === 'ship') {
         var b = out.boats.filter(function (x) { return x.name === d.vessel; })[0]; if (!b) return;
         var cr = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
-        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * cr * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, own: true });
+        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * cr * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, sweeps: st.sweeps, own: true });
       } else {
         var a = out.airships.filter(function (x) { return x.name === (d.vessel || 'Airship'); })[0] || out.airships[0]; if (!a) return;
         var cra = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
@@ -3524,7 +3524,7 @@
     });
   }
   function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
-  function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; if (air && air.storm && v === 0) return 0.5; var bt = air ? null : boatOf(t); if (bt && bt.weather && v < 1) v = bt.weather >= 2 ? 1 : 1 - (1 - v) / 2; return v; }
+  function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; if (air && air.storm && v === 0) return 0.5; var bt = air ? null : boatOf(t); if (bt && bt.weather && v < 1) v = bt.weather >= 2 ? 1 : 1 - (1 - v) / 2; if (bt && bt.sweeps && v < 0.75) v = 0.75; return v; }
   function groundName(t, c) { return airOf(t) ? 'Air' : boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
   var GROUND_NAMES = { R: 'Main roads', r: 'Other roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
   var GROUND_KEYS = ['R', 'r', 'g', 'f', 'm'];
@@ -4525,8 +4525,8 @@
   /* Fittings go in slots, one per slot, plus weapon mounts by size. pct = cost as a share of the vehicle's new price.
      profit/speed/upkeep are fractions; def softens bad rolls (and guards holdings for siege engines); fight helps raids and crown pay;
      attack is a siege engine's weight against walls; luck lifts rolls of 3 or less by one; weather halves foul-weather slowdowns. */
-  var SLOT_NAMES = { hull: 'Hull', rigging: 'Rigging', deck: 'Deck', figurehead: 'Figurehead', keel: 'Keel', weapon: 'Weapons', wheels: 'Wheels', body: 'Body', team: 'Team', cover: 'Covering', frame: 'Frame', crew: 'Crew' };
-  var SLOTS = { ship: ['hull', 'rigging', 'deck', 'figurehead', 'weapon'], airship: ['hull', 'rigging', 'deck', 'figurehead', 'keel', 'weapon'], siege: ['cover', 'frame', 'crew'] };
+  var SLOT_NAMES = { bow: 'Bow', top: 'Top', hull: 'Hull', rigging: 'Rigging', deck: 'Deck', figurehead: 'Figurehead', keel: 'Keel', weapon: 'Weapons', wheels: 'Wheels', body: 'Body', team: 'Team', cover: 'Covering', frame: 'Frame', crew: 'Crew' };
+  var SLOTS = { ship: ['bow', 'hull', 'rigging', 'deck', 'top', 'figurehead', 'weapon'], rowboat: ['hull', 'figurehead'], airship: ['bow', 'hull', 'rigging', 'deck', 'figurehead', 'keel', 'weapon'], siege: ['cover', 'frame', 'crew'] };
   var ATTACH = [
     { n: 'Reinforced hull', slot: 'hull', on: 'ship air', pct: 15, days: 21, def: 1, what: 'Defense +1' },
     { n: 'Copper sheathing', slot: 'hull', on: 'ship', pct: 15, days: 21, speed: 0.05, upkeep: -0.25, what: '5% faster, a quarter less upkeep' },
@@ -4546,7 +4546,24 @@
     { n: 'Ballista', slot: 'weapon', on: 'ship air', pct: 5, days: 10, def: 1, fight: 1, what: 'Defense +1, fight +1' },
     { n: 'Scorpions', slot: 'weapon', on: 'ship air wagon', pct: 4, days: 7, def: 2, what: 'Defense +2. Keeps boarders off' },
     { n: 'Fire pots', slot: 'weapon', on: 'ship air', pct: 4, days: 7, fight: 2, what: 'Fight +2' },
-    { n: 'Ram', slot: 'weapon', on: 'ship', pct: 8, days: 14, fight: 1, one: 1, what: 'Fight +1. One, on the bow' },
+    { n: 'Bronze ram', slot: 'bow', on: 'ship', pct: 8, days: 14, fight: 1, what: 'Ramming attack, 4d10. Fight +1' },
+    { n: 'Iron-capped ram', slot: 'bow', on: 'ship', pct: 12, days: 21, fight: 2, speed: -0.05, what: 'Ramming attack, 5d10. Fight +2, 5% slower' },
+    { n: 'Boarding bridge', slot: 'bow', on: 'ship', pct: 6, days: 10, fight: 2, what: 'A spiked bridge dropped onto the enemy deck. Fight +2' },
+    { n: 'Spike prow', slot: 'bow', on: 'air', pct: 8, days: 21, fight: 1, what: 'Ramming attack, 3d10. Fight +1' },
+    { n: 'Ironclad plating', slot: 'hull', on: 'ship', pct: 25, days: 45, def: 2, speed: -0.15, what: '+2 AC, +10% HP, defense +2, 15% slower' },
+    { n: 'Double hull', slot: 'hull', on: 'ship air', pct: 20, days: 30, def: 1, speed: -0.05, what: '+40% HP, defense +1, 5% slower' },
+    { n: 'Oar sweeps', slot: 'rigging', on: 'ship', pct: 8, days: 14, sweeps: 1, what: 'Bad weather never slows it below three-quarters' },
+    { n: 'Smuggler’s hold', slot: 'deck', on: 'ship air', pct: 8, days: 14, raid: 0.25, what: '+25% raid takings, and searches find nothing' },
+    { n: 'Good quarters', slot: 'deck', on: 'ship air', pct: 6, days: 10, quarters: 1, what: 'The crew warm to you faster' },
+    { n: 'Carpenter’s shop', slot: 'deck', on: 'ship', pct: 6, days: 10, wright: 1, what: 'The crew can mend the hull all the way' },
+    { n: 'Crow’s nest', slot: 'top', on: 'ship', pct: 2, days: 3, def: 1, what: 'Sees trouble coming. Defense +1' },
+    { n: 'Fighting top', slot: 'top', on: 'ship', pct: 3, days: 5, fight: 1, what: 'Archers up the mast. Fight +1' },
+    { n: 'Gilded figurehead', slot: 'figurehead', on: 'ship air', pct: 4, days: 5, profit: 0.05, what: '+5% profit. It impresses' },
+    { n: 'Ballast tanks', slot: 'keel', on: 'air', pct: 12, days: 30, ceiling: 250, speed: 0.05, what: '+250 m ceiling, 5% faster. Gnome work' },
+    { n: 'Harpoon launcher', slot: 'weapon', on: 'ship air', pct: 4, days: 7, fight: 1, what: 'Tethers what it hits. Fight +1' },
+    { n: 'Fire barrels', slot: 'weapon', on: 'ship', pct: 3, days: 5, def: 1, what: 'Dropped astern on whoever’s chasing. Defense +1' },
+    { n: 'Deck mangonel', slot: 'weapon', on: 'bigship', pct: 6, days: 14, fight: 2, what: 'Sailing ships and galleys only. Fight +2' },
+    { n: 'Drop chutes', slot: 'weapon', on: 'air', pct: 5, days: 14, fight: 2, what: 'Stones and fire rained on targets below. Fight +2' },
     { n: 'Iron-rimmed wheels', slot: 'wheels', on: 'wagon', pct: 10, days: 3, profit: 0.1, what: '+10% profit: more runs, fewer breakdowns' },
     { n: 'Covered wagons', slot: 'body', on: 'wagon', pct: 10, days: 3, profit: 0.15, what: '+15% profit: cargo stays dry' },
     { n: 'War wagons', slot: 'body', on: 'wagon', pct: 30, days: 7, def: 2, profit: -0.2, what: 'Defense +2, 20% less cargo. Can mount scorpions' },
@@ -4582,13 +4599,13 @@
   function vesselName(h) { var d = h.data || {}; return d.vessel || (h.kind === 'airship' ? 'Airship' : h.kind === 'siege' ? 'Battering ram' : h.kind === 'ship' ? 'Cog' : ''); }
   function attachFits(h, a) {
     var on = ' ' + a.on + ' ', v = vesselName(h);
-    if (h.kind === 'ship') return on.indexOf(' ship ') >= 0;
+    if (h.kind === 'ship') return on.indexOf(' ship ') >= 0 || (on.indexOf(' bigship ') >= 0 && (v === 'Sailing ship' || v === 'Galley'));
     if (h.kind === 'airship') return on.indexOf(' air ') >= 0;
     if (h.kind === 'caravan') return on.indexOf(' wagon ') >= 0 && (a.n !== 'Scorpions' || fitIn(h, 'body') === 'War wagons');
     if (h.kind === 'siege') return a.on === 'siege' || a.on === v || (a.on === 'throw' && SIEGE[v] && SIEGE[v].throw);
     return false;
   }
-  function slotsOf(h) { return SLOTS[h.kind] || []; }
+  function slotsOf(h) { return h.kind === 'ship' && vesselName(h) === 'Rowboat' ? SLOTS.rowboat : SLOTS[h.kind] || []; }
   function mountsOf(h) { return h.kind === 'caravan' ? (fitIn(h, 'body') === 'War wagons' ? 1 : 0) : MOUNTS[vesselName(h)] || 0; }
   function fitIn(h, slot) { var f = ((h.data || {}).fits || []).filter(function (x) { return (ATT[x.name] || {}).slot === slot; })[0]; return f ? f.name : ''; }
   function hullPrice(h) {
@@ -4600,8 +4617,8 @@
   // Fitted attachments (done) plus the class bonus, summed. Wagons also get defense from their guards.
   function shipStats(h) {
     var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0, v = vesselName(h);
-    var out = { list: [], fitting: [], profit: 0, speed: 0, upkeep: 0, def: 0, fight: 0, marines: 0, grace: 0, ceiling: 0, storm: 0, river: '', luck: 0, weather: 0, attack: 0, wages: 0, freeMoor: 0, cls: '' };
-    var KEYS = ['profit', 'speed', 'upkeep', 'def', 'fight', 'marines', 'grace', 'ceiling', 'storm', 'luck', 'weather', 'attack', 'wages', 'freeMoor'];
+    var out = { sweeps: 0, raid: 0, quarters: 0, wright: 0, list: [], fitting: [], profit: 0, speed: 0, upkeep: 0, def: 0, fight: 0, marines: 0, grace: 0, ceiling: 0, storm: 0, river: '', luck: 0, weather: 0, attack: 0, wages: 0, freeMoor: 0, cls: '' };
+    var KEYS = ['profit', 'speed', 'upkeep', 'def', 'fight', 'marines', 'grace', 'ceiling', 'storm', 'luck', 'weather', 'attack', 'wages', 'freeMoor', 'sweeps', 'raid', 'quarters', 'wright'];
     var cb = (h.kind === 'ship' || h.kind === 'airship') ? CLASS_BONUS[v] : null;
     if (cb) { KEYS.forEach(function (k) { if (cb[k]) out[k] += cb[k]; }); out.cls = cb.what; }
     if (h.kind === 'siege' && SIEGE[v]) { out.attack += SIEGE[v].attack; out.def += SIEGE[v].def; out.cls = SIEGE[v].what; }
@@ -4868,9 +4885,16 @@
     'Ballista': { hit: 6, dmg: '3d10 piercing', range: '120/480 ft.', crew: 3 },
     'Scorpions': { hit: 5, dmg: '2d10 piercing', range: '100/400 ft.', crew: 2, note: 'Two shots a round at anyone boarding' },
     'Fire pots': { hit: 4, dmg: '2d6 fire', range: '60 ft.', crew: 2, note: 'Sets the target alight: 1d6 fire each round until put out' },
-    'Ram': { hit: 8, dmg: '4d10 bludgeoning', range: 'ramming', crew: 0, note: 'Ignores the damage threshold. The rammer takes half' }
+    'Bronze ram': { hit: 8, dmg: '4d10 bludgeoning', range: 'ramming', crew: 0, note: 'Ignores the damage threshold. The rammer takes half' },
+    'Iron-capped ram': { hit: 8, dmg: '5d10 bludgeoning', range: 'ramming', crew: 0, note: 'Ignores the damage threshold. The rammer takes a quarter' },
+    'Spike prow': { hit: 7, dmg: '3d10 piercing', range: 'ramming', crew: 0, note: 'Ignores the damage threshold. The rammer takes half' },
+    'Boarding bridge': { hit: 6, dmg: '2d10 piercing', range: 'reach 15 ft.', crew: 2, note: 'On a hit it sticks fast: the ships are locked and marines cross with advantage' },
+    'Harpoon launcher': { hit: 6, dmg: '2d10 piercing', range: '60/180 ft.', crew: 2, note: 'On a hit the target is tethered and can’t move away' },
+    'Fire barrels': { hit: 0, dmg: '4d6 fire', range: '30 ft. astern', crew: 1, note: 'Anything chasing makes a DC 13 Dex save or takes it, and burns' },
+    'Deck mangonel': { hit: 5, dmg: '5d10 bludgeoning', range: '200/800 ft. (not within 60 ft.)', crew: 4 },
+    'Drop chutes': { hit: 5, dmg: '4d10 bludgeoning or fire', range: 'straight down', crew: 2, note: 'Only at targets below' }
   };
-  var HULL_BONUS = { 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
+  var HULL_BONUS = { 'Ironclad plating': { ac: 2, hp: 0.1 }, 'Double hull': { hp: 0.4 }, 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
   function statOf(h) {
     if (h.kind === 'caravan') return null;
     var d = h.data || {}, v = vesselName(h), base = STATS[v];
@@ -4900,7 +4924,7 @@
   // How much a crew can patch in a day of rest, and how far. Dwarf hull-wrights aboard an airship mend it fully, and twice as fast.
   function patchOf(h) {
     var s = statOf(h); if (!s) return null;
-    var dw = h.kind === 'airship' && (h.data || {}).dwarves;
+    var dw = (h.kind === 'airship' && (h.data || {}).dwarves) || shipStats(h).wright > 0;
     return { per: Math.max(1, Math.round(s.max * (dw ? 0.2 : 0.1))), cap: dw ? s.max : Math.round(s.max * 0.75), dwarves: dw };
   }
   function repairCost(h) { var s = statOf(h); if (!s || s.hp >= s.max) return { gp: 0, days: 0 }; var miss = s.max - s.hp; return { gp: Math.round(hullPrice(h) / s.max * miss * 0.5), days: Math.max(1, Math.ceil(miss / (s.max / 10))) }; }
@@ -4910,7 +4934,7 @@
     var html = '<div class="tbl" style="margin-bottom:6px"><div class="tbl-row" style="flex-wrap:wrap"><div class="main"><b>AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · Threshold ' + s.dt : '') + '</b><span>' +
       esc((h.kind === 'caravan' ? 'Each wagon AC ' + s.ac + ', ' + s.each + ' HP. ' : '') + (s.notes.length ? s.notes.join('. ') + '.' : '')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' })[s.cond] + (s.hp <= 0 ? ' tier-disaster' : '') + '">' + esc(s.cond) + '</span></div>';
     s.atks.forEach(function (a) {
-      html += '<div class="tbl-row"><div class="main"><b>' + esc(a.n) + '</b><span>' + esc('+' + a.hit + ' to hit, ' + a.range + ', ' + a.dmg + (a.crew ? '. Crew ' + a.crew : '') + (a.note ? '. ' + a.note : '')) + '</span></div></div>';
+      html += '<div class="tbl-row"><div class="main"><b>' + esc(a.n) + '</b><span>' + esc((a.hit ? '+' + a.hit + ' to hit, ' : 'Save, ') + a.range + ', ' + a.dmg + (a.crew ? '. Crew ' + a.crew : '') + (a.note ? '. ' + a.note : '')) + '</span></div></div>';
     });
     html += '</div>';
     if (d.repair && num(d.repair.done, 0) > day) html += '<p class="note" style="margin:0 0 6px">In the yard for repairs, done in ' + (num(d.repair.done, 0) - day) + ' days.</p>';
@@ -5380,7 +5404,7 @@
       else if (rolls[h.id] && st.mode === 'raiding') {
         var rr0 = rolls[h.id] <= 3 ? rolls[h.id] + shipStats(h).luck : rolls[h.id];
         var rr = Math.min(20, rr0 + Math.floor(shipStats(h).fight / 2)), rx = RAID_ROLL.filter(function (x) { return rr <= x[0]; })[0];
-        inc = Number(d.income || 0) * rx[1];
+        inc = Number(d.income || 0) * rx[1] * (1 + shipStats(h).raid);
         if (rx[0] === 3) { crewMod -= 1; rep.push('Took a beating: the crew are shaken and nothing was taken.' + hullHit(h, d, 0.25)); }
         else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money.' : '.'));
         if (rx[1] >= 2.5) { crewMod += 1; rep.push('The crew drank to their shares.'); }
@@ -5437,7 +5461,7 @@
           cof -= w + had;
           if (had > 0) { l += 1; rep.push(nm + ' paid, back pay too. They noticed.'); } else rep.push(nm + ' paid.');
           uu.streak = had > 0 ? 0 : uu.streak + 1; uu.owed = 0; uu.missed = 0; uu.hurt = 0;
-          if (uu.streak >= 3 && l < 7) { l += 1; uu.streak = 0; }
+          if (uu.streak >= (u === 'crew' && shipStats(h).quarters ? 2 : 3) && l < 7) { l += 1; uu.streak = 0; }
         } else if (!held && cof >= w) {
           cof -= w; uu.streak = 0; rep.push(nm + ' paid this month. Still owed ' + gp(had) + '.');
         } else {
