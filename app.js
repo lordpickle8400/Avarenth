@@ -4431,7 +4431,7 @@
   }
   function upkeepOf(h) {
     var d = h.data || {};
-    if (h.kind === 'caravan') return Math.round(num(d.wagons, 1) * WAGON.feed * Math.max(0, 1 + shipStats(h).upkeep));
+    if (h.kind === 'caravan') return Math.round(trainOf(h).feed);
     if (h.kind === 'ship' || h.kind === 'airship' || h.kind === 'siege') return Math.round(Number(d.upkeep || 0) * Math.max(0, 1 + shipStats(h).upkeep));
     return Number(d.upkeep || 0) + (hasPeople(h) ? buildSum(h, 'up') : 0);
   }
@@ -4491,7 +4491,7 @@
   function unitWages(h, unit) {
     var d = h.data || {};
     if (unit === 'garrison') return num(d.soldiers, 0) * Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE);
-    if (h.kind === 'caravan') return num(d.wagons, 1) * WAGON.driver + num(d.guards, 0) * WAGON.guard;
+    if (h.kind === 'caravan') return wagonsOf(h).length * WAGON.driver + num(d.guards, 0) * WAGON.guard;
     if (h.kind === 'siege') return Math.round(num(d.crew, (SIEGE[vesselName(h)] || {}).crew || 10) * SIEGE_WAGE * (1 + shipStats(h).wages));
     if (h.kind === 'ship' || h.kind === 'airship') { var ss = shipStats(h); return Math.round(Number(d.wages || 0) * (1 + ss.marines + ss.wages)) + (h.kind === 'airship' && d.dwarves ? 30 : 0); }
     return Number(d.wages || 0);
@@ -4526,7 +4526,7 @@
      profit/speed/upkeep are fractions; def softens bad rolls (and guards holdings for siege engines); fight helps raids and crown pay;
      attack is a siege engine's weight against walls; luck lifts rolls of 3 or less by one; weather halves foul-weather slowdowns. */
   var SLOT_NAMES = { hull: 'Hull', rigging: 'Rigging', deck: 'Deck', figurehead: 'Figurehead', keel: 'Keel', weapon: 'Weapons', wheels: 'Wheels', body: 'Body', team: 'Team', cover: 'Covering', frame: 'Frame', crew: 'Crew' };
-  var SLOTS = { ship: ['hull', 'rigging', 'deck', 'figurehead', 'weapon'], airship: ['hull', 'rigging', 'deck', 'figurehead', 'keel', 'weapon'], caravan: ['wheels', 'body', 'team', 'weapon'], siege: ['cover', 'frame', 'crew'] };
+  var SLOTS = { ship: ['hull', 'rigging', 'deck', 'figurehead', 'weapon'], airship: ['hull', 'rigging', 'deck', 'figurehead', 'keel', 'weapon'], siege: ['cover', 'frame', 'crew'] };
   var ATTACH = [
     { n: 'Reinforced hull', slot: 'hull', on: 'ship air', pct: 15, days: 21, def: 1, what: 'Defense +1' },
     { n: 'Copper sheathing', slot: 'hull', on: 'ship', pct: 15, days: 21, speed: 0.05, upkeep: -0.25, what: '5% faster, a quarter less upkeep' },
@@ -4592,7 +4592,7 @@
   function mountsOf(h) { return h.kind === 'caravan' ? (fitIn(h, 'body') === 'War wagons' ? 1 : 0) : MOUNTS[vesselName(h)] || 0; }
   function fitIn(h, slot) { var f = ((h.data || {}).fits || []).filter(function (x) { return (ATT[x.name] || {}).slot === slot; })[0]; return f ? f.name : ''; }
   function hullPrice(h) {
-    if (h.kind === 'caravan') return WAGON.price * num((h.data || {}).wagons, 1);
+    if (h.kind === 'caravan') return trainOf(h).price;
     if (h.kind === 'siege') return (SIEGE[vesselName(h)] || {}).price || 300;
     var c = commissionOf(h.kind, vesselName(h)); return c ? c[0] : 8000;
   }
@@ -4612,7 +4612,7 @@
       KEYS.forEach(function (k) { if (a[k]) out[k] += a[k]; });
       if (a.river) out.river = a.river;
     });
-    if (h.kind === 'caravan') { var w = num(d.wagons, 1), g = num(d.guards, 0); out.def += g >= w ? 2 : g > 0 ? 1 : 0; out.fight += g > 0 ? 1 : 0; }
+    if (h.kind === 'caravan') { var tw = trainOf(h), w = Math.max(1, tw.rolling), g = num(d.guards, 0); out.def += (g >= w ? 2 : g > 0 ? 1 : 0) + (tw.armed ? 1 : 0); out.fight += (g > 0 ? 1 : 0) + tw.armed; }
     return out;
   }
   // Wagons are bought one at a time; their costs and takings follow the count.
@@ -4625,13 +4625,14 @@
     if (h.kind === 'airship' && !d.gnome) return 'Grounded: no gnome first mate or technician aboard.';
     if (shipStats(h).fitting.length) return 'In the yard: ' + shipStats(h).fitting.map(function (f) { return f.name.toLowerCase(); }).join(', ') + ' being fitted.';
     var tt = travel[h.campaign_id]; if (d.repair && num(d.repair.done, 0) > (tt ? tt.day : 0)) return 'In the yard for repairs.';
+    if (h.kind === 'caravan' && trainOf(h).rolling === 0) return 'Every wagon is wrecked.';
     var so = statOf(h); if (so && so.hp <= 0) return so.cond + ': needs ' + (h.kind === 'airship' ? 'dwarf shipwrights' : 'a yard') + ' before it can go anywhere.';
     if ((h.kind === 'ship' || h.kind === 'airship') && d.hull && !so) return 'Hull damaged: needs a dwarf shipwright' + (h.kind === 'ship' ? ' or a dry dock' : '') + ' before it can go out.';
     return '';
   }
   function baseIncome(h) {
     var d = h.data || {};
-    if (h.kind === 'caravan') return num(d.wagons, 1) >= WAGON.min ? num(d.wagons, 1) * (d.wagon_profit != null ? Number(d.wagon_profit) : WAGON.profit) * Math.max(0, 1 + shipStats(h).profit) : 0;
+    if (h.kind === 'caravan') { var trn = trainOf(h); return trn.rolling >= WAGON.min ? Math.round(trn.profit) : 0; }
     if (h.kind === 'siege') return 0;
     if (h.kind === 'ship' || h.kind === 'airship') return Number(d.income || 0) * (1 + shipStats(h).profit);
     if (!HOLD_LAND[h.kind]) return Number(d.income || 0);
@@ -4662,8 +4663,9 @@
       t2.mode = v.name; t2.weather = 'Fair'; speed = Number(v.mi || 24);
     }
     var grid = grids[m.id], route = grid ? findRoute(m, grid, t2, from.x, from.y, to.x, to.y) : null;
-    if (route) return Math.ceil(route.days - 0.02);
-    return Math.ceil(mapDistance(m, from.x, from.y, to.x, to.y) / Math.max(1, speed));
+    var slow = h.kind === 'caravan' && trainOf(h).slow ? 0.75 : 1;
+    if (route) return Math.ceil((route.days - 0.02) / slow);
+    return Math.ceil(mapDistance(m, from.x, from.y, to.x, to.y) / Math.max(1, speed * slow));
   }
   function placeByLabel(campId, label) {
     var t = travel[campId]; if (!t || !t.map_id || !label) return null;
@@ -4741,7 +4743,7 @@
     else if (st.mode === 'moored') bits.push('Moored at ' + (st.at || 'port') + (st.free ? ' (own holding, free)' : ''));
     if (h.kind === 'ship' || h.kind === 'airship') bits.unshift(d.vessel || (h.kind === 'airship' ? 'Airship' : 'Ship'));
     else if (h.kind === 'siege') bits.unshift(vesselName(h));
-    else if (h.kind === 'caravan') bits.unshift(num(d.wagons, 1) + (num(d.wagons, 1) === 1 ? ' wagon' : ' wagons') + (num(d.guards, 0) ? ', ' + num(d.guards, 0) + ' guards' : ''));
+    else if (h.kind === 'caravan') bits.unshift(wagonsOf(h).length + (wagonsOf(h).length === 1 ? ' wagon' : ' wagons') + (num(d.guards, 0) ? ', ' + num(d.guards, 0) + ' guards' : ''));
     else bits.unshift(HOLD_LABEL[h.kind]);
     return bits.join(' · ');
   }
@@ -4815,7 +4817,7 @@
     var html = '<div class="group-box" style="margin-bottom:12px"><h2 style="margin-top:0">' + esc(h.name || HOLD_LABEL[h.kind]) + '</h2>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
-      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + statHtml(h) + fitHtml(h) +
+      (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + (h.kind === 'caravan' ? caravanHtml(h) : statHtml(h) + fitHtml(h)) +
       '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + landHtml(h) +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
@@ -4870,7 +4872,8 @@
   };
   var HULL_BONUS = { 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
   function statOf(h) {
-    var d = h.data || {}, v = vesselName(h), base = h.kind === 'caravan' ? (fitIn(h, 'body') === 'War wagons' ? STATS.warwagon : STATS.wagon) : STATS[v];
+    if (h.kind === 'caravan') return null;
+    var d = h.data || {}, v = vesselName(h), base = STATS[v];
     if (!base) return null;
     var st = shipStats(h), ac = base.ac, hpMul = 1, notes = [], atks = [];
     st.list.forEach(function (n) { var b = HULL_BONUS[n]; if (!b) return; ac += b.ac || 0; hpMul += b.hp || 0; if (b.note) notes.push(b.note); });
@@ -4940,9 +4943,123 @@
   }
   // Hit the hull for a share of its max HP (trade disasters, raids gone wrong). Returns a line for the report.
   function hullHit(h, d, share) {
+    if (h.kind === 'caravan') {
+      var hh = { kind: h.kind, campaign_id: h.campaign_id, data: d }, lst = clone(wagonsOf(hh)), lostN = 0;
+      lst.forEach(function (w) { var ws = wagonStat(hh, w); if (ws.hp <= 0) return; w.hp = Math.max(0, ws.hp - Math.round(ws.max * share)); if (!w.hp) lostN++; });
+      d.wagonList = lst; return ' Every wagon took a beating' + (lostN ? ', and ' + lostN + ' ' + (lostN === 1 ? 'is' : 'are') + ' wrecked' : '') + '.';
+    }
     var s = statOf({ kind: h.kind, campaign_id: h.campaign_id, data: d }); if (!s) return '';
     var lost = Math.round(s.max * share); d.hp = Math.max(0, s.hp - lost);
     return ' The hull took ' + lost + ' damage (' + d.hp + '/' + s.max + ' HP).';
+  }
+  /* Caravans are wagon by wagon: each has its own type, hit points and fittings. The train earns the sum of its wagons,
+     eats the sum of their feed, and moves at the pace of the slowest. */
+  var WAGON_TYPES = {
+    'Cart': { price: 50, ac: 11, hp: 30, dt: 0, profit: 25, feed: 1.5, what: 'One horse. Cheap and quick' },
+    'Wagon': { price: 150, ac: 12, hp: 50, dt: 0, profit: 50, feed: 3, what: 'The standard' },
+    'Covered wagon': { price: 200, ac: 12, hp: 50, dt: 0, profit: 65, feed: 3, what: 'Keeps the cargo dry' },
+    'Ox freight wagon': { price: 250, ac: 13, hp: 70, dt: 0, profit: 80, feed: 2, slow: 1, what: 'Hauls the most, walks the slowest' },
+    'War wagon': { price: 400, ac: 15, hp: 80, dt: 10, profit: 30, feed: 4, mount: 1, what: 'Armoured, with one weapon mount' },
+    'Supply wagon': { price: 150, ac: 12, hp: 50, dt: 0, profit: 0, feed: 3, supply: 1, what: 'Feeds the train: each cuts the feed bill by a quarter, to half at most' },
+    'Wainwright’s wagon': { price: 300, ac: 12, hp: 50, dt: 0, profit: 0, feed: 3, wright: 1, what: 'A forge on wheels: the train can be mended fully on the road, twice as fast' }
+  };
+  var WAGON_FITS = ['Iron-rimmed wheels', 'Oxen', 'Heavy horses', 'Scorpions'];
+  function wagonsOf(h) {
+    var d = h.data || {};
+    if (Array.isArray(d.wagonList)) return d.wagonList;
+    // Older caravans were a count of identical wagons.
+    var n = num(d.wagons, 1), out = [];
+    for (var i = 0; i < n; i++) out.push({ id: 'w' + i, type: 'Wagon', fits: [] });
+    return out;
+  }
+  function wagonDone(w, day) { return (w.fits || []).filter(function (f) { return num(f.done, 0) <= day; }).map(function (f) { return f.name; }); }
+  function wagonStat(h, w) {
+    var t = travel[h.campaign_id], day = t ? t.day : 0, ty = WAGON_TYPES[w.type] || WAGON_TYPES.Wagon, fits = wagonDone(w, day);
+    var max = ty.hp, hp = w.hp == null ? max : Math.max(0, Math.min(max, num(w.hp, max)));
+    var profit = ty.profit * (1 + (fits.indexOf('Iron-rimmed wheels') >= 0 ? 0.1 : 0) + (fits.indexOf('Heavy horses') >= 0 ? 0.1 : 0) - (fits.indexOf('Oxen') >= 0 ? 0.05 : 0));
+    var feed = ty.feed * (fits.indexOf('Oxen') >= 0 ? 0.5 : fits.indexOf('Heavy horses') >= 0 ? 1.5 : 1);
+    return { ty: ty, fits: fits, max: max, hp: hp, ac: ty.ac, dt: ty.dt, cond: condOf(h, hp, max), profit: hp > 0 ? profit : 0, feed: feed, slow: ty.slow || fits.indexOf('Oxen') >= 0,
+      atks: fits.indexOf('Scorpions') >= 0 ? [Object.assign({ n: 'Scorpions' }, WEAPON_ATK.Scorpions)] : [] };
+  }
+  function trainOf(h) {
+    var list = wagonsOf(h), out = { n: list.length, rolling: 0, profit: 0, feed: 0, supply: 0, wright: false, slow: false, armed: 0, price: 0 };
+    list.forEach(function (w) {
+      var s = wagonStat(h, w); out.price += s.ty.price;
+      if (s.hp <= 0) return;
+      out.rolling += 1; out.profit += s.profit; out.feed += s.feed;
+      if (s.ty.supply) out.supply += 1; if (s.ty.wright) out.wright = true; if (s.slow) out.slow = true; if (s.atks.length) out.armed += 1;
+    });
+    out.feed *= 1 - Math.min(0.5, out.supply * 0.25);
+    return out;
+  }
+  function caravanHtml(h) {
+    var d = h.data || {}, dm = dmView(), t = travel[h.campaign_id], day = t ? t.day : 0, tr = trainOf(h);
+    var html = '<p class="note" style="margin:0 0 6px">' + esc(tr.rolling + ' of ' + tr.n + ' wagons rolling' + (tr.slow ? ', at an ox’s pace' : '') + (tr.wright ? ', a wainwright along' : '') + (tr.supply ? ', ' + tr.supply + ' supply ' + (tr.supply === 1 ? 'wagon' : 'wagons') : '') + '. Defense ' + shipStats(h).def + ' on the road' + (tr.rolling < WAGON.min ? '. Needs ' + WAGON.min + ' rolling wagons to trade' : '') + '.') + '</p><div class="tbl" style="margin-bottom:6px">';
+    wagonsOf(h).forEach(function (w, i) {
+      var s = wagonStat(h, w), going = (w.fits || []).filter(function (f) { return num(f.done, 0) > day; });
+      html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 60%"><b>' + esc((w.name ? w.name + ' · ' : '') + w.type) + '</b><span>' +
+        esc('AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · threshold ' + s.dt : '') + (s.fits.filter(function (n) { return n !== 'Scorpions'; }).length ? ' · ' + s.fits.filter(function (n) { return n !== 'Scorpions'; }).join(', ') : '') + (going.length ? ' · fitting ' + going.map(function (f) { return f.name.toLowerCase(); }).join(', ') : '') +
+          s.atks.map(function (a) { return ' · ' + a.n + ' +' + a.hit + ', ' + a.dmg; }).join('')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' }[s.cond] || 'tier-disaster') + '">' + esc(s.cond) + '</span>';
+      if (dm) {
+        var have = (w.fits || []).map(function (f) { return f.name; });
+        var opts = WAGON_FITS.filter(function (n) { return have.indexOf(n) < 0 && !(n === 'Scorpions' && !s.ty.mount) && !((n === 'Oxen' && have.indexOf('Heavy horses') >= 0) || (n === 'Heavy horses' && have.indexOf('Oxen') >= 0)); });
+        html += '<div class="actions tight" style="flex:1 1 100%;flex-wrap:wrap;align-items:center;margin:0">' +
+          '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="whp-' + esc(h.id) + '-' + i + '" placeholder="HP" aria-label="Hit points for wagon ' + (i + 1) + '">' +
+          '<button type="button" class="btn small" data-act="wag-hp" data-id="' + esc(h.id) + '" data-i="' + i + '" data-dir="-1">Damage</button><button type="button" class="btn small" data-act="wag-hp" data-id="' + esc(h.id) + '" data-i="' + i + '" data-dir="1">Heal</button>' +
+          (opts.length ? '<select class="input" style="flex:1 1 140px;min-width:0" id="wfit-' + esc(h.id) + '-' + i + '" aria-label="Fitting">' + opts.map(function (n) { var a = ATT[n]; return '<option value="' + esc(n) + '">' + esc(n + ' · ' + Math.round(s.ty.price * a.pct / 100) + ' gp · ' + a.what) + '</option>'; }).join('') + '</select><button type="button" class="btn small" data-act="wag-fit" data-id="' + esc(h.id) + '" data-i="' + i + '">Fit</button>' : '') +
+          (have.length ? '<button type="button" class="btn small quiet" data-act="wag-unfit" data-id="' + esc(h.id) + '" data-i="' + i + '">Strip ' + esc(have[have.length - 1].toLowerCase()) + '</button>' : '') +
+          '<button type="button" class="btn small quiet" data-act="wag-del" data-id="' + esc(h.id) + '" data-i="' + i + '">' + (ui.wagDel === h.id + i ? 'Tap again to lose it' : 'Lose this wagon') + '</button></div>';
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    if (dm) {
+      html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><select class="input" style="flex:1 1 160px;min-width:0" id="wadd-' + esc(h.id) + '" aria-label="Wagon type">' + Object.keys(WAGON_TYPES).map(function (k) { return '<option value="' + esc(k) + '">' + esc(k + ' · ' + WAGON_TYPES[k].price + ' gp · AC ' + WAGON_TYPES[k].ac + ', ' + WAGON_TYPES[k].hp + ' HP · ' + WAGON_TYPES[k].what) + '</option>'; }).join('') + '</select>' +
+        '<button type="button" class="btn small" data-act="wag-add" data-id="' + esc(h.id) + '">Buy a wagon</button>' +
+        '<button type="button" class="btn small quiet" data-act="wag-patch" data-id="' + esc(h.id) + '">Patch a day</button>' +
+        (caravanRepair(h).gp ? '<button type="button" class="btn small quiet" data-act="wag-repair" data-id="' + esc(h.id) + '">Wainwright’s yard: ' + gp(caravanRepair(h).gp) + ', ' + caravanRepair(h).days + 'd</button>' : '') + '</div>' +
+        '<label class="note"><input type="checkbox" id="wpay-' + esc(h.id) + '" checked> Pay from the coffer</label>' +
+        '<p class="note" style="margin:4px 0 0">Drivers patch a tenth of each wagon’s HP a day at rest, up to three-quarters. ' + (tr.wright ? 'With the wainwright along it’s a fifth a day, all the way to full.' : 'A wainwright’s wagon would mend them fully, twice as fast.') + ' A wrecked wagon needs a yard.</p>';
+    }
+    return html;
+  }
+  function caravanRepair(h) {
+    var gpc = 0, days = 0;
+    wagonsOf(h).forEach(function (w) { var s = wagonStat(h, w), miss = s.max - s.hp; if (miss > 0) { gpc += Math.round(s.ty.price / s.max * miss * 0.5); days = Math.max(days, Math.ceil(miss / (s.max / 10))); } });
+    return { gp: gpc, days: days };
+  }
+  function wagonAct(h, act, i) {
+    var d = h.data || {}, list = clone(wagonsOf(h)), t = travel[h.campaign_id], day = t ? t.day : 0, patch = {}, msg = '', pay = !!(document.getElementById('wpay-' + h.id) || { checked: true }).checked;
+    var w = list[i];
+    if (act === 'add') {
+      var type = (document.getElementById('wadd-' + h.id) || {}).value, ty = WAGON_TYPES[type]; if (!ty) return;
+      if (pay && cofferOf(h) < ty.price) return toast('The coffer needs ' + gp(ty.price) + ' for that.');
+      list.push({ id: 'w' + Date.now().toString(36), type: type, fits: [] }); if (pay) patch.coffer = cofferOf(h) - ty.price; msg = 'Bought a ' + type.toLowerCase();
+    } else if (act === 'del') {
+      if (ui.wagDel !== h.id + i) { ui.wagDel = h.id + i; return render(); }
+      ui.wagDel = null; list.splice(i, 1); msg = 'Wagon lost';
+    } else if (act === 'hp') {
+      var n = num((document.getElementById('whp-' + h.id + '-' + i) || {}).value, 0), dir = num(arguments[3], -1), s = wagonStat(h, w);
+      if (n < 1) return toast('How many HP?');
+      if (dir < 0 && s.dt && n < s.dt) return toast('Under the damage threshold (' + s.dt + '): no effect.');
+      w.hp = Math.max(0, Math.min(s.max, s.hp + dir * n)); msg = w.type + ': ' + w.hp + '/' + s.max + ' HP';
+    } else if (act === 'fit') {
+      var fn = (document.getElementById('wfit-' + h.id + '-' + i) || {}).value, a = ATT[fn]; if (!a) return;
+      var cost = Math.round((WAGON_TYPES[w.type] || WAGON_TYPES.Wagon).price * a.pct / 100);
+      if (pay && cofferOf(h) < cost) return toast('The coffer needs ' + gp(cost) + ' for that.');
+      w.fits = (w.fits || []).concat([{ name: fn, done: day + a.days }]); if (pay && cost) patch.coffer = cofferOf(h) - cost; msg = fn + ' going onto the ' + w.type.toLowerCase();
+    } else if (act === 'unfit') { w.fits = (w.fits || []).slice(0, -1); msg = 'Stripped'; }
+    else if (act === 'patch') {
+      var wr = trainOf(h).wright;
+      list.forEach(function (x) { var s = wagonStat(h, x); if (s.hp <= 0) return; var cap = wr ? s.max : Math.round(s.max * 0.75); if (s.hp < cap) x.hp = Math.min(cap, s.hp + Math.max(1, Math.round(s.max * (wr ? 0.2 : 0.1)))); });
+      msg = 'The drivers patched the wagons';
+    } else if (act === 'repair') {
+      var rc = caravanRepair(h);
+      if (pay && cofferOf(h) < rc.gp) return toast('The coffer needs ' + gp(rc.gp) + ' for that.');
+      list.forEach(function (x) { x.hp = null; }); patch.repair = { done: day + rc.days, gp: rc.gp }; if (pay) patch.coffer = cofferOf(h) - rc.gp; msg = 'Into the wainwright’s yard for ' + rc.days + ' days';
+    }
+    patch.wagonList = list; patch.wagons = list.length; patch.crew = list.length;
+    saveHolding(h, patch).then(function () { toast(msg); render(); }).catch(function (e) { fail(e); });
   }
   function fitHtml(h) {
     if (!SLOTS[h.kind]) return '';
@@ -5064,9 +5181,8 @@
       '<div class="field"><label for="hd-at">His seat</label><input type="text" id="hd-at" maxlength="60" value="' + esc(d.at || '') + '" placeholder="e.g. Dyer’s Ford"></div>' +
       '<div class="field"><label for="hd-lh">Sworn to</label><select id="hd-lh"><option value="">(dues wait in his coffer)</option>' + others.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === d.liege_hid ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select><span class="hint">His dues go into that holding’s coffer.</span></div>';
     else if (kind === 'siege') html += '';
-    else if (kind === 'caravan') html += numF('hd-wagons', 'Wagons', num(d.wagons, 1), 1, 'About ' + WAGON.price + ' gp each with two draught horses. ' + WAGON.min + ' or more can trade.') +
-      numF('hd-guards', 'Guards', num(d.guards, 0), 1, WAGON.guard + ' gp a month each. One per wagon turns ambushes into poor runs.') +
-      numF('hd-wprofit', 'Profit per wagon on a fair run, gp', d.wagon_profit != null ? d.wagon_profit : WAGON.profit);
+    else if (kind === 'caravan') html += (isNew ? '<div class="field"><label for="hd-wtype">Start with</label><select id="hd-wtype">' + Object.keys(WAGON_TYPES).map(function (k) { return '<option' + (k === 'Wagon' ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select><span class="hint">Buy more of any type from its card.</span></div>' + numF('hd-wagons', 'How many', 1, 1, WAGON.min + ' or more can go out trading.') : '') +
+      numF('hd-guards', 'Guards', num(d.guards, 0), 1, WAGON.guard + ' gp a month each. One per wagon turns ambushes into poor runs.');
     else html += numF('hd-crew', HOLD_LAND[kind] ? 'Household' : 'Crew', v('crew')) + numF('hd-wages', 'Wages a month (all of them), gp', v('wages')) + numF('hd-upkeep', 'Upkeep a month, gp', v('upkeep')) +
       numF('hd-income', HOLD_LAND[kind] ? 'Base income a month, gp' : 'Trade profit on a fair run, gp', v('income'), 1, HOLD_LAND[kind] ? 'Times the area’s wealth, plus extras.' : 'The d20 on payday scales this.');
     if (HOLD_MOVES[kind] && isNew) {
@@ -5133,7 +5249,8 @@
     d.hull = false;
     if (document.getElementById('hd-marque')) d.marque = document.getElementById('hd-marque').checked;
     if (document.getElementById('hd-commission')) d.commission = document.getElementById('hd-commission').checked;
-    if (val('hd-wagons') != null) { d.wagons = Math.max(1, Math.round(n('hd-wagons', 1))); d.guards = Math.round(n('hd-guards', 0)); d.wagon_profit = n('hd-wprofit', WAGON.profit); d.crew = d.wagons; }
+    if (val('hd-guards') != null) d.guards = Math.round(n('hd-guards', 0));
+    if (val('hd-wtype') != null) { var wn = Math.max(1, Math.round(n('hd-wagons', 1))), wt = val('hd-wtype'); d.wagonList = []; for (var wi = 0; wi < wn; wi++) d.wagonList.push({ id: 'w' + wi, type: wt, fits: [] }); d.wagons = wn; d.crew = wn; }
     d.notes = (val('hd-notes') || '').slice(0, 400);
     d.coffer = n('hd-coffer', 0);
     var owner = val('hd-owner') || null;
@@ -5422,6 +5539,7 @@
         var hfe = holdingById(el.getAttribute('data-id')); if (hfe) holdOrder(hfe, act.slice(5)); break;
       case 'hold-fit': case 'hold-unfit': var hft = holdingById(el.getAttribute('data-id')); if (hft) holdFit(hft, el.getAttribute('data-slot'), act === 'hold-unfit' ? el.getAttribute('data-name') : ''); break;
       case 'hold-hp': case 'hold-patch': case 'hold-repair': var hhp = holdingById(el.getAttribute('data-id')); if (hhp) holdHp(hhp, act === 'hold-hp' ? num(el.getAttribute('data-dir'), -1) : act.slice(5)); break;
+      case 'wag-add': case 'wag-del': case 'wag-hp': case 'wag-fit': case 'wag-unfit': case 'wag-patch': case 'wag-repair': var hwg = holdingById(el.getAttribute('data-id')); if (hwg) wagonAct(hwg, act.slice(4), num(el.getAttribute('data-i'), 0), el.getAttribute('data-dir')); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
