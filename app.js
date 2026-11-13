@@ -3475,7 +3475,7 @@
       if (h.kind === 'ship') {
         var b = out.boats.filter(function (x) { return x.name === d.vessel; })[0]; if (!b) return;
         var cr = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
-        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * cr * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, sweeps: st.sweeps, own: true });
+        out.boats.push({ name: h.name, mi: Math.round(b.mi * (1 + st.speed) * cr * 10) / 10, river: st.river && (!b.river || b.river === 'b') ? st.river : b.river, sea: b.sea, weather: st.weather, sweeps: st.sweeps, nostorm: bossFx(h).nostorm, own: true });
       } else {
         var a = out.airships.filter(function (x) { return x.name === (d.vessel || 'Airship'); })[0] || out.airships[0]; if (!a) return;
         var cra = statOf(h) && statOf(h).cond === 'Crippled' ? 0.5 : 1;
@@ -3524,7 +3524,7 @@
     });
   }
   function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
-  function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; if (air && air.storm && v === 0) return 0.5; var bt = air ? null : boatOf(t); if (bt && bt.weather && v < 1) v = bt.weather >= 2 ? 1 : 1 - (1 - v) / 2; if (bt && bt.sweeps && v < 0.75) v = 0.75; return v; }
+  function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; if (air && air.storm && v === 0) return 0.5; var bt = air ? null : boatOf(t); if (bt && bt.weather && v < 1) v = bt.weather >= 2 ? 1 : 1 - (1 - v) / 2; if (bt && bt.sweeps && v < 0.75) v = 0.75; if (bt && bt.nostorm && t.weather === 'Storm') return 0; return v; }
   function groundName(t, c) { return airOf(t) ? 'Air' : boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
   var GROUND_NAMES = { R: 'Main roads', r: 'Other roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
   var GROUND_KEYS = ['R', 'r', 'g', 'f', 'm'];
@@ -4427,7 +4427,7 @@
   function defenseOf(h) {
     var d = h.data || {}, s = num(d.soldiers, 0), eng = 0;
     if (d.at) holdingsFor(h.campaign_id).forEach(function (x) { if (x.kind === 'siege' && holdMode(x).mode === 'moored' && holdMode(x).at === d.at && !shipStats(x).fitting.length) eng += shipStats(x).def; });
-    return buildSum(h, 'def') + (s >= 10 ? 1 : 0) + (s >= 40 ? 1 : 0) + eng;
+    return buildSum(h, 'def') + (s >= 10 ? 1 : 0) + (s >= 40 ? 1 : 0) + eng + (bossFx(h).def || 0);
   }
   function upkeepOf(h) {
     var d = h.data || {};
@@ -4468,7 +4468,7 @@
   function loadHoldings() {
     return Promise.all([
       sb.from('holdings').select('id, campaign_id, name, kind, data, owner_char, created_at').order('created_at'),
-      sb.from('estates').select('campaign_id, treasury, payday, ledger'),
+      sb.from('estates').select('campaign_id, treasury, payday, ledger, shipments'),
       isDM() ? sb.from('holding_secrets').select('holding_id, dm') : Promise.resolve({ data: [] })
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -4491,13 +4491,14 @@
   function unitWages(h, unit) {
     var d = h.data || {};
     if (unit === 'garrison') return num(d.soldiers, 0) * Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE);
+    if (unit === 'boss') return Number((d.boss || {}).wage != null ? d.boss.wage : BOSS_WAGE[bossRole(h)] || 20);
     if (h.kind === 'caravan') return wagonsOf(h).length * WAGON.driver + num(d.guards, 0) * WAGON.guard;
     if (h.kind === 'siege') return Math.round(num(d.crew, (SIEGE[vesselName(h)] || {}).crew || 10) * SIEGE_WAGE * (1 + shipStats(h).wages));
     if (h.kind === 'ship' || h.kind === 'airship') { var ss = shipStats(h); return Math.round(Number(d.wages || 0) * (1 + ss.marines + ss.wages)) + (h.kind === 'airship' && d.dwarves ? 30 : 0); }
     return Number(d.wages || 0);
   }
-  function unitsOf(h) { var d = h.data || {}, u = ['crew']; if (HOLD_LAND[h.kind] && num(d.soldiers, 0) > 0) u.push('garrison'); return u; }
-  function unitName(h, unit) { return unit === 'garrison' ? 'Garrison' : h.kind === 'vassal' ? 'The lord himself' : HOLD_LAND[h.kind] ? 'Household' : 'Crew'; }
+  function unitsOf(h) { var d = h.data || {}, u = ['crew']; if (HOLD_LAND[h.kind] && num(d.soldiers, 0) > 0) u.push('garrison'); if (d.boss && d.boss.name) u.push('boss'); return u; }
+  function unitName(h, unit) { return unit === 'boss' ? bossTitle(h) + ' ' + (((h.data || {}).boss || {}).name || '') : unit === 'garrison' ? 'Garrison' : h.kind === 'vassal' ? 'The lord himself' : HOLD_LAND[h.kind] ? 'Household' : 'Crew'; }
   var FAVOR = [[-3, 'Declared a rebel'], [-2, 'Angry'], [-1, 'Displeased'], [0, 'In good standing'], [1, 'Trusted'], [2, 'Favoured']];
   function favorWord(f) { f = Math.max(-3, Math.min(2, num(f, 0))); return FAVOR.filter(function (x) { return x[0] === f; })[0][1]; }
   function favorTag(f) { f = num(f, 0); return '<span class="tag ' + (f >= 1 ? 'tier-good' : f === 0 ? 'tier-neutral' : f === -1 ? 'warn' : f === -2 ? 'tier-bad' : 'tier-disaster') + '">' + esc(favorWord(f)) + '</span>'; }
@@ -4518,6 +4519,7 @@
   function yardRoll(r) { return r <= 2 ? { days: 60, t: 'The dwarves and gnomes fell out and the yard stood empty all month. The work is set back two months.' } : r <= 6 ? { days: 14, t: 'Arguments in the yard. Work went slowly.' } : r >= 20 ? { days: -30, t: 'The two crews found a rhythm. The work is a month ahead.' } : r >= 17 ? { days: -7, t: 'A good month in the yard.' } : { days: 0, t: 'The work goes on.' }; }
   function holdMode(h) {
     var d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0;
+    if (d.mode === 'courier') return num(d.ret_day, 0) > day ? { mode: 'courier', at: '', since: day, free: false } : d.ret_to ? { mode: 'moored', at: d.ret_to, since: num(d.ret_day, day), free: false } : { mode: 'party', at: '', since: day, free: false };
     if (d.mode === 'building') return num(d.ready, 0) > day ? { mode: 'building', at: d.yard || '', since: day, free: false } : { mode: 'moored', at: d.yard || d.at || '', since: num(d.ready, day), free: false };
     if (d.mode === 'returning' && num(d.ret_day, 0) <= day) return { mode: 'moored', at: d.ret_to || d.at || '', since: num(d.ret_day, day), free: !!d.ret_free };
     return { mode: d.mode || (HOLD_MOVES[h.kind] ? 'party' : 'home'), at: d.at || '', since: num(d.moor_since, day), free: !!d.moor_free };
@@ -4634,6 +4636,7 @@
       KEYS.forEach(function (k) { if (a[k]) out[k] += a[k]; });
       if (a.river) out.river = a.river;
     });
+    var bf = bossFx(h); ['weather', 'profit', 'quarters', 'def', 'speed'].forEach(function (k) { if (bf[k]) out[k] += bf[k]; });
     if (h.kind === 'caravan') { var tw = trainOf(h), w = Math.max(1, tw.rolling), g = num(d.guards, 0); out.def += (g >= w ? 2 : g > 0 ? 1 : 0) + (tw.armed ? 1 : 0) + (tw.spiked ? 1 : 0) + (tw.lookout ? 1 : 0); out.fight += (g > 0 ? 1 : 0) + tw.armed; }
     return out;
   }
@@ -4665,6 +4668,8 @@
   }
   function tradeRoll(h, d20) {
     var tab = TRADE_ROLL[h.kind === 'caravan' ? 'caravan' : 'sea'], ss = shipStats(h), def = ss.def;
+    var bfx = bossFx(h); if (bfx.rollMod) d20 = Math.max(1, d20 + bfx.rollMod);
+    if (bfx.fool) { if (d20 === 1 || (h.kind === 'caravan' && d20 === 2)) d20 = 3; if (d20 === 20) d20 = 19; }
     if (ss.luck && d20 <= 3) d20 += ss.luck;
     if (def && d20 <= 5) d20 = Math.min(6, d20 + def);
     for (var i = 0; i < tab.length; i++) if (d20 <= tab[i][0]) return { mul: tab[i][1], label: tab[i][2] };
@@ -4697,6 +4702,262 @@
     var t = travel[campId]; if (!t || !t.map_id) return [];
     return townsOn(t.map_id).map(function (tw) { return tw.label; }).filter(Boolean).sort();
   }
+  /* Stewards (land), captains (ships, airships) and wagon masters (caravans): a named person in charge while the owner is away.
+     A rolled one may have a trait, a flaw, both, or neither. Their loyalty is a unit of its own, 'boss'. */
+  var BOSS_TRAITS = {
+    captain: [
+      { k: 'oldsalt', n: 'Old salt', what: 'Foul weather slows the ship half as much', fx: { weather: 1 } },
+      { k: 'trader', n: 'Born trader', what: '+10% profit', fx: { profit: 0.1 } },
+      { k: 'corsair', n: 'Corsair', what: 'Raid rolls +2', fx: { raidRoll: 2 } },
+      { k: 'beloved', n: 'Beloved', what: 'The crew warm to them faster', fx: { quarters: 1 } },
+      { k: 'hard', n: 'Hard-handed', what: 'The crew never mutiny, and never become devoted', fx: { hard: 1 } },
+      { k: 'fool', n: 'Lucky fool', what: 'Disasters become poor runs; windfalls become good runs', fx: { fool: 1 } },
+      { k: 'wary', n: 'Road-wise', what: 'Defense +1', fx: { def: 1 } }
+    ],
+    steward: [
+      { k: 'honest', n: 'Honest', what: 'Never skims, however restless the household', fx: { honest: 1 } },
+      { k: 'builder', n: 'Builder', what: 'What they build costs 10% less', fx: { builder: 1 } },
+      { k: 'soldierly', n: 'Soldierly', what: 'Soldiers count double for keeping order', fx: { order: 1 } },
+      { k: 'folk', n: 'Beloved of the folk', what: 'Unrest eases 1 more each month', fx: { unrest: -1 } },
+      { k: 'grasping', n: 'Grasping', what: 'Income +10%, but unrest +1 a month', fx: { inc: 0.1, unrest: 1 } },
+      { k: 'shrewd', n: 'Shrewd', what: 'Income +5%', fx: { inc: 0.05 } }
+    ]
+  };
+  var BOSS_FLAWS = {
+    captain: [
+      { k: 'drinks', n: 'Drinks', what: 'Trade and raid rolls −1', fx: { rollMod: -1 } },
+      { k: 'gambler', n: 'Gambler', what: 'A tenth of the takings goes missing', fx: { skim: 0.1 } },
+      { k: 'enemies', n: 'Has enemies', what: 'Defense −1, and someone is looking for them', fx: { def: -1 } },
+      { k: 'reckless', n: 'Reckless', what: '10% faster, but disasters hit the hull twice as hard', fx: { speed: 0.1, reckless: 1 } },
+      { k: 'superstitious', n: 'Superstitious', what: 'Won’t sail in a storm', fx: { nostorm: 1 } },
+      { k: 'proud', n: 'Proud', what: 'The crew warm to them slowly', fx: { proud: 1 } }
+    ],
+    steward: [
+      { k: 'drinks', n: 'Drinks', what: 'Income −5%', fx: { inc: -0.05 } },
+      { k: 'gambler', n: 'Gambler', what: 'A twentieth of the coffer goes missing each month', fx: { cofLoss: 0.05 } },
+      { k: 'lazy', n: 'Lazy', what: 'The place never grows in prosperity', fx: { lazy: 1 } },
+      { k: 'harsh', n: 'Harsh', what: 'Unrest +1 a month', fx: { unrest: 1 } },
+      { k: 'cowardly', n: 'Cowardly', what: 'Defense −1', fx: { def: -1 } },
+      { k: 'enemies', n: 'Has enemies', what: 'Someone wants them dead, and may come for them', fx: {} }
+    ]
+  };
+  var BOSS_ORDERS = { econ: 'Focus on the economy', defense: 'Focus on defense', neutral: 'Stay neutral', pay: 'Just pay wages and clear debts' };
+  var BOSS_WAGE = { steward: 20, captain: 30 };
+  var SEND_METHODS = { caravan: { n: 'Our own caravan', fee: 0 }, carrier: { n: 'Hired carrier', fee: 0.05 }, bonded: { n: 'Bonded courier', fee: 0.1, safe: 1 } };
+  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Tiefling', 6], ['Goliath', 5], ['Tortle', 4], ['Elf', 3], ['Dragonborn', 3], ['Kobold', 2]];
+  var BOSS_NAMES = {
+    Human: [['Alric', 'Bertram', 'Cedric', 'Dunstan', 'Edwin', 'Godric', 'Hamon', 'Ivo', 'Jory', 'Kendall', 'Leofric', 'Osric', 'Piers', 'Ranulf', 'Simon', 'Tobias', 'Walter', 'Wystan', 'Gareth', 'Oswin', 'Adela', 'Beatrix', 'Cecily', 'Edith', 'Elspeth', 'Godiva', 'Hawise', 'Ottilie', 'Joan', 'Lettice', 'Mabel', 'Matilda', 'Nest', 'Petronel', 'Rohese', 'Sabine', 'Wenna', 'Alys', 'Maud', 'Agnes'], ['Ashdown', 'Barrow', 'Cooper', 'Dunmore', 'Fletcher', 'Gale', 'Hartwell', 'Holt', 'Kemble', 'Larkin', 'Marsh', 'Northey', 'Pell', 'Reeve', 'Salter', 'Thatcher', 'Tolly', 'Underhill', 'Wainwright', 'Yarrow']],
+    Dwarf: [['Bjarni', 'Asgaut', 'Gorm', 'Halvard', 'Ivar', 'Kolbjorn', 'Orm', 'Ragnvald', 'Sten', 'Thrain', 'Ulf', 'Arn', 'Egil', 'Haakon', 'Knut', 'Leif', 'Asta', 'Dagny', 'Freydis', 'Gudrun', 'Helga', 'Jorunn', 'Ragna', 'Solveig', 'Thora', 'Vigdis', 'Yrsa', 'Brynja', 'Sigrid'], ['Anvilborn', 'Slagfist', 'Frostmantle', 'Deepdelve', 'Ironvein', 'Coalbeard', 'Stonewright', 'Hammerfell']],
+    Halfling: [['Alton', 'Cade', 'Eldon', 'Garret', 'Lyle', 'Milo', 'Osborn', 'Perrin', 'Roscoe', 'Wellby', 'Bree', 'Callie', 'Daisy', 'Jilly', 'Tansy', 'Posy', 'Merla', 'Nedda', 'Clover', 'Verna'], ['Reedmoor', 'Lakeside', 'Stiltwater', 'Eelbrook', 'Marshwell', 'Rushbank', 'Fenhollow', 'Willowdock', 'Mudfoot', 'Tallreed']],
+    Gnome: [['Alvyn “Al”', 'Brocc “Bix”', 'Dimble “Dim”', 'Fonkin “Fonk”', 'Orryn “Rin”', 'Pellidrin “Pell”', 'Carlin “Carl”', 'Wennaflo “Wen”', 'Nissaberra “Niss”', 'Zannimel “Zan”'], ['of Tickwhistle Works', 'of the Brass Lantern', 'of Copperwheel', 'of Gearsprung', 'of Fiddlebolt', 'of the Ninth Spring', 'of Sparkwright’s', 'of Tumbler & Key', 'of Glasswing', 'of Clockmere']],
+    Orc: [['Grul', 'Krag', 'Mog', 'Ront', 'Thokk', 'Ugar', 'Vrak', 'Dush', 'Gorza', 'Hruna', 'Kesh', 'Murza', 'Ovak', 'Shagga', 'Tarsk', 'Yrga', 'Bolg', 'Garra', 'Nazka', 'Ruk'], ['Og’knack', 'Mor’tak', 'Gor’mul', 'Vra’zun', 'Tul’gash', 'Sha’dok', 'Kra’vek', 'Dur’nash']],
+    Tiefling: [['Ash', 'Mercy', 'Patience', 'Hope', 'Ember', 'Temperance', 'Solace', 'Vigil', 'Penance', 'Sorrow', 'Grace', 'Quiet', 'Faith', 'Thorn', 'Wren'], ['']],
+    Goliath: [['Thokar', 'Ulmeka', 'Raavik', 'Bhaltu', 'Kessra', 'Morga', 'Ruvak', 'Enneth', 'Tavu', 'Ilka', 'Orruk', 'Vashti', 'Gorrun', 'Halek', 'Maulo', 'Senna'], ['Rockcarrier', 'Longstride', 'Wolfwatcher', 'Stormwalker', 'Bearkiller', 'Highclimber', 'Fireheart', 'Threeblood', 'Ridgetaker', 'Snowfoot']],
+    Tortle: [['Gnabu', 'Ojo', 'Quoba', 'Sheshi', 'Tibor', 'Ubok', 'Wuxa', 'Yoren', 'Shellsby', 'Old Ponder'], ['']],
+    Elf: [['Aerindel', 'Calathae', 'Elowyn', 'Faelir', 'Ithrien', 'Lauriel', 'Mirathel', 'Nirilien', 'Quelassa', 'Sylvaen', 'Thalindor', 'Varethil'], ['']],
+    Dragonborn: [['Arkath', 'Belaxin', 'Draveth', 'Grisax', 'Hyrrin', 'Kaldrath', 'Maruvax', 'Nythin', 'Orrath', 'Pyraxin', 'Rhovax', 'Sevrin', 'Thalrath', 'Zorvath'], ['Ignis']],
+    Kobold: [['Brikki', 'Chizzik', 'Drekk', 'Fizzik', 'Gribbik', 'Hekka', 'Jikkit', 'Krizz', 'Mekkik', 'Nibbik', 'Pazzik', 'Rikkit', 'Skrik'], ['Ignis']]
+  };
+  function bossRole(h) { return hasPeople(h) || h.kind === 'workshop' ? 'steward' : (h.kind === 'ship' || h.kind === 'airship' || h.kind === 'caravan') ? 'captain' : ''; }
+  function bossTitle(h) { return hasPeople(h) || h.kind === 'workshop' ? 'Steward' : h.kind === 'caravan' ? 'Wagon master' : 'Captain'; }
+  function bossOf(h) { var b = (h.data || {}).boss; return b && b.name ? b : null; }
+  function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+  function rollBoss(role) {
+    var tot = BOSS_RACES.reduce(function (s, r) { return s + r[1]; }, 0), x = Math.random() * tot, race = 'Human';
+    for (var i = 0; i < BOSS_RACES.length; i++) { x -= BOSS_RACES[i][1]; if (x < 0) { race = BOSS_RACES[i][0]; break; } }
+    var nm = BOSS_NAMES[race] || BOSS_NAMES.Human, last = pick(nm[1]);
+    var shape = Math.floor(Math.random() * 4);   // 0 both, 1 trait only, 2 flaw only, 3 neither
+    return { name: pick(nm[0]) + (last ? ' ' + last : ''), race: race,
+      trait: shape === 0 || shape === 1 ? pick(BOSS_TRAITS[role]).k : '', flaw: shape === 0 || shape === 2 ? pick(BOSS_FLAWS[role]).k : '' };
+  }
+  // The combined effects of whoever is in charge: their trait and their flaw.
+  function bossFx(h) {
+    var b = bossOf(h), role = bossRole(h), out = {};
+    if (!b || !role) return out;
+    [BOSS_TRAITS[role].filter(function (t) { return t.k === b.trait; })[0], BOSS_FLAWS[role].filter(function (t) { return t.k === b.flaw; })[0]].forEach(function (t) {
+      if (!t) return; Object.keys(t.fx).forEach(function (k) { out[k] = (out[k] || 0) + t.fx[k]; });
+    });
+    return out;
+  }
+  function bossLine(h) {
+    var b = bossOf(h), role = bossRole(h); if (!b) return '';
+    var tr = BOSS_TRAITS[role].filter(function (t) { return t.k === b.trait; })[0], fl = BOSS_FLAWS[role].filter(function (t) { return t.k === b.flaw; })[0];
+    return [tr ? tr.n + ' (' + tr.what.toLowerCase() + ')' : '', fl ? fl.n + ' (' + fl.what.toLowerCase() + ')' : ''].filter(Boolean).join('; ');
+  }
+  // A captain or wagon master acts on the owner's letters at payday. Returns a line for the report.
+  function readLetter(h, d, lt, day) {
+    var hh = { kind: h.kind, campaign_id: h.campaign_id, data: d }, st = holdMode(hh), arg = lt.arg || {}, b = d.boss || {};
+    var who = b.name || 'The captain', place = typeof arg === 'string' ? arg : arg.place;
+    if (lt.what === 'fit') {
+      var a = ATT[arg.name || arg]; if (!a) return who + ' could not make sense of a letter.';
+      if (h.kind === 'caravan') return who + ': wagons are fitted at a yard, by hand. That letter will have to wait.';
+      var cost = attachCost(hh, a);
+      if (!attachFits(hh, a)) return who + ' writes back that a ' + a.n.toLowerCase() + ' won’t go on this ship.';
+      var inSlot = (d.fits || []).filter(function (f) { return (ATT[f.name] || {}).slot === a.slot; }).length;
+      if (inSlot >= (a.slot === 'weapon' ? mountsOf(hh) : 1)) return who + ' writes back that there’s no room for a ' + a.n.toLowerCase() + ' without stripping something first.';
+      if (Number(d.coffer || 0) < cost) return who + ' can’t afford the ' + a.n.toLowerCase() + ' (' + gp(cost) + ') from the coffer.';
+      d.coffer = Number(d.coffer || 0) - cost; d.fits = (d.fits || []).concat([{ name: a.n, start: day, done: day + a.days, cost: cost }]);
+      return who + ' has the ' + a.n.toLowerCase() + ' fitted: ' + gp(cost) + ', ready in ' + a.days + ' days.';
+    }
+    if (cantSail(hh)) return who + ' can’t act on your letter: ' + cantSail(hh).toLowerCase();
+    if (lt.what === 'trade' || lt.what === 'raid' || lt.what === 'crown') {
+      if (lt.what === 'raid' && !d.marque) return who + ' won’t raid without the king’s letter of marque.';
+      if (lt.what === 'crown' && !d.commission) return who + ' can’t serve the crown without the king’s commission.';
+      if (h.kind === 'caravan' && lt.what !== 'trade') return who + ' says wagons don’t do that.';
+      d.mode = lt.what === 'trade' ? 'trading' : lt.what === 'raid' ? 'raiding' : 'crown'; d.port = place || d.at || ''; d.at = d.port;
+      return who + ({ trading: ' has gone trading', raiding: ' has gone raiding', crown: ' has taken the ship into the king’s service' })[d.mode] + (d.port ? ' from ' + d.port : '') + ', as you asked.';
+    }
+    if (lt.what === 'moor') { d.mode = 'moored'; d.at = place || d.at; d.moor_since = day; return who + ' has tied up at ' + (d.at || 'port') + '.'; }
+    if (lt.what === 'recall') {
+      if (st.mode !== 'trading' && st.mode !== 'raiding' && st.mode !== 'crown') return who + ' is already home.';
+      var days = holdTravelDays(hh, placeByLabel(h.campaign_id, d.port), placeByLabel(h.campaign_id, place)); if (days == null) days = 7;
+      days += FINISH_DAYS[h.kind] || 3;
+      d.mode = 'returning'; d.ret_to = place; d.ret_day = day + days; d.at = place; d.moor_since = day + days; d.moor_free = false;
+      return who + ' is coming home to ' + place + ', about ' + days + ' days.';
+    }
+    return who + ' could not make sense of a letter.';
+  }
+  // A steward's standing orders, and sending the surplus home. Returns the coffer after.
+  function bossActs(h, d, cof, rep, e, day, shipping) {
+    var b = d.boss, hh = { kind: h.kind, campaign_id: h.campaign_id, data: d }, bx = bossFx(hh), who = b.name;
+    var monthly = unitsOf(hh).reduce(function (s, u) { return s + unitWages(hh, u); }, 0) + upkeepOf(hh);
+    var reserve = b.reserve != null ? Number(b.reserve) : monthly * 3, order = b.order || 'pay';
+    if (order === 'neutral' && b.reserve == null) reserve = monthly * 5;
+    if (hasPeople(h) && order !== 'pay') {
+      var econ = ['Mill', 'Toll bridge', 'Market', 'Port'], def = ['Watchtower', 'Granary', 'Barracks', 'Walls'];
+      var wants = order === 'econ' ? econ : order === 'defense' ? def : (Math.floor(day / PAY_EVERY) % 2 ? econ : def);
+      var built = builtOf(hh), going = (d.projects || []).map(function (p) { return p.name; });
+      var next = wants.filter(function (n) { return !built[n] && going.indexOf(n) < 0; })[0];
+      if (next) {
+        var cost = Math.round(BUILD[next].cost * (bx.builder ? 0.9 : 1));
+        if (cof - cost >= reserve) { cof -= cost; d.projects = (d.projects || []).concat([{ name: next, start: day, done: day + BUILD[next].days, cost: cost }]); rep.push(who + ' has begun a ' + next.toLowerCase() + ' (' + gp(cost) + ').'); }
+      } else if (order === 'defense') {
+        var wage = Number(d.soldier_wage != null ? d.soldier_wage : SOLDIER_WAGE), can = Math.floor((cof - reserve) / (wage * 6));
+        var hire = Math.min(10, can); if (hire > 0) { d.soldiers = num(d.soldiers, 0) + hire; rep.push(who + ' has taken on ' + hire + ' more soldiers.'); }
+      }
+      var taxes = Object.keys(TAX), ti = taxes.indexOf(d.tax || 'Normal'), un = num(d.unrest, 2);
+      if (un >= 5 && ti > 0) { d.tax = taxes[ti - 1]; rep.push(who + ' has eased the tax to ' + d.tax.toLowerCase() + '.'); }
+      else if (order === 'econ' && un <= 2 && ti < 2) { d.tax = taxes[ti + 1]; rep.push(who + ' has raised the tax to ' + d.tax.toLowerCase() + '.'); }
+      else if (order !== 'econ' && un <= 3 && ti !== 1 && ti > 1) { d.tax = 'Normal'; rep.push(who + ' has set the tax back to normal.'); }
+    }
+    var snd = b.send || {};
+    if (snd.to && cof - reserve >= 10) {
+      var amt = Math.round(cof - reserve), m = SEND_METHODS[snd.method] || SEND_METHODS.carrier, fee = Math.round(amt * m.fee), dest = snd.to === 'party' ? 'the party' : ((holdingById(snd.to) || {}).name || 'the seat');
+      var cv = snd.method === 'caravan' ? holdingById(snd.caravan) : null;
+      if (snd.method === 'caravan' && (!cv || holdMode(cv).mode !== 'party' && holdMode(cv).mode !== 'moored')) { rep.push(who + ' held the surplus back: the caravan isn’t free to carry it.'); return cof; }
+      var from = placeByLabel(h.campaign_id, HOLD_LAND[h.kind] ? d.at : holdMode(hh).at || d.at), t = travel[h.campaign_id], to = null;
+      if (snd.to === 'party') { var pm = t && t.map_id ? partyMarker(t.map_id) : null; to = pm ? { x: pm.x, y: pm.y } : null; }
+      else { var sh = holdingById(snd.to); to = sh ? placeByLabel(h.campaign_id, (sh.data || {}).at) : null; }
+      var days = from && to ? holdTravelDays({ kind: 'caravan', campaign_id: h.campaign_id, data: {} }, from, to) : null; if (days == null) days = 7; days = Math.max(1, days);
+      cof -= amt;
+      shipping.push({ id: 's' + Date.now().toString(36) + Math.floor(Math.random() * 1e4), from: h.name, hid: h.id, owner: h.owner_char || null, to: snd.to, dest: dest, amt: amt - fee, fee: fee, method: snd.method || 'carrier', caravan: cv ? cv.id : null, place: snd.to === 'party' ? '' : ((holdingById(snd.to) || {}).data || {}).at || '', sent: day, arrive: day + days, steward: who });
+      rep.push(who + ' sent ' + gp(amt - fee) + ' to ' + dest + ' by ' + m.n.toLowerCase() + (fee ? ' (' + gp(fee) + ' fee)' : '') + ', due in about ' + days + ' days.');
+    }
+    return cof;
+  }
+  function bossHtml(camp, h) {
+    var role = bossRole(h); if (!role) return '';
+    var b = bossOf(h), d = h.data || {}, touch = canTouch(h), title = bossTitle(h), html = '';
+    if (!b) return '<p class="note" style="margin:6px 0">No ' + title.toLowerCase() + '. ' + (role === 'steward' ? 'Wages still get paid, but nobody chases debts, so income is a tenth lower and the place won’t grow.' : 'Nobody aboard can act on letters.') + '</p>';
+    var line = bossLine(h);
+    html += '<div class="tbl" style="margin:6px 0"><div class="tbl-row"><div class="main"><b>' + esc(title + ': ' + b.name) + '</b><span>' + esc((b.race || '') + (line ? ' · ' + line : ' · no strong points, no bad habits')) + '</span></div></div></div>';
+    var snd = b.send || {}, sendTxt = snd.to ? 'Sends the surplus to ' + (snd.to === 'party' ? 'the party' : ((holdingById(snd.to) || {}).name || 'the seat')) + ' by ' + ((SEND_METHODS[snd.method] || SEND_METHODS.carrier).n.toLowerCase()) + '.' : 'Keeps the surplus here.';
+    if (role === 'steward') html += '<p class="note" style="margin:0 0 6px">Orders: ' + esc(BOSS_ORDERS[b.order || 'pay']) + '. Keeps ' + (b.reserve != null ? gp(b.reserve) : 'about three months’ costs') + ' in reserve. ' + esc(sendTxt) + '</p>';
+    else html += '<p class="note" style="margin:0 0 6px">' + esc(sendTxt) + ((d.letters || []).length ? ' ' + d.letters.length + (d.letters.length === 1 ? ' letter' : ' letters') + ' on the way, read at payday.' : '') + '</p>';
+    if (!touch) return html;
+    var mine = holdingsFor(h.campaign_id).filter(function (x) { return x.id !== h.id && (x.owner_char || null) === (h.owner_char || null) && (HOLD_LAND[x.kind]); });
+    var carts = holdingsFor(h.campaign_id).filter(function (x) { return x.kind === 'caravan' && (x.owner_char || null) === (h.owner_char || null) && x.id !== h.id; });
+    var sendSel = '<select class="input" style="flex:1 1 140px;min-width:0" id="bsto-' + esc(h.id) + '" aria-label="Send surplus to"><option value="">Keep it here</option><option value="party"' + (snd.to === 'party' ? ' selected' : '') + '>To the party</option>' + mine.map(function (x) { return '<option value="' + esc(x.id) + '"' + (snd.to === x.id ? ' selected' : '') + '>To ' + esc(x.name) + '</option>'; }).join('') + '</select>' +
+      '<select class="input" style="flex:1 1 140px;min-width:0" id="bsm-' + esc(h.id) + '" aria-label="How">' + Object.keys(SEND_METHODS).filter(function (k) { return k !== 'caravan' || carts.length; }).map(function (k) { var m = SEND_METHODS[k]; return '<option value="' + k + '"' + (snd.method === k ? ' selected' : '') + '>' + esc(m.n + (m.fee ? ' (' + Math.round(m.fee * 100) + '%' + (m.safe ? ', safe' : ', some risk') + ')' : ' (free, some risk)')) + '</option>'; }).join('') + '</select>' +
+      (carts.length ? '<select class="input" style="flex:1 1 140px;min-width:0" id="bsc-' + esc(h.id) + '" aria-label="Which caravan">' + carts.map(function (x) { return '<option value="' + esc(x.id) + '"' + (snd.caravan === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' : '');
+    html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center">';
+    if (role === 'steward') html += '<select class="input" style="flex:1 1 160px;min-width:0" id="bord-' + esc(h.id) + '" aria-label="Orders">' + Object.keys(BOSS_ORDERS).map(function (k) { return '<option value="' + k + '"' + ((b.order || 'pay') === k ? ' selected' : '') + '>' + esc(BOSS_ORDERS[k]) + '</option>'; }).join('') + '</select>' +
+      '<input class="input mini" type="number" min="0" step="10" inputmode="numeric" id="bres-' + esc(h.id) + '" placeholder="reserve gp" value="' + esc(b.reserve != null ? b.reserve : '') + '" aria-label="Reserve to keep">';
+    html += sendSel + '<button type="button" class="btn small" data-act="boss-orders" data-id="' + esc(h.id) + '">Send these orders</button></div>';
+    if (role === 'captain') {
+      var places = holdPlaces(h.campaign_id), errands = [['trade', 'Go trading from…'], ['recall', 'Come home to…'], ['moor', 'Tie up at…']];
+      if (d.marque) errands.push(['raid', 'Go raiding from…']); if (d.commission) errands.push(['crown', 'Serve the crown from…']);
+      if (h.kind !== 'caravan') errands.push(['fit', 'Have this fitted…']);
+      html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><select class="input" style="flex:1 1 140px;min-width:0" id="bltw-' + esc(h.id) + '" aria-label="Errand">' + errands.map(function (x) { return '<option value="' + x[0] + '">' + esc(x[1]) + '</option>'; }).join('') + '</select>' +
+        '<select class="input" style="flex:1 1 140px;min-width:0" id="bltp-' + esc(h.id) + '" aria-label="Where">' + places.map(function (p) { return '<option>' + esc(p) + '</option>'; }).join('') + '</select>' +
+        (h.kind !== 'caravan' ? '<select class="input" style="flex:1 1 140px;min-width:0" id="bltf-' + esc(h.id) + '" aria-label="Fitting">' + ATTACH.filter(function (a) { return attachFits(h, a); }).map(function (a) { return '<option value="' + esc(a.n) + '">' + esc(a.n + ' (' + attachCost(h, a).toLocaleString() + ' gp)') + '</option>'; }).join('') + '</select>' : '') +
+        '<button type="button" class="btn small" data-act="boss-letter" data-id="' + esc(h.id) + '">Send letter</button></div><p class="note" style="margin:2px 0 6px">Letters are read at payday. For a fitting, the place doesn’t matter.</p>';
+    }
+    return html;
+  }
+  function bossLetter(h, kind) {
+    var t = travel[h.campaign_id], day = t ? t.day : 0, calls = [];
+    var v = function (id) { var el = document.getElementById(id + h.id); return el ? el.value : null; };
+    if (kind === 'orders') {
+      if (v('bord-') != null) calls.push(['order', JSON.stringify(v('bord-'))]);
+      if (v('bres-') != null && v('bres-') !== '') calls.push(['reserve', JSON.stringify(Number(v('bres-')))]);
+      calls.push(['send', JSON.stringify({ to: v('bsto-') || null, method: v('bsm-') || 'carrier', caravan: v('bsc-') || null })]);
+    } else {
+      var w = v('bltw-'); calls.push([w, JSON.stringify(w === 'fit' ? { name: v('bltf-') } : { place: v('bltp-') })]);
+    }
+    calls.reduce(function (p, c) { return p.then(function () { return sb.rpc('holding_letter', { hid: h.id, what: c[0], arg: JSON.parse(c[1]), day: day }).then(function (r) { if (r.error) throw r.error; }); }); }, Promise.resolve())
+      .then(function () { return loadHoldings(); })
+      .then(function () { toast(kind === 'orders' ? 'Orders sent to ' + bossOf(h).name : 'Letter sent. ' + bossOf(h).name + ' will read it at payday.'); render(); })
+      .catch(function (err) { fail(err, String(err && err.message || '').indexOf('No') === 0 || String(err && err.message || '').indexOf('Not') === 0 ? err.message : 'Could not send that letter.'); });
+  }
+  function bossFormHtml(kind, d, loy) {
+    var role = POP_DEF[kind] || kind === 'workshop' ? 'steward' : (kind === 'ship' || kind === 'airship' || kind === 'caravan') ? 'captain' : '';
+    if (!role) return '';
+    var b = ui.bossDraft || (d.boss && d.boss.name ? d.boss : null) || {}, title = POP_DEF[kind] || kind === 'workshop' ? 'Steward' : kind === 'caravan' ? 'Wagon master' : 'Captain';
+    var sel = function (id, list, cur) { return '<select id="' + id + '"><option value="">None</option>' + list.map(function (t) { return '<option value="' + t.k + '"' + (t.k === cur ? ' selected' : '') + '>' + esc(t.n + ': ' + t.what) + '</option>'; }).join('') + '</select>'; };
+    return '<div class="group-box" style="margin:8px 0"><h2 style="margin-top:0">' + title + '</h2><p class="note" style="margin-top:0">Roll one, write one in, or leave the name blank for nobody.</p><div class="two">' +
+      '<div class="field"><label for="hb-name">Name</label><input type="text" id="hb-name" maxlength="60" value="' + esc(b.name || '') + '"></div>' +
+      '<div class="field"><label for="hb-race">Race</label><select id="hb-race">' + BOSS_RACES.map(function (r) { return '<option' + (r[0] === (b.race || 'Human') ? ' selected' : '') + '>' + r[0] + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="hb-trait">Trait</label>' + sel('hb-trait', BOSS_TRAITS[role], b.trait) + '</div>' +
+      '<div class="field"><label for="hb-flaw">Flaw</label>' + sel('hb-flaw', BOSS_FLAWS[role], b.flaw) + '</div>' +
+      '<div class="field"><label for="hb-wage">Wage a month, gp</label><input type="number" id="hb-wage" min="0" step="1" value="' + esc(b.wage != null ? b.wage : BOSS_WAGE[role]) + '"></div>' +
+      '<div class="field"><label for="hb-loy">Loyalty (only you see this)</label><input type="number" id="hb-loy" min="1" max="10" step="1" value="' + esc(loy) + '"></div></div>' +
+      '<div class="actions tight"><button type="button" class="btn small" data-act="boss-roll" data-role="' + role + '">Roll one</button><button type="button" class="btn small quiet" data-act="boss-clear">Nobody</button></div></div>';
+  }
+  // Money a steward or captain has sent home. Risky ones need the table's d20 when they land.
+  function shipmentsHtml(camp) {
+    var e = estateOf(camp.id), t = travel[camp.id], day = t ? t.day : 0, dm = dmView();
+    var list = (e.shipments || []).filter(function (sp) { return dm || !sp.owner || canTouch({ owner_char: sp.owner }); });
+    if (!list.length) return '';
+    var html = '<section class="block"><h2 class="sec-title">On the road<small>' + list.length + (list.length === 1 ? ' shipment' : ' shipments') + '</small></h2><div class="tbl">';
+    list.forEach(function (sp) {
+      var m = SEND_METHODS[sp.method] || SEND_METHODS.carrier, here = day >= num(sp.arrive, 0), left = num(sp.arrive, 0) - day;
+      html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 60%"><b>' + esc(gp(sp.amt) + ' from ' + sp.from + ' to ' + sp.dest) + '</b><span>' + esc(m.n + (sp.caravan ? ' (' + ((holdingById(sp.caravan) || {}).name || 'caravan') + ')' : '') + ' · ' + (here ? 'arrived' : 'arriving day ' + sp.arrive + ', ' + left + (left === 1 ? ' day' : ' days'))) + '</span></div>';
+      if (dm && here) html += (m.safe ? '' : '<input class="input mini" type="number" min="1" max="20" inputmode="numeric" id="sroll-' + esc(sp.id) + '" placeholder="d20" aria-label="Road roll">') + '<button type="button" class="btn small" data-act="ship-deliver" data-sid="' + esc(sp.id) + '" data-camp="' + esc(camp.id) + '">Deliver</button>';
+      html += '</div>';
+    });
+    return html + '</div>' + (dm ? '<p class="note">On arrival the table rolls a d20 for anything not bonded: 1–2 robbed, 3–5 a quarter missing. Your own caravan’s defense adds to the roll.</p>' : '') + '</section>';
+  }
+  function deliverShipment(campId, sid) {
+    var e = estateOf(campId), t = travel[campId], day = t ? t.day : 0, sp = (e.shipments || []).filter(function (x) { return x.id === sid; })[0];
+    if (!sp) return;
+    var m = SEND_METHODS[sp.method] || SEND_METHODS.carrier, amt = Number(sp.amt), note = 'arrived safe';
+    if (!m.safe) {
+      var r = num((document.getElementById('sroll-' + sid) || {}).value, 0);
+      if (r < 1 || r > 20) return toast('Roll the d20 for the road first.');
+      var cv = sp.caravan ? holdingById(sp.caravan) : null; if (cv) r += shipStats(cv).def;
+      if (r <= 2) { amt = 0; note = 'robbed on the road: all of it lost'; }
+      else if (r <= 5) { amt = Math.round(amt * 0.75); note = 'a quarter went missing on the road'; }
+    }
+    var line = { day: day, text: 'Shipment from ' + sp.from + ': ' + note, amt: sp.to === 'party' && !sp.owner ? amt : 0 };
+    var job;
+    if (!amt) job = Promise.resolve();
+    else if (sp.to === 'party' && sp.owner) {
+      var c = charById(sp.owner);
+      job = c ? (setWallet(c.sheet, walletCp(c.sheet) + amt * 100), sb.from('characters').update({ sheet: c.sheet }).eq('id', c.id)) : Promise.resolve();
+    } else if (sp.to !== 'party') {
+      var seat = holdingById(sp.to);
+      job = seat ? saveHolding(seat, { coffer: cofferOf(seat) + amt, reports: (seat.data.reports || []).concat([{ day: day, text: [gp(amt) + ' arrived from ' + sp.from + '.' + (note !== 'arrived safe' ? ' The rest was lost on the road.' : '')] }]).slice(-6) }) : Promise.resolve();
+    } else job = Promise.resolve();
+    Promise.resolve(job).then(function (r) {
+      if (r && r.error) throw r.error;
+      return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0) + (sp.to === 'party' && !sp.owner ? amt : 0), payday: e.payday, ledger: (e.ledger || []).concat([line]).slice(-200), shipments: (e.shipments || []).filter(function (x) { return x.id !== sid; }) });
+    }).then(function (r) {
+      if (r && r.error) throw r.error;
+      return loadHoldings();
+    }).then(function () { toast(gp(amt) + ' delivered to ' + sp.dest + (note !== 'arrived safe' ? ': ' + note : '')); render(); })
+      .catch(function (err) { fail(err, 'Could not deliver that.'); });
+  }
   function estateOf(campId) { return estates[campId] || { campaign_id: campId, treasury: 0, payday: null, ledger: [] }; }
   function paydayDue(campId) {
     var e = estates[campId], t = travel[campId];
@@ -4706,7 +4967,7 @@
     var d = Object.assign({}, h.data || {}, patch || {});
     unitsOf({ kind: h.kind, data: d }).concat(['crew']).forEach(function (u) {
       var l = secret && secret[u] != null ? secret[u] : loyOf(h, u);
-      d[u === 'crew' ? 'mood' : 'gmood'] = MOOD[band(l)];
+      d[{ crew: 'mood', garrison: 'gmood', boss: 'bmood' }[u]] = MOOD[band(l)];
     });
     var ops = [sb.from('holdings').update({ name: h.name, data: d, owner_char: h.owner_char || null }).eq('id', h.id)];
     if (secret) ops.push(sb.from('holding_secrets').upsert({ holding_id: h.id, dm: Object.assign({}, holdSecrets[h.id] || {}, secret) }));
@@ -4723,6 +4984,7 @@
   function holdAway(h) {
     var st = holdMode(h), d = h.data || {}, t = travel[h.campaign_id];
     if (st.mode === 'party') return null;
+    if (st.mode === 'courier') return 'It’s on the road with a shipment.';
     if (st.mode === 'trading' || st.mode === 'raiding' || st.mode === 'crown') return 'It’s away ' + ({ trading: 'trading', raiding: 'raiding', crown: 'in the king’s service' })[st.mode] + '. Call it home first.';
     if (st.mode === 'returning') return 'It’s on its way home.';
     var place = HOLD_LAND[h.kind] ? d.at : st.at;
@@ -4759,6 +5021,7 @@
     else if (st.mode === 'trading') bits.push('Out trading' + (d.port ? ' from ' + d.port : ''));
     else if (st.mode === 'raiding') bits.push('Out raiding under the king’s letter' + (d.port ? ', from ' + d.port : ''));
     else if (st.mode === 'crown') bits.push('In the king’s service' + (d.port ? ' out of ' + d.port : ''));
+    else if (st.mode === 'courier') { var lc = num(d.ret_day, day) - day; bits.push('Carrying a shipment' + (d.ret_to ? ' to ' + d.ret_to : ' to the party') + ', ' + lc + (lc === 1 ? ' day' : ' days') + ' out'); }
     else if (st.mode === 'building') { var lb = num(d.ready, day) - day; bits.push('Being built' + (d.yard ? ' at ' + d.yard : '') + ', ready in ' + lb + (lb === 1 ? ' day' : ' days')); }
     else if (st.mode === 'returning') { var left = num(d.ret_day, day) - day; bits.push('Coming home to ' + (d.ret_to || 'port') + ', ' + left + (left === 1 ? ' day' : ' days')); }
     else if (st.mode === 'moored' && h.kind === 'siege') bits.push('Stationed at ' + (st.at || '?') + ' (adds its defense there)');
@@ -4818,6 +5081,7 @@
     }
     html += '</section>';
 
+    html += shipmentsHtml(camp);
     var ledger = (e.ledger || []).filter(function (l) { return dm || !l.dm; }).slice(-15).reverse();
     html += '<section class="block"><h2 class="sec-title">Ledger<small>' + (e.ledger || []).length + ' entries</small></h2>' +
       (ledger.length ? '<div class="tbl">' + ledger.map(function (l) {
@@ -4830,7 +5094,7 @@
   function holdCardHtml(camp, h) {
     var dm = dmView(), d = h.data || {}, st = holdMode(h), warn = cantSail(h);
     var moods = unitsOf(h).map(function (u) {
-      var word = dm ? MOOD[band(loyOf(h, u))] : (u === 'crew' ? d.mood : d.gmood) || 'Content', uu = unitOf(h, u);
+      var word = dm ? MOOD[band(loyOf(h, u))] : d[{ crew: 'mood', garrison: 'gmood', boss: 'bmood' }[u]] || 'Content', uu = unitOf(h, u);
       var crewN = u === 'garrison' ? num(d.soldiers, 0) : num(d.crew, 0);
       return '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + (crewN ? ' of ' + crewN : '') + '</b><span>' +
         esc([dm ? 'Loyalty ' + loyOf(h, u) + '/10 (' + band(loyOf(h, u)) + ')' : '', uu.owed ? 'Owed ' + gp(uu.owed) + ' (' + uu.missed + ' missed)' : 'Paid up'].filter(Boolean).join(' · ')) + '</span></div>' +
@@ -4840,7 +5104,7 @@
       '<p class="note" style="margin:0 0 6px">' + esc(holdStatusText(h)) + '</p>' +
       '<p class="note" style="margin:0 0 6px">' + esc(holdMonthLine(h)) + '</p>' +
       (warn ? '<p class="err" style="margin:0 0 6px">' + esc(warn) + '</p>' : '') + (h.kind === 'caravan' ? caravanHtml(h) : statHtml(h) + fitHtml(h)) +
-      '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + landHtml(h) +
+      '<div class="vitals sum">' + vital('Owner', ownerName(h).replace(/’s$/, '')) + vital('Coffer', gp(cofferOf(h))) + '</div>' + bossHtml(camp, h) + landHtml(h) +
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
     var reps = (d.reports || []).slice().reverse();
@@ -5296,6 +5560,7 @@
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-dwarves"' + (d.dwarves ? ' checked' : '') + '> Trained dwarf hull-wrights aboard (+30 gp a month; they can mend the hull fully)</label>';
     var loyF = function (unit, label) { if (isNew && POP_DEF[kind]) return ''; var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
     html += '<div class="two">' + loyF('crew', HOLD_LAND[kind] ? 'Household' : 'Crew') + (HOLD_LAND[kind] && kind !== 'workshop' ? loyF('garrison', 'Garrison') : '') + '</div>';
+    html += bossFormHtml(kind, d, h ? loyOf(h, 'boss') : 5);
     html += '<div class="field"><label for="hd-notes">Notes (players see these)</label><textarea id="hd-notes" rows="2" maxlength="400">' + esc(d.notes || '') + '</textarea></div>';
     html += '<div class="actions"><button type="submit" class="btn primary">' + (isNew ? 'Add holding' : 'Save') + '</button><button type="button" class="btn" data-act="hold-cancel">Cancel</button>' +
       (h ? '<button type="button" class="btn quiet" data-act="hold-del" data-id="' + esc(h.id) + '">' + (ui.holdDel === h.id ? 'Tap again to remove' : 'Remove') + '</button>' : '') + '</div></form>';
@@ -5335,6 +5600,12 @@
     if (val('hd-wtype') != null) { var wn = Math.max(1, Math.round(n('hd-wagons', 1))), wt = val('hd-wtype'); d.wagonList = []; for (var wi = 0; wi < wn; wi++) d.wagonList.push({ id: 'w' + wi, type: wt, fits: [] }); d.wagons = wn; d.crew = wn; }
     d.notes = (val('hd-notes') || '').slice(0, 400);
     d.coffer = n('hd-coffer', 0);
+    if (document.getElementById('hb-name')) {
+      var bn = val('hb-name').trim().slice(0, 60);
+      if (!bn) d.boss = null;
+      else d.boss = Object.assign({}, d.boss && d.boss.name ? d.boss : { order: 'pay' }, { name: bn, race: val('hb-race'), trait: val('hb-trait') || '', flaw: val('hb-flaw') || '', wage: n('hb-wage', 20) });
+      var bl = Math.max(1, Math.min(10, Math.round(n('hb-loy', 5))));
+    }
     var owner = val('hd-owner') || null;
     if (val('hd-title') != null) d.title = val('hd-title').trim().slice(0, 60);
     if (val('hd-pop') != null) d.pop = Math.round(n('hd-pop', 0));
@@ -5345,6 +5616,8 @@
     if (!h && document.getElementById('hd-comm') && document.getElementById('hd-comm').checked) { d.mode = 'building'; d.ready = Math.round(n('hd-ready', 0)); d.yard = (val('hd-yard') || '').trim().slice(0, 60); d.at = d.yard; }
     var secret = { crew: num(val('hd-loy-crew'), gained && GAINED[gained] ? GAINED[gained].crew : 5) }; if (val('hd-loy-garrison') != null) secret.garrison = num(val('hd-loy-garrison'), 5);
     if (!h && gained && GAINED[gained]) { secret.crew = GAINED[gained].crew; secret.garrison = GAINED[gained].crew; }
+    if (d.boss && d.boss.name && bl) secret.boss = bl;
+    ui.bossDraft = null;
     var t = travel[campId], e = estateOf(campId);
     var first = !h ? sb.from('holdings').insert({ campaign_id: campId, kind: kind, name: name, data: {} }).select('id, campaign_id, name, kind, data, owner_char, created_at').single() : Promise.resolve({ data: h });
     first.then(function (r) {
@@ -5411,11 +5684,11 @@
       if (el) { var r = num(el.value, 0); if (r < 1 || r > 20) missingRoll = missingRoll || h.name; rolls[h.id] = r; }
     });
     if (missingRoll) return toast('Enter the d20 for ' + missingRoll + '.');
-    var periodStart = Number(e.payday) - PAY_EVERY, jobs = [], summary = [], transfers = [], done = {};
+    var periodStart = Number(e.payday) - PAY_EVERY, jobs = [], summary = [], transfers = [], done = {}, shipping = [];
     list.forEach(function (h) {
       var d = clone(h.data || {}), st = holdMode(h), secret = {}, rep = [], cof = cofferOf(h), start = cof, short = false;
       d.units = d.units || {};
-      if (d.mode === 'returning' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = st.free; }
+      if ((d.mode === 'returning' || d.mode === 'courier') && st.mode !== d.mode) { d.mode = st.mode; d.at = st.at || d.at; d.moor_since = st.since; d.moor_free = st.free; d.carrying = 0; }
       if (d.mode === 'building' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = false; rep.push('Finished and afloat at ' + (st.at || 'the yard') + '. The crew now draw wages.'); }
       if (st.mode === 'building') {
         var yr = f.querySelector('[data-yroll="' + h.id + '"]'), yv = yr ? num(yr.value, 0) : 0;
@@ -5424,6 +5697,10 @@
         d.reports = (d.reports || []).concat([{ day: day, text: rep }]).slice(-6);
         done[h.id] = { h: h, d: d, secret: {}, start: start };
         return;
+      }
+      if ((d.letters || []).length) {
+        if (bossOf(h)) { d.letters.forEach(function (lt) { rep.push(readLetter(h, d, lt, day)); }); d.letters = []; st = holdMode({ kind: h.kind, campaign_id: h.campaign_id, data: d }); }
+        else rep.push(d.letters.length + (d.letters.length === 1 ? ' letter waits' : ' letters wait') + ' unopened. There’s nobody in charge to read them.');
       }
       var crewBand = band(loyOf(h, 'crew'));
       // Money in first: the month's income or the trading run.
@@ -5460,23 +5737,31 @@
       else if (h.kind === 'vassal') { inc = Number(d.income || 0); }
       else if (st.mode === 'crown') { inc = crownPay(h); rep.push('In the king’s service: the crown paid ' + gp(inc) + '.'); }
       else if (rolls[h.id] && st.mode === 'raiding') {
-        var rr0 = rolls[h.id] <= 3 ? rolls[h.id] + shipStats(h).luck : rolls[h.id];
+        var bfr = bossFx(h), rr0 = rolls[h.id] <= 3 ? rolls[h.id] + shipStats(h).luck : rolls[h.id];
+        rr0 = Math.max(1, rr0 + (bfr.rollMod || 0) + (bfr.raidRoll || 0)); if (bfr.fool) { if (rr0 <= 3) rr0 = 4; if (rr0 >= 20) rr0 = 19; }
         var rr = Math.min(20, rr0 + Math.floor(shipStats(h).fight / 2)), rx = RAID_ROLL.filter(function (x) { return rr <= x[0]; })[0];
         inc = Number(d.income || 0) * rx[1] * (1 + shipStats(h).raid);
-        if (rx[0] === 3) { crewMod -= 1; rep.push('Took a beating: the crew are shaken and nothing was taken.' + hullHit(h, d, 0.25)); }
+        if (rx[0] === 3) { crewMod -= 1; rep.push('Took a beating: the crew are shaken and nothing was taken.' + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25)); }
         else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money.' : '.'));
         if (rx[1] >= 2.5) { crewMod += 1; rep.push('The crew drank to their shares.'); }
       }
       else if (rolls[h.id]) {
         var tr = tradeRoll(h, rolls[h.id]); inc = baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul;
-        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + hullHit(h, d, 0.25) : tr.label + ': made ' + gp(inc) + '.');
+        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25) : tr.label + ': made ' + gp(inc) + '.');
       }
       var levyN = hasPeople(h) && d.levy ? num(d.levy.n, 0) : 0;
       if (levyN) {
         evUnrest += 1;
         rep.push(levyN + ' levied folk are under arms: the fields are short of hands, and they need feeding.');
       }
-      if (inc > 0 && SKIM[crewBand]) { var lost = inc * SKIM[crewBand]; inc -= lost; d.skimmed = Number(d.skimmed || 0) + lost; if (h.kind === 'vassal') rep.push('He held back some of what he owes.'); }
+      var bx = bossFx(h), boss = bossOf(h);
+      if (HOLD_LAND[h.kind] && inc > 0) {
+        if (bx.inc) inc = Math.round(inc * (1 + bx.inc));
+        if (hasPeople(h) && !boss) { inc = Math.round(inc * 0.9); rep.push('Nobody is minding the books: a tenth less came in.'); }
+      }
+      if (inc > 0 && bx.skim) { inc = Math.round(inc * (1 - bx.skim)); rep.push('Some of the takings went missing. The captain says the dice were cruel.'); }
+      if (boss && inc > 0 && !bx.honest && band(loyOf(h, 'boss')) === 'Restless') { inc = Math.round(inc * 0.9); rep.push('The accounts are a little light this month.'); }
+      if (inc > 0 && SKIM[crewBand] && !bx.honest) { var lost = inc * SKIM[crewBand]; inc -= lost; d.skimmed = Number(d.skimmed || 0) + lost; if (h.kind === 'vassal') rep.push('He held back some of what he owes.'); }
       // Dues to a liege come out of the month's takings. A sworn lord's whole payment is his dues.
       if (h.kind === 'vassal') {
         if (d.liege_hid) { transfers.push({ to: d.liege_hid, amt: Math.round(inc), from: h.name }); rep.push('Sent ' + gp(Math.round(inc)) + ' in dues.'); inc = 0; }
@@ -5519,7 +5804,7 @@
           cof -= w + had;
           if (had > 0) { l += 1; rep.push(nm + ' paid, back pay too. They noticed.'); } else rep.push(nm + ' paid.');
           uu.streak = had > 0 ? 0 : uu.streak + 1; uu.owed = 0; uu.missed = 0; uu.hurt = 0;
-          if (uu.streak >= (u === 'crew' && shipStats(h).quarters ? 2 : 3) && l < 7) { l += 1; uu.streak = 0; }
+          if (uu.streak >= (u === 'crew' && shipStats(h).quarters ? 2 : u === 'crew' && bossFx(h).proud ? 4 : 3) && l < 7) { l += 1; uu.streak = 0; }
         } else if (!held && cof >= w) {
           cof -= w; uu.streak = 0; rep.push(nm + ' paid this month. Still owed ' + gp(had) + '.');
         } else {
@@ -5531,14 +5816,15 @@
         }
         if (u === 'crew') l += crewMod;
         l = Math.max(1, Math.min(10, l));
+        if (u === 'crew' && bossFx(h).hard) l = Math.max(3, Math.min(7, l));
         secret[u] = l; d.units[u] = uu;
         if (u === 'crew') crewBand = band(l);
-        rep.push(nm + ' seem ' + MOOD[band(l)].toLowerCase() + '.');
+        rep.push(nm + (u === 'boss' ? ' seems ' : ' seem ') + MOOD[band(l)].toLowerCase() + '.');
       });
       if (hasPeople(h)) {
-        var keep = num(d.soldiers, 0) * (builtOf({ campaign_id: h.campaign_id, data: d }).Barracks ? 2 : 1);
+        var keep = num(d.soldiers, 0) * (builtOf({ campaign_id: h.campaign_id, data: d }).Barracks ? 2 : 1) * (bx.order ? 2 : 1);
         var garUnpaid = (d.units.garrison || {}).missed > 0 && unitOf({ data: d }, 'garrison').owed > 0;
-        var du = evUnrest + (TAX[d.tax || 'Normal'] || TAX.Normal).unrest - buildSum({ campaign_id: h.campaign_id, data: d }, 'calm') + (keep >= num(d.pop, POP_DEF[h.kind]) / 50 ? -1 : 0) + (short ? 1 : 0) + (garUnpaid ? 1 : 0);
+        var du = evUnrest + (bx.unrest || 0) + (TAX[d.tax || 'Normal'] || TAX.Normal).unrest - buildSum({ campaign_id: h.campaign_id, data: d }, 'calm') + (keep >= num(d.pop, POP_DEF[h.kind]) / 50 ? -1 : 0) + (short ? 1 : 0) + (garUnpaid ? 1 : 0);
         var was = folkOf(unrest).w; unrest = Math.max(0, Math.min(10, unrest + du)); d.unrest = unrest;
         var now = folkOf(unrest).w;
         rep.push(now === 'In revolt' ? 'The folk have risen and hold the place against you.' : now !== was ? 'The folk are ' + now.toLowerCase() + ' now.' : 'The folk are ' + now.toLowerCase() + '.');
@@ -5547,16 +5833,32 @@
         var p = num(d.prosper, 0);
         p += crewBand === 'Treacherous' ? -2 : crewBand === 'Restless' || short ? -1 : 1;
         if (hasPeople(h) && unrest >= 6) p -= 1;
+        if (p > num(d.prosper, 0) && (bx.lazy || (hasPeople(h) && !boss))) p = num(d.prosper, 0);
         var wi = WEALTH.map(function (w) { return w[0]; }).indexOf(d.wealth || 'Modest');
         if (p >= 3 && wi < WEALTH.length - 1) { d.wealth = WEALTH[wi + 1][0]; p = 0; rep.push('The place is doing well: now ' + d.wealth.toLowerCase() + '.'); }
         else if (p <= -3 && wi > 0) { d.wealth = WEALTH[wi - 1][0]; p = 0; rep.push('The place is slipping: now ' + d.wealth.toLowerCase() + '.'); }
         d.prosper = Math.max(-3, Math.min(3, p));
       }
+      if (boss && bx.cofLoss && cof > 0) { var gl = Math.round(cof * bx.cofLoss); cof -= gl; rep.push(gp(gl) + ' is missing from the coffer. ' + boss.name + ' can’t account for it.'); }
+      if (boss && band(secret.boss != null ? secret.boss : loyOf(h, 'boss')) === 'Treacherous') {
+        var took = Math.round(cof / 2); cof -= took;
+        rep.push(boss.name + ' is gone, and ' + gp(took) + ' from the coffer with them.' + (HOLD_MOVES[h.kind] ? ' The crew say they went ashore and never came back.' : ''));
+        d.boss = null; boss = null; delete secret.boss; d.units.boss = null;
+      }
+      if (boss) cof = bossActs(h, d, cof, rep, e, day, shipping);
       cof = Math.round(cof * 100) / 100;
       d.coffer = cof;
       rep.push('Coffer: ' + gp(cof) + '.');
       d.reports = (d.reports || []).concat([{ day: day, text: rep }]).slice(-6);
       done[h.id] = { h: h, d: d, secret: secret, start: start };
+    });
+    // A caravan carrying a shipment is on the road until it lands.
+    shipping.forEach(function (sp) {
+      if (!sp.caravan) return;
+      var cvh = holdingById(sp.caravan); if (!cvh) return;
+      var cd = done[sp.caravan] ? done[sp.caravan].d : null;
+      var patch = { mode: 'courier', ret_day: sp.arrive, ret_to: sp.place, carrying: sp.amt };
+      if (cd) Object.assign(cd, patch); else done[sp.caravan] = { h: cvh, d: Object.assign(clone(cvh.data || {}), patch), secret: {}, start: cofferOf(cvh) };
     });
     // Dues land in the liege holding's coffer, and go in its report.
     transfers.forEach(function (tr) {
@@ -5568,7 +5870,7 @@
     Object.keys(done).forEach(function (k) { var x = done[k]; summary.push(x.h.name + ' ' + gp(x.start) + ' → ' + gp(x.d.coffer)); jobs.push(function () { return saveHolding(x.h, x.d, x.secret); }); });
     var ledger = (e.ledger || []).concat([{ day: day, text: 'Payday', amt: 0, lines: summary, dm: true }]).slice(-200);
     Promise.all(jobs.map(function (j) { return j(); })).then(function () {
-      return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0), payday: Number(e.payday) + PAY_EVERY, ledger: ledger });
+      return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0), payday: Number(e.payday) + PAY_EVERY, ledger: ledger, shipments: (e.shipments || []).concat(shipping) });
     }).then(function (r) {
       if (r.error) throw r.error;
       return loadHoldings();
@@ -5610,7 +5912,7 @@
       case 'signout': sb.auth.signOut(); break;
       case 'recheck': loadProfile().then(function () { if (isMember()) return loadAll().then(startLive); }).then(render).catch(function (err) { fail(err); }); break;
       case 'authmode': ui.authMode = el.getAttribute('data-mode'); renderAuth(); break;
-      case 'hold-new': ui.holdEdit = 'new'; ui.holdKind = 'ship'; ui.holdVessel = null; ui.holdDraftName = ''; ui.holdDel = null; render(); break;
+      case 'hold-new': ui.bossDraft = null; ui.holdEdit = 'new'; ui.holdKind = 'ship'; ui.holdVessel = null; ui.holdDraftName = ''; ui.holdDel = null; render(); break;
       case 'hold-edit': ui.holdEdit = el.getAttribute('data-id'); ui.holdDel = null; render(); break;
       case 'hold-cancel': ui.holdEdit = null; ui.holdDel = null; render(); break;
       case 'hold-del': var hdel = holdingById(el.getAttribute('data-id')); if (hdel) holdDelete(hdel); break;
@@ -5622,6 +5924,10 @@
       case 'hold-fit': case 'hold-unfit': var hft = holdingById(el.getAttribute('data-id')); if (hft) holdFit(hft, el.getAttribute('data-slot'), act === 'hold-unfit' ? el.getAttribute('data-name') : ''); break;
       case 'hold-hp': case 'hold-patch': case 'hold-repair': var hhp = holdingById(el.getAttribute('data-id')); if (hhp) holdHp(hhp, act === 'hold-hp' ? num(el.getAttribute('data-dir'), -1) : act.slice(5)); break;
       case 'wag-add': case 'wag-del': case 'wag-hp': case 'wag-fit': case 'wag-unfit': case 'wag-patch': case 'wag-repair': var hwg = holdingById(el.getAttribute('data-id')); if (hwg) wagonAct(hwg, act.slice(4), num(el.getAttribute('data-i'), 0), el.getAttribute('data-dir')); break;
+      case 'boss-orders': case 'boss-letter': var hbo = holdingById(el.getAttribute('data-id')); if (hbo) bossLetter(hbo, act === 'boss-orders' ? 'orders' : 'letter'); break;
+      case 'boss-roll': ui.bossDraft = rollBoss(el.getAttribute('data-role')); ui.bossDraft.wage = BOSS_WAGE[el.getAttribute('data-role')]; ['hb-name', 'hb-race', 'hb-trait', 'hb-flaw', 'hb-wage'].forEach(function (id, i) { var f = document.getElementById(id); if (f) f.value = [ui.bossDraft.name, ui.bossDraft.race, ui.bossDraft.trait, ui.bossDraft.flaw, ui.bossDraft.wage][i]; }); ui.bossDraft = null; break;
+      case 'boss-clear': ['hb-name', 'hb-trait', 'hb-flaw'].forEach(function (id) { var f = document.getElementById(id); if (f) f.value = ''; }); break;
+      case 'ship-deliver': deliverShipment(el.getAttribute('data-camp'), el.getAttribute('data-sid')); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
