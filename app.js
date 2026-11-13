@@ -358,7 +358,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', holdings: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', holdings: 'wiki', battles: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
     var waiting = isDM() && spells ? pendingSpells().length : 0;
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
@@ -401,6 +401,7 @@
       case 'spells': return renderSpells();
       case 'reputation': return renderReputation(r.arg);
       case 'holdings': return renderHoldings(r.arg);
+      case 'battles': return renderBattles(r.arg);
       case 'subclasses': return renderSubclasses(r.arg);
       case 'shops': return renderShops(r.arg);
       case 'shop': return renderShop(r.arg);
@@ -642,7 +643,7 @@
         (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
     } else {
       html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '</h2>' +
-        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
+        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><a class="btn small" href="#/battles/' + encodeURIComponent(camp.slug) + '">Battles</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
       html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
       html += '</section>';
       html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
@@ -4468,7 +4469,7 @@
   function loadHoldings() {
     return Promise.all([
       sb.from('holdings').select('id, campaign_id, name, kind, data, owner_char, created_at').order('created_at'),
-      sb.from('estates').select('campaign_id, treasury, payday, ledger, shipments'),
+      sb.from('estates').select('campaign_id, treasury, payday, ledger, shipments, battles'),
       isDM() ? sb.from('holding_secrets').select('holding_id, dm') : Promise.resolve({ data: [] })
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -5902,6 +5903,217 @@
     }).then(function () { toast('Removed ' + h.name); render(); }).catch(function (err) { fail(err); });
   }
 
+  /* ================= Battles: hordes and sieges ================= */
+  /* A unit fights as one creature on one turn (the DMG's mob rules). Its HP is a pool, soldiers × their HP.
+     Its attack isn't rolled per soldier: the mob table says how many attackers it takes to land one hit. No dice in the app. */
+  var TROOPS = {
+    'Levy': { ac: 10, hp: 4, hit: 2, dmg: 2.5, die: '1d4', w: 'Clubs and pitchforks', save: -1 },
+    'Sailor': { ac: 12, hp: 11, hit: 3, dmg: 4.5, die: '1d6+1', w: 'Cutlass' },
+    'Soldier': { ac: 16, hp: 11, hit: 3, dmg: 4.5, die: '1d6+1', w: 'Spear' },
+    'Archer': { ac: 13, hp: 11, hit: 4, dmg: 6.5, die: '1d8+2', w: 'Longbow', range: '150/600 ft.' },
+    'Crossbowman': { ac: 15, hp: 11, hit: 3, dmg: 5.5, die: '1d10', w: 'Crossbow', range: '100/400 ft.' },
+    'Light cavalry': { ac: 14, hp: 13, hit: 4, dmg: 6.5, die: '1d8+2', w: 'Lance (charging: +1d8)', fast: 1 },
+    'Marine': { ac: 15, hp: 16, hit: 4, dmg: 5.5, die: '1d8+1', w: 'Boarding axe' },
+    'Veteran': { ac: 17, hp: 58, hit: 5, dmg: 7.5, atk: 2, die: '1d8+3', w: 'Longsword, twice', save: 1 },
+    'Knight': { ac: 18, hp: 52, hit: 5, dmg: 10, atk: 2, die: '2d6+3', w: 'Greatsword, twice', save: 2 },
+    'Bandit': { ac: 12, hp: 11, hit: 3, dmg: 4.5, die: '1d6+1', w: 'Scimitar' },
+    'Orc warrior': { ac: 13, hp: 15, hit: 5, dmg: 9.5, die: '1d12+3', w: 'Greataxe' },
+    'Troglodyte': { ac: 11, hp: 13, hit: 4, dmg: 4.5, atk: 3, die: '1d6+2 / 1d4+2', w: 'Bite and claws', save: 0 }
+  };
+  var WALLS = {
+    'Palisade': { ac: 15, hp: 150, dt: 10 }, 'Wooden gate': { ac: 15, hp: 100, dt: 10 },
+    'Stone wall': { ac: 17, hp: 400, dt: 20 }, 'Iron-bound gate': { ac: 17, hp: 200, dt: 15 },
+    'Great wall': { ac: 18, hp: 800, dt: 20 }, 'Tower': { ac: 17, hp: 150, dt: 20 }
+  };
+  var FOOD_DAYS = { manor: 20, castle: 60, town: 30 };
+  // How many attackers it takes to land one hit, by the d20 roll they'd need.
+  function mobNeed(ac, hit) { var n = ac - hit; return n <= 5 ? 1 : n <= 12 ? 2 : n <= 14 ? 3 : n <= 16 ? 4 : n <= 18 ? 5 : n === 19 ? 10 : 20; }
+  function unitCount(u) { var tr = TROOPS[u.troop] || TROOPS.Soldier; return Math.max(0, Math.ceil(num(u.hp, 0) / tr.hp)); }
+  function battlesOf(campId) { return (estateOf(campId).battles || []); }
+  function battleById(campId, id) { return battlesOf(campId).filter(function (b) { return b.id === id; })[0] || null; }
+  function saveBattles(campId, list, note) {
+    var e = estateOf(campId);
+    return sb.from('estates').upsert({ campaign_id: campId, treasury: Number(e.treasury || 0), payday: e.payday, battles: list }).then(function (r) {
+      if (r.error) throw r.error; return loadHoldings();
+    }).then(function () { if (note) toast(note); render(); }).catch(function (err) { fail(err, 'Could not save the battle.'); });
+  }
+  function wallsUp(b) { var w = (b.walls || []).filter(function (x) { return x.n !== 'Tower'; }); return w.length && w.every(function (x) { return num(x.hp, 0) > 0; }); }
+  // Defenders behind intact walls have three-quarters cover; once a section is breached, half cover at best.
+  function wallCover(b, si) { if (b.kind !== 'siege' || si !== 1) return 0; if (wallsUp(b)) return 5; return (b.walls || []).some(function (x) { return x.n !== 'Tower' && num(x.hp, 0) > 0; }) ? 2 : 0; }
+  // Morale: a unit at half strength or less makes a DC 10 Wisdom save. Loyalty from its holding shifts the save.
+  function unitSave(campId, u) {
+    var tr = TROOPS[u.troop] || {}, mod = tr.save || 0, h = u.src ? holdingById(u.src.hid) : null;
+    if (h) { var key = u.src.unit === 'garrison' ? 'garrison' : u.src.unit === 'crew' ? 'crew' : null; if (key) mod += { Loyal: 2, Steady: 0, Restless: -2, Treacherous: -5 }[band(loyOf(h, key))]; }
+    return mod;
+  }
+  // Forces the party can field: garrisons, raised levies, sworn lords' men, ships' marines and crews.
+  function partyForces(campId) {
+    var out = [];
+    holdingsFor(campId).forEach(function (h) {
+      var d = h.data || {};
+      if (hasPeople(h) && num(d.soldiers, 0)) out.push({ label: h.name + ' garrison (' + d.soldiers + ')', troop: 'Soldier', n: num(d.soldiers, 0), src: { hid: h.id, unit: 'garrison' } });
+      if (hasPeople(h) && d.levy) out.push({ label: h.name + ' levy (' + d.levy.n + ')', troop: 'Levy', n: num(d.levy.n, 0), src: { hid: h.id, unit: 'levy' } });
+      if (h.kind === 'vassal' && num(d.soldiers, 0)) out.push({ label: h.name + '’s men (' + d.soldiers + ')', troop: 'Soldier', n: num(d.soldiers, 0), src: { hid: h.id, unit: 'vassal' } });
+      if ((h.kind === 'ship' || h.kind === 'airship') && num(d.crew, 0)) {
+        var mar = Math.round(num(d.crew, 0) * shipStats(h).marines);
+        if (mar) out.push({ label: h.name + ' marines (' + mar + ')', troop: 'Marine', n: mar, src: { hid: h.id, unit: 'marines' } });
+        out.push({ label: h.name + ' crew (' + d.crew + ')', troop: 'Sailor', n: num(d.crew, 0), src: { hid: h.id, unit: 'crew' } });
+      }
+    });
+    return out;
+  }
+  function renderBattles(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug);
+    if (!camp || !isDM()) { location.replace('#/wiki'); return; }
+    if (!loaded.holdings) { loadHoldings().then(render).catch(function (e) { fail(e); }); $view.innerHTML = '<div class="page"><div class="empty">Loading…</div></div>'; return; }
+    var list = battlesOf(camp.id), cur = ui.battle && battleById(camp.id, ui.battle) || list[list.length - 1] || null, t = travel[camp.id], day = t ? t.day : 0;
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Battles</h1></div></section><div class="page">';
+    html += '<section class="block"><div class="actions tight" style="flex-wrap:wrap">' + list.map(function (b) { return '<button type="button" class="btn small' + (cur && b.id === cur.id ? ' primary' : '') + '" data-act="bt-pick" data-id="' + esc(b.id) + '">' + esc(b.name) + '</button>'; }).join('') +
+      '</div><form class="two" id="battle-new" novalidate data-camp="' + esc(camp.id) + '" style="align-items:end"><div class="field"><label for="bn-name">New battle or siege</label><input type="text" id="bn-name" maxlength="60" placeholder="e.g. The siege of Greyhold"></div>' +
+      '<div class="field"><label for="bn-kind">Kind</label><select id="bn-kind"><option value="field">Battle in the field</option><option value="siege">Siege</option></select></div>' +
+      '<div class="field"><label for="bn-walls">Walls (sieges)</label><select id="bn-walls"><option value="">From one of our holdings…</option>' + holdingsFor(camp.id).filter(hasPeople).map(function (h) { return '<option value="h:' + esc(h.id) + '">' + esc(h.name) + '</option>'; }).join('') + '<option value="Palisade">A palisade and wooden gate</option><option value="Stone wall">Stone walls and an iron-bound gate</option><option value="Great wall">Great walls, gate and towers</option></select></div>' +
+      '<div class="field"><button type="submit" class="btn">Start it</button></div></form></section>';
+    if (cur) html += battleHtml(camp, cur, day);
+    else html += '<div class="empty">No battles yet.</div>';
+    html += '<p class="note">Each unit takes one turn in initiative. Its attack uses the mob rules: the app works out how many soldiers it takes to land a hit against the target’s AC. Damage from spells and heroes goes straight onto a unit’s HP pool.</p></div>';
+    $view.innerHTML = html;
+  }
+  function battleHtml(camp, b, day) {
+    var html = '<section class="block"><h2 class="sec-title">' + esc(b.name) + '<small>' + (b.kind === 'siege' ? 'Siege, day ' + (day - num(b.day, day) + 1) : 'Battle') + '</small></h2>';
+    if (b.kind === 'siege') html += siegeHtml(camp, b, day);
+    var targets = [];
+    (b.sides || []).forEach(function (s, si) { (s.units || []).forEach(function (u, ui2) { if (unitCount(u) > 0) targets.push({ v: si + ':' + ui2, n: s.name + ': ' + u.name }); }); });
+    (b.sides || []).forEach(function (s, si) {
+      html += '<h3 style="margin:14px 0 6px">' + esc(s.name) + (wallCover(b, si) ? ' <span class="tag ' + (wallCover(b, si) === 5 ? 'tier-good' : 'warn') + '">behind walls: +' + wallCover(b, si) + ' AC</span>' : '') + '</h3><div class="tbl">';
+      (s.units || []).forEach(function (u, ui2) {
+        var tr = TROOPS[u.troop] || TROOPS.Soldier, n = unitCount(u), start = num(u.start, n), ac = tr.ac + wallCover(b, si);
+        var half = n > 0 && n <= start / 2, save = unitSave(camp.id, u);
+        html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 100%"><b>' + esc(u.name + ' · ' + n + ' of ' + start) + '</b><span>' +
+          esc(u.troop + ' · AC ' + ac + ' · HP ' + Math.max(0, Math.round(u.hp)) + ' (' + tr.hp + ' each) · ' + tr.w + ' +' + tr.hit + ', ' + tr.die + (tr.atk ? ' ×' + tr.atk : '') + (tr.range ? ', ' + tr.range : '')) +
+          (u.routed ? ' · routed' : n === 0 ? ' · destroyed' : half ? ' · <b>at half strength: DC 10 Wisdom save ' + (save >= 0 ? '+' : '') + save + ' or it breaks</b>' : '') + '</span></div>';
+        if (n > 0 && !u.routed) html += '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="bta-' + esc(b.id + si + '_' + ui2) + '" placeholder="' + (tr.range ? n : Math.min(n, 20)) + '" aria-label="Attackers who can reach">' +
+          '<select class="input" style="flex:1 1 140px;min-width:0" id="btt-' + esc(b.id + si + '_' + ui2) + '" aria-label="Target">' + targets.filter(function (x) { return x.v.split(':')[0] !== String(si); }).map(function (x) { return '<option value="' + esc(x.v) + '">' + esc(x.n) + '</option>'; }).join('') + '<option value="ac">Someone else (enter AC)…</option></select>' +
+          '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="btac-' + esc(b.id + si + '_' + ui2) + '" placeholder="AC" aria-label="Target AC">' +
+          '<button type="button" class="btn small" data-act="bt-attack" data-id="' + esc(b.id) + '" data-s="' + si + '" data-u="' + ui2 + '">Attack</button>' +
+          '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="btd-' + esc(b.id + si + '_' + ui2) + '" placeholder="dmg" aria-label="Damage taken">' +
+          '<button type="button" class="btn small quiet" data-act="bt-hurt" data-id="' + esc(b.id) + '" data-s="' + si + '" data-u="' + ui2 + '">Take damage</button>' +
+          (half ? '<button type="button" class="btn small quiet" data-act="bt-rout" data-id="' + esc(b.id) + '" data-s="' + si + '" data-u="' + ui2 + '">It breaks</button>' : '');
+        html += '</div>';
+      });
+      html += '</div><div class="actions tight" style="flex-wrap:wrap;align-items:center;margin-top:6px">';
+      if (si === num(b.ours, 0)) { var pf = partyForces(camp.id); if (pf.length) html += '<select class="input" style="flex:1 1 180px;min-width:0" id="btpf-' + esc(b.id) + '" aria-label="Our forces">' + pf.map(function (f, i) { return '<option value="' + i + '">' + esc(f.label) + '</option>'; }).join('') + '</select><button type="button" class="btn small" data-act="bt-addours" data-id="' + esc(b.id) + '">Bring them</button>'; }
+      html += '<input type="text" class="input" style="flex:1 1 120px;min-width:0" id="btn-' + esc(b.id + si) + '" placeholder="Unit name" aria-label="Unit name"><select class="input" style="flex:1 1 120px;min-width:0" id="btk-' + esc(b.id + si) + '" aria-label="Troop">' + Object.keys(TROOPS).map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '</select>' +
+        '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="btc-' + esc(b.id + si) + '" placeholder="how many" aria-label="How many"><button type="button" class="btn small quiet" data-act="bt-add" data-id="' + esc(b.id) + '" data-s="' + si + '">Add unit</button></div>';
+    });
+    if ((b.log || []).length) html += '<h3 style="margin:14px 0 6px">What happened</h3><p class="note">' + b.log.slice(-12).map(esc).join('<br>') + '</p>';
+    html += '<div class="actions" style="flex-wrap:wrap"><button type="button" class="btn primary" data-act="bt-apply" data-id="' + esc(b.id) + '">It’s over: apply our losses</button><button type="button" class="btn quiet" data-act="bt-del" data-id="' + esc(b.id) + '">' + (ui.btDel === b.id ? 'Tap again to remove' : 'Remove') + '</button></div>';
+    return html + '</section>';
+  }
+  function siegeHtml(camp, b, day) {
+    var pend = Math.max(0, day - num(b.last, day)), html = '<div class="tbl">';
+    (b.walls || []).forEach(function (w, i) {
+      html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 60%"><b>' + esc(w.n) + '</b><span>AC ' + w.ac + ' · HP ' + Math.max(0, Math.round(w.hp)) + '/' + w.max + ' · threshold ' + w.dt + '</span></div><span class="tag ' + (w.hp <= 0 ? 'tier-disaster">Breached' : w.hp < w.max / 2 ? 'warn">Battered' : 'tier-good">Standing') + '</span>' +
+        '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="bwd-' + esc(b.id + i) + '" placeholder="dmg" aria-label="Damage"><button type="button" class="btn small quiet" data-act="bt-wall" data-id="' + esc(b.id) + '" data-w="' + i + '">Hit it</button></div>';
+    });
+    html += '</div>';
+    var engines = (b.engines || []);
+    html += '<p class="note" style="margin:6px 0">Food: ' + Math.max(0, num(b.food, 0)) + ' days left inside' + (num(b.food, 1) <= 0 ? ': they are starving. Each day without food, the defenders’ morale saves get −1 more.' : '.') + ' Engines at work: ' + (engines.length ? esc(engines.map(function (x) { return x.n + ' (' + x.dice + 'd10 a day)'; }).join(', ')) : 'none') + '.</p>';
+    html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center">' + (pend ? '<button type="button" class="btn small primary" data-act="bt-days" data-id="' + esc(b.id) + '">' + pend + (pend === 1 ? ' day' : ' days') + ' of siege: bombard at averages</button>' : '<span class="note">Up to date with the day counter.</span>') +
+      '<input type="text" class="input" style="flex:1 1 120px;min-width:0" id="ben-' + esc(b.id) + '" placeholder="Engine name"><input class="input mini" type="number" min="1" step="1" id="bed-' + esc(b.id) + '" placeholder="d10s"><button type="button" class="btn small quiet" data-act="bt-engine" data-id="' + esc(b.id) + '">Add engine</button>' +
+      (holdingsFor(camp.id).some(function (h) { return h.kind === 'siege'; }) ? '<button type="button" class="btn small quiet" data-act="bt-ourengines" data-id="' + esc(b.id) + '">Bring our engines</button>' : '') + '</div>' +
+      '<p class="note" style="margin:4px 0 0">Each day an engine does its average damage to the weakest standing section (or roll it and use Hit it). Hits under the threshold do nothing. The defenders patch 10 HP a day on anything not yet breached.</p>';
+    return html;
+  }
+  function battleAct(campId, id, act, el) {
+    var list = clone(battlesOf(campId)), b = list.filter(function (x) { return x.id === id; })[0], t = travel[campId], day = t ? t.day : 0;
+    if (!b) return;
+    var si = num(el.getAttribute('data-s'), 0), ui2 = num(el.getAttribute('data-u'), 0), key = b.id + si + '_' + ui2, side = (b.sides || [])[si], u = side ? side.units[ui2] : null, note = '';
+    b.log = b.log || [];
+    if (act === 'attack') {
+      var tr = TROOPS[u.troop] || TROOPS.Soldier, n = unitCount(u), eng = Math.min(n, num((document.getElementById('bta-' + key) || {}).value, tr.range ? n : Math.min(n, 20)));
+      var tv = (document.getElementById('btt-' + key) || {}).value, tgt = null, ac;
+      if (tv === 'ac') { ac = num((document.getElementById('btac-' + key) || {}).value, 0); if (!ac) return toast('Enter the target’s AC.'); }
+      else { var p = tv.split(':'), ts = num(p[0], 0); tgt = b.sides[ts].units[num(p[1], 0)]; ac = (TROOPS[tgt.troop] || TROOPS.Soldier).ac + wallCover(b, ts); }
+      var need = mobNeed(ac, tr.hit), hits = Math.floor(eng * (tr.atk || 1) / need), dmg = Math.round(hits * tr.dmg);
+      note = u.name + ': ' + eng + ' attack' + (tr.atk ? ' (×' + tr.atk + ')' : '') + ' against AC ' + ac + ', ' + need + ' to land a hit: ' + hits + (hits === 1 ? ' hit, ' : ' hits, ') + dmg + ' damage' + (tgt ? ' to ' + tgt.name : '') + '.';
+      if (tgt) { var before = unitCount(tgt); tgt.hp = Math.max(0, num(tgt.hp, 0) - dmg); var fell = before - unitCount(tgt); if (fell) note += ' ' + fell + ' of them fall.'; }
+    } else if (act === 'hurt') {
+      var dm = num((document.getElementById('btd-' + key) || {}).value, 0); if (!dm) return toast('How much damage?');
+      var bf = unitCount(u); u.hp = Math.max(0, num(u.hp, 0) - dm); note = u.name + ' takes ' + dm + ' damage: ' + (bf - unitCount(u)) + ' fall.';
+    } else if (act === 'rout') { u.routed = true; note = u.name + ' breaks and runs.'; }
+    else if (act === 'add' || act === 'addours') {
+      var nu;
+      if (act === 'addours') { var f = partyForces(campId)[num((document.getElementById('btpf-' + b.id) || {}).value, 0)]; if (!f) return; si = num(b.ours, 0); nu = { name: f.label.replace(/ \(\d+\)$/, ''), troop: f.troop, src: f.src }; var cnt = f.n; }
+      else { cnt = num((document.getElementById('btc-' + b.id + si) || {}).value, 0); if (!cnt) return toast('How many?'); nu = { name: ((document.getElementById('btn-' + b.id + si) || {}).value || '').trim() || (document.getElementById('btk-' + b.id + si) || {}).value, troop: (document.getElementById('btk-' + b.id + si) || {}).value }; }
+      nu.id = 'u' + Date.now().toString(36); nu.start = cnt; nu.hp = cnt * (TROOPS[nu.troop] || TROOPS.Soldier).hp;
+      b.sides[si].units.push(nu); note = nu.name + ' (' + cnt + ') join ' + b.sides[si].name + '.';
+    } else if (act === 'wall') {
+      var wi = num(el.getAttribute('data-w'), 0), w = b.walls[wi], wd = num((document.getElementById('bwd-' + b.id + wi) || {}).value, 0);
+      if (!wd) return toast('How much damage?');
+      if (wd < w.dt) return toast('Under the threshold (' + w.dt + '): no effect.');
+      w.hp = Math.max(0, w.hp - wd); note = w.n + ' takes ' + wd + (w.hp <= 0 ? ' and is breached!' : ', ' + Math.round(w.hp) + ' left.');
+    } else if (act === 'engine' || act === 'ourengines') {
+      b.engines = b.engines || [];
+      if (act === 'ourengines') holdingsFor(campId).filter(function (h) { return h.kind === 'siege'; }).forEach(function (h) { var s = statOf(h); var a = s && s.atks[0]; var dice = a ? num((a.dmg.match(/^(\d+)d10/) || [])[1], 0) : 0; if (dice && !b.engines.some(function (x) { return x.hid === h.id; })) b.engines.push({ n: h.name, dice: dice, hid: h.id }); });
+      else { var en = ((document.getElementById('ben-' + b.id) || {}).value || '').trim(), dc = num((document.getElementById('bed-' + b.id) || {}).value, 0); if (!en || !dc) return toast('Name the engine and its d10s.'); b.engines.push({ n: en, dice: dc }); }
+      note = 'Engines: ' + b.engines.map(function (x) { return x.n; }).join(', ') + '.';
+    } else if (act === 'days') {
+      var pend = Math.max(0, day - num(b.last, day)), lines = [];
+      for (var dd = 0; dd < pend; dd++) {
+        (b.engines || []).forEach(function (en2) {
+          var standing = (b.walls || []).filter(function (x) { return x.hp > 0; }).sort(function (a2, c2) { return a2.hp - c2.hp; });
+          var tgtW = standing.filter(function (x) { return x.n !== 'Tower'; })[0] || standing[0]; if (!tgtW) return;
+          var avg = Math.round(en2.dice * 5.5); if (avg >= tgtW.dt) tgtW.hp = Math.max(0, tgtW.hp - avg);
+        });
+        (b.walls || []).forEach(function (x) { if (x.hp > 0 && x.hp < x.max) x.hp = Math.min(x.max, x.hp + 10); });
+        b.food = num(b.food, 0) - 1;
+      }
+      b.last = day;
+      note = pend + (pend === 1 ? ' day' : ' days') + ' of bombardment. ' + (b.walls || []).map(function (x) { return x.n + ' ' + (x.hp <= 0 ? 'breached' : Math.round(x.hp) + '/' + x.max); }).join(', ') + '. Food left: ' + Math.max(0, b.food) + ' days.';
+    } else if (act === 'apply') {
+      var jobs = [], applied = [];
+      (b.sides[num(b.ours, 0)].units || []).forEach(function (uu) {
+        if (!uu.src) return; var h = holdingById(uu.src.hid); if (!h) return;
+        var left = uu.routed ? Math.round(unitCount(uu) * 0.8) : unitCount(uu), dead = num(uu.start, 0) - left, d = h.data || {}, patch = {};
+        if (dead <= 0) return;
+        if (uu.src.unit === 'garrison' || uu.src.unit === 'vassal') patch.soldiers = Math.max(0, num(d.soldiers, 0) - dead);
+        else if (uu.src.unit === 'levy') { patch.levy = { n: Math.max(0, num((d.levy || {}).n, 0) - dead), day: (d.levy || {}).day }; patch.pop = Math.max(0, num(d.pop, POP_DEF[h.kind] || 0) - dead); }
+        else if (uu.src.unit === 'crew' || uu.src.unit === 'marines') patch.crew = Math.max(0, num(d.crew, 0) - dead);
+        applied.push(uu.name + ' lost ' + dead);
+        jobs.push(saveHolding(h, patch));
+      });
+      (b.walls || []).forEach(function (w) { if (w.hid) { var hw = holdingById(w.hid); if (hw && w.hp <= 0) applied.push(w.n + ' at ' + hw.name + ' needs rebuilding'); } });
+      list = list.filter(function (x) { return x.id !== id; }); ui.battle = null;
+      return Promise.all(jobs).then(function () { saveBattles(campId, list, applied.length ? applied.join('. ') + '.' : 'No losses to apply.'); }).catch(function (e) { fail(e); });
+    } else if (act === 'del') {
+      if (ui.btDel !== id) { ui.btDel = id; return render(); }
+      ui.btDel = null; ui.battle = null; return saveBattles(campId, list.filter(function (x) { return x.id !== id; }), 'Removed');
+    }
+    if (note) b.log.push(note);
+    saveBattles(campId, list, note);
+  }
+  function newBattle(f) {
+    var campId = f.getAttribute('data-camp'), t = travel[campId], day = t ? t.day : 0, kind = document.getElementById('bn-kind').value;
+    var name = document.getElementById('bn-name').value.trim().slice(0, 60) || (kind === 'siege' ? 'A siege' : 'A battle'), wv = document.getElementById('bn-walls').value;
+    var b = { id: 'b' + Date.now().toString(36), name: name, kind: kind, day: day, last: day, sides: [{ name: 'Our side', units: [] }, { name: kind === 'siege' ? 'Defenders' : 'The enemy', units: [] }], log: [] };
+    if (kind === 'siege') {
+      var mk = function (n, hid) { var w = WALLS[n]; return { n: n, ac: w.ac, hp: w.hp, max: w.hp, dt: w.dt, hid: hid || null }; };
+      if (wv.indexOf('h:') === 0) {
+        var h = holdingById(wv.slice(2)), bl = h ? builtOf(h) : {};
+        b.walls = bl.Walls ? [mk('Stone wall', h.id), mk('Iron-bound gate', h.id)] : h && h.kind !== 'manor' ? [mk('Palisade', h.id), mk('Wooden gate', h.id)] : [];
+        if (bl.Watchtower) b.walls.push(mk('Tower', h.id));
+        b.food = (FOOD_DAYS[h ? h.kind : 'castle'] || 30) * (bl.Granary ? 2 : 1);
+        b.sides = [{ name: 'Besiegers', units: [] }, { name: (h ? h.name : 'The') + ' defenders', units: [] }];
+        b.ours = 1;
+      } else {
+        b.walls = wv === 'Palisade' ? [mk('Palisade'), mk('Wooden gate')] : wv === 'Great wall' ? [mk('Great wall'), mk('Iron-bound gate'), mk('Tower'), mk('Tower')] : [mk('Stone wall'), mk('Iron-bound gate')];
+        b.food = 45;
+      }
+    }
+    ui.battle = b.id;
+    saveBattles(campId, battlesOf(campId).concat([b]), 'Started: ' + name);
+  }
   /* ================= Events ================= */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
@@ -5928,6 +6140,9 @@
       case 'boss-roll': ui.bossDraft = rollBoss(el.getAttribute('data-role')); ui.bossDraft.wage = BOSS_WAGE[el.getAttribute('data-role')]; ['hb-name', 'hb-race', 'hb-trait', 'hb-flaw', 'hb-wage'].forEach(function (id, i) { var f = document.getElementById(id); if (f) f.value = [ui.bossDraft.name, ui.bossDraft.race, ui.bossDraft.trait, ui.bossDraft.flaw, ui.bossDraft.wage][i]; }); ui.bossDraft = null; break;
       case 'boss-clear': ['hb-name', 'hb-trait', 'hb-flaw'].forEach(function (id) { var f = document.getElementById(id); if (f) f.value = ''; }); break;
       case 'ship-deliver': deliverShipment(el.getAttribute('data-camp'), el.getAttribute('data-sid')); break;
+      case 'bt-pick': ui.battle = el.getAttribute('data-id'); render(); break;
+      case 'bt-attack': case 'bt-hurt': case 'bt-rout': case 'bt-add': case 'bt-addours': case 'bt-wall': case 'bt-engine': case 'bt-ourengines': case 'bt-days': case 'bt-apply': case 'bt-del':
+        var bcamp = campaignBySlug(parseRoute().arg); if (bcamp) battleAct(bcamp.id, el.getAttribute('data-id'), act.slice(3), el); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
@@ -6520,6 +6735,7 @@
       case 'hold-form': return saveHoldForm(f);
       case 'estate-form': return saveEstateForm(f);
       case 'payday-form': return settlePayday(f);
+      case 'battle-new': return newBattle(f);
       case 'ruin-form': return saveRuin(f);
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
