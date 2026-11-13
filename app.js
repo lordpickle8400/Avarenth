@@ -4903,7 +4903,7 @@
   // Cargo (tons), passengers or troops, and speed in combat (feet a round). A horse takes about a ton of hold space, counting its stall and fodder.
   var CAPACITY = {
     'Rowboat': { cargo: 0.5, pass: 3, ft: 20 }, 'River barge': { cargo: 10, pass: 6, ft: 20 }, 'Cog': { cargo: 60, pass: 12, ft: 35 },
-    'Sailing ship': { cargo: 100, pass: 20, ft: 45 }, 'Galley': { cargo: 150, pass: 40, ft: 40, oars: 1 }, 'Airship': { cargo: 1, pass: 20, ft: 50, fly: 1 },
+    'Sailing ship': { cargo: 100, pass: 20, ft: 45 }, 'Galley': { cargo: 150, pass: 40, ft: 40, oars: 1 }, 'Airship': { cargo: 5, pass: 20, ft: 50, fly: 1 },
     'Battering ram': { pass: 10, ft: 10, what: 'pushed by its crew under its roof' }, 'Siege tower': { pass: 20, ft: 10, what: 'carries 20 up to the wall top' },
     'Catapult': { ft: 0 }, 'Mangonel': { ft: 0 }, 'Trebuchet': { ft: 0 }, 'Ballista cart': { ft: 20 }
   };
