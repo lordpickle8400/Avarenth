@@ -4564,6 +4564,11 @@
     { n: 'Fire barrels', slot: 'weapon', on: 'ship', pct: 3, days: 5, def: 1, what: 'Dropped astern on whoever’s chasing. Defense +1' },
     { n: 'Deck mangonel', slot: 'weapon', on: 'bigship', pct: 6, days: 14, fight: 2, what: 'Sailing ships and galleys only. Fight +2' },
     { n: 'Drop chutes', slot: 'weapon', on: 'air', pct: 5, days: 14, fight: 2, what: 'Stones and fire rained on targets below. Fight +2' },
+    { n: 'Reinforced axles', slot: 'frame', on: 'wagon', pct: 15, days: 3, what: '+25% HP' },
+    { n: 'Spiked sides', slot: 'frame', on: 'wagon', pct: 10, days: 2, what: 'Climbers take 1d6. Defense +1 on the road' },
+    { n: 'Hidden compartment', slot: 'body', on: 'wagon', pct: 10, days: 3, what: 'Smuggling space only a careful search will find' },
+    { n: 'Lookout perch', slot: 'body', on: 'wagon', pct: 5, days: 1, what: 'The train can’t be surprised' },
+    { n: 'Mounted ballista', slot: 'weapon', on: 'wagon', pct: 15, days: 5, what: 'War wagons only, in place of scorpions' },
     { n: 'Iron-rimmed wheels', slot: 'wheels', on: 'wagon', pct: 10, days: 3, profit: 0.1, what: '+10% profit: more runs, fewer breakdowns' },
     { n: 'Covered wagons', slot: 'body', on: 'wagon', pct: 10, days: 3, profit: 0.15, what: '+15% profit: cargo stays dry' },
     { n: 'War wagons', slot: 'body', on: 'wagon', pct: 30, days: 7, def: 2, profit: -0.2, what: 'Defense +2, 20% less cargo. Can mount scorpions' },
@@ -4629,7 +4634,7 @@
       KEYS.forEach(function (k) { if (a[k]) out[k] += a[k]; });
       if (a.river) out.river = a.river;
     });
-    if (h.kind === 'caravan') { var tw = trainOf(h), w = Math.max(1, tw.rolling), g = num(d.guards, 0); out.def += (g >= w ? 2 : g > 0 ? 1 : 0) + (tw.armed ? 1 : 0); out.fight += (g > 0 ? 1 : 0) + tw.armed; }
+    if (h.kind === 'caravan') { var tw = trainOf(h), w = Math.max(1, tw.rolling), g = num(d.guards, 0); out.def += (g >= w ? 2 : g > 0 ? 1 : 0) + (tw.armed ? 1 : 0) + (tw.spiked ? 1 : 0) + (tw.lookout ? 1 : 0); out.fight += (g > 0 ? 1 : 0) + tw.armed; }
     return out;
   }
   // Wagons are bought one at a time; their costs and takings follow the count.
@@ -4895,6 +4900,43 @@
     'Drop chutes': { hit: 5, dmg: '4d10 bludgeoning or fire', range: 'straight down', crew: 2, note: 'Only at targets below' }
   };
   var HULL_BONUS = { 'Ironclad plating': { ac: 2, hp: 0.1 }, 'Double hull': { hp: 0.4 }, 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
+  // Cargo (tons), passengers or troops, and speed in combat (feet a round). A horse takes about a ton of hold.
+  var CAPACITY = {
+    'Rowboat': { cargo: 0.5, pass: 3, ft: 20 }, 'River barge': { cargo: 10, pass: 6, ft: 20 }, 'Cog': { cargo: 60, pass: 12, ft: 35 },
+    'Sailing ship': { cargo: 100, pass: 20, ft: 45 }, 'Galley': { cargo: 150, pass: 40, ft: 40, oars: 1 }, 'Airship': { cargo: 1, pass: 20, ft: 50, fly: 1 },
+    'Battering ram': { pass: 10, ft: 10, what: 'pushed by its crew under its roof' }, 'Siege tower': { pass: 20, ft: 10, what: 'carries 20 up to the wall top' },
+    'Catapult': { ft: 0 }, 'Mangonel': { ft: 0 }, 'Trebuchet': { ft: 0 }, 'Ballista cart': { ft: 20 }
+  };
+  var CAP_MOD = { 'Extra hold': { cargo: 0.5 }, 'Passenger cabins': { pass: 0.5, passMin: 4 }, 'Ironclad plating': { cargo: -0.1, ft: -5 }, 'Double hull': { cargo: -0.1 }, 'Smuggler’s hold': { cargo: -0.05 }, 'Extra storey': { pass: 0.5 }, 'Iron-capped ram': { ft: -5 }, 'New rigging': { ft: 5 }, 'Gnome trim-vanes': { ft: 10 }, 'Armoured gondola': { ft: -5 } };
+  // What a fitting does when the party is aboard and swords are out.
+  var TRAITS = {
+    'Crow’s nest': 'Can’t be surprised, and spots other ships twice as far off',
+    'Fearsome figurehead': 'Enemy crews make a DC 13 Wisdom save at the start of the fight or are frightened until the end of their first turn',
+    'Lucky figurehead': 'Once a day, a roll of 1 made for the ship can be rolled again',
+    'Blessed figurehead': 'Crew aboard have advantage on saves against being frightened',
+    'Gilded figurehead': 'Advantage on Persuasion with anyone who comes aboard to trade',
+    'Oar sweeps': 'Moves and turns without wind, and can row away from a becalmed enemy',
+    'Heavy canvas': 'Strong winds and rough seas don’t cost it movement in combat',
+    'Copper sheathing': '+1 AC against rams',
+    'Ironclad plating': 'Fire damage to the hull is halved',
+    'Double hull': 'Once per fight, a hit that would drop it to 0 HP leaves it at 1 instead',
+    'Carpenter’s shop': 'Once per fight, the carpenters can spend an action to patch 2d10 HP',
+    'Smuggler’s hold': 'Finding it takes a DC 20 Investigation check',
+    'Marine berths': 'Carries marines: use guard or veteran stat blocks',
+    'Good quarters': 'Crew aboard regain an extra Hit Die on a long rest',
+    'Shallow draft': 'Deep-keeled ships can’t follow it into the shallows',
+    'Storm keel': 'Storms don’t ground it',
+    'Hide covering': 'Fire can’t take hold',
+    'Reinforced axles': '+25% HP', 'Spiked sides': 'Anyone climbing aboard takes 1d6 piercing', 'Hidden compartment': 'Finding it takes a DC 18 Investigation check', 'Lookout perch': 'The train can’t be surprised'
+  };
+  function capOf(h, st) {
+    var c = CAPACITY[vesselName(h)]; if (!c) return null;
+    var out = { cargo: c.cargo || 0, pass: c.pass || 0, ft: c.ft || 0, fly: c.fly, oars: c.oars, what: c.what || '' }, d = h.data || {};
+    st.list.forEach(function (n) { var m = CAP_MOD[n]; if (!m) return; if (m.cargo) out.cargo *= 1 + m.cargo; if (m.pass) out.pass += Math.max(m.passMin || 0, Math.round(out.pass * m.pass)); if (m.ft) out.ft += m.ft; });
+    if (st.marines) out.marines = Math.round(num(d.crew, 0) * st.marines);
+    out.cargo = Math.round(out.cargo * 10) / 10;
+    return out;
+  }
   function statOf(h) {
     if (h.kind === 'caravan') return null;
     var d = h.data || {}, v = vesselName(h), base = STATS[v];
@@ -4914,8 +4956,18 @@
       atks.push(Object.assign({ n: f.name }, w));
     });
     if (base.note) notes.push(base.note);
+    if (st.list.indexOf('Fighting top') >= 0) atks.push({ n: 'Archers in the top', hit: 5, dmg: '2d6 piercing, twice', range: '150/600 ft.', crew: 4 });
+    var traits = st.list.filter(function (n) { return TRAITS[n]; }).map(function (n) { return n + ': ' + TRAITS[n]; });
     var hp = d.hp == null ? max : Math.max(0, Math.min(max, num(d.hp, max)));
-    return { ac: ac, max: max, each: each, hp: hp, dt: base.dt, atks: atks, notes: notes, cond: condOf(h, hp, max) };
+    return { ac: ac, max: max, each: each, hp: hp, dt: base.dt, atks: atks, notes: notes, traits: traits, cap: capOf(h, st), cond: condOf(h, hp, max) };
+  }
+  function capText(c) {
+    if (!c) return '';
+    var bits = [c.ft ? 'Speed ' + c.ft + ' ft.' + (c.fly ? ' (fly)' : c.oars ? ' (oars, any wind)' : '') : 'Doesn’t move in a fight'];
+    if (c.cargo) bits.push('cargo ' + c.cargo + (c.cargo === 1 ? ' ton' : ' tons'));
+    if (c.pass) bits.push(c.what ? c.what.replace(/\d+/, c.pass) : c.pass + ' passengers or troops');
+    if (c.marines) bits.push(c.marines + ' marines');
+    return bits.join(' · ') + '.';
   }
   function condOf(h, hp, max) {
     if (hp <= 0) return h.kind === 'ship' ? 'Sinking' : h.kind === 'airship' ? 'Crashed' : 'Wrecked';
@@ -4932,7 +4984,8 @@
     var s = statOf(h); if (!s) return '';
     var dm = dmView(), d = h.data || {}, t = travel[h.campaign_id], day = t ? t.day : 0;
     var html = '<div class="tbl" style="margin-bottom:6px"><div class="tbl-row" style="flex-wrap:wrap"><div class="main"><b>AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · Threshold ' + s.dt : '') + '</b><span>' +
-      esc((h.kind === 'caravan' ? 'Each wagon AC ' + s.ac + ', ' + s.each + ' HP. ' : '') + (s.notes.length ? s.notes.join('. ') + '.' : '')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' })[s.cond] + (s.hp <= 0 ? ' tier-disaster' : '') + '">' + esc(s.cond) + '</span></div>';
+      esc(capText(s.cap) + (s.notes.length ? ' ' + s.notes.filter(function (n) { return n !== TRAITS['Copper sheathing']; }).join('. ') + '.' : '')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' })[s.cond] + (s.hp <= 0 ? ' tier-disaster' : '') + '">' + esc(s.cond) + '</span></div>';
+    if (s.traits.length) html += '<div class="tbl-row"><div class="main"><b>Traits</b><span>' + esc(s.traits.join('. ') + '.') + '</span></div></div>';
     s.atks.forEach(function (a) {
       html += '<div class="tbl-row"><div class="main"><b>' + esc(a.n) + '</b><span>' + esc((a.hit ? '+' + a.hit + ' to hit, ' : 'Save, ') + a.range + ', ' + a.dmg + (a.crew ? '. Crew ' + a.crew : '') + (a.note ? '. ' + a.note : '')) + '</span></div></div>';
     });
@@ -4987,7 +5040,10 @@
     'Supply wagon': { price: 150, ac: 12, hp: 50, dt: 0, profit: 0, feed: 3, supply: 1, what: 'Feeds the train: each cuts the feed bill by a quarter, to half at most' },
     'Wainwright’s wagon': { price: 300, ac: 12, hp: 50, dt: 0, profit: 0, feed: 3, wright: 1, what: 'A forge on wheels: the train can be mended fully on the road, twice as fast' }
   };
-  var WAGON_FITS = ['Iron-rimmed wheels', 'Oxen', 'Heavy horses', 'Scorpions'];
+  var WAGON_FITS = ['Iron-rimmed wheels', 'Oxen', 'Heavy horses', 'Reinforced axles', 'Spiked sides', 'Hidden compartment', 'Lookout perch', 'Scorpions', 'Mounted ballista'];
+  // A wagon takes one of each pair or group: one team, one weapon on the mount.
+  var WAGON_EXCL = [['Oxen', 'Heavy horses'], ['Scorpions', 'Mounted ballista']];
+  var WAGON_CAP = { 'Cart': { cargo: 0.25, pass: 1, ft: 40 }, 'Wagon': { cargo: 1, pass: 2, ft: 30 }, 'Covered wagon': { cargo: 1, pass: 4, ft: 30 }, 'Ox freight wagon': { cargo: 2, pass: 2, ft: 20 }, 'War wagon': { cargo: 0.5, pass: 6, ft: 30 }, 'Supply wagon': { cargo: 1, pass: 2, ft: 30 }, 'Wainwright’s wagon': { cargo: 0.5, pass: 2, ft: 30 } };
   function wagonsOf(h) {
     var d = h.data || {};
     if (Array.isArray(d.wagonList)) return d.wagonList;
@@ -4999,11 +5055,13 @@
   function wagonDone(w, day) { return (w.fits || []).filter(function (f) { return num(f.done, 0) <= day; }).map(function (f) { return f.name; }); }
   function wagonStat(h, w) {
     var t = travel[h.campaign_id], day = t ? t.day : 0, ty = WAGON_TYPES[w.type] || WAGON_TYPES.Wagon, fits = wagonDone(w, day);
-    var max = ty.hp, hp = w.hp == null ? max : Math.max(0, Math.min(max, num(w.hp, max)));
+    var max = Math.round(ty.hp * (fits.indexOf('Reinforced axles') >= 0 ? 1.25 : 1)), hp = w.hp == null ? max : Math.max(0, Math.min(max, num(w.hp, max)));
+    var wc = Object.assign({}, WAGON_CAP[w.type] || WAGON_CAP.Wagon); if (fits.indexOf('Oxen') >= 0) wc.ft = Math.min(wc.ft, 20); if (fits.indexOf('Heavy horses') >= 0) wc.ft += 5;
     var profit = ty.profit * (1 + (fits.indexOf('Iron-rimmed wheels') >= 0 ? 0.1 : 0) + (fits.indexOf('Heavy horses') >= 0 ? 0.1 : 0) - (fits.indexOf('Oxen') >= 0 ? 0.05 : 0));
     var feed = ty.feed * (fits.indexOf('Oxen') >= 0 ? 0.5 : fits.indexOf('Heavy horses') >= 0 ? 1.5 : 1);
     return { ty: ty, fits: fits, max: max, hp: hp, ac: ty.ac, dt: ty.dt, cond: condOf(h, hp, max), profit: hp > 0 ? profit : 0, feed: feed, slow: ty.slow || fits.indexOf('Oxen') >= 0,
-      atks: fits.indexOf('Scorpions') >= 0 ? [Object.assign({ n: 'Scorpions' }, WEAPON_ATK.Scorpions)] : [] };
+      cap: wc, traits: fits.filter(function (n) { return TRAITS[n]; }).map(function (n) { return n + ': ' + TRAITS[n]; }),
+      atks: fits.indexOf('Scorpions') >= 0 ? [Object.assign({ n: 'Scorpions' }, WEAPON_ATK.Scorpions)] : fits.indexOf('Mounted ballista') >= 0 ? [Object.assign({ n: 'Mounted ballista' }, WEAPON_ATK.Ballista)] : [] };
   }
   function trainOf(h) {
     var list = wagonsOf(h), out = { n: list.length, rolling: 0, profit: 0, feed: 0, supply: 0, wright: false, slow: false, armed: 0, price: 0 };
@@ -5011,7 +5069,7 @@
       var s = wagonStat(h, w); out.price += s.ty.price;
       if (s.hp <= 0) return;
       out.rolling += 1; out.profit += s.profit; out.feed += s.feed;
-      if (s.ty.supply) out.supply += 1; if (s.ty.wright) out.wright = true; if (s.slow) out.slow = true; if (s.atks.length) out.armed += 1;
+      if (s.ty.supply) out.supply += 1; if (s.ty.wright) out.wright = true; if (s.slow) out.slow = true; if (s.atks.length) out.armed += 1; if (s.fits.indexOf('Spiked sides') >= 0) out.spiked = true; if (s.fits.indexOf('Lookout perch') >= 0) out.lookout = true;
     });
     out.feed *= 1 - Math.min(0.5, out.supply * 0.25);
     return out;
@@ -5022,11 +5080,11 @@
     wagonsOf(h).forEach(function (w, i) {
       var s = wagonStat(h, w), going = (w.fits || []).filter(function (f) { return num(f.done, 0) > day; });
       html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 60%"><b>' + esc((w.name ? w.name + ' · ' : '') + w.type) + '</b><span>' +
-        esc('AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · threshold ' + s.dt : '') + (s.fits.filter(function (n) { return n !== 'Scorpions'; }).length ? ' · ' + s.fits.filter(function (n) { return n !== 'Scorpions'; }).join(', ') : '') + (going.length ? ' · fitting ' + going.map(function (f) { return f.name.toLowerCase(); }).join(', ') : '') +
-          s.atks.map(function (a) { return ' · ' + a.n + ' +' + a.hit + ', ' + a.dmg; }).join('')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' }[s.cond] || 'tier-disaster') + '">' + esc(s.cond) + '</span>';
+        esc('AC ' + s.ac + ' · HP ' + s.hp + '/' + s.max + (s.dt ? ' · threshold ' + s.dt : '') + ' · ' + s.cap.ft + ' ft. · ' + s.cap.cargo + (s.cap.cargo === 1 ? ' ton' : ' tons') + ', ' + s.cap.pass + ' aboard' + (s.fits.filter(function (n) { return !TRAITS[n] && n !== 'Scorpions' && n !== 'Mounted ballista'; }).length ? ' · ' + s.fits.filter(function (n) { return !TRAITS[n] && n !== 'Scorpions' && n !== 'Mounted ballista'; }).join(', ') : '') + (going.length ? ' · fitting ' + going.map(function (f) { return f.name.toLowerCase(); }).join(', ') : '') +
+          s.atks.map(function (a) { return ' · ' + a.n + ' +' + a.hit + ', ' + a.range + ', ' + a.dmg; }).join('') + (s.traits.length ? ' · ' + s.traits.join('. ') : '')) + '</span></div><span class="tag ' + ({ Sound: 'tier-good', Damaged: 'warn', Crippled: 'tier-bad' }[s.cond] || 'tier-disaster') + '">' + esc(s.cond) + '</span>';
       if (dm) {
         var have = (w.fits || []).map(function (f) { return f.name; });
-        var opts = WAGON_FITS.filter(function (n) { return have.indexOf(n) < 0 && !(n === 'Scorpions' && !s.ty.mount) && !((n === 'Oxen' && have.indexOf('Heavy horses') >= 0) || (n === 'Heavy horses' && have.indexOf('Oxen') >= 0)); });
+        var opts = WAGON_FITS.filter(function (n) { return have.indexOf(n) < 0 && !((n === 'Scorpions' || n === 'Mounted ballista') && !s.ty.mount) && !WAGON_EXCL.some(function (g) { return g.indexOf(n) >= 0 && g.some(function (o) { return o !== n && have.indexOf(o) >= 0; }); }); });
         html += '<div class="actions tight" style="flex:1 1 100%;flex-wrap:wrap;align-items:center;margin:0">' +
           '<input class="input mini" type="number" min="1" step="1" inputmode="numeric" id="whp-' + esc(h.id) + '-' + i + '" placeholder="HP" aria-label="Hit points for wagon ' + (i + 1) + '">' +
           '<button type="button" class="btn small" data-act="wag-hp" data-id="' + esc(h.id) + '" data-i="' + i + '" data-dir="-1">Damage</button><button type="button" class="btn small" data-act="wag-hp" data-id="' + esc(h.id) + '" data-i="' + i + '" data-dir="1">Heal</button>' +
