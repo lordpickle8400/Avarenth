@@ -4900,7 +4900,7 @@
     'Drop chutes': { hit: 5, dmg: '4d10 bludgeoning or fire', range: 'straight down', crew: 2, note: 'Only at targets below' }
   };
   var HULL_BONUS = { 'Ironclad plating': { ac: 2, hp: 0.1 }, 'Double hull': { hp: 0.4 }, 'Reinforced hull': { ac: 1, hp: 0.2 }, 'Armoured gondola': { ac: 2 }, 'War wagons': {}, 'Hide covering': { note: 'Fire can’t take hold' }, 'Copper sheathing': { note: '+1 AC against rams' } };
-  // Cargo (tons), passengers or troops, and speed in combat (feet a round). A horse takes about a ton of hold.
+  // Cargo (tons), passengers or troops, and speed in combat (feet a round). A horse takes about a ton of hold space, counting its stall and fodder.
   var CAPACITY = {
     'Rowboat': { cargo: 0.5, pass: 3, ft: 20 }, 'River barge': { cargo: 10, pass: 6, ft: 20 }, 'Cog': { cargo: 60, pass: 12, ft: 35 },
     'Sailing ship': { cargo: 100, pass: 20, ft: 45 }, 'Galley': { cargo: 150, pass: 40, ft: 40, oars: 1 }, 'Airship': { cargo: 1, pass: 20, ft: 50, fly: 1 },
