@@ -358,7 +358,7 @@
     }
     right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', holdings: 'wiki', battles: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
+    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', holdings: 'wiki', battles: 'wiki', realm: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
     var waiting = isDM() && spells ? pendingSpells().length : 0;
     var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
     if (isDM()) tabs.push(['members', 'Players']);
@@ -402,6 +402,7 @@
       case 'reputation': return renderReputation(r.arg);
       case 'holdings': return renderHoldings(r.arg);
       case 'battles': return renderBattles(r.arg);
+      case 'realm': return renderRealm(r.arg);
       case 'subclasses': return renderSubclasses(r.arg);
       case 'shops': return renderShops(r.arg);
       case 'shop': return renderShop(r.arg);
@@ -643,7 +644,7 @@
         (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
     } else {
       html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '</h2>' +
-        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><a class="btn small" href="#/battles/' + encodeURIComponent(camp.slug) + '">Battles</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
+        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><a class="btn small" href="#/battles/' + encodeURIComponent(camp.slug) + '">Battles</a><a class="btn small" href="#/realm/' + encodeURIComponent(camp.slug) + '">The realm</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
       html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
       html += '</section>';
       html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
@@ -6122,6 +6123,184 @@
     ui.battle = b.id;
     saveBattles(campId, battlesOf(campId).concat([b]), 'Started: ' + name);
   }
+  /* ================= The realm: rival houses, shadows and powers ================= */
+  /* DM-only. Each faction has a temperament, wealth and strength (1–5), standing with the crown and with the party (−3 to +3),
+     and relations with every other faction. Once a month the app rolls a d20 for each (or the DM types over it), and the realm moves. */
+  var realm = {};
+  var TEMPERS = { Ambitious: 'Reaches for more: raids, land, marriages', Cautious: 'Holds what it has; musters but rarely strikes', Greedy: 'Follows the money', Honourable: 'Keeps its word; won’t scheme', Zealous: 'Strikes at its enemies, whatever it costs', Scheming: 'Works in the dark: spies, bribes, knives' };
+  var FACTION_KINDS = { house: 'Houses', shadow: 'Shadows', power: 'Powers' };
+  var REALM_SEED = [
+    ['dorn', 'House Dorn', 'house', 'house-dorn', 'Honourable', 5, 5, 3],
+    ['marloo', 'House Marloo', 'house', 'house-marloo', 'Ambitious', 3, 3, 1],
+    ['ignis', 'House Ignis', 'house', 'house-ignis', 'Scheming', 4, 4, 1],
+    ['anvilborn', 'Clan Anvilborn', 'house', 'clan-anvilborn', 'Cautious', 4, 4, 1],
+    ['caspian', 'House Caspian', 'house', 'house-caspian', 'Greedy', 5, 3, 2],
+    ['ashvane', 'House Ashvane', 'house', 'house-ashvane', 'Ambitious', 2, 1, 0],
+    ['orock', 'The Tribe of Orock', 'house', 'the-tribe-of-orock', 'Cautious', 1, 3, 0],
+    ['cult', 'The Spider Cult', 'shadow', 'spider-cult', 'Zealous', 3, 3, -3],
+    ['scales', 'The Red Scales', 'shadow', 'the-red-scales', 'Scheming', 4, 3, -3],
+    ['hand', 'The Black Hand', 'shadow', 'the-black-hand', 'Greedy', 3, 2, -2],
+    ['wolves', 'The Brinewolves', 'shadow', 'the-brinewolves', 'Ambitious', 2, 3, -3],
+    ['collectors', 'The Collectors', 'shadow', 'the-collectors', 'Zealous', 2, 2, -3],
+    ['guilds', 'The Guilds', 'power', 'the-guilds-of-doresmere', 'Greedy', 4, 1, 1],
+    ['church', 'The Church', 'power', 'akorianism', 'Zealous', 4, 2, 2],
+    ['empire', 'The Empire', 'power', 'the-empire', 'Ambitious', 5, 5, -2],
+    ['coralyn', 'Coralyn', 'power', 'the-city-state-of-coralyn', 'Cautious', 3, 3, 0],
+    ['thorn', 'The Thornwardens', 'power', 'the-thornwardens', 'Honourable', 2, 2, 1]
+  ];
+  var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', -2], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
+    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', 1], ['hand', 'cult', 1], ['collectors', 'thorn', -2], ['collectors', 'church', -3], ['church', 'thorn', 2], ['empire', 'scales', 1], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
+  function seedRealm() {
+    var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {} }; });
+    var by = {}; f.forEach(function (x) { by[x.id] = x; });
+    REL_SEED.forEach(function (r) { by[r[0]].rel[r[1]] = r[2]; by[r[1]].rel[r[0]] = r[2]; });
+    return { factions: f, news: [], next: null };
+  }
+  function loadRealm() {
+    if (!isDM()) { loaded.realm = true; return Promise.resolve(); }
+    return sb.from('realm').select('campaign_id, data').then(function (r) {
+      if (r.error) throw r.error;
+      realm = {}; (r.data || []).forEach(function (x) { realm[x.campaign_id] = x.data || {}; });
+      loaded.realm = true;
+    });
+  }
+  function saveRealm(campId, data, note) {
+    return sb.from('realm').upsert({ campaign_id: campId, data: data }).then(function (r) {
+      if (r.error) throw r.error; realm[campId] = data; if (note) toast(note); render();
+    }).catch(function (err) { fail(err, 'Could not save the realm.'); });
+  }
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  function shortName(n) { return n.replace(/^(House |Clan |The Tribe of |The )/, ''); }
+  function relOf(f, otherId) { return otherId === 'party' ? num(f.party, 0) : num((f.rel || {})[otherId], 0); }
+  function relWord(n) { return ({ '-3': 'Blood feud', '-2': 'Enemies', '-1': 'Cold', '0': 'Neutral', '1': 'Friendly', '2': 'Allies', '3': 'Sworn' })[String(n)]; }
+  // The faction this one most dislikes or most likes (other than itself), optionally only of one kind.
+  function worstOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id) return; if (!best || relOf(f, o.id) < relOf(f, best.id)) best = o; }); return best; }
+  function bestOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id) return; if (!best || relOf(f, o.id) > relOf(f, best.id)) best = o; }); return best; }
+  function bump(R, a, bId, d) { if (bId === 'party') { a.party = clamp(num(a.party, 0) + d, -3, 3); return; } var b = R.factions.filter(function (x) { return x.id === bId; })[0]; a.rel[bId] = clamp(relOf(a, bId) + d, -3, 3); if (b) b.rel[a.id] = clamp(relOf(b, a.id) + d, -3, 3); }
+  // One month for one faction: returns { text (truth), rumour (what folk say), party (touches the party) }.
+  function realmMove(R, f, roll, partyNear) {
+    var t = f.temper, foe = worstOf(R, f), friend = bestOf(R, f), N = f.name, out = { text: '', rumour: '', party: false };
+    var foeN = foe ? foe.name : 'its rivals', frN = friend ? friend.name : 'an old friend';
+    var hitsParty = num(f.party, 0) <= -2 && partyNear;
+    if (f.kind === 'house') {
+      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s lord falls gravely ill. The heirs circle each other.'; out.rumour = 'They say the lord of ' + shortName(N) + ' won’t see the spring.'; }
+      else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'Revolt in ' + N + '’s lands. It costs them men to put down.'; out.rumour = 'Peasants burned a tithe barn on ' + N + ' land.'; }
+      else if (roll === 3) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s debts are called in.'; out.rumour = 'Moneylenders are seen leaving ' + N + '’s hall looking pleased.'; }
+      else if (roll === 4) { if (foe) bump(R, f, foe.id, -1); out.text = 'Old grievances flare between ' + N + ' and ' + foeN + '.'; out.rumour = N + ' and ' + foeN + ' men brawled at a fair.'; }
+      else if (roll <= 6) {
+        if (t === 'Cautious' || t === 'Honourable') { f.strength = clamp(f.strength + (roll === 6 ? 1 : 0), 1, 5); out.text = N + ' musters its men but holds them back.'; out.rumour = N + ' is drilling soldiers. Nobody knows for what.'; }
+        else if (hitsParty) { out.party = true; out.text = N + ' sends raiders against the party’s lands.'; out.rumour = 'Riders with no colours have been seen near your lands.'; }
+        else if (foe) { foe.strength = clamp(foe.strength - 1, 1, 5); bump(R, f, foe.id, -1); out.text = N + ' raids ' + foeN + '. Farms burn on the border.'; out.rumour = 'Smoke on the border between ' + N + ' and ' + foeN + ' lands.'; }
+      }
+      else if (roll <= 9) { out.text = N + ' keeps to its own business.'; }
+      else if (roll === 10) { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' courts the crown, with gifts and good service.'; out.rumour = N + ' is in the king’s favour lately.'; }
+      else if (roll === 11) { if (f.wealth >= 3) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' spends on walls and men.'; out.rumour = 'Masons are busy on ' + N + ' castles.'; } else out.text = N + ' would build, but can’t afford to.'; }
+      else if (roll === 12) { if (friend) bump(R, f, friend.id, 1); out.text = 'A marriage is arranged between ' + N + ' and ' + frN + '.'; out.rumour = 'Wedding bells: ' + N + ' and ' + frN + '.'; }
+      else if (roll === 13 || (roll === 11 && t === 'Greedy')) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' strikes a profitable trade deal.'; out.rumour = N + ' coin is everywhere this month.'; }
+      else if (roll === 14) { if (t === 'Scheming' && foe) { bump(R, f, foe.id, -1); foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' spreads poison about ' + foeN + ' at court. It sticks.'; out.rumour = 'Ugly stories about ' + foeN + ' are going round the capital.'; } else if (foe) { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' petitions the king against ' + foeN + '.'; out.rumour = N + ' has gone to the king about ' + foeN + '.'; } }
+      else if (roll === 15) { if (f.wealth >= 2) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' hires sellswords.'; out.rumour = 'Sellswords are taking ' + N + ' coin.'; } else out.text = N + ' tries to hire sellswords and can’t pay.'; }
+      else if (roll === 16) { if (num(f.party, 0) >= 1) { out.party = true; out.text = N + ' sends the party an offer: work, a gift, or a match.'; out.rumour = 'A rider in ' + N + ' colours is asking after you.'; } else out.text = N + ' looks for new friends at court.'; }
+      else if (roll === 17) { if (t === 'Honourable') { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' does the crown a quiet service.'; } else if (foe) { bump(R, f, foe.id, -1); out.text = N + ' has spies in ' + foeN + '’s household.'; out.rumour = 'A servant of ' + foeN + ' was caught reading letters.'; } }
+      else if (roll === 18) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good year on ' + N + ' lands.'; out.rumour = N + ' granaries are full.'; }
+      else if (roll === 19) { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'A rising star in ' + N + ': an heir or a captain the soldiers love.'; out.rumour = 'Everyone’s talking about a young ' + shortName(N) + ' commander.'; }
+      else { f.crown = clamp(f.crown + 1, -3, 3); f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' wins a great stroke: land, a royal favour, or a rival humbled.'; out.rumour = N + ' is riding high.'; }
+    } else if (f.kind === 'shadow') {
+      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'A cell of ' + N + ' is exposed and taken.'; out.rumour = 'Hangings in the capital. Folk say they were ' + N.replace(/^The /, '') + '.'; }
+      else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'A ' + N + ' lieutenant is betrayed from within.'; out.rumour = 'A body in the river with a mark cut in its hand.'; }
+      else if (roll === 3) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' and ' + foeN + ' cross each other. Knives come out.'; out.rumour = 'Bad blood in the underworld.'; }
+      else if (roll <= 6) { if (roll === 6) f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' recruits quietly.'; out.rumour = roll === 6 ? 'Desperate folk are disappearing into the back streets.' : ''; }
+      else if (roll === 7) { var mark = R.factions.filter(function (x) { return x.kind === 'house'; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; if (mark) { mark.wealth = clamp(mark.wealth - 1, 1, 5); out.text = N + ' robs ' + mark.name + '.'; out.rumour = 'A strongroom was emptied in ' + mark.name + '’s lands.'; } }
+      else if (roll === 8) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' runs a big smuggling job.'; out.rumour = 'Cheap goods with no guild marks in the markets.'; }
+      else if (roll === 9) { out.text = N + ' takes someone: a merchant’s child, a clerk, a priest.'; out.rumour = 'Another one gone missing.'; }
+      else if (roll === 10) { out.text = N + ' buys an official.'; }
+      else if (roll === 11) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' opens a new safehouse.'; }
+      else if (roll === 12) { var vic = R.factions.filter(function (x) { return x.kind === 'house'; })[Math.floor(Math.random() * 7)] || foe; out.text = N + ' murders a minor noble of ' + (vic ? vic.name : 'a house') + '.'; out.rumour = 'A knight of ' + (vic ? vic.name : 'a house') + ' was found dead in his bed.'; }
+      else if (roll === 13) { if (num(f.party, 0) <= -1) { out.party = true; out.text = N + ' marks the party: they’re being watched.'; out.rumour = 'Someone’s been asking which inn you’re staying at.'; } else out.text = N + ' lies low.'; }
+      else if (roll === 14) { if (num(f.party, 0) >= 0) { out.party = true; out.text = N + ' offers the party a job, through a go-between.'; out.rumour = 'A stranger left a note for you at the inn.'; } else out.text = N + ' lies low.'; }
+      else if (roll === 15) { var inf = R.factions.filter(function (x) { return x.kind === 'house'; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; out.text = N + ' plants someone in ' + (inf ? inf.name : 'a great house') + '’s household.'; }
+      else if (roll === 16) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' pulls off a big score.'; out.rumour = 'Somebody got very rich, very quietly.'; }
+      else if (roll === 17) { out.party = partyNear; out.text = N + ' preys on the roads and the sea lanes. Party ships and caravans out trading should beware.'; out.rumour = 'The roads and the coast are dangerous this month.'; }
+      else if (roll === 18) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' grows.'; }
+      else if (roll === 19) { if (friend) bump(R, f, friend.id, 1); out.text = N + ' and ' + frN + ' come to an understanding.'; }
+      else { f.strength = clamp(f.strength + 1, 1, 5); f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' pulls off a masterstroke the realm won’t understand for months.'; out.rumour = 'Something big happened. Nobody can say what.'; }
+    } else {
+      if (roll <= 2) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + ' suffers a setback: a scandal, a loss, a quarrel within.'; out.rumour = 'Trouble inside ' + N + '.'; }
+      else if (roll <= 4) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' turns its weight against ' + foeN + '.'; out.rumour = N + ' has no love for ' + foeN + ' this month.'; }
+      else if (roll <= 9) { out.text = N + ' goes about its business.'; }
+      else if (roll <= 11) { f.crown = clamp(f.crown + (f.id === 'empire' ? -1 : 1), -3, 3); out.text = f.id === 'empire' ? 'An imperial envoy arrives at court with demands.' : N + ' presses the crown for a favour, and gets it.'; out.rumour = f.id === 'empire' ? 'Imperial ships were seen off the coast.' : N + ' has the king’s ear.'; }
+      else if (roll <= 13) { out.text = f.id === 'guilds' ? 'The guilds raise their prices.' : f.id === 'church' ? 'The Church demands a heavier tithe.' : f.id === 'coralyn' ? 'Coralyn closes part of the Quilted Sea to ships.' : f.id === 'thorn' ? 'The Thornwardens ride out hunting cultists.' : 'The Empire’s agents are busy in the ports.'; out.rumour = out.text; out.party = f.id === 'coralyn' || f.id === 'guilds'; }
+      else if (roll <= 15) { if (friend) bump(R, f, friend.id, 1); out.text = N + ' and ' + frN + ' grow closer.'; }
+      else if (roll <= 17) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good month for ' + N + '.'; }
+      else if (roll <= 19) { if (num(f.party, 0) >= 1) { out.party = true; out.text = N + ' has something to offer the party.'; out.rumour = 'Word is ' + N + ' wants to see you.'; } else out.text = N + ' watches the party with interest.'; }
+      else { f.strength = clamp(f.strength + 1, 1, 5); f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' has a great month: its reach grows.'; out.rumour = N + ' is everywhere lately.'; }
+    }
+    // Plural names take plural verbs: the Brinewolves grow, the Guilds go about their business.
+    if (/^The (Brinewolves|Red Scales|Guilds|Collectors|Thornwardens)$/.test(N)) {
+      var plur = function (str) { return str.split(N + ' ').map(function (part, i) { if (!i) return part; return part.replace(/^(\S+?)(es|s)\b/, function (m, w, end) { var irr = { goes: 'go', does: 'do', has: 'have', lies: 'lie' }[w + end]; return irr || (end === 'es' && /(ss|sh|ch|x)$/.test(w) ? w : w + (end === 'es' ? 'e' : '')); }).replace(/^its /, 'their '); }).join(N + ' ').replace(/ about its business/, ' about their business'); };
+      out.text = plur(out.text); out.rumour = plur(out.rumour || '');
+    }
+    return out;
+  }
+  function renderRealm(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug);
+    if (!camp || !isDM()) { location.replace('#/wiki'); return; }
+    if (!loaded.realm || !loaded.holdings) { Promise.all([loaded.realm ? null : loadRealm(), loaded.holdings ? null : loadHoldings()]).then(render).catch(function (e) { fail(e); }); $view.innerHTML = '<div class="page"><div class="empty">Loading the realm…</div></div>'; return; }
+    var R = realm[camp.id], t = travel[camp.id], day = t ? t.day : 0;
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>The realm</h1></div></section><div class="page">';
+    if (!R || !R.factions) {
+      html += '<div class="empty">The realm hasn’t been set up yet.</div><div class="actions"><button type="button" class="btn primary" data-act="realm-seed" data-camp="' + esc(camp.id) + '">Set up the 17 factions</button></div></div>';
+      $view.innerHTML = html; return;
+    }
+    var due = R.next == null || day >= R.next;
+    html += '<section class="block"><h2 class="sec-title">The month turns<small>' + (due ? 'Due now' : 'Next on day ' + R.next) + '</small></h2>';
+    if (due) {
+      html += '<p class="note" style="margin-top:0">Each faction’s d20 is rolled for you. Type over any you want to choose. 1 is a disaster, 20 a great stroke.</p><form id="realm-turn" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
+      R.factions.forEach(function (f) { html += '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.temper) + '</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-rroll="' + esc(f.id) + '" value="' + preRoll(camp.id, 'realm' + num(R.next, 0) + f.id) + '"></div>'; });
+      html += '</div><div class="actions"><button type="submit" class="btn primary">Let the realm move</button></div></form>';
+    }
+    html += '</section>';
+    var news = (R.news || []).slice(-30).reverse();
+    if (news.length) html += '<section class="block"><h2 class="sec-title">News<small>truth, and what folk say</small></h2><div class="tbl">' + news.map(function (n) {
+      return '<div class="tbl-row"><div class="main"><b>' + (n.party ? '⚑ ' : '') + 'Day ' + esc(n.day) + ': ' + esc(n.text) + ' <span class="note">(d20 ' + esc(n.roll) + ')</span></b>' + (n.rumour ? '<span>Rumour: “' + esc(n.rumour) + '”</span>' : '') + '</div></div>';
+    }).join('') + '</div><p class="note">⚑ touches the party. Rumours are yours to drop in taverns, letters and gossip.</p></section>';
+    Object.keys(FACTION_KINDS).forEach(function (k) {
+      html += '<section class="block"><h2 class="sec-title">' + FACTION_KINDS[k] + '</h2>';
+      R.factions.filter(function (f) { return f.kind === k; }).forEach(function (f) {
+        var art = articleBySlug(f.slug), ties = R.factions.filter(function (o) { return o.id !== f.id && relOf(f, o.id) !== 0; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); });
+        var stepper = function (field, label, val) { return '<span class="note" style="display:inline-flex;align-items:center;gap:4px;margin-right:10px">' + label + ' <b>' + val + '</b><button type="button" class="btn small quiet" data-act="realm-step" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-k="' + field + '" data-d="-1" aria-label="Lower">−</button><button type="button" class="btn small quiet" data-act="realm-step" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-k="' + field + '" data-d="1" aria-label="Raise">+</button></span>'; };
+        html += '<div class="group-box" style="margin-bottom:10px"><h2 style="margin-top:0">' + (art ? '<a href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(f.name) + '</a>' : esc(f.name)) + '</h2>' +
+          '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><select class="input" style="flex:1 1 160px;min-width:0" data-temper="' + esc(f.id) + '" data-camp="' + esc(camp.id) + '" aria-label="Temperament">' + Object.keys(TEMPERS).map(function (k2) { return '<option' + (k2 === f.temper ? ' selected' : '') + '>' + k2 + '</option>'; }).join('') + '</select><span class="note">' + esc(TEMPERS[f.temper] || '') + '</span></div>' +
+          '<p style="margin:6px 0">' + stepper('wealth', 'Wealth', f.wealth) + stepper('strength', 'Strength', f.strength) + stepper('crown', 'With the crown', (f.crown > 0 ? '+' : '') + f.crown) + stepper('party', 'With the party', relWord(num(f.party, 0))) + '</p>' +
+          '<p class="note" style="margin:0">' + (ties.length ? ties.map(function (o) { return esc(o.name) + ': ' + relWord(relOf(f, o.id)).toLowerCase(); }).join(' · ') : 'No strong ties.') + '</p>' +
+          '<div class="actions tight" style="flex-wrap:wrap;align-items:center;margin-top:6px"><select class="input" style="flex:1 1 160px;min-width:0" id="rrel-' + esc(f.id) + '" aria-label="Relation with">' + R.factions.filter(function (o) { return o.id !== f.id; }).map(function (o) { return '<option value="' + esc(o.id) + '">' + esc(o.name) + ' (' + relWord(relOf(f, o.id)).toLowerCase() + ')</option>'; }).join('') + '</select>' +
+          '<button type="button" class="btn small quiet" data-act="realm-rel" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-d="-1">Worse</button><button type="button" class="btn small quiet" data-act="realm-rel" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-d="1">Better</button></div></div>';
+      });
+      html += '</section>';
+    });
+    $view.innerHTML = html + '</div>';
+  }
+  function realmTurn(f) {
+    var campId = f.getAttribute('data-camp'), R = clone(realm[campId]), t = travel[campId], day = t ? t.day : 0;
+    var partyNear = holdingsFor(campId).length > 0;
+    R.news = R.news || [];
+    R.factions.forEach(function (fa) {
+      var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 10), 1, 20);
+      var out = realmMove(R, fa, roll, partyNear);
+      if (out.text) R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party });
+    });
+    R.news = R.news.slice(-200);
+    R.next = day + PAY_EVERY;
+    saveRealm(campId, R, 'The realm has moved');
+  }
+  function realmEdit(campId, el, act) {
+    var R = clone(realm[campId]); if (!R) return;
+    var f = R.factions.filter(function (x) { return x.id === el.getAttribute('data-f'); })[0]; if (!f) return;
+    var d = num(el.getAttribute('data-d'), 0);
+    if (act === 'step') { var k = el.getAttribute('data-k'); if (k === 'party') f.party = clamp(num(f.party, 0) + d, -3, 3); else if (k === 'crown') f.crown = clamp(num(f.crown, 0) + d, -3, 3); else f[k] = clamp(num(f[k], 3) + d, 1, 5); }
+    else { var o = (document.getElementById('rrel-' + f.id) || {}).value; if (o) bump(R, f, o, d); }
+    saveRealm(campId, R);
+  }
   /* ================= Events ================= */
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
@@ -6152,6 +6331,8 @@
       case 'bt-attack': case 'bt-hurt': case 'bt-rout': case 'bt-add': case 'bt-addours': case 'bt-wall': case 'bt-engine': case 'bt-ourengines': case 'bt-days': case 'bt-apply': case 'bt-del':
         var bcamp = campaignBySlug(parseRoute().arg); if (bcamp) battleAct(bcamp.id, el.getAttribute('data-id'), act.slice(3), el); break;
       case 'autoroll': var arc = el.getAttribute('data-camp'), are = estateOf(arc); sb.from('estates').upsert({ campaign_id: arc, treasury: Number(are.treasury || 0), payday: are.payday, autoroll: are.autoroll === false }).then(function (r) { if (r.error) throw r.error; return loadHoldings(); }).then(function () { toast('Background rolls: ' + (estateOf(arc).autoroll === false ? 'yours' : 'the app’s')); render(); }).catch(function (err) { fail(err); }); break;
+      case 'realm-seed': saveRealm(el.getAttribute('data-camp'), seedRealm(), 'The realm is set up'); break;
+      case 'realm-step': case 'realm-rel': realmEdit(el.getAttribute('data-camp'), el, act.slice(6)); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
@@ -6630,6 +6811,7 @@
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
+    if (t.getAttribute && t.getAttribute('data-temper')) { var rc = t.getAttribute('data-camp'), RR = clone(realm[rc]); RR.factions.forEach(function (x) { if (x.id === t.getAttribute('data-temper')) x.temper = t.value; }); return saveRealm(rc, RR, 'Temperament changed'); }
     if (t.id === 'hd-kind') { ui.holdKind = t.value; ui.holdVessel = null; ui.holdDraftName = (document.getElementById('hd-name') || {}).value || ''; return render(); }
     if (t.id === 'hd-vessel' && ui.holdEdit === 'new') { ui.holdVessel = t.value; ui.holdDraftName = (document.getElementById('hd-name') || {}).value || ''; return render(); }
     if (t.id === 'wt-region') {
@@ -6745,6 +6927,7 @@
       case 'estate-form': return saveEstateForm(f);
       case 'payday-form': return settlePayday(f);
       case 'battle-new': return newBattle(f);
+      case 'realm-turn': return realmTurn(f);
       case 'ruin-form': return saveRuin(f);
       case 'map-form': return saveMap(f);
       case 'join-form': return submitJoin();
