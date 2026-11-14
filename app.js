@@ -6175,7 +6175,7 @@
     ['caspian-castle', 'Caspian Castle', 'Ser Aldous Penn', 'caspian'], ['crowns-rest', 'Crown’s Rest', 'Ser Garrick Holt', 'dorn'], ['dornhold', 'Dornhold', 'Ser Hugh Maddox', 'dorn'],
     ['fangwatch', 'Fangwatch', 'Ser Sarkh Ignis', 'ignis'], ['fernhold', 'Fernhold', 'Ser Godric Marsh', 'marloo'], ['galecliff', 'Galecliff', 'Ser Osric Wendell', 'caspian'],
     ['greywatch', 'Greywatch', 'Dame Astrid Anvilborn', 'anvilborn'], ['kestrel-tower', 'Kestrel Tower', 'Dame Cecily Dunmore', 'caspian'], ['kingswatch', 'Kingswatch', 'Sir Roderick Garrow', 'dorn'],
-    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Corvax Ashvane', 'ignis'],
+    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Corvax Ashvane', 'dorn'],
     ['rivercross', 'Rivercross', 'Ser Wat Pellam', 'marloo'], ['scalehold', 'Scalehold', 'Dame Vessa Ignis', 'ignis'], ['seaward', 'Seaward', 'Ser Edric Saltonstall', 'caspian'],
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
     ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'dorn'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
@@ -6191,7 +6191,7 @@
     ['blackpit', 'Blackpit', 'ignis', 0, 'Baron Nythin Ignis'],
     ['cindervein', 'Cindervein', 'ignis', 1, 'Baron Krizz Ignis'],
     ['emberford', 'Emberford', 'ignis', 0, 'Baron Grisax Ignis'],
-    ['petalhaven', 'Petalhaven', 'ignis', 0, 'Baron Ilvax Ashvane'],
+    ['petalhaven', 'Petalhaven', 'dorn', 0, 'Baron Ilvax Ashvane'],
     ['pinehollow', 'Pinehollow', 'ignis', 0, 'Baron Vosk Ignis'],
     ['coldwater', 'Coldwater', 'anvilborn', 0, 'Baron Ulf Anvilborn'],
     ['deepholm', 'Deepholm', 'anvilborn', 1, 'Baron Asgaut Frostmantle'],
