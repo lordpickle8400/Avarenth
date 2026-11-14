@@ -6205,11 +6205,11 @@
     ['gullcrest', 'Gullcrest', 'caspian', 0, 'Baron Tobias Thatcher'],
     ['horsefair', 'Horsefair', 'caspian', 0, 'Baron Wystan Thatcher'],
     ['keelhaven', 'Keelhaven', 'caspian', 0, 'Baroness Cecily Wainwright'],
-    ['marblecut', 'Marblecut', 'caspian', 1, 'Baroness Dagny Anvilborn'],
+    ['marblecut', 'Marblecut', 'caspian', 1, 'Baron Halvard Granitehand'],
     ['tarrow', 'Tarrow', 'caspian', 0, 'Baron Alric Cooper'],
     ['vinewall', 'Vinewall', 'caspian', 0, 'Baron Wystan Ashdown'],
     ['whitesands', 'Whitesands', 'caspian', 0, 'Baron Piers Dunmore'],
-    ['copperbrook', 'Copperbrook', 'caspian', 1, 'Baroness Vigdis Anvilborn'],
+    ['copperbrook', 'Copperbrook', 'caspian', 1, 'Baroness Ragna Greenvein'],
     ['shepherds-rest', 'Shepherd’s Rest', 'marloo', 0, 'Baroness Rohese Hartwell'],
     ['thornwick', 'Thornwick', 'marloo', 0, 'Baron Ranulf Cooper'],
     ['bellowsbrook', 'Bellowsbrook', 'marloo', 1, 'Baron Rurik Bellows'],
@@ -6225,7 +6225,7 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1]];
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1]];
   var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
