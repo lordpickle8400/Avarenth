@@ -4469,7 +4469,7 @@
   function loadHoldings() {
     return Promise.all([
       sb.from('holdings').select('id, campaign_id, name, kind, data, owner_char, created_at').order('created_at'),
-      sb.from('estates').select('campaign_id, treasury, payday, ledger, shipments, battles'),
+      sb.from('estates').select('campaign_id, treasury, payday, ledger, shipments, battles, autoroll'),
       isDM() ? sb.from('holding_secrets').select('holding_id, dm') : Promise.resolve({ data: [] })
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -4924,7 +4924,7 @@
     list.forEach(function (sp) {
       var m = SEND_METHODS[sp.method] || SEND_METHODS.carrier, here = day >= num(sp.arrive, 0), left = num(sp.arrive, 0) - day;
       html += '<div class="tbl-row" style="flex-wrap:wrap;gap:6px"><div class="main" style="flex:1 1 60%"><b>' + esc(gp(sp.amt) + ' from ' + sp.from + ' to ' + sp.dest) + '</b><span>' + esc(m.n + (sp.caravan ? ' (' + ((holdingById(sp.caravan) || {}).name || 'caravan') + ')' : '') + ' · ' + (here ? 'arrived' : 'arriving day ' + sp.arrive + ', ' + left + (left === 1 ? ' day' : ' days'))) + '</span></div>';
-      if (dm && here) html += (m.safe ? '' : '<input class="input mini" type="number" min="1" max="20" inputmode="numeric" id="sroll-' + esc(sp.id) + '" placeholder="d20" aria-label="Road roll">') + '<button type="button" class="btn small" data-act="ship-deliver" data-sid="' + esc(sp.id) + '" data-camp="' + esc(camp.id) + '">Deliver</button>';
+      if (dm && here) html += (m.safe ? '' : '<input class="input mini" type="number" min="1" max="20" inputmode="numeric" id="sroll-' + esc(sp.id) + '" placeholder="d20" value="' + preRoll(camp.id, 's' + sp.id) + '" aria-label="Road roll">') + '<button type="button" class="btn small" data-act="ship-deliver" data-sid="' + esc(sp.id) + '" data-camp="' + esc(camp.id) + '">Deliver</button>';
       html += '</div>';
     });
     return html + '</div>' + (dm ? '<p class="note">On arrival the table rolls a d20 for anything not bonded: 1–2 robbed, 3–5 a quarter missing. Your own caravan’s defense adds to the roll.</p>' : '') + '</section>';
@@ -5059,6 +5059,7 @@
     var dm = dmView(), e = estateOf(camp.id), list = holdingsFor(camp.id), day = t ? t.day : 0;
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Holdings</h1></div></section><div class="page">';
     var due = paydayDue(camp.id), left = e.payday != null ? e.payday - day : null;
+    if (dm) html += '<div class="actions tight" style="margin:0 0 8px"><button type="button" class="btn small quiet" data-act="autoroll" data-camp="' + esc(camp.id) + '">The app rolls behind the curtain: ' + (e.autoroll === false ? 'off' : 'on') + '</button></div>';
     html += '<section class="block"><h2 class="sec-title">Party treasury<small>' + (e.payday == null ? 'No payday set' : due ? 'Payday is due' : 'Payday in ' + left + (left === 1 ? ' day' : ' days')) + '</small></h2>' +
       '<div class="vitals sum">' + vital('Treasury', gp(e.treasury)) + vital('Holdings', list.length) + vital('Next payday', e.payday == null ? '—' : 'Day ' + e.payday) + '</div>' +
       (Number(e.treasury) < 0 ? '<p class="err" style="margin:0">In debt.</p>' : '');
@@ -5658,6 +5659,13 @@
     }).catch(function (err) { fail(err, 'Could not change that.'); });
   }
 
+  // Behind-the-curtain rolls: the app fills the d20 boxes (unless switched off). Cached so a redraw doesn't reroll; the DM can type over any.
+  function preRoll(campId, key) {
+    var e = estates[campId]; if (e && e.autoroll === false) return '';
+    ui.prerolls = ui.prerolls || {}; var k = campId + '|' + (e ? e.payday : '') + '|' + key;
+    if (!ui.prerolls[k]) ui.prerolls[k] = 1 + Math.floor(Math.random() * 20);
+    return ui.prerolls[k];
+  }
   function paydayHtml(camp, list) {
     var html = '<section class="block"><h2 class="sec-title">Payday<small>Every ' + PAY_EVERY + ' days</small></h2><p class="note" style="margin-top:0">Each holding pays its own people and upkeep from its coffer. If the coffer runs short, someone goes unpaid. Hold wages only if the owner has ordered it. Anything out trading needs the table’s d20.</p><form id="payday-form" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
     list.forEach(function (h) {
@@ -5669,10 +5677,10 @@
         html += '<div class="tbl-row"><div class="main"><b>' + esc(unitName(h, u)) + '</b><span>' + esc(gp(w) + ' due' + (uu.owed ? ', ' + gp(uu.owed) + ' owed' : '') + ' · ' + band(loyOf(h, u))) + '</span></div>' +
           '<select class="input rar-sel" data-pay="' + esc(h.id + '|' + u) + '" aria-label="Wages for ' + esc(h.name) + ' ' + esc(unitName(h, u)) + '"><option value="auto">Pay from coffer</option><option value="skip">Hold wages</option></select></div>';
       });
-      if (hasPeople(h)) html += '<div class="tbl-row"><div class="main"><b>How the month went</b><span>d20 · leave blank for a quiet month</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-hroll="' + esc(h.id) + '" placeholder="d20"></div>';
-      if (st.mode === 'building' && h.kind === 'airship') html += '<div class="tbl-row"><div class="main"><b>The yard this month</b><span>d20 · 1–2 the crews fall out, 20 a month ahead</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-yroll="' + esc(h.id) + '" placeholder="d20"></div>';
-      if (HOLD_MOVES[h.kind] && st.mode === 'raiding') html += '<div class="tbl-row"><div class="main"><b>Raid roll</b><span>1–3 a beating, 20 a treasure ship · fight +' + Math.floor(shipStats(h).fight / 2) + '</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
-      if (HOLD_MOVES[h.kind] && st.mode === 'trading' && baseIncome(h) > 0) html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20"></div>';
+      if (hasPeople(h)) html += '<div class="tbl-row"><div class="main"><b>How the month went</b><span>d20 · leave blank for a quiet month</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-hroll="' + esc(h.id) + '" placeholder="d20" value="' + preRoll(camp.id, 'h' + h.id) + '"></div>';
+      if (st.mode === 'building' && h.kind === 'airship') html += '<div class="tbl-row"><div class="main"><b>The yard this month</b><span>d20 · 1–2 the crews fall out, 20 a month ahead</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-yroll="' + esc(h.id) + '" placeholder="d20" value="' + preRoll(camp.id, 'y' + h.id) + '"></div>';
+      if (HOLD_MOVES[h.kind] && st.mode === 'raiding') html += '<div class="tbl-row"><div class="main"><b>Raid roll</b><span>1–3 a beating, 20 a treasure ship · fight +' + Math.floor(shipStats(h).fight / 2) + '</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20" value="' + preRoll(camp.id, 't' + h.id) + '"></div>';
+      if (HOLD_MOVES[h.kind] && st.mode === 'trading' && baseIncome(h) > 0) html += '<div class="tbl-row"><div class="main"><b>Trade roll</b><span>' + (h.kind === 'caravan' ? '1–2 ambushed' : '1 disaster') + ', 20 windfall</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-troll="' + esc(h.id) + '" placeholder="d20" value="' + preRoll(camp.id, 't' + h.id) + '"></div>';
     });
     return html + '</div><div class="actions"><button type="submit" class="btn primary">Settle payday</button></div></form></section>';
   }
@@ -5693,7 +5701,7 @@
       if (d.mode === 'building' && st.mode === 'moored') { d.mode = 'moored'; d.at = st.at; d.moor_since = st.since; d.moor_free = false; rep.push('Finished and afloat at ' + (st.at || 'the yard') + '. The crew now draw wages.'); }
       if (st.mode === 'building') {
         var yr = f.querySelector('[data-yroll="' + h.id + '"]'), yv = yr ? num(yr.value, 0) : 0;
-        if (yv >= 1 && yv <= 20) { var yy = yardRoll(yv); d.ready = Math.max(day + 1, num(d.ready, day) + yy.days); rep.push(yy.t); }
+        if (yv >= 1 && yv <= 20) { var yy = yardRoll(yv); d.ready = Math.max(day + 1, num(d.ready, day) + yy.days); rep.push(yy.t + ' (d20 ' + yv + ')'); }
         var lb = num(d.ready, day) - day; rep.push('Ready in about ' + lb + (lb === 1 ? ' day.' : ' days.'));
         d.reports = (d.reports || []).concat([{ day: day, text: rep }]).slice(-6);
         done[h.id] = { h: h, d: d, secret: {}, start: start };
@@ -5719,9 +5727,9 @@
         if (ev) {
           var half = ev.stores && builtOf({ campaign_id: h.campaign_id, data: d }).Granary ? 0.5 : 1;
           var hit = (ev.onlyIf === 'restless' && GRACE[crewBand] > 0) || (ev.onlyIf === 'hightax' && !/High|Crushing/.test(d.tax || '')) || (ev.raid && defenseOf({ campaign_id: h.campaign_id, data: d }) >= ev.raid);
-          if (hit) rep.push(ev.safe || ev.t);
+          if (hit) rep.push((ev.safe || ev.t) + ' (d20 ' + roll + ')');
           else {
-            rep.push(ev.t + (half < 1 ? ' The granary softens it.' : ''));
+            rep.push(ev.t + (half < 1 ? ' The granary softens it.' : '') + ' (d20 ' + roll + ')');
             if (ev.inc) inc *= Math.max(0, 1 + ev.inc * (ev.inc < 0 ? half : 1));
             if (ev.cofPct) cof += cof * ev.cofPct;
             if (ev.cof) cof += ev.cof;
@@ -5741,14 +5749,14 @@
         var bfr = bossFx(h), rr0 = rolls[h.id] <= 3 ? rolls[h.id] + shipStats(h).luck : rolls[h.id];
         rr0 = Math.max(1, rr0 + (bfr.rollMod || 0) + (bfr.raidRoll || 0)); if (bfr.fool) { if (rr0 <= 3) rr0 = 4; if (rr0 >= 20) rr0 = 19; }
         var rr = Math.min(20, rr0 + Math.floor(shipStats(h).fight / 2)), rx = RAID_ROLL.filter(function (x) { return rr <= x[0]; })[0];
-        inc = Number(d.income || 0) * rx[1] * (1 + shipStats(h).raid);
+        inc = Math.round(Number(d.income || 0) * rx[1] * (1 + shipStats(h).raid));
         if (rx[0] === 3) { crewMod -= 1; rep.push('Took a beating: the crew are shaken and nothing was taken.' + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25)); }
-        else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money.' : '.'));
+        else rep.push(rx[2] + (inc ? ': ' + gp(inc) + ' in prize money' : '') + ' (d20 ' + rolls[h.id] + ').');
         if (rx[1] >= 2.5) { crewMod += 1; rep.push('The crew drank to their shares.'); }
       }
       else if (rolls[h.id]) {
-        var tr = tradeRoll(h, rolls[h.id]); inc = baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul;
-        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25) : tr.label + ': made ' + gp(inc) + '.');
+        var tr = tradeRoll(h, rolls[h.id]); inc = Math.round(baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul);
+        rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + ' (d20 ' + rolls[h.id] + ')' + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25) : tr.label + ': made ' + gp(inc) + ' (d20 ' + rolls[h.id] + ').');
       }
       var levyN = hasPeople(h) && d.levy ? num(d.levy.n, 0) : 0;
       if (levyN) {
@@ -6143,6 +6151,7 @@
       case 'bt-pick': ui.battle = el.getAttribute('data-id'); render(); break;
       case 'bt-attack': case 'bt-hurt': case 'bt-rout': case 'bt-add': case 'bt-addours': case 'bt-wall': case 'bt-engine': case 'bt-ourengines': case 'bt-days': case 'bt-apply': case 'bt-del':
         var bcamp = campaignBySlug(parseRoute().arg); if (bcamp) battleAct(bcamp.id, el.getAttribute('data-id'), act.slice(3), el); break;
+      case 'autoroll': var arc = el.getAttribute('data-camp'), are = estateOf(arc); sb.from('estates').upsert({ campaign_id: arc, treasury: Number(are.treasury || 0), payday: are.payday, autoroll: are.autoroll === false }).then(function (r) { if (r.error) throw r.error; return loadHoldings(); }).then(function () { toast('Background rolls: ' + (estateOf(arc).autoroll === false ? 'yours' : 'the app’s')); render(); }).catch(function (err) { fail(err); }); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
