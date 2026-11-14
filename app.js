@@ -3739,7 +3739,7 @@
     return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
   }
   /* Where the party is decides which list the d100 reads: 1 to 60 the region's, 61 to 100 the all-isles list. */
-  var REGION_LABEL = { west: 'The West', mournfells: 'The Mournfells', north: 'The North', central: 'The Emberwood', capital: 'The Crown Lands', south: 'The South and the coast', sea: 'At sea' };
+  var REGION_LABEL = { west: 'The Wildreach', mournfells: 'The Mournfells', north: 'The North', central: 'The Emberwood', capital: 'The Crown Lands', south: 'The South and the coast', sea: 'At sea' };
   function autoRegion(campId) {
     var t = travel[campId]; if (!t || !t.map_id) return null;
     var pm = partyMarker(t.map_id); if (!pm) return null;
@@ -6182,7 +6182,8 @@
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
     ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'vornak'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'vornak'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis'],
     ['tuskpoint', 'Tuskpoint', 'Ser Hrask Mor’tak', 'vornak'], ['gorthul', 'Gor’thul', 'Ser Brakk Vor’nak', 'vornak'], ['mournwatch', 'Mournwatch', 'Ser Aldric Venn', 'vornak'], ['brackenhold', 'Brackenhold', 'Dame Isolde Brack', 'vornak'],
-    ['tidehold', 'Tidehold', 'Ser Corvax Ashvane', 'ignis'], ['clawrock', 'Clawrock', 'Ser Drazhar Ignis', 'ignis'], ['westclaw', 'Westclaw', 'Dame Ssirra Ignis', 'ignis']];
+    ['tidehold', 'Tidehold', 'Ser Corvax Ashvane', 'ignis'], ['clawrock', 'Clawrock', 'Ser Drazhar Ignis', 'ignis'], ['westclaw', 'Westclaw', 'Dame Ssirra Ignis', 'ignis'],
+    ['duskmoor', 'Duskmoor', 'Ser Corin Vale', 'marloo']];
   // [slug, name, liege, dwarf town?]
   var BARONS = [
     ['akorsrest', 'Akorsrest', 'dorn', 0, 'Baron Dunstan Larkin'],
@@ -6224,7 +6225,9 @@
     ['thornwick', 'Thornwick', 'marloo', 0, 'Baron Ranulf Cooper'],
     ['bellowsbrook', 'Bellowsbrook', 'marloo', 1, 'Baron Rurik Bellows'],
     ['hogshead', 'Hogshead', 'marloo', 0, 'Baron Alric Wainwright'],
-    ['north-coast-town', 'the north-coast town', 'marloo', 0, 'Baroness Agnes Hartwell']];
+    ['north-coast-town', 'Hermitsbay', 'marloo', 0, 'Baroness Agnes Hartwell'],
+    ['downside', 'Downside', 'marloo', 0, 'Baron Edwy Tallow'],
+    ['lastfield', 'Lastfield', 'marloo', 0, 'Baroness Wenna Fairley']];
   // A Dornish name and title for a baron or knight nobody has named yet: dwarves in dwarf towns, Ignis blood in the Emberwood.
   function rollLord(kind, liege, dwarf) {
     var race = dwarf || liege === 'anvilborn' && Math.random() < 0.7 ? 'Dwarf' : liege === 'ignis' && Math.random() < 0.7 ? 'Dragonborn' : 'Human';
@@ -6235,7 +6238,7 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['ogknack', 'vornak', 2], ['hydra', 'vornak', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['tuskpoint', 'fogmeet-town', 2], ['bronzewater-town', 'ashvane', 2], ['tidehold', 'ashvane', 2], ['bronzewater-town', 'timberfall-town', -1], ['brackenhold', 'garrow', -1], ['highford-town', 'ferrymen', 1]];
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['ogknack', 'vornak', 2], ['hydra', 'vornak', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['tuskpoint', 'fogmeet-town', 2], ['duskmoor', 'hydra', 1], ['lastfield-town', 'vornak', 1], ['north-coast-town-town', 'cult', -2], ['bronzewater-town', 'ashvane', 2], ['tidehold', 'ashvane', 2], ['bronzewater-town', 'timberfall-town', -1], ['brackenhold', 'garrow', -1], ['highford-town', 'ferrymen', 1]];
   var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
