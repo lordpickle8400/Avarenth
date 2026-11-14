@@ -6141,15 +6141,14 @@
     ['scales', 'The Red Scales', 'shadow', 'the-red-scales', 'Scheming', 4, 3, -3],
     ['hand', 'The Black Hand', 'shadow', 'the-black-hand', 'Greedy', 3, 2, -2],
     ['wolves', 'The Brinewolves', 'shadow', 'the-brinewolves', 'Ambitious', 2, 3, -3],
-    ['collectors', 'The Collectors', 'shadow', 'the-collectors', 'Zealous', 2, 2, -3],
     ['guilds', 'The Guilds', 'power', 'the-guilds-of-doresmere', 'Greedy', 4, 1, 1],
     ['church', 'The Church', 'power', 'akorianism', 'Zealous', 4, 2, 2],
-    ['empire', 'The Empire', 'power', 'the-empire', 'Ambitious', 5, 5, -2],
+    ['empire', 'The Aurelian Empire', 'power', 'aurelian-empire', 'Ambitious', 5, 5, 2],
     ['coralyn', 'Coralyn', 'power', 'the-city-state-of-coralyn', 'Cautious', 3, 3, 0],
     ['thorn', 'The Thornwardens', 'power', 'the-thornwardens', 'Honourable', 2, 2, 1]
   ];
-  var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', -2], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
-    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', 1], ['hand', 'cult', 1], ['collectors', 'thorn', -2], ['collectors', 'church', -3], ['church', 'thorn', 2], ['empire', 'scales', 1], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
+  var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
+    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', 1], ['hand', 'cult', 1], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
   function seedRealm() {
     var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {} }; });
     var by = {}; f.forEach(function (x) { by[x.id] = x; });
@@ -6227,8 +6226,8 @@
       if (roll <= 2) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + ' suffers a setback: a scandal, a loss, a quarrel within.'; out.rumour = 'Trouble inside ' + N + '.'; }
       else if (roll <= 4) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' turns its weight against ' + foeN + '.'; out.rumour = N + ' has no love for ' + foeN + ' this month.'; }
       else if (roll <= 9) { out.text = N + ' goes about its business.'; }
-      else if (roll <= 11) { f.crown = clamp(f.crown + (f.id === 'empire' ? -1 : 1), -3, 3); out.text = f.id === 'empire' ? 'An imperial envoy arrives at court with demands.' : N + ' presses the crown for a favour, and gets it.'; out.rumour = f.id === 'empire' ? 'Imperial ships were seen off the coast.' : N + ' has the king’s ear.'; }
-      else if (roll <= 13) { out.text = f.id === 'guilds' ? 'The guilds raise their prices.' : f.id === 'church' ? 'The Church demands a heavier tithe.' : f.id === 'coralyn' ? 'Coralyn closes part of the Quilted Sea to ships.' : f.id === 'thorn' ? 'The Thornwardens ride out hunting cultists.' : 'The Empire’s agents are busy in the ports.'; out.rumour = out.text; out.party = f.id === 'coralyn' || f.id === 'guilds'; }
+      else if (roll <= 11) { f.crown = clamp(f.crown + (f.id === 'empire' ? -1 : 1), -3, 3); out.text = f.id === 'empire' ? 'An imperial envoy arrives at court with demands.' : N + ' presses the crown for a favour, and gets it.'; out.rumour = f.id === 'empire' ? 'An imperial envoy’s ship is in Loreaon harbour.' : N + ' has the king’s ear.'; }
+      else if (roll <= 13) { out.text = f.id === 'guilds' ? 'The guilds raise their prices.' : f.id === 'church' ? 'The Church demands a heavier tithe.' : f.id === 'coralyn' ? 'Coralyn closes part of the Quilted Sea to ships.' : f.id === 'thorn' ? 'The Thornwardens ride out hunting cultists.' : 'The empire asks more of the isles: a heavier tribute, or men for a war on the mainland.'; out.rumour = out.text; out.party = f.id === 'coralyn' || f.id === 'guilds'; }
       else if (roll <= 15) { if (friend) bump(R, f, friend.id, 1); out.text = N + ' and ' + frN + ' grow closer.'; }
       else if (roll <= 17) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good month for ' + N + '.'; }
       else if (roll <= 19) { if (num(f.party, 0) >= 1) { out.party = true; out.text = N + ' has something to offer the party.'; out.rumour = 'Word is ' + N + ' wants to see you.'; } else out.text = N + ' watches the party with interest.'; }
@@ -6249,7 +6248,7 @@
     var R = realm[camp.id], t = travel[camp.id], day = t ? t.day : 0;
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>The realm</h1></div></section><div class="page">';
     if (!R || !R.factions) {
-      html += '<div class="empty">The realm hasn’t been set up yet.</div><div class="actions"><button type="button" class="btn primary" data-act="realm-seed" data-camp="' + esc(camp.id) + '">Set up the 17 factions</button></div></div>';
+      html += '<div class="empty">The realm hasn’t been set up yet.</div><div class="actions"><button type="button" class="btn primary" data-act="realm-seed" data-camp="' + esc(camp.id) + '">Set up the 16 factions</button></div></div>';
       $view.innerHTML = html; return;
     }
     var due = R.next == null || day >= R.next;
