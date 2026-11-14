@@ -6335,7 +6335,7 @@
   var SMALL_D20 = [10, 11, 13, 14, 15, 17, 18, 4, 13, 10], NOTABLE_D20 = [5, 6, 12, 16, 19, 3, 2];
   // Plural names take plural verbs: the Brinewolves grow, the Salters go about their business.
   var PLURAL_RE = /^The (Brinewolves|Red Scales|Thornwardens|Shipwrights of Keelhaven|Salters|Weavers and Dyers|Ferrymen and Bargemen|Millers|Lamplighters|Tidecutters|Hornmarket forgers|Crown Road highwaymen)$/;
-  function pluralLine(N, str) { var plur = function (str) { return str.split(N + ' ').map(function (part, i) { if (!i) return part; return part.replace(/^(\S+?)(es|s)\b/, function (m, w, end) { var irr = { goes: 'go', does: 'do', has: 'have', lies: 'lie' }[w + end]; return irr || (end === 'es' && /(ss|sh|ch|x)$/.test(w) ? w : w + (end === 'es' ? 'e' : '')); }).replace(/^its /, 'their '); }).join(N + ' ').replace(/ about its business/, ' about their business'); }; return plur(str); }
+  function pluralLine(N, str) { var plur = function (str) { return str.split(N + ' ').map(function (part, i) { if (!i) return part; return part.replace(/^(\S+?)(es|s)\b/, function (m, w, end) { var irr = { goes: 'go', does: 'do', has: 'have', lies: 'lie' }[w + end]; return irr || (end === 'es' && /(ss|sh|ch|x)$/.test(w) ? w : w + (end === 'es' ? 'e' : '')); }).replace(/^its /, 'their ').replace(/^(\S+ )its /, '$1their '); }).join(N + ' ').replace(/ about its business/, ' about their business'); }; return plur(str); }
   function realmMonth(R, f, n, partyNear) {
     if (f.tier === 'minor') { var mo = minorMonth(R, f, n); if (PLURAL_RE.test(f.name)) { mo.text = pluralLine(f.name, mo.text); mo.rumour = pluralLine(f.name, mo.rumour || ''); } return mo; }
     var b = f.limited ? minorBand(n) : realmBand(n), N = f.name;
