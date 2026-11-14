@@ -6142,6 +6142,7 @@
     ['anvilborn', 'Clan Anvilborn', 'house', 'clan-anvilborn', 'Cautious', 4, 4, 1],
     ['caspian', 'House Caspian', 'house', 'house-caspian', 'Greedy', 5, 3, 2],
     ['ashvane', 'House Ashvane', 'house', 'house-ashvane', 'Ambitious', 2, 1, 0],
+    ['vornak', 'House Vor’nak', 'house', 'house-vornak', 'Honourable', 1, 4, 3],
     ['orock', 'The Tribe of Orock', 'house', 'the-tribe-of-orock', 'Cautious', 1, 3, 0],
     ['cult', 'The Spider Cult', 'shadow', 'spider-cult', 'Zealous', 3, 3, -3],
     ['scales', 'The Red Scales', 'shadow', 'the-red-scales', 'Scheming', 4, 3, -3],
@@ -6153,7 +6154,8 @@
     ['thorn', 'The Thornwardens', 'power', 'the-thornwardens', 'Honourable', 2, 2, 1]
   ];
   var REL_SEED = [['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['ignis', 'ashvane', -2], ['ignis', 'anvilborn', 1],
-    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['ignis', 'hand', 3], ['orock', 'cult', -2], ['marloo', 'cult', -2], ['coralyn', 'cult', -2], ['church', 'ignis', -1], ['caspian', 'dorn', 3], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1]];
+    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['ignis', 'hand', 3], ['orock', 'cult', -2], ['marloo', 'cult', -2], ['coralyn', 'cult', -2], ['church', 'ignis', -1], ['caspian', 'dorn', 3], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1],
+    ['vornak', 'dorn', 3], ['vornak', 'ignis', -1], ['vornak', 'caspian', -1], ['vornak', 'marloo', 1], ['vornak', 'thorn', 2], ['vornak', 'wolves', -2], ['vornak', 'cult', -1]];
   // Secret factions: folk don't know their names, so rumours use a vague phrase instead. The DM can lift the secret.
   var VEILS = { scales: 'scaled folk in hoods', cult: 'something down in the dark', hand: 'people nobody will name', orock: 'giants in the hills, if you believe that sort of thing', coralyn: 'folk under the waves, if you believe sailors' };
   /* Minor factions: barons, small houses and elders, separate guilds, street gangs, and the inquisitor. Mostly quiet; trade and squabbles. */
@@ -6178,7 +6180,7 @@
     ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Corvax Ashvane', 'dorn'],
     ['rivercross', 'Rivercross', 'Ser Wat Pellam', 'marloo'], ['scalehold', 'Scalehold', 'Dame Vessa Ignis', 'ignis'], ['seaward', 'Seaward', 'Ser Edric Saltonstall', 'caspian'],
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
-    ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'dorn'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
+    ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'vornak'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'vornak'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
   // [slug, name, liege, dwarf town?]
   var BARONS = [
     ['akorsrest', 'Akorsrest', 'dorn', 0, 'Baron Dunstan Larkin'],
@@ -6225,7 +6227,7 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['petalhaven-town', 'ashvane', 2], ['redcrest', 'ashvane', 2], ['petalhaven-town', 'cindervein-town', 0]];
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['ogknack', 'vornak', 2], ['hydra', 'vornak', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['petalhaven-town', 'ashvane', 2], ['redcrest', 'ashvane', 2], ['petalhaven-town', 'cindervein-town', 0]];
   var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
@@ -6308,6 +6310,7 @@
     anvilborn: [['Lord Wulf Anvilborn refuses, again, to share the secret of Dornish Steel with the human smiths.', 'Steel’s gone up again. Blame the dwarves.'], ['A dwarf and a gnome come to blows in Stonehelm over a rune.', 'Dwarves and gnomes brawling in Stonehelm. Must be a day ending in y.'], ['The clans of Stonehelm squabble over who gets a new hall.', ''], ['A Stonehelm caravan comes down the mountain late, and the merchants grumble.', 'The steel caravans are running late.'], ['An Anvilborn clansman goes missing in the deep tunnels. The clan doesn’t talk about it.', '']],
     caspian: [['Lord Harold Caspian presses the crown again for a share of the strait tolls.', 'Caspian wants a cut of the strait tolls. The king’s not keen.'], ['A Caspian galley is launched at Keelhaven. The whole town turns out.', 'A new galley went down the slipway at Keelhaven.'], ['Matchmakers circle the young Lord Caspian. He isn’t interested.', 'Every mother in Crisfey is after Lord Caspian.'], ['The navy hangs two Brinewolves at Crisfey.', 'Two pirates hanged at Crisfey harbour.'], ['Caspian raises the harbour dues in Crisfey by a penny. The merchants howl.', 'Harbour dues are up at Crisfey.']],
     ashvane: [['Tazmira Ashvane wins a vote for the common quarter on the Dragonsneck council, against Ignis.', 'The Commonspeaker beat Ignis on the council.'], ['An Ashvane ship comes home with a good cargo.', ''], ['An Ashvane ship beats an Ignis ship into Dragonsneck harbour by a day, and the whole common quarter hears about it.', 'The bronzes beat the reds home again.'], ['Ashvane kobolds and Ignis kobolds trade insults at the market.', '']],
+    vornak: [['Grosh Vor’nak rides the fog roads himself for a week, and three outlaws hang at a crossroads.', 'The old Marshal’s been out on the roads again.'], ['A Vor’nak cutter runs down a toll-dodger in the strait and tows her into Shieldrock.', 'Somebody tried to slip the strait toll. They didn’t.'], ['The Vor’naks bury another old soldier on the battle slopes, with the whole garrison standing in the fog.', ''], ['Lord Caspian writes to the Marshal about the tolls again. The Marshal sends the letter on to the king, unanswered.', 'Caspian’s asking the orcs for a cut of the tolls. Good luck to him.'], ['An Ignis envoy and a Vor’nak captain spend a whole dinner being very polite to each other.', ''], ['Travellers go missing on the fog road. The Vor’naks blame the fog and double the night patrols.', 'Folk are going missing on the fog road again.']],
     orock: [['The goliaths take part of a merchant’s cargo in the hills, and leave him with bruises and a story.', 'Another merchant swears giants robbed him in the Quivering Hills.'], ['Kavak Stonehand is challenged for the chieftaincy, and wins.', ''], ['The goliaths kill a giant spider at the edge of the hills.', 'A huge dead spider was found near the river, its head crushed.']],
     cult: [['The cult takes a few goats and a shepherd’s boy from a village on the edge of the Silken Woods.', 'The woods took another child.'], ['The cult breeds a new clutch of spiders in its dens.', ''], ['Seryth Orridane’s raiders scout a western village and move on.', 'Strange webs on the fences in a western village.'], ['A cult agent in the east is promoted for good work.', '']],
     scales: [['Vorin ’Rdomnai culls a member he doesn’t trust.', ''], ['The Scales pay their usual gold into the Broodgate.', ''], ['A Red Scales envoy is kept comfortable in the Quiet Warrens for a week.', '']],
