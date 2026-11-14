@@ -6175,14 +6175,54 @@
   function relOf(f, otherId) { return otherId === 'party' ? num(f.party, 0) : num((f.rel || {})[otherId], 0); }
   function relWord(n) { return ({ '-3': 'Blood feud', '-2': 'Enemies', '-1': 'Cold', '0': 'Neutral', '1': 'Friendly', '2': 'Allies', '3': 'Sworn' })[String(n)]; }
   // The faction this one most dislikes or most likes (other than itself), optionally only of one kind.
-  function worstOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id) return; if (!best || relOf(f, o.id) < relOf(f, best.id)) best = o; }); return best; }
-  function bestOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id) return; if (!best || relOf(f, o.id) > relOf(f, best.id)) best = o; }); return best; }
+  function sees(f, o) { return !o.secret || f.secret || f.kind === 'shadow'; }
+  function worstOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id || !sees(f, o)) return; if (!best || relOf(f, o.id) < relOf(f, best.id)) best = o; }); return best; }
+  function bestOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id || !sees(f, o)) return; if (!best || relOf(f, o.id) > relOf(f, best.id)) best = o; }); return best; }
   function bump(R, a, bId, d) { if (bId === 'party') { a.party = clamp(num(a.party, 0) + d, -3, 3); return; } var b = R.factions.filter(function (x) { return x.id === bId; })[0]; a.rel[bId] = clamp(relOf(a, bId) + d, -3, 3); if (b) b.rel[a.id] = clamp(relOf(b, a.id) + d, -3, 3); }
   // One month for one faction: returns { text (truth), rumour (what folk say), party (touches the party) }.
   function realmMove(R, f, roll, partyNear) {
     var t = f.temper, foe = worstOf(R, f), friend = bestOf(R, f), N = f.name, out = { text: '', rumour: '', party: false };
     var foeN = foe ? foe.name : 'its rivals', frN = friend ? friend.name : 'an old friend';
     var hitsParty = num(f.party, 0) <= -2 && partyNear;
+    var known = R.factions.filter(function (x) { return x.kind === 'house' && !x.secret; }), pickH = function () { return known[Math.floor(Math.random() * known.length)]; };
+    if (f.secret && f.kind === 'house') {
+      // Hidden folk: they keep out of sight, and what's seen of them is a tall tale.
+      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'A hunter kills one of ' + N + '.'; out.rumour = 'A hunter swears he shot a giant in the hills. Nobody believes him.'; }
+      else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'Sickness or a bad winter thins ' + N + '.'; }
+      else if (roll === 3) { out.text = N + ' drive off settlers who came too far into the hills.'; out.rumour = 'A hill farm was abandoned overnight. The family won’t say why.'; }
+      else if (roll <= 9) { out.text = N + ' stay hidden.'; }
+      else if (roll === 10) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' trade quietly with one hill village that keeps their secret.'; out.rumour = 'A village in the hills has more iron and meat than it should.'; }
+      else if (roll === 11) { out.text = 'Travellers lost in the hills are led out by ' + N + ', and sworn to silence.'; out.rumour = 'Some travellers came out of the hills with a story about giants. They’ve been laughed out of every inn.'; }
+      else if (roll === 12) { out.text = N + ' move their camps.'; out.rumour = 'Standing stones in the hills moved overnight. A ewe was found on top of one.'; }
+      else if (roll === 13) { out.party = partyNear && num(f.party, 0) <= -1; out.text = N + ' watch anyone who comes into the hills' + (out.party ? ', including the party' : '') + '.'; }
+      else if (roll <= 17) { f.strength = clamp(f.strength + (roll === 17 ? 1 : 0), 1, 5); out.text = 'A good season for ' + N + ' in the hills.'; }
+      else if (roll <= 19) { out.party = num(f.party, 0) >= 1; out.text = out.party ? N + ' decide to show themselves to the party.' : N + ' stay hidden.'; }
+      else { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'Something stirs among ' + N + ': a gathering of the clans, a new chief.'; out.rumour = 'Great fires were seen in the hills, all on one night.'; }
+      return out;
+    }
+    if (f.secret) {
+      // Secret societies: nothing done in the open. What folk see are the shadows it leaves.
+      var hs = pickH(), hs2 = pickH();
+      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'One of ' + N + ' is caught, and dies before they can talk.'; out.rumour = 'A prisoner in the capital hanged himself before his trial.'; }
+      else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'A traitor inside ' + N + ' is selling their secrets. Someone may come to the party with them.'; out.party = true; }
+      else if (roll === 3) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' and ' + foeN + ' cross each other in the dark.'; out.rumour = 'Two bodies in an alley, and the watch was told to forget it.'; }
+      else if (roll <= 6) { if (roll === 6) f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' recruit in secret.'; }
+      else if (roll === 7) { if (hs) { hs.wealth = clamp(hs.wealth - 1, 1, 5); out.text = N + ' bleed ' + hs.name + ' through a man they own in its counting house.'; out.rumour = hs.name + ' has lost money and can’t say where it went.'; } }
+      else if (roll === 8) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' move gold and goods through their hidden routes.'; }
+      else if (roll === 9) { out.text = N + ' make someone disappear.'; out.rumour = 'Another one gone missing.'; }
+      else if (roll === 10) { out.text = 'An official in ' + (hs ? hs.name + '’s' : 'a great house’s') + ' service now answers to ' + N + '.'; }
+      else if (roll === 11) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' open a new hidden cell.'; }
+      else if (roll === 12) { out.text = N + ' remove someone in their way: a death that looks natural.'; out.rumour = 'A knight of ' + (hs ? hs.name : 'a great house') + ' died in his sleep. Healthy as an ox, they say.'; }
+      else if (roll === 13) { if (num(f.party, 0) <= -1) { out.party = true; out.text = N + ' are watching the party.'; out.rumour = 'Someone’s been asking which inn you’re staying at.'; } else out.text = N + ' keep still.'; }
+      else if (roll === 14) { if (num(f.party, 0) >= 0) { out.party = true; out.text = N + ' sound the party out through a go-between who doesn’t know who he works for.'; out.rumour = 'A stranger left a note for you at the inn.'; } else out.text = N + ' keep still.'; }
+      else if (roll === 15) { out.text = N + ' plant someone in ' + (hs ? hs.name : 'a great house') + '’s household.'; }
+      else if (roll === 16) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' make a great deal of money, very quietly.'; }
+      else if (roll === 17) { if (hs && hs2 && hs !== hs2) { bump(R, hs, hs2.id, -1); out.text = N + ' spread a lie that sets ' + hs.name + ' against ' + hs2.name + '.'; out.rumour = 'Have you heard what ' + hs2.name + ' said about ' + hs.name + '?'; } else out.text = N + ' keep still.'; }
+      else if (roll === 18) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' grow, and nobody notices.'; }
+      else if (roll === 19) { if (friend) bump(R, f, friend.id, 1); out.text = N + ' and ' + frN + ' come to a quiet understanding.'; }
+      else { f.strength = clamp(f.strength + 1, 1, 5); f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' pull off something the realm won’t understand for months.'; out.rumour = 'Something big happened. Nobody can say what.'; }
+      return out;
+    }
     if (f.kind === 'house') {
       if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s lord falls gravely ill. The heirs circle each other.'; out.rumour = 'They say the lord of ' + shortName(N) + ' won’t see the spring.'; }
       else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'Revolt in ' + N + '’s lands. It costs them men to put down.'; out.rumour = 'Peasants burned a tithe barn on ' + N + ' land.'; }
@@ -6210,15 +6250,15 @@
       else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'A ' + N + ' lieutenant is betrayed from within.'; out.rumour = 'A body in the river with a mark cut in its hand.'; }
       else if (roll === 3) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' and ' + foeN + ' cross each other. Knives come out.'; out.rumour = 'Bad blood in the underworld.'; }
       else if (roll <= 6) { if (roll === 6) f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' recruits quietly.'; out.rumour = roll === 6 ? 'Desperate folk are disappearing into the back streets.' : ''; }
-      else if (roll === 7) { var mark = R.factions.filter(function (x) { return x.kind === 'house'; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; if (mark) { mark.wealth = clamp(mark.wealth - 1, 1, 5); out.text = N + ' robs ' + mark.name + '.'; out.rumour = 'A strongroom was emptied in ' + mark.name + '’s lands.'; } }
+      else if (roll === 7) { var mark = R.factions.filter(function (x) { return x.kind === 'house' && !x.secret; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; if (mark) { mark.wealth = clamp(mark.wealth - 1, 1, 5); out.text = N + ' robs ' + mark.name + '.'; out.rumour = 'A strongroom was emptied in ' + mark.name + '’s lands.'; } }
       else if (roll === 8) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' runs a big smuggling job.'; out.rumour = 'Cheap goods with no guild marks in the markets.'; }
       else if (roll === 9) { out.text = N + ' takes someone: a merchant’s child, a clerk, a priest.'; out.rumour = 'Another one gone missing.'; }
       else if (roll === 10) { out.text = N + ' buys an official.'; }
       else if (roll === 11) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' opens a new safehouse.'; }
-      else if (roll === 12) { var vic = R.factions.filter(function (x) { return x.kind === 'house'; })[Math.floor(Math.random() * 7)] || foe; out.text = N + ' murders a minor noble of ' + (vic ? vic.name : 'a house') + '.'; out.rumour = 'A knight of ' + (vic ? vic.name : 'a house') + ' was found dead in his bed.'; }
+      else if (roll === 12) { var vic = R.factions.filter(function (x) { return x.kind === 'house' && !x.secret; })[Math.floor(Math.random() * 7)] || foe; out.text = N + ' murders a minor noble of ' + (vic ? vic.name : 'a house') + '.'; out.rumour = 'A knight of ' + (vic ? vic.name : 'a house') + ' was found dead in his bed.'; }
       else if (roll === 13) { if (num(f.party, 0) <= -1) { out.party = true; out.text = N + ' marks the party: they’re being watched.'; out.rumour = 'Someone’s been asking which inn you’re staying at.'; } else out.text = N + ' lies low.'; }
       else if (roll === 14) { if (num(f.party, 0) >= 0) { out.party = true; out.text = N + ' offers the party a job, through a go-between.'; out.rumour = 'A stranger left a note for you at the inn.'; } else out.text = N + ' lies low.'; }
-      else if (roll === 15) { var inf = R.factions.filter(function (x) { return x.kind === 'house'; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; out.text = N + ' plants someone in ' + (inf ? inf.name : 'a great house') + '’s household.'; }
+      else if (roll === 15) { var inf = R.factions.filter(function (x) { return x.kind === 'house' && !x.secret; }).sort(function (a, b) { return relOf(f, a.id) - relOf(f, b.id); })[0]; out.text = N + ' plants someone in ' + (inf ? inf.name : 'a great house') + '’s household.'; }
       else if (roll === 16) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' pulls off a big score.'; out.rumour = 'Somebody got very rich, very quietly.'; }
       else if (roll === 17) { out.party = partyNear; out.text = N + ' preys on the roads and the sea lanes. Party ships and caravans out trading should beware.'; out.rumour = 'The roads and the coast are dangerous this month.'; }
       else if (roll === 18) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' grows.'; }
