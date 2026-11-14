@@ -6173,17 +6173,48 @@
   var KNIGHTS = [['anvilgate', 'Anvilgate', 'Ser Bodvar Anvilborn', 'anvilborn'], ['ashgrove', 'Ashgrove', 'Dame Brenna Thorne', 'marloo'], ['brinehold', 'Brinehold', 'Dame Maren Crane', 'caspian'],
     ['caspian-castle', 'Caspian Castle', 'Ser Aldous Penn', 'caspian'], ['crowns-rest', 'Crown’s Rest', 'Ser Garrick Holt', 'dorn'], ['dornhold', 'Dornhold', 'Ser Hugh Maddox', 'dorn'],
     ['fangwatch', 'Fangwatch', 'Ser Sarkh Ignis', 'ignis'], ['fernhold', 'Fernhold', 'Ser Godric Marsh', 'marloo'], ['galecliff', 'Galecliff', 'Ser Osric Wendell', 'caspian'],
-    ['greywatch', 'Greywatch', 'Dame Astrid Anvilborn', 'anvilborn'], ['kestrel-tower', 'Kestrel Tower', 'Dame Cecily Dunmore', 'caspian'], ['kingswatch', 'Kingswatch', '', 'dorn'],
-    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', '', 'dorn'], ['redcrest', 'Redcrest', 'Ser Drevan Ignis', 'ignis'],
+    ['greywatch', 'Greywatch', 'Dame Astrid Anvilborn', 'anvilborn'], ['kestrel-tower', 'Kestrel Tower', 'Dame Cecily Dunmore', 'caspian'], ['kingswatch', 'Kingswatch', 'Sir Roderick Garrow', 'dorn'],
+    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Drevan Ignis', 'ignis'],
     ['rivercross', 'Rivercross', 'Ser Wat Pellam', 'marloo'], ['scalehold', 'Scalehold', 'Dame Vessa Ignis', 'ignis'], ['seaward', 'Seaward', 'Ser Edric Saltonstall', 'caspian'],
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
     ['westwatch', 'Westwatch', 'Ser Bennet Ralston', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
   // [slug, name, liege, dwarf town?]
-  var BARONS = [['akorsrest', 'Akorsrest', 'dorn'], ['aldermere', 'Aldermere', 'dorn'], ['highford', 'Highford', 'dorn'], ['kingsdelve', 'Kingsdelve', 'dorn', 1], ['oxbow', 'Oxbow', 'dorn'], ['reedmarsh', 'Reedmarsh', 'dorn'], ['crownsgate', 'Crownsgate', 'dorn'],
-    ['blackpit', 'Blackpit', 'ignis'], ['cindervein', 'Cindervein', 'ignis', 1], ['emberford', 'Emberford', 'ignis'], ['petalhaven', 'Petalhaven', 'ignis'], ['pinehollow', 'Pinehollow', 'ignis'],
-    ['coldwater', 'Coldwater', 'anvilborn'], ['deepholm', 'Deepholm', 'anvilborn', 1], ['fallowmead', 'Fallowmead', 'anvilborn'], ['highvale', 'Highvale', 'anvilborn', 1], ['hollinford', 'Hollinford', 'anvilborn'], ['hornmarket', 'Hornmarket', 'anvilborn'], ['ironhearth', 'Ironhearth', 'anvilborn', 1],
-    ['brinewick', 'Brinewick', 'caspian'], ['dyers-ford', 'Dyer’s Ford', 'caspian'], ['gullcrest', 'Gullcrest', 'caspian'], ['horsefair', 'Horsefair', 'caspian'], ['keelhaven', 'Keelhaven', 'caspian'], ['lowbridge', 'Lowbridge', 'caspian'], ['marblecut', 'Marblecut', 'caspian', 1], ['tarrow', 'Tarrow', 'caspian'], ['vinewall', 'Vinewall', 'caspian'], ['whitesands', 'Whitesands', 'caspian'], ['copperbrook', 'Copperbrook', 'caspian', 1],
-    ['shepherds-rest', 'Shepherd’s Rest', 'marloo'], ['thornwick', 'Thornwick', 'marloo'], ['bellowsbrook', 'Bellowsbrook', 'marloo', 1], ['hogshead', 'Hogshead', 'marloo'], ['north-coast-town', 'the north-coast town', 'marloo']];
+  var BARONS = [
+    ['akorsrest', 'Akorsrest', 'dorn', 0, 'Baron Dunstan Larkin'],
+    ['aldermere', 'Aldermere', 'dorn', 0, 'Baroness Maud Ashdown'],
+    ['highford', 'Highford', 'dorn', 0, 'Baron Piers Ashdown'],
+    ['kingsdelve', 'Kingsdelve', 'dorn', 1, 'Baron Leif Ironvein'],
+    ['oxbow', 'Oxbow', 'dorn', 0, 'Baron Dunstan Hartwell'],
+    ['reedmarsh', 'Reedmarsh', 'dorn', 0, 'Baron Kendall Underhill'],
+    ['crownsgate', 'Crownsgate', 'dorn', 0, 'Lord Severin Caspian'],
+    ['blackpit', 'Blackpit', 'ignis', 0, 'Baron Nythin Ignis'],
+    ['cindervein', 'Cindervein', 'ignis', 1, 'Baron Gorm Slagfist'],
+    ['emberford', 'Emberford', 'ignis', 0, 'Baron Grisax Ignis'],
+    ['petalhaven', 'Petalhaven', 'ignis', 0, 'Baron Orrath Ignis'],
+    ['pinehollow', 'Pinehollow', 'ignis', 0, 'Baron Kaldrath Ignis'],
+    ['coldwater', 'Coldwater', 'anvilborn', 0, 'Baron Ulf Anvilborn'],
+    ['deepholm', 'Deepholm', 'anvilborn', 1, 'Baron Asgaut Frostmantle'],
+    ['fallowmead', 'Fallowmead', 'anvilborn', 0, 'Baron Ragnvald Coalbeard'],
+    ['highvale', 'Highvale', 'anvilborn', 1, 'Baron Knut Anvilborn'],
+    ['hollinford', 'Hollinford', 'anvilborn', 0, 'Baron Ivo Gale'],
+    ['hornmarket', 'Hornmarket', 'anvilborn', 0, 'Baron Egil Coalbeard'],
+    ['ironhearth', 'Ironhearth', 'anvilborn', 1, 'Baron Egil Frostmantle'],
+    ['brinewick', 'Brinewick', 'caspian', 0, 'Baron Hamon Hartwell'],
+    ['dyers-ford', 'Dyer’s Ford', 'caspian', 0, 'Baron Gareth Dunmore'],
+    ['gullcrest', 'Gullcrest', 'caspian', 0, 'Baron Tobias Thatcher'],
+    ['horsefair', 'Horsefair', 'caspian', 0, 'Baron Wystan Thatcher'],
+    ['keelhaven', 'Keelhaven', 'caspian', 0, 'Baroness Cecily Wainwright'],
+    ['lowbridge', 'Lowbridge', 'caspian', 0, 'Baroness Alys Thatcher'],
+    ['marblecut', 'Marblecut', 'caspian', 1, 'Baroness Dagny Anvilborn'],
+    ['tarrow', 'Tarrow', 'caspian', 0, 'Baron Alric Cooper'],
+    ['vinewall', 'Vinewall', 'caspian', 0, 'Baron Wystan Ashdown'],
+    ['whitesands', 'Whitesands', 'caspian', 0, 'Baron Piers Dunmore'],
+    ['copperbrook', 'Copperbrook', 'caspian', 1, 'Baroness Vigdis Anvilborn'],
+    ['shepherds-rest', 'Shepherd’s Rest', 'marloo', 0, 'Baroness Rohese Hartwell'],
+    ['thornwick', 'Thornwick', 'marloo', 0, 'Baron Ranulf Cooper'],
+    ['bellowsbrook', 'Bellowsbrook', 'marloo', 1, 'Baroness Sigrid Bellows'],
+    ['hogshead', 'Hogshead', 'marloo', 0, 'Baron Alric Wainwright'],
+    ['north-coast-town', 'the north-coast town', 'marloo', 0, 'Baroness Agnes Hartwell']];
   // A Dornish name and title for a baron or knight nobody has named yet: dwarves in dwarf towns, Ignis blood in the Central District.
   function rollLord(kind, liege, dwarf) {
     var race = dwarf || liege === 'anvilborn' && Math.random() < 0.7 ? 'Dwarf' : liege === 'ignis' && Math.random() < 0.7 ? 'Dragonborn' : 'Human';
@@ -6238,7 +6269,7 @@
     var by = {}; f.forEach(function (x) { by[x.id] = x; });
     by.empire.limited = true;
     KNIGHTS.forEach(function (k) { MINOR_SEED.push([k[0], k[1], 'knight', k[0], k[2] || rollLord('knight', k[3]), k[3], k[1]]); });
-    BARONS.forEach(function (k) { MINOR_SEED.push([k[0] + '-town', k[1], 'baron', k[0], rollLord('baron', k[2], k[3]), k[2], k[1]]); });
+    BARONS.forEach(function (k) { MINOR_SEED.push([k[0] + '-town', k[1], 'baron', k[0], k[4] || rollLord('baron', k[2], k[3]), k[2], k[1]]); });
     MINOR_SEED.forEach(function (m) { var x = { id: m[0], name: m[1], kind: m[2] === 'gang' ? 'shadow' : m[2] === 'guild' || m[2] === 'envoy' ? 'power' : 'house', tier: 'minor', type: m[2], slug: m[3], leader: m[4], liege: m[5], seat: m[6], temper: m[2] === 'guild' || m[2] === 'gang' ? 'Greedy' : m[2] === 'knight' ? 'Honourable' : 'Cautious', wealth: 2, strength: 1, crown: 0, party: 0, rel: {} }; f.push(x); by[x.id] = x; if (m[5] && by[m[5]]) { x.rel[m[5]] = 2; by[m[5]].rel[x.id] = 2; } });
     REL_SEED.concat(MINOR_REL).forEach(function (r) { if (!by[r[0]] || !by[r[1]]) return; by[r[0]].rel[r[1]] = r[2]; by[r[1]].rel[r[0]] = r[2]; });
     return { factions: f, news: [], next: null };
