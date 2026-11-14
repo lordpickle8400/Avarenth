@@ -6167,7 +6167,8 @@
     ['tinkers', 'The Tinkers’ Guild', 'guild', 'gnomes-of-the-isles', 'the workshop masters', 'anvilborn', 'Stonehelm'],
     ['lamplighters', 'The Lamplighters', 'gang', 'the-dornish-underworld', 'their night-boss', 'hand', 'Loreaon'], ['tidecutters', 'The Tidecutters', 'gang', 'the-dornish-underworld', 'their skippers', 'hand', 'Crisfey'],
     ['forgers', 'The Hornmarket forgers', 'gang', 'the-dornish-underworld', 'the coiners', 'hand', 'Hornmarket'], ['highwaymen', 'The Crown Road highwaymen', 'gang', 'the-dornish-underworld', 'their captain', 'hand', 'the Crown Lands'],
-    ['inquisitor', 'The Imperial Inquisitor', 'envoy', 'aurelian-empire', 'the inquisitor', 'empire', 'his ship']
+    ['inquisitor', 'The Imperial Inquisitor', 'envoy', 'aurelian-empire', 'the inquisitor', 'empire', 'his ship'],
+    ['hydra', 'Hydra’s Hold', 'company', 'hydras-hold', 'Marten Coyle', '', 'Hydra’s Hold']
   ];
   // Knights hold the castles; barons hold the towns and cities. Equal in rank, both sworn to the district lord.
   var KNIGHTS = [['anvilgate', 'Anvilgate', 'Ser Bodvar Anvilborn', 'anvilborn'], ['ashgrove', 'Ashgrove', 'Dame Brenna Thorne', 'marloo'], ['brinehold', 'Brinehold', 'Dame Maren Crane', 'caspian'],
@@ -6224,8 +6225,8 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1]];
-  var MINOR_TYPE_NAME = { knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1]];
+  var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
   function saltOf(f, R) { var x = 0; for (var i = 0; i < f.id.length; i++) x = x * 7 + f.id.charCodeAt(i); return x + (R.news || []).length; }
@@ -6249,6 +6250,8 @@
         small: [function () { f.wealth = clamp(f.wealth + 1, 1, 5); return [N + ' has a very good month.', '']; }, function () { if (!rival) return null; bump(R, f, rival.id, -1); return [N + ' and ' + RN + ' quarrel over who may do what work.', 'The guilds are squabbling again.']; }, function () { f.crown = clamp(f.crown - 1, -3, 3); return [N + ' threatens to down tools unless they get their way.', N + ' are threatening a strike.']; }] },
       gang: { petty: [[N + ' rob a merchant’s house in ' + f.seat + '.', 'Another burglary in ' + f.seat + '.'], ['One of ' + N + ' is hanged in ' + f.seat + '.', 'A thief swung in ' + f.seat + ' this week.'], [N + ' pay their cut up the line.', ''], [N + ' and the town watch play their usual game.', '']],
         small: [function () { f.wealth = clamp(f.wealth + 1, 1, 5); return [N + ' have a good month.', '']; }, function () { if (!rival) return null; bump(R, f, rival.id, -1); return [N + ' tread on ' + RN + '’s toes.', '']; }, function () { f.strength = clamp(f.strength - 1, 1, 5); return ['The watch breaks up a nest of ' + N + '.', 'The watch caught a whole gang in ' + f.seat + '.']; }] },
+      company: { petty: [['Coyle sells a company to a western lord for the season.', 'Hydra’s Hold men are marching west under someone else’s colours.'], ['A new blade proves himself in the Hold’s arena.', ''], ['Coyle buries another dozen men in the boneyard and hires two dozen more.', 'They’re hiring at Hydra’s Hold again. They always are.'], ['A barge-master refuses the Hold’s bridge toll and regrets it.', '']],
+        small: [function () { f.wealth = clamp(f.wealth + 1, 1, 5); return ['Coyle lands a fat contract.', 'Hydra’s Hold is flush this month.']; }, function () { var rc = R.factions.filter(function (x) { return x.id === 'rivercross'; })[0]; if (rc) bump(R, f, 'rivercross', -1); return ['Coyle and the knight of Rivercross quarrel over who may toll the river.', 'Two tolls on one river, and neither will give way.']; }, function () { f.strength = clamp(f.strength - 1, 1, 5); return ['A Hydra’s Hold company is cut to pieces on someone else’s job.', 'A whole company from the Hold didn’t come back.']; }] },
       envoy: { petty: [['The inquisitor questions a village priest about the Hollow Court.', 'An imperial paladin has been asking the priests questions.'], ['The inquisitor demands lodging at a Dornish castle and gets it.', ''], ['The inquisitor writes to the emperor.', '']],
         small: [function () { f.crown = clamp(f.crown - 1, -3, 3); return ['The inquisitor burns a suspected cultist without a Dornish trial. The crown protests.', 'The imperial inquisitor burned a man. No trial.']; }, function () { var c = R.factions.filter(function (x) { return x.id === 'church'; })[0]; if (c) bump(R, f, 'church', -1); return ['The inquisitor and the bishops quarrel over who may judge heresy.', '']; }] }
     }[f.type === 'elders' ? 'minorhouse' : f.type];
@@ -6260,6 +6263,7 @@
     if (f.type === 'barony' || f.type === 'baron') { return { text: L + ' of ' + N + ' dies. An heir takes the seat, if ' + LG + ' confirms them.', rumour: 'The bells at ' + N + ' are ringing.', major: true }; }
     if (f.type === 'knight') { return n % 2 ? { text: L + ' of ' + N + ' falls in a fight with bandits, or a beast, or a rival. ' + LG + ' must name a new knight.', rumour: 'The knight of ' + N + ' is dead.', major: true } : { text: L + ' of ' + N + ' does something the songs will remember: a rescue, a last stand, a monster slain.', rumour: 'Have you heard what the knight of ' + N + ' did?', major: true }; }
     if (f.type === 'guild') { f.crown = clamp(f.crown - 1, -3, 3); return { text: N + ' down tools for a week. Prices jump wherever they work.', rumour: N + ' have stopped work. Everything costs more.', major: true }; }
+    if (f.type === 'company') { f.wealth = clamp(f.wealth + 1, 1, 5); f.strength = clamp(f.strength + 1, 1, 5); return { text: 'Coyle signs the biggest contract the Hold has ever had. Six companies march.', rumour: 'Every company at Hydra’s Hold has marched out at once.', major: true }; }
     if (f.type === 'envoy') { f.strength = clamp(f.strength + 1, 1, 5); return { text: 'The inquisitor uncovers something real, and the whole isles hear of it.', rumour: 'The imperial inquisitor has found a cult. Or says he has.', major: true }; }
     f.wealth = clamp(f.wealth + 1, 1, 5); return { text: N + ' has its best year in living memory.', rumour: '', major: true };
   }
@@ -6269,7 +6273,7 @@
     by.empire.limited = true;
     KNIGHTS.forEach(function (k) { MINOR_SEED.push([k[0], k[1], 'knight', k[0], k[2] || rollLord('knight', k[3]), k[3], k[1]]); });
     BARONS.forEach(function (k) { MINOR_SEED.push([k[0] + '-town', k[1], 'baron', k[0], k[4] || rollLord('baron', k[2], k[3]), k[2], k[1]]); });
-    MINOR_SEED.forEach(function (m) { var x = { id: m[0], name: m[1], kind: m[2] === 'gang' ? 'shadow' : m[2] === 'guild' || m[2] === 'envoy' ? 'power' : 'house', tier: 'minor', type: m[2], slug: m[3], leader: m[4], liege: m[5], seat: m[6], temper: m[2] === 'guild' || m[2] === 'gang' ? 'Greedy' : m[2] === 'knight' ? 'Honourable' : 'Cautious', wealth: 2, strength: 1, crown: 0, party: 0, rel: {} }; f.push(x); by[x.id] = x; if (m[5] && by[m[5]]) { x.rel[m[5]] = 2; by[m[5]].rel[x.id] = 2; } });
+    MINOR_SEED.forEach(function (m) { var x = { id: m[0], name: m[1], kind: m[2] === 'gang' ? 'shadow' : m[2] === 'guild' || m[2] === 'envoy' ? 'power' : 'house', tier: 'minor', type: m[2], slug: m[3], leader: m[4], liege: m[5], seat: m[6], temper: m[2] === 'guild' || m[2] === 'gang' || m[2] === 'company' ? 'Greedy' : m[2] === 'knight' ? 'Honourable' : 'Cautious', wealth: 2, strength: 1, crown: 0, party: 0, rel: {} }; f.push(x); by[x.id] = x; if (m[5] && by[m[5]]) { x.rel[m[5]] = 2; by[m[5]].rel[x.id] = 2; } });
     REL_SEED.concat(MINOR_REL).forEach(function (r) { if (!by[r[0]] || !by[r[1]]) return; by[r[0]].rel[r[1]] = r[2]; by[r[1]].rel[r[0]] = r[2]; });
     return { factions: f, news: [], next: null };
   }
