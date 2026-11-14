@@ -6175,7 +6175,7 @@
     ['caspian-castle', 'Caspian Castle', 'Ser Aldous Penn', 'caspian'], ['crowns-rest', 'Crown’s Rest', 'Ser Garrick Holt', 'dorn'], ['dornhold', 'Dornhold', 'Ser Hugh Maddox', 'dorn'],
     ['fangwatch', 'Fangwatch', 'Ser Sarkh Ignis', 'ignis'], ['fernhold', 'Fernhold', 'Ser Godric Marsh', 'marloo'], ['galecliff', 'Galecliff', 'Ser Osric Wendell', 'caspian'],
     ['greywatch', 'Greywatch', 'Dame Astrid Anvilborn', 'anvilborn'], ['kestrel-tower', 'Kestrel Tower', 'Dame Cecily Dunmore', 'caspian'], ['kingswatch', 'Kingswatch', 'Sir Roderick Garrow', 'dorn'],
-    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Drevan Ignis', 'ignis'],
+    ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Corvax Ashvane', 'ignis'],
     ['rivercross', 'Rivercross', 'Ser Wat Pellam', 'marloo'], ['scalehold', 'Scalehold', 'Dame Vessa Ignis', 'ignis'], ['seaward', 'Seaward', 'Ser Edric Saltonstall', 'caspian'],
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
     ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'dorn'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
@@ -6188,9 +6188,9 @@
     ['oxbow', 'Oxbow', 'dorn', 0, 'Baron Dunstan Hartwell'],
     ['reedmarsh', 'Reedmarsh', 'dorn', 0, 'Baron Kendall Underhill'],
     ['crownsgate', 'Crownsgate', 'dorn', 0, 'Lord Severin Caspian'],
-    ['blackpit', 'Blackpit', 'ignis', 0, 'Baron Sevrin Ashvane'],
+    ['blackpit', 'Blackpit', 'ignis', 0, 'Baron Nythin Ignis'],
     ['cindervein', 'Cindervein', 'ignis', 1, 'Baron Krizz Ignis'],
-    ['emberford', 'Emberford', 'ignis', 0, 'Baroness Hyrrin Ashvane'],
+    ['emberford', 'Emberford', 'ignis', 0, 'Baron Grisax Ignis'],
     ['petalhaven', 'Petalhaven', 'ignis', 0, 'Baron Ilvax Ashvane'],
     ['pinehollow', 'Pinehollow', 'ignis', 0, 'Baron Vosk Ignis'],
     ['coldwater', 'Coldwater', 'anvilborn', 0, 'Baron Ulf Anvilborn'],
@@ -6225,7 +6225,7 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['petalhaven-town', 'ashvane', 2], ['emberford-town', 'ashvane', 2], ['blackpit-town', 'ashvane', 2], ['petalhaven-town', 'cindervein-town', 0]];
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['petalhaven-town', 'ashvane', 2], ['redcrest', 'ashvane', 2], ['petalhaven-town', 'cindervein-town', 0]];
   var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
