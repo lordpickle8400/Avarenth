@@ -5661,6 +5661,12 @@
   }
 
   // Behind-the-curtain rolls: the app fills the d20 boxes (unless switched off). Cached so a redraw doesn't reroll; the DM can type over any.
+  function preRoll100(campId, key) {
+    var e = estates[campId]; if (e && e.autoroll === false) return '';
+    ui.prerolls = ui.prerolls || {}; var k = 'c|' + campId + '|' + key;
+    if (!ui.prerolls[k]) ui.prerolls[k] = 1 + Math.floor(Math.random() * 100);
+    return ui.prerolls[k];
+  }
   function preRoll(campId, key) {
     var e = estates[campId]; if (e && e.autoroll === false) return '';
     ui.prerolls = ui.prerolls || {}; var k = campId + '|' + (e ? e.payday : '') + '|' + key;
@@ -6131,7 +6137,7 @@
   var FACTION_KINDS = { house: 'Houses', shadow: 'Shadows', power: 'Powers' };
   var REALM_SEED = [
     ['dorn', 'House Dorn', 'house', 'house-dorn', 'Honourable', 5, 5, 3],
-    ['marloo', 'House Marloo', 'house', 'house-marloo', 'Ambitious', 3, 3, 1],
+    ['marloo', 'House Marloo', 'house', 'house-marloo', 'Cautious', 3, 3, 1],
     ['ignis', 'House Ignis', 'house', 'house-ignis', 'Scheming', 4, 4, 1],
     ['anvilborn', 'Clan Anvilborn', 'house', 'clan-anvilborn', 'Cautious', 4, 4, 1],
     ['caspian', 'House Caspian', 'house', 'house-caspian', 'Greedy', 5, 3, 2],
@@ -6140,17 +6146,17 @@
     ['cult', 'The Spider Cult', 'shadow', 'spider-cult', 'Zealous', 3, 3, -3],
     ['scales', 'The Red Scales', 'shadow', 'the-red-scales', 'Scheming', 4, 3, -3],
     ['hand', 'The Black Hand', 'shadow', 'the-black-hand', 'Greedy', 3, 2, -2],
-    ['wolves', 'The Brinewolves', 'shadow', 'the-brinewolves', 'Ambitious', 2, 3, -3],
+    ['wolves', 'The Brinewolves', 'shadow', 'the-brinewolves', 'Greedy', 2, 3, -3],
     ['guilds', 'The Guilds', 'power', 'the-guilds-of-doresmere', 'Greedy', 4, 1, 1],
     ['church', 'The Church', 'power', 'akorianism', 'Zealous', 4, 2, 2],
     ['empire', 'The Aurelian Empire', 'power', 'aurelian-empire', 'Ambitious', 5, 5, 2],
     ['coralyn', 'Coralyn', 'power', 'the-city-state-of-coralyn', 'Cautious', 3, 3, 0],
     ['thorn', 'The Thornwardens', 'power', 'the-thornwardens', 'Honourable', 2, 2, 1]
   ];
-  var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
-    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
+  var REL_SEED = [['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
+    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['ignis', 'hand', 3], ['orock', 'cult', -2], ['marloo', 'cult', -2], ['coralyn', 'cult', -2], ['anvilborn', 'guilds', -1], ['church', 'ignis', -1], ['caspian', 'dorn', 3], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
   // Secret factions: folk don't know their names, so rumours use a vague phrase instead. The DM can lift the secret.
-  var VEILS = { scales: 'scaled folk in hoods', cult: 'something down in the dark', hand: 'people nobody will name', orock: 'giants in the hills, if you believe that sort of thing' };
+  var VEILS = { scales: 'scaled folk in hoods', cult: 'something down in the dark', hand: 'people nobody will name', orock: 'giants in the hills, if you believe that sort of thing', coralyn: 'folk under the waves, if you believe sailors' };
   function seedRealm() {
     var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {}, secret: !!VEILS[r[0]], veil: VEILS[r[0]] || '' }; });
     var by = {}; f.forEach(function (x) { by[x.id] = x; });
@@ -6180,8 +6186,43 @@
   function bestOf(R, f) { var best = null; R.factions.forEach(function (o) { if (o.id === f.id || !sees(f, o)) return; if (!best || relOf(f, o.id) > relOf(f, best.id)) best = o; }); return best; }
   function bump(R, a, bId, d) { if (bId === 'party') { a.party = clamp(num(a.party, 0) + d, -3, 3); return; } var b = R.factions.filter(function (x) { return x.id === bId; })[0]; a.rel[bId] = clamp(relOf(a, bId) + d, -3, 3); if (b) b.rel[a.id] = clamp(relOf(b, a.id) + d, -3, 3); }
   // One month for one faction: returns { text (truth), rumour (what folk say), party (touches the party) }.
+  // Petty doings: most months, this is all that happens. [truth, rumour] — rumours about secret factions are veiled later.
+  var REALM_FLAVOR = {
+    dorn: [['King Rook rides out to a tourney and unhorses three knights. The court is very pleased with itself.', 'The king won the joust at Loreaon again. Of course he did.'], ['Prince Desmond and Prince Rook quarrel over a horse. The queen settles it.', 'The twin princes aren’t speaking this week.'], ['The king asks, again, why his airship isn’t finished. Nobody has a good answer.', 'They say the king shouted at a gnome.'], ['Princess Elinor turns down another suitor.', 'Princess Elinor sent another suitor home with his gifts.'], ['The crown argues with the Church over who tries a drunken priest.', '']],
+    marloo: [['Lord Edmund Marloo takes in another cartload of runaway serfs, and another western lord complains.', 'Marloo’s taking in runaways again.'], ['Corwin Marloo loses a great deal at dice.', 'Young Corwin Marloo owes half the taverns in town.'], ['Marloo’s elders argue for a week over a new well.', ''], ['A western lord sends Marloo an angry letter about his missing serfs. Marloo sends back a polite one.', ''], ['Marloo hires more watchmen for the walls, just in case.', 'More guards on Marloo’s walls lately.']],
+    ignis: [['Lord Vaerath Ignis hosts a feast under the red ancestor’s head. Half the guests are frightened, which is the point.', 'Dragonsneck threw a feast. The guests are still talking about the skull.'], ['An Ignis elder quietly blocks a vote on another house’s council.', ''], ['The Flamekeeper adds three names to the blood rolls.', 'Three new blooded Ignis this month.'], ['Ignis troglodytes get into a brawl with Dragonsneck dockhands.', 'Lizard-men and dockers at it again in Dragonsneck.'], ['Ignis turns away a petition from House Ashvane without reading it.', '']],
+    anvilborn: [['Lord Wulf Anvilborn refuses, again, to share the secret of Dornish Steel with the human smiths.', 'Steel’s gone up again. Blame the dwarves.'], ['A dwarf and a gnome come to blows in Stonehelm over a rune.', 'Dwarves and gnomes brawling in Stonehelm. Must be a day ending in y.'], ['The clans of Stonehelm squabble over who gets a new hall.', ''], ['A Stonehelm caravan comes down the mountain late, and the merchants grumble.', 'The steel caravans are running late.'], ['An Anvilborn clansman goes missing in the deep tunnels. The clan doesn’t talk about it.', '']],
+    caspian: [['Lord Harold Caspian presses the crown again for a share of the strait tolls.', 'Caspian wants a cut of the strait tolls. The king’s not keen.'], ['A Caspian galley is launched at Keelhaven. The whole town turns out.', 'A new galley went down the slipway at Keelhaven.'], ['Matchmakers circle the young Lord Caspian. He isn’t interested.', 'Every mother in Crisfey is after Lord Caspian.'], ['The navy hangs two Brinewolves at Crisfey.', 'Two pirates hanged at Crisfey harbour.'], ['Caspian raises the harbour dues in Crisfey by a penny. The merchants howl.', 'Harbour dues are up at Crisfey.']],
+    ashvane: [['Tazmira Ashvane speaks for the common quarter at the Dragonsneck council. Ignis ignores her.', ''], ['An Ashvane ship comes home with a good cargo.', ''], ['Tazmira sends Ignis another gift, hoping to be noticed.', 'The Ashvanes are sucking up to Ignis again.'], ['Ashvane kobolds and Ignis kobolds trade insults at the market.', '']],
+    orock: [['The goliaths take part of a merchant’s cargo in the hills, and leave him with bruises and a story.', 'Another merchant swears giants robbed him in the Quivering Hills.'], ['Kavak Stonehand is challenged for the chieftaincy, and wins.', ''], ['The goliaths kill a giant spider at the edge of the hills.', 'A huge dead spider was found near the river, its head crushed.']],
+    cult: [['The cult takes a few goats and a shepherd’s boy from a village on the edge of the Silken Woods.', 'The woods took another child.'], ['The cult breeds a new clutch of spiders in its dens.', ''], ['Seryth Orridane’s raiders scout a western village and move on.', 'Strange webs on the fences in a western village.'], ['A cult agent in the east is promoted for good work.', '']],
+    scales: [['Vorin ’Rdomnai culls a member he doesn’t trust.', ''], ['The Scales pay their usual gold into the Broodgate.', ''], ['A Red Scales envoy is kept comfortable in the Quiet Warrens for a week.', '']],
+    hand: [['The Hand fences a nobleman’s stolen rings in three towns at once.', 'A lord’s rings turned up for sale in Crisfey.'], ['A Hand forger is very busy this month.', 'There are a lot of new travel papers going round.'], ['The Hand sells protection to a new tavern.', ''], ['The Hand buys silk and venom at the Undermarket.', '']],
+    wolves: [['The Brinewolves take a fishing boat and let the crew row home.', 'Pirates took a fishing boat off the north coast.'], ['The Brinewolves sit quiet at Wreckholm.', ''], ['A Brinewolf ship is seen off the coast and gone by morning.', 'Black sails off the north coast at dawn.']],
+    guilds: [['The weavers threaten to lay down their shuttles over the price of wool.', 'The weavers are grumbling again.'], ['The salters catch a smuggler and make an example of him.', 'The salters hanged a man for selling his own salt.'], ['The Merchants’ Company throws a dinner, and three lords owe it favours afterwards.', ''], ['The shipwrights of Keelhaven fine a man for teaching his nephew the trade.', ''], ['A human smith complains loudly about the price of Dornish Steel.', 'Steel prices, again.']],
+    church: [['Father Aelthir preaches against the Hollow Court in the Grand Temple.', 'The High Father’s sermon this week was a fierce one.'], ['A village priest is accused of selling indulgences.', ''], ['The Church and the crown argue about the tithe.', 'The bishops and the king are at it over money again.'], ['Pilgrims crowd the road to Petalhaven.', 'The pilgrim road is packed this month.'], ['A saint’s bones are said to have wept. The Church sends someone to look.', 'They say a saint’s bones wept in a village church.']],
+    empire: [['An imperial merchant house opens a new office in Crisfey.', 'Imperial merchants are setting up in Crisfey.'], ['An imperial envoy visits Loreaon, dines with the king, and leaves.', ''], ['Word from the mainland: a far kingdom of the empire has a new prince.', 'News from the mainland: some prince or other.'], ['The imperial inquisitor’s ship is said to be on its way.', 'An inquisitor is coming from the mainland, they say.']],
+    coralyn: [['Coralyn nudges another current to keep ships off its reefs.', 'Sailors say the currents off the Quilted Sea have shifted again.'], ['Queen Maerys sends a quiet warning to the sea elves: stay away from the isles.', ''], ['Sea elves pull a drowning sailor from the water and ask him to keep quiet.', 'A sailor swears an elf pulled him out of the sea.']],
+    thorn: [['Grandmaster Halric Vane sends a patrol into the woods near the strait.', 'Thornwardens were seen riding west.'], ['The Thornwardens burn a nest of spiders on the coast.', 'The paladins burned a spiders’ nest near the strait.'], ['A Thornwarden knight is consecrated on the Blooming Isle.', '']]
+  };
+  // How a d100 turns into a month: mostly nothing, some petty doings, now and then a real move, and very rarely something big.
+  function realmBand(n) { return n <= 40 ? 'quiet' : n <= 70 ? 'petty' : n <= 90 ? 'small' : n <= 97 ? 'notable' : n <= 99 ? 'rare' : 'great'; }
+  var SMALL_D20 = [10, 11, 13, 14, 15, 17, 18, 4, 13, 10], NOTABLE_D20 = [5, 6, 12, 16, 19, 3, 2];
+  function realmMonth(R, f, n, partyNear) {
+    var b = realmBand(n), N = f.name;
+    if (b === 'quiet') return { text: '', rumour: '' };
+    if (b === 'petty') { var fl = REALM_FLAVOR[f.id] || []; if (!fl.length) return { text: '', rumour: '' }; var x = fl[n % fl.length]; return { text: x[0], rumour: x[1] || '', petty: true }; }
+    if (b === 'great' && !f.secret && f.kind === 'house') {
+      f.strength = clamp(f.strength - 1, 1, 5);
+      return { text: 'The head of ' + N + ' is dead. Whoever comes next will be finding their feet for a while.', rumour: 'The bells are ringing for the lord of ' + shortName(N) + '.', major: true };
+    }
+    var d20 = b === 'small' ? SMALL_D20[n % SMALL_D20.length] : b === 'notable' ? NOTABLE_D20[n % NOTABLE_D20.length] : b === 'rare' ? (n === 98 ? 20 : 1) : 20;
+    var out = realmMove(R, f, d20, partyNear); out.major = b === 'rare' || b === 'great'; return out;
+  }
   function realmMove(R, f, roll, partyNear) {
     var t = f.temper, foe = worstOf(R, f), friend = bestOf(R, f), N = f.name, out = { text: '', rumour: '', party: false };
+    // Nobody picks a fight with someone they have no quarrel with, or courts someone they don't like.
+    if (foe && relOf(f, foe.id) >= 0) foe = null; if (friend && relOf(f, friend.id) <= 0) friend = null;
     var foeN = foe ? foe.name : 'its rivals', frN = friend ? friend.name : 'an old friend';
     var hitsParty = num(f.party, 0) <= -2 && partyNear;
     var known = R.factions.filter(function (x) { return x.kind === 'house' && !x.secret; }), pickH = function () { return known[Math.floor(Math.random() * known.length)]; };
@@ -6198,6 +6239,15 @@
       else if (roll <= 17) { f.strength = clamp(f.strength + (roll === 17 ? 1 : 0), 1, 5); out.text = 'A good season for ' + N + ' in the hills.'; }
       else if (roll <= 19) { out.party = num(f.party, 0) >= 1; out.text = out.party ? N + ' decide to show themselves to the party.' : N + ' stay hidden.'; }
       else { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'Something stirs among ' + N + ': a gathering of the clans, a new chief.'; out.rumour = 'Great fires were seen in the hills, all on one night.'; }
+      return out;
+    }
+    if (f.secret && f.kind === 'power') {
+      // A hidden people (Coralyn): they keep to themselves; what surfaces is a sailor's story.
+      if (roll <= 2) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = 'Trouble beneath the waves for ' + N + ': a storm, a sickness, a quarrel at court.'; }
+      else if (roll <= 14) { var fl2 = REALM_FLAVOR[f.id] || []; var y = fl2[roll % Math.max(1, fl2.length)]; out.text = y ? y[0] : N + ' keeps to itself.'; out.rumour = y ? y[1] || '' : ''; }
+      else if (roll <= 18) { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'A good season for ' + N + '.'; }
+      else if (roll === 19) { out.party = num(f.party, 0) >= 1; out.text = out.party ? N + ' decides to trust the party with its secret.' : N + ' keeps to itself.'; }
+      else { out.text = N + ' grows a new reef across a shipping lane. Captains curse their charts.'; out.rumour = 'Ships are running aground where there was open water last year.'; }
       return out;
     }
     if (f.secret) {
@@ -6224,24 +6274,24 @@
       return out;
     }
     if (f.kind === 'house') {
-      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s lord falls gravely ill. The heirs circle each other.'; out.rumour = 'They say the lord of ' + shortName(N) + ' won’t see the spring.'; }
+      if (roll === 1) { f.strength = clamp(f.strength - 1, 1, 5); f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s lord falls ill. The heirs start counting.'; out.rumour = 'They say the lord of ' + shortName(N) + ' won’t see the spring.'; }
       else if (roll === 2) { f.strength = clamp(f.strength - 1, 1, 5); out.text = 'Revolt in ' + N + '’s lands. It costs them men to put down.'; out.rumour = 'Peasants burned a tithe barn on ' + N + ' land.'; }
       else if (roll === 3) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + '’s debts are called in.'; out.rumour = 'Moneylenders are seen leaving ' + N + '’s hall looking pleased.'; }
-      else if (roll === 4) { if (foe) bump(R, f, foe.id, -1); out.text = 'Old grievances flare between ' + N + ' and ' + foeN + '.'; out.rumour = N + ' and ' + foeN + ' men brawled at a fair.'; }
+      else if (roll === 4) { if (foe) { bump(R, f, foe.id, -1); out.text = 'Old grievances flare between ' + N + ' and ' + foeN + '.'; out.rumour = N + ' and ' + foeN + ' men brawled at a fair.'; } }
       else if (roll <= 6) {
         if (t === 'Cautious' || t === 'Honourable') { f.strength = clamp(f.strength + (roll === 6 ? 1 : 0), 1, 5); out.text = N + ' musters its men but holds them back.'; out.rumour = N + ' is drilling soldiers. Nobody knows for what.'; }
         else if (hitsParty) { out.party = true; out.text = N + ' sends raiders against the party’s lands.'; out.rumour = 'Riders with no colours have been seen near your lands.'; }
-        else if (foe) { foe.strength = clamp(foe.strength - 1, 1, 5); bump(R, f, foe.id, -1); out.text = N + ' raids ' + foeN + '. Farms burn on the border.'; out.rumour = 'Smoke on the border between ' + N + ' and ' + foeN + ' lands.'; }
+        else if (foe) { bump(R, f, foe.id, -1); if (roll === 6) foe.strength = clamp(foe.strength - 1, 1, 5); out.text = roll === 6 ? N + ' men raid ' + foeN + '’s borderlands: a village sacked, men killed on both sides.' : 'A border scuffle between ' + N + ' and ' + foeN + ' men: a barn burned, a few cracked heads. Nobody much cares.'; out.rumour = roll === 6 ? 'A village on the ' + shortName(foeN) + ' border was sacked.' : 'Some trouble on the ' + shortName(foeN) + ' border. Nothing much.'; }
       }
       else if (roll <= 9) { out.text = N + ' keeps to its own business.'; }
-      else if (roll === 10) { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' courts the crown, with gifts and good service.'; out.rumour = N + ' is in the king’s favour lately.'; }
+      else if (roll === 10) { f.crown = clamp(f.crown + 1, -3, 3); out.text = f.id === 'dorn' ? 'The king spends the month on the realm’s business, and it shows.' : N + ' courts the crown, with gifts and good service.'; out.rumour = f.id === 'dorn' ? '' : N + ' is in the king’s favour lately.'; }
       else if (roll === 11) { if (f.wealth >= 3) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' spends on walls and men.'; out.rumour = 'Masons are busy on ' + N + ' castles.'; } else out.text = N + ' would build, but can’t afford to.'; }
-      else if (roll === 12) { if (friend) bump(R, f, friend.id, 1); out.text = 'A marriage is arranged between ' + N + ' and ' + frN + '.'; out.rumour = 'Wedding bells: ' + N + ' and ' + frN + '.'; }
+      else if (roll === 12) { if (friend) { bump(R, f, friend.id, 1); out.text = 'A marriage is arranged between ' + N + ' and ' + frN + '.'; out.rumour = 'Wedding bells: ' + N + ' and ' + frN + '.'; } else { out.text = N + ' looks about for a good match for its children.'; } }
       else if (roll === 13 || (roll === 11 && t === 'Greedy')) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' strikes a profitable trade deal.'; out.rumour = N + ' coin is everywhere this month.'; }
-      else if (roll === 14) { if (t === 'Scheming' && foe) { bump(R, f, foe.id, -1); foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' spreads poison about ' + foeN + ' at court. It sticks.'; out.rumour = 'Ugly stories about ' + foeN + ' are going round the capital.'; } else if (foe) { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' petitions the king against ' + foeN + '.'; out.rumour = N + ' has gone to the king about ' + foeN + '.'; } }
+      else if (roll === 14) { if (t === 'Scheming' && foe) { bump(R, f, foe.id, -1); foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' spreads poison about ' + foeN + ' at court. It sticks.'; out.rumour = 'Ugly stories about ' + foeN + ' are going round the capital.'; } else if (foe && f.id === 'dorn') { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = 'The king issues a writ against ' + foeN + '.'; out.rumour = 'The king has had enough of ' + foeN + '.'; } else if (foe) { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' petitions the king against ' + foeN + '.'; out.rumour = N + ' has gone to the king about ' + foeN + '.'; } }
       else if (roll === 15) { if (f.wealth >= 2) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' hires sellswords.'; out.rumour = 'Sellswords are taking ' + N + ' coin.'; } else out.text = N + ' tries to hire sellswords and can’t pay.'; }
       else if (roll === 16) { if (num(f.party, 0) >= 1) { out.party = true; out.text = N + ' sends the party an offer: work, a gift, or a match.'; out.rumour = 'A rider in ' + N + ' colours is asking after you.'; } else out.text = N + ' looks for new friends at court.'; }
-      else if (roll === 17) { if (t === 'Honourable') { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' does the crown a quiet service.'; } else if (foe) { bump(R, f, foe.id, -1); out.text = N + ' has spies in ' + foeN + '’s household.'; out.rumour = 'A servant of ' + foeN + ' was caught reading letters.'; } }
+      else if (roll === 17) { if (t === 'Honourable' || t === 'Cautious' || !foe) { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' does the crown a quiet service.'; } else if (foe.kind === 'house') { bump(R, f, foe.id, -1); out.text = N + ' has spies in ' + foeN + '’s household.'; out.rumour = 'A servant of ' + foeN + ' was caught reading letters.'; } else { out.text = N + ' pays an informer among ' + foeN + '.'; } }
       else if (roll === 18) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good year on ' + N + ' lands.'; out.rumour = N + ' granaries are full.'; }
       else if (roll === 19) { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'A rising star in ' + N + ': an heir or a captain the soldiers love.'; out.rumour = 'Everyone’s talking about a young ' + shortName(N) + ' commander.'; }
       else { f.crown = clamp(f.crown + 1, -3, 3); f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' wins a great stroke: land, a royal favour, or a rival humbled.'; out.rumour = N + ' is riding high.'; }
@@ -6268,7 +6318,7 @@
       if (roll <= 2) { f.wealth = clamp(f.wealth - 1, 1, 5); out.text = N + ' suffers a setback: a scandal, a loss, a quarrel within.'; out.rumour = 'Trouble inside ' + N + '.'; }
       else if (roll <= 4) { if (foe) bump(R, f, foe.id, -1); out.text = N + ' turns its weight against ' + foeN + '.'; out.rumour = N + ' has no love for ' + foeN + ' this month.'; }
       else if (roll <= 9) { out.text = N + ' goes about its business.'; }
-      else if (roll <= 11) { f.crown = clamp(f.crown + (f.id === 'empire' ? -1 : 1), -3, 3); out.text = f.id === 'empire' ? 'An imperial envoy arrives at court with demands.' : N + ' presses the crown for a favour, and gets it.'; out.rumour = f.id === 'empire' ? 'An imperial envoy’s ship is in Loreaon harbour.' : N + ' has the king’s ear.'; }
+      else if (roll <= 11) { f.crown = clamp(f.crown + (f.id === 'empire' ? -1 : 1), -3, 3); out.text = f.id === 'empire' ? 'An imperial envoy arrives at court with demands.' : N + ' wins a favour from the crown.'; out.rumour = f.id === 'empire' ? 'An imperial envoy’s ship is in Loreaon harbour.' : N + ' has the king’s ear.'; }
       else if (roll <= 13) { out.text = f.id === 'guilds' ? 'The guilds raise their prices.' : f.id === 'church' ? 'The Church demands a heavier tithe.' : f.id === 'coralyn' ? 'Coralyn closes part of the Quilted Sea to ships.' : f.id === 'thorn' ? 'The Thornwardens ride out hunting cultists.' : 'The empire asks more of the isles: a heavier tribute, or men for a war on the mainland.'; out.rumour = out.text; out.party = f.id === 'coralyn' || f.id === 'guilds'; }
       else if (roll <= 15) { if (friend) bump(R, f, friend.id, 1); out.text = N + ' and ' + frN + ' grow closer.'; }
       else if (roll <= 17) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good month for ' + N + '.'; }
@@ -6296,14 +6346,14 @@
     var due = R.next == null || day >= R.next;
     html += '<section class="block"><h2 class="sec-title">The month turns<small>' + (due ? 'Due now' : 'Next on day ' + R.next) + '</small></h2>';
     if (due) {
-      html += '<p class="note" style="margin-top:0">Each faction’s d20 is rolled for you. Type over any you want to choose. 1 is a disaster, 20 a great stroke.</p><form id="realm-turn" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
-      R.factions.forEach(function (f) { html += '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.temper) + '</span></div><input class="input mini" type="number" min="1" max="20" inputmode="numeric" data-rroll="' + esc(f.id) + '" value="' + preRoll(camp.id, 'realm' + num(R.next, 0) + f.id) + '"></div>'; });
+      html += '<p class="note" style="margin-top:0">Each faction’s d100 is rolled for you; type over any. Most months are quiet: 1–40 nothing, 41–70 petty doings, 71–90 a small move, 91–97 something notable, 98–99 rare, 100 very rare.</p><form id="realm-turn" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
+      R.factions.forEach(function (f) { var pr = preRoll100(camp.id, 'realm' + num(R.next, 0) + f.id); html += '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.temper) + (pr ? ' · ' + realmBand(pr) : '') + '</span></div><input class="input mini" type="number" min="1" max="100" inputmode="numeric" data-rroll="' + esc(f.id) + '" value="' + pr + '"></div>'; });
       html += '</div><div class="actions"><button type="submit" class="btn primary">Let the realm move</button></div></form>';
     }
     html += '</section>';
     var news = (R.news || []).slice(-30).reverse();
     if (news.length) html += '<section class="block"><h2 class="sec-title">News<small>truth, and what folk say</small></h2><div class="tbl">' + news.map(function (n) {
-      return '<div class="tbl-row"><div class="main"><b>' + (n.party ? '⚑ ' : '') + 'Day ' + esc(n.day) + ': ' + esc(n.text) + ' <span class="note">(d20 ' + esc(n.roll) + ')</span></b>' + (n.rumour ? '<span>Rumour: “' + esc(n.rumour) + '”</span>' : '') + '</div></div>';
+      return '<div class="tbl-row"><div class="main"><b>' + (n.party ? '⚑ ' : '') + 'Day ' + esc(n.day) + ': ' + esc(n.text) + ' <span class="note">(d100 ' + esc(n.roll) + ')</span></b>' + (n.major ? ' <span class="tag tier-disaster">big news</span>' : '') + (n.rumour ? '<span>Rumour: “' + esc(n.rumour) + '”</span>' : '') + '</div></div>';
     }).join('') + '</div><p class="note">⚑ touches the party. Rumours are yours to drop in taverns, letters and gossip.</p></section>';
     Object.keys(FACTION_KINDS).forEach(function (k) {
       html += '<section class="block"><h2 class="sec-title">' + FACTION_KINDS[k] + '</h2>';
@@ -6327,10 +6377,10 @@
     var partyNear = holdingsFor(campId).length > 0;
     R.news = R.news || [];
     R.factions.forEach(function (fa) {
-      var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 10), 1, 20);
-      var out = realmMove(R, fa, roll, partyNear);
+      var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 1), 1, 100);
+      var out = realmMonth(R, fa, roll, partyNear);
       if (out.rumour) R.factions.forEach(function (x) { if (!x.secret) return; var v = x.veil || 'people nobody can name'; out.rumour = out.rumour.split('young ' + shortName(x.name) + ' commander').join('new leader among ' + v).split(x.name + '’s').join('their').split(x.name).join(v).split(shortName(x.name)).join(v); out.rumour = out.rumour.charAt(0).toUpperCase() + out.rumour.slice(1); });
-      if (out.text) R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party });
+      if (out.text) R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty });
     });
     R.news = R.news.slice(-200);
     R.next = day + PAY_EVERY;
