@@ -6177,7 +6177,7 @@
     ['lagoonwatch', 'Lagoonwatch', 'Ser Tomas Fenwick', 'marloo'], ['queenswatch', 'Queenswatch', 'Sir Osmund Garrow', 'dorn'], ['redcrest', 'Redcrest', 'Ser Drevan Ignis', 'ignis'],
     ['rivercross', 'Rivercross', 'Ser Wat Pellam', 'marloo'], ['scalehold', 'Scalehold', 'Dame Vessa Ignis', 'ignis'], ['seaward', 'Seaward', 'Ser Edric Saltonstall', 'caspian'],
     ['snowcrown', 'Snowcrown', 'Ser Hrolf Shieldbrow', 'anvilborn'], ['thornbury', 'Thornbury', 'Ser Piers Ashby', 'caspian'], ['westmoor', 'Westmoor', 'Ser Hob Ainsley', 'marloo'],
-    ['westwatch', 'Westwatch', 'Ser Bennet Ralston', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
+    ['shieldrock', 'Shieldrock', 'Ser Maud Fenner', 'dorn'], ['stormhold', 'Stormhold', 'Ser Wystan Carrow', 'dorn'], ['wyrmgate', 'Wyrmgate', 'Ser Kazrith Ignis', 'ignis']];
   // [slug, name, liege, dwarf town?]
   var BARONS = [
     ['akorsrest', 'Akorsrest', 'dorn', 0, 'Baron Dunstan Larkin'],
@@ -6204,7 +6204,6 @@
     ['gullcrest', 'Gullcrest', 'caspian', 0, 'Baron Tobias Thatcher'],
     ['horsefair', 'Horsefair', 'caspian', 0, 'Baron Wystan Thatcher'],
     ['keelhaven', 'Keelhaven', 'caspian', 0, 'Baroness Cecily Wainwright'],
-    ['lowbridge', 'Lowbridge', 'caspian', 0, 'Baroness Alys Thatcher'],
     ['marblecut', 'Marblecut', 'caspian', 1, 'Baroness Dagny Anvilborn'],
     ['tarrow', 'Tarrow', 'caspian', 0, 'Baron Alric Cooper'],
     ['vinewall', 'Vinewall', 'caspian', 0, 'Baron Wystan Ashdown'],
@@ -6212,7 +6211,7 @@
     ['copperbrook', 'Copperbrook', 'caspian', 1, 'Baroness Vigdis Anvilborn'],
     ['shepherds-rest', 'Shepherd’s Rest', 'marloo', 0, 'Baroness Rohese Hartwell'],
     ['thornwick', 'Thornwick', 'marloo', 0, 'Baron Ranulf Cooper'],
-    ['bellowsbrook', 'Bellowsbrook', 'marloo', 1, 'Baroness Sigrid Bellows'],
+    ['bellowsbrook', 'Bellowsbrook', 'marloo', 1, 'Baron Rurik Bellows'],
     ['hogshead', 'Hogshead', 'marloo', 0, 'Baron Alric Wainwright'],
     ['north-coast-town', 'the north-coast town', 'marloo', 0, 'Baroness Agnes Hartwell']];
   // A Dornish name and title for a baron or knight nobody has named yet: dwarves in dwarf towns, Ignis blood in the Central District.
