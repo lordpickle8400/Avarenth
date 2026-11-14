@@ -6148,7 +6148,7 @@
     ['thorn', 'The Thornwardens', 'power', 'the-thornwardens', 'Honourable', 2, 2, 1]
   ];
   var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
-    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', 1], ['hand', 'cult', 1], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
+    ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
   function seedRealm() {
     var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {} }; });
     var by = {}; f.forEach(function (x) { by[x.id] = x; });
