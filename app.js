@@ -6397,7 +6397,7 @@
       else if (roll === 12) { out.text = N + ' remove someone in their way: a death that looks natural.'; out.rumour = 'A knight of ' + (hs ? hs.name : 'a great house') + ' died in his sleep. Healthy as an ox, they say.'; }
       else if (roll === 13) { if (num(f.party, 0) <= -1) { out.party = true; out.text = N + ' are watching the party.'; out.rumour = 'Someone’s been asking which inn you’re staying at.'; } else out.text = N + ' keep still.'; }
       else if (roll === 14) { if (num(f.party, 0) >= 0) { out.party = true; out.text = N + ' sound the party out through a go-between who doesn’t know who he works for.'; out.rumour = 'A stranger left a note for you at the inn.'; } else out.text = N + ' keep still.'; }
-      else if (roll === 15) { out.text = N + ' plant someone in ' + (hs ? hs.name : 'a great house') + '’s household.'; }
+      else if (roll === 15) { out.text = N + ' plants someone in ' + (hs ? hs.name : 'a great house') + '’s household.'; }
       else if (roll === 16) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' make a great deal of money, very quietly.'; }
       else if (roll === 17) { if (hs && hs2 && hs !== hs2) { bump(R, hs, hs2.id, -1); out.text = N + ' spread a lie that sets ' + hs.name + ' against ' + hs2.name + '.'; out.rumour = 'Have you heard what ' + hs2.name + ' said about ' + hs.name + '?'; } else out.text = N + ' keep still.'; }
       else if (roll === 18) { f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' grow, and nobody notices.'; }
