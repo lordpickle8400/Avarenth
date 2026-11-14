@@ -6149,8 +6149,10 @@
   ];
   var REL_SEED = [['dorn', 'caspian', 3], ['dorn', 'church', 1], ['dorn', 'empire', 1], ['dorn', 'wolves', -2], ['caspian', 'wolves', -3], ['caspian', 'guilds', 1], ['ignis', 'ashvane', -1], ['ignis', 'anvilborn', 1],
     ['cult', 'scales', 2], ['cult', 'church', -3], ['cult', 'thorn', -3], ['hand', 'scales', -1], ['hand', 'cult', 1], ['church', 'thorn', 2], ['empire', 'scales', -2], ['marloo', 'hand', -1], ['guilds', 'hand', -1]];
+  // Secret factions: folk don't know their names, so rumours use a vague phrase instead. The DM can lift the secret.
+  var VEILS = { scales: 'scaled folk in hoods', cult: 'something down in the dark', hand: 'people nobody will name', orock: 'giants in the hills, if you believe that sort of thing' };
   function seedRealm() {
-    var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {} }; });
+    var f = REALM_SEED.map(function (r) { return { id: r[0], name: r[1], kind: r[2], slug: r[3], temper: r[4], wealth: r[5], strength: r[6], crown: r[7], party: 0, rel: {}, secret: !!VEILS[r[0]], veil: VEILS[r[0]] || '' }; });
     var by = {}; f.forEach(function (x) { by[x.id] = x; });
     REL_SEED.forEach(function (r) { by[r[0]].rel[r[1]] = r[2]; by[r[1]].rel[r[0]] = r[2]; });
     return { factions: f, news: [], next: null };
@@ -6271,6 +6273,7 @@
         html += '<div class="group-box" style="margin-bottom:10px"><h2 style="margin-top:0">' + (art ? '<a href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(f.name) + '</a>' : esc(f.name)) + '</h2>' +
           '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><select class="input" style="flex:1 1 160px;min-width:0" data-temper="' + esc(f.id) + '" data-camp="' + esc(camp.id) + '" aria-label="Temperament">' + Object.keys(TEMPERS).map(function (k2) { return '<option' + (k2 === f.temper ? ' selected' : '') + '>' + k2 + '</option>'; }).join('') + '</select><span class="note">' + esc(TEMPERS[f.temper] || '') + '</span></div>' +
           '<p style="margin:6px 0">' + stepper('wealth', 'Wealth', f.wealth) + stepper('strength', 'Strength', f.strength) + stepper('crown', 'With the crown', (f.crown > 0 ? '+' : '') + f.crown) + stepper('party', 'With the party', relWord(num(f.party, 0))) + '</p>' +
+          '<div class="actions tight" style="align-items:center;margin:0 0 6px"><button type="button" class="btn small quiet" data-act="realm-secret" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '">' + (f.secret ? 'Secret: rumours call them “' + esc(f.veil || 'people nobody can name') + '”' : 'Known by name') + '</button></div>' +
           '<p class="note" style="margin:0">' + (ties.length ? ties.map(function (o) { return esc(o.name) + ': ' + relWord(relOf(f, o.id)).toLowerCase(); }).join(' · ') : 'No strong ties.') + '</p>' +
           '<div class="actions tight" style="flex-wrap:wrap;align-items:center;margin-top:6px"><select class="input" style="flex:1 1 160px;min-width:0" id="rrel-' + esc(f.id) + '" aria-label="Relation with">' + R.factions.filter(function (o) { return o.id !== f.id; }).map(function (o) { return '<option value="' + esc(o.id) + '">' + esc(o.name) + ' (' + relWord(relOf(f, o.id)).toLowerCase() + ')</option>'; }).join('') + '</select>' +
           '<button type="button" class="btn small quiet" data-act="realm-rel" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-d="-1">Worse</button><button type="button" class="btn small quiet" data-act="realm-rel" data-camp="' + esc(camp.id) + '" data-f="' + esc(f.id) + '" data-d="1">Better</button></div></div>';
@@ -6286,6 +6289,7 @@
     R.factions.forEach(function (fa) {
       var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 10), 1, 20);
       var out = realmMove(R, fa, roll, partyNear);
+      if (out.rumour) R.factions.forEach(function (x) { if (!x.secret) return; var v = x.veil || 'people nobody can name'; out.rumour = out.rumour.split('young ' + shortName(x.name) + ' commander').join('new leader among ' + v).split(x.name + '’s').join('their').split(x.name).join(v).split(shortName(x.name)).join(v); out.rumour = out.rumour.charAt(0).toUpperCase() + out.rumour.slice(1); });
       if (out.text) R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party });
     });
     R.news = R.news.slice(-200);
@@ -6296,6 +6300,7 @@
     var R = clone(realm[campId]); if (!R) return;
     var f = R.factions.filter(function (x) { return x.id === el.getAttribute('data-f'); })[0]; if (!f) return;
     var d = num(el.getAttribute('data-d'), 0);
+    if (act === 'secret') { f.secret = !f.secret; if (f.secret && !f.veil) f.veil = VEILS[f.id] || 'people nobody can name'; return saveRealm(campId, R, f.name + (f.secret ? ' is a secret again' : ' is known by name now')); }
     if (act === 'step') { var k = el.getAttribute('data-k'); if (k === 'party') f.party = clamp(num(f.party, 0) + d, -3, 3); else if (k === 'crown') f.crown = clamp(num(f.crown, 0) + d, -3, 3); else f[k] = clamp(num(f[k], 3) + d, 1, 5); }
     else { var o = (document.getElementById('rrel-' + f.id) || {}).value; if (o) bump(R, f, o, d); }
     saveRealm(campId, R);
@@ -6331,7 +6336,7 @@
         var bcamp = campaignBySlug(parseRoute().arg); if (bcamp) battleAct(bcamp.id, el.getAttribute('data-id'), act.slice(3), el); break;
       case 'autoroll': var arc = el.getAttribute('data-camp'), are = estateOf(arc); sb.from('estates').upsert({ campaign_id: arc, treasury: Number(are.treasury || 0), payday: are.payday, autoroll: are.autoroll === false }).then(function (r) { if (r.error) throw r.error; return loadHoldings(); }).then(function () { toast('Background rolls: ' + (estateOf(arc).autoroll === false ? 'yours' : 'the app’s')); render(); }).catch(function (err) { fail(err); }); break;
       case 'realm-seed': saveRealm(el.getAttribute('data-camp'), seedRealm(), 'The realm is set up'); break;
-      case 'realm-step': case 'realm-rel': realmEdit(el.getAttribute('data-camp'), el, act.slice(6)); break;
+      case 'realm-step': case 'realm-rel': case 'realm-secret': realmEdit(el.getAttribute('data-camp'), el, act.slice(6)); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
       case 'preview':
