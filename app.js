@@ -6133,14 +6133,14 @@
   /* DM-only. Each faction has a temperament, wealth and strength (1–5), standing with the crown and with the party (−3 to +3),
      and relations with every other faction. Once a month the app rolls a d20 for each (or the DM types over it), and the realm moves. */
   var realm = {};
-  var TEMPERS = { Ambitious: 'Reaches for more: raids, land, marriages', Cautious: 'Holds what it has; musters but rarely strikes', Greedy: 'Follows the money', Honourable: 'Keeps its word; won’t scheme', Zealous: 'Strikes at its enemies, whatever it costs', Scheming: 'Works in the dark: spies, bribes, knives' };
+  var TEMPERS = { Ambitious: 'Reaches for more: raids, land, marriages', Cautious: 'Holds what it has; musters but rarely strikes', Greedy: 'Follows the money', Methodical: 'Plays the long game; every gift and every move has a purpose', Honourable: 'Keeps its word; won’t scheme', Zealous: 'Strikes at its enemies, whatever it costs', Scheming: 'Works in the dark: spies, bribes, knives' };
   var FACTION_KINDS = { house: 'Houses', shadow: 'Shadows', power: 'Powers' };
   var REALM_SEED = [
     ['dorn', 'House Dorn', 'house', 'house-dorn', 'Honourable', 5, 5, 3],
     ['marloo', 'House Marloo', 'house', 'house-marloo', 'Cautious', 3, 3, 1],
     ['ignis', 'House Ignis', 'house', 'house-ignis', 'Scheming', 4, 4, 1],
     ['anvilborn', 'Clan Anvilborn', 'house', 'clan-anvilborn', 'Cautious', 4, 4, 1],
-    ['caspian', 'House Caspian', 'house', 'house-caspian', 'Greedy', 5, 3, 2],
+    ['caspian', 'House Caspian', 'house', 'house-caspian', 'Methodical', 5, 3, 2],
     ['ashvane', 'House Ashvane', 'house', 'house-ashvane', 'Ambitious', 2, 1, 0],
     ['vornak', 'House Vor’nak', 'house', 'house-vornak', 'Honourable', 1, 4, 3],
     ['orock', 'The Tribe of Orock', 'house', 'the-tribe-of-orock', 'Cautious', 1, 3, 0],
@@ -6425,11 +6425,11 @@
       else if (roll === 10) { f.crown = clamp(f.crown + 1, -3, 3); out.text = f.id === 'dorn' ? 'The king spends the month on the realm’s business, and it shows.' : N + ' courts the crown, with gifts and good service.'; out.rumour = f.id === 'dorn' ? '' : N + ' is in the king’s favour lately.'; }
       else if (roll === 11) { if (f.wealth >= 3) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' spends on walls and men.'; out.rumour = 'Masons are busy on ' + N + ' castles.'; } else out.text = N + ' would build, but can’t afford to.'; }
       else if (roll === 12) { if (friend) { bump(R, f, friend.id, 1); out.text = 'A marriage is arranged between ' + N + ' and ' + frN + '.'; out.rumour = 'Wedding bells: ' + N + ' and ' + frN + '.'; } else { out.text = N + ' looks about for a good match for its children.'; } }
-      else if (roll === 13 || (roll === 11 && t === 'Greedy')) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' strikes a profitable trade deal.'; out.rumour = N + ' coin is everywhere this month.'; }
+      else if (roll === 13 || (roll === 11 && (t === 'Greedy' || t === 'Methodical'))) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' strikes a profitable trade deal.'; out.rumour = N + ' coin is everywhere this month.'; }
       else if (roll === 14) { if (t === 'Scheming' && foe) { bump(R, f, foe.id, -1); foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' spreads poison about ' + foeN + ' at court. It sticks.'; out.rumour = 'Ugly stories about ' + foeN + ' are going round the capital.'; } else if (foe && f.id === 'dorn') { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = 'The king issues a writ against ' + foeN + '.'; out.rumour = 'The king has had enough of ' + foeN + '.'; } else if (foe) { foe.crown = clamp(foe.crown - 1, -3, 3); out.text = N + ' petitions the king against ' + foeN + '.'; out.rumour = N + ' has gone to the king about ' + foeN + '.'; } }
       else if (roll === 15) { if (f.wealth >= 2) { f.wealth -= 1; f.strength = clamp(f.strength + 1, 1, 5); out.text = N + ' hires sellswords.'; out.rumour = 'Sellswords are taking ' + N + ' coin.'; } else out.text = N + ' tries to hire sellswords and can’t pay.'; }
       else if (roll === 16) { if (num(f.party, 0) >= 1) { out.party = true; out.text = N + ' sends the party an offer: work, a gift, or a match.'; out.rumour = 'A rider in ' + N + ' colours is asking after you.'; } else out.text = N + ' looks for new friends at court.'; }
-      else if (roll === 17) { if (t === 'Honourable' || t === 'Cautious' || !foe) { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' does the crown a quiet service.'; } else if (foe.kind === 'house') { bump(R, f, foe.id, -1); out.text = N + ' has spies in ' + foeN + '’s household.'; out.rumour = 'A servant of ' + foeN + ' was caught reading letters.'; } else { out.text = N + ' pays an informer among ' + foeN + '.'; } }
+      else if (roll === 17) { if (t === 'Honourable' || t === 'Cautious' || t === 'Methodical' || !foe) { f.crown = clamp(f.crown + 1, -3, 3); out.text = N + ' does the crown a quiet service.'; } else if (foe.kind === 'house') { bump(R, f, foe.id, -1); out.text = N + ' has spies in ' + foeN + '’s household.'; out.rumour = 'A servant of ' + foeN + ' was caught reading letters.'; } else { out.text = N + ' pays an informer among ' + foeN + '.'; } }
       else if (roll === 18) { f.wealth = clamp(f.wealth + 1, 1, 5); out.text = 'A good year on ' + N + ' lands.'; out.rumour = N + ' granaries are full.'; }
       else if (roll === 19) { f.strength = clamp(f.strength + 1, 1, 5); out.text = 'A rising star in ' + N + ': an heir or a captain the soldiers love.'; out.rumour = 'Everyone’s talking about a young ' + shortName(N) + ' commander.'; }
       else { f.crown = clamp(f.crown + 1, -3, 3); f.wealth = clamp(f.wealth + 1, 1, 5); out.text = N + ' wins a great stroke: land, a royal favour, or a rival humbled.'; out.rumour = N + ' is riding high.'; }
