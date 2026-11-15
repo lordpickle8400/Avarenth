@@ -3739,7 +3739,7 @@
     return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
   }
   /* Where the party is decides which list the d100 reads: 1 to 60 the region's, 61 to 100 the all-isles list. */
-  var REGION_LABEL = { west: 'The Wildreach', mournfells: 'The Mournfells', north: 'The North', central: 'The Emberwood', capital: 'The Crownlands', south: 'The South and the coast', sea: 'At sea' };
+  var REGION_LABEL = { west: 'The Wildreach', mournfells: 'The Mournfells', north: 'The North', central: 'The Emberwood', capital: 'The Crownlands', south: 'The Golden Coast', sea: 'At sea' };
   function autoRegion(campId) {
     var t = travel[campId]; if (!t || !t.map_id) return null;
     var pm = partyMarker(t.map_id); if (!pm) return null;
@@ -6184,10 +6184,12 @@
     ['tuskpoint', 'Tuskpoint', 'Ser Hrask Mor’tak', 'vornak'], ['gorthul', 'Gor’thul', 'Ser Brakk Vor’nak', 'vornak'], ['mournwatch', 'Mournwatch', 'Ser Aldric Venn', 'vornak'], ['brackenhold', 'Brackenhold', 'Dame Isolde Brack', 'vornak'],
     ['tidehold', 'Tidehold', 'Ser Corvax Ashvane', 'ignis'], ['clawrock', 'Clawrock', 'Ser Drazhar Ignis', 'ignis'], ['westclaw', 'Westclaw', 'Dame Ssirra Ignis', 'ignis'],
     ['duskmoor', 'Duskmoor', 'Ser Corin Vale', 'marloo'],
-    ['stagholt', 'Stagholt', 'Ser Hamon Leigh', 'dorn'], ['silverguard', 'Silverguard', 'Ser Wilmot Grey', 'dorn'], ['southgate', 'Southgate', 'Dame Elys Morrow', 'dorn'], ['saltgate', 'Saltgate', 'Ser Tobin Rook', 'dorn']];
+    ['stagholt', 'Stagholt', 'Ser Hamon Leigh', 'dorn'], ['silverguard', 'Silverguard', 'Ser Wilmot Grey', 'dorn'], ['southgate', 'Southgate', 'Dame Elys Morrow', 'dorn'], ['saltgate', 'Saltgate', 'Ser Tobin Rook', 'dorn'],
+    ['eastwatch', 'Eastwatch', 'Ser Lucan Tamsin', 'caspian'], ['highcliff', 'Highcliff', 'Dame Rowena Caspian', 'caspian'], ['riverholt', 'Riverholt', 'Ser Bertram Coombe', 'caspian']];
   // [slug, name, liege, dwarf town?]
   var BARONS = [
-    ['akorsrest', 'Akorsrest', 'dorn', 0, 'Baron Dunstan Larkin'],
+    ['akorsrest', 'Akorsrest', 'caspian', 0, 'Baron Dunstan Larkin'],
+    ['pilgrims-cross', 'Pilgrim’s Cross', 'caspian', 0, 'Baron Oswald Penrose'],
     ['aldermere', 'Aldermere', 'dorn', 0, 'Baroness Maud Ashdown'],
     ['highford', 'Highford', 'vornak', 0, 'Baron Piers Ashdown'],
     ['kingsdelve', 'Kingsdelve', 'dorn', 1, 'Baron Leif Ironvein'],
@@ -6241,7 +6243,7 @@
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
     ['tinkers', 'anvilborn', -2], ['merchants', 'dorn', -1], ['shipwrights', 'merchants', 1], ['millers', 'weavers', -1], ['ferrymen', 'merchants', -1], ['salters', 'hand', -1],
-    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['ogknack', 'vornak', 2], ['hydra', 'vornak', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['tuskpoint', 'fogmeet-town', 2], ['duskmoor', 'hydra', 1], ['silverguard', 'kingsdelve-town', 1], ['southgate', 'caspian', 1], ['lastfield-town', 'vornak', 1], ['north-coast-town-town', 'cult', -2], ['bronzewater-town', 'ashvane', 2], ['tidehold', 'ashvane', 2], ['bronzewater-town', 'timberfall-town', -1], ['brackenhold', 'garrow', -1], ['highford-town', 'ferrymen', 1]];
+    ['inquisitor', 'church', -1], ['inquisitor', 'dorn', -1], ['inquisitor', 'cult', -3], ['dncouncil', 'ashvane', 1], ['voyle', 'ogknack', -1], ['ogknack', 'vornak', 2], ['hydra', 'vornak', -1], ['fernhold', 'cult', -2], ['ashgrove', 'orock', -1], ['hydra', 'rivercross', -1], ['hydra', 'bellowsbrook-town', 1], ['marblecut-town', 'copperbrook-town', -1], ['tuskpoint', 'fogmeet-town', 2], ['duskmoor', 'hydra', 1], ['silverguard', 'kingsdelve-town', 1], ['southgate', 'caspian', 1], ['highcliff', 'vornak', -1], ['lastfield-town', 'vornak', 1], ['north-coast-town-town', 'cult', -2], ['bronzewater-town', 'ashvane', 2], ['tidehold', 'ashvane', 2], ['bronzewater-town', 'timberfall-town', -1], ['brackenhold', 'garrow', -1], ['highford-town', 'ferrymen', 1]];
   var MINOR_TYPE_NAME = { company: 'Sellswords', knight: 'Knights of the castles', baron: 'Barons of the towns', barony: 'Baronies', minorhouse: 'Small houses and elders', elders: 'Small houses and elders', guild: 'Guilds', gang: 'Street gangs', envoy: 'Imperial envoys' };
   function minorBand(n) { return n <= 70 ? 'quiet' : n <= 90 ? 'petty' : n <= 98 ? 'small' : n === 99 ? 'notable' : 'great'; }
   function pickBy(list, n, salt) { var h = n * 31 + (salt || 0); return list[Math.abs(h) % list.length]; }
