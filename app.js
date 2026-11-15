@@ -3739,7 +3739,7 @@
     return (ui.watch[k] = ui.watch[k] || { who: '', d20: '', d100: '' });
   }
   /* Where the party is decides which list the d100 reads: 1 to 60 the region's, 61 to 100 the all-isles list. */
-  var REGION_LABEL = { west: 'The Wildreach', mournfells: 'The Mournfells', north: 'The North', central: 'The Emberwood', capital: 'The Crownlands', south: 'The Golden Coast', sea: 'At sea' };
+  var REGION_LABEL = { west: 'The Wildreach', mournfells: 'The Mournfells', north: 'The Greywall Holds', central: 'The Emberwood', capital: 'The Crownlands', south: 'The Golden Coast', sea: 'At sea' };
   function autoRegion(campId) {
     var t = travel[campId]; if (!t || !t.map_id) return null;
     var pm = partyMarker(t.map_id); if (!pm) return null;
@@ -6185,7 +6185,8 @@
     ['tidehold', 'Tidehold', 'Ser Corvax Ashvane', 'ignis'], ['clawrock', 'Clawrock', 'Ser Drazhar Ignis', 'ignis'], ['westclaw', 'Westclaw', 'Dame Ssirra Ignis', 'ignis'],
     ['duskmoor', 'Duskmoor', 'Ser Corin Vale', 'marloo'],
     ['stagholt', 'Stagholt', 'Ser Hamon Leigh', 'dorn'], ['silverguard', 'Silverguard', 'Ser Wilmot Grey', 'dorn'], ['southgate', 'Southgate', 'Dame Elys Morrow', 'dorn'], ['saltgate', 'Saltgate', 'Ser Tobin Rook', 'dorn'],
-    ['eastwatch', 'Eastwatch', 'Ser Lucan Tamsin', 'caspian'], ['highcliff', 'Highcliff', 'Dame Rowena Caspian', 'caspian'], ['riverholt', 'Riverholt', 'Ser Bertram Coombe', 'caspian']];
+    ['eastwatch', 'Eastwatch', 'Ser Lucan Tamsin', 'caspian'], ['highcliff', 'Highcliff', 'Dame Rowena Caspian', 'caspian'], ['riverholt', 'Riverholt', 'Ser Bertram Coombe', 'caspian'],
+    ['ironbrow', 'Ironbrow', 'Dame Sigrun Shieldbrow', 'anvilborn'], ['chasewatch', 'Chasewatch', 'Ser Torvald Ironwheel', 'anvilborn'], ['hammerhold', 'Hammerhold', 'Ser Brokk Slagfist', 'anvilborn']];
   // [slug, name, liege, dwarf town?]
   var BARONS = [
     ['akorsrest', 'Akorsrest', 'caspian', 0, 'Baron Dunstan Larkin'],
