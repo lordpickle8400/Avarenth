@@ -81,7 +81,7 @@
   var grids = {};     // map id -> decoded terrain grid (or false if none)
   var routeCache = {};
   var spells = null;  // the spell tome list, loaded when first opened
-  var preview = readLocal('avarenth-preview') === 'player' ? 'player' : 'dm';
+  var preview = 'dm';  // DM tool only: there is no player view any more
   var ui = { filters: {}, spellFilter: { q: '', rarity: '', level: '', cls: '', school: '', src: '' }, homeQuery: '', pendingDelete: null, sheetEdit: false, sheetTab: 'Actions', authMode: 'signin', selectedTemplate: 'Organization', newChar: false };
   var saveTimers = {};
 
@@ -345,24 +345,20 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells']];
+  var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
     var r = parseRoute();
-    if (!session || !isMember()) {
+    document.body.classList.toggle('atlas-mode', r.name === 'map' || r.name === '');
+    if (!session || !isDM()) {
       $barRight.innerHTML = session ? '<button type="button" class="btn small" data-act="signout">Sign out</button>' : '';
       $tabs.hidden = true;
       return;
     }
-    var right = '';
-    if (isDM()) {
-      right += '<div class="seg" role="group" aria-label="Preview as"><button type="button" data-act="preview" data-mode="dm" aria-pressed="' + (preview === 'dm') + '">DM</button><button type="button" data-act="preview" data-mode="player" aria-pressed="' + (preview === 'player') + '">Player</button></div>';
-    }
-    right += '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    $barRight.innerHTML = right;
-    var section = ({ wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', join: 'wiki', crimes: 'wiki', travel: 'wiki', map: 'wiki', reputation: 'wiki', holdings: 'wiki', battles: 'wiki', realm: 'wiki', subclasses: 'characters', shops: 'wiki', shop: 'wiki', 'shop-edit': 'wiki', 'map-edit': 'wiki', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', members: 'members' })[r.name] || '';
-    var waiting = isDM() && spells ? pendingSpells().length : 0;
-    var tabs = [['wiki', 'Wiki'], ['characters', 'Characters'], ['spells', 'Spells' + (waiting ? ' <span class="badge">' + waiting + '</span>' : '')]];
-    if (isDM()) tabs.push(['members', 'Players']);
-    $tabs.innerHTML = tabs.map(function (t) { return '<a href="#/' + t[0] + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
+    $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', subclasses: 'party' })[r.name] || '';
+    var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
+    $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
   }
 
@@ -371,8 +367,9 @@
     if (!sb) return renderNoLibrary();
     if (!session) return renderAuth();
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
-    if (!isMember()) return renderPending();
+    if (!isDM()) return renderPending();
     var r = parseRoute();
+    if (r.name !== 'map' && r.name !== '') document.body.classList.remove('atlas-mode');
     if (r.name !== 'shop') ui.freshened = null;
     if (r.name !== 'shops') ui.marketTicked = null;
     var dmOnly = ['new', 'edit', 'builder', 'customize', 'members', 'campaign-edit', 'map-edit', 'reputation', 'shops', 'shop', 'shop-edit', 'subclasses'];
@@ -385,19 +382,17 @@
       case 'edit': return renderEdit(r.arg);
       case 'builder': return renderBuilder();
       case 'customize': return renderCustomize();
-      case 'characters': return renderCharacters();
-      case 'c': return renderSheet(r.arg);
-      case 'build': return renderBuild();
-      case 'level-up': return renderLevelUp(r.arg);
-      case 'members': return renderMembers();
+      case 'characters': case 'c': case 'build': case 'level-up': case 'members': case 'join': location.replace('#/party'); return;
+      case 'party': return renderParty(r.arg);
+      case 'wiki': return renderHome();
+      case 'pins': return renderMap(r.arg);
       case 'account': return renderAccount();
       case 'crimes': return renderCrimes(r.arg);
       case 'travel': return renderTravel(r.arg);
-      case 'map': return renderMap(r.arg);
+      case 'map': return renderAtlas(r.arg);
       case 'map-edit': return renderMapEdit(r.arg);
       case 'campaign': return renderCampaign(r.arg);
       case 'campaign-edit': return renderCampaignEdit(r.arg);
-      case 'join': return renderJoin();
       case 'spells': return renderSpells();
       case 'reputation': return renderReputation(r.arg);
       case 'holdings': return renderHoldings(r.arg);
@@ -409,7 +404,7 @@
       case 'shop-edit': return renderShopEdit(r.arg);
       case 'spell-new': return renderSpellForm('');
       case 'spell-edit': return renderSpellForm(r.arg);
-      default: return renderHome();
+      default: return renderAtlas('');
     }
   }
 
@@ -421,10 +416,10 @@
     $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">' + esc(title) + '</p><div class="empty">' + esc(body) + '</div></div>';
   }
   function renderAuth() {
-    var signup = ui.authMode === 'signup';
+    var signup = false;
     $view.innerHTML = '<div class="auth">' +
       '<h1>AVARENTH</h1><p class="eyebrow sub">The World</p>' +
-      '<div class="seg" role="group" aria-label="Account" style="align-self:center"><button type="button" data-act="authmode" data-mode="signin" aria-pressed="' + !signup + '">Sign in</button><button type="button" data-act="authmode" data-mode="signup" aria-pressed="' + signup + '">Create account</button></div>' +
+      '<p class="note" style="text-align:center;margin:0">The Dungeon Master’s table. Sign in to open it.</p>' +
       '<form class="form" id="auth-form" novalidate>' +
       (signup ? '<div class="field"><label for="a-name">Your name</label><input type="text" id="a-name" autocomplete="nickname" placeholder="What the table calls you"></div>' : '') +
       '<div class="field"><label for="a-email">Email</label><input type="email" id="a-email" autocomplete="email" required></div>' +
@@ -458,9 +453,9 @@
     }
   }
   function renderPending() {
-    $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">Almost there</p>' +
-      '<div class="empty">Your account is set up as <b>' + esc(profile.display_name || 'a new player') + '</b>. The DM needs to approve you before the wiki opens up. Once they do, tap Check again.</div>' +
-      '<div class="actions" style="justify-content:center"><button type="button" class="btn primary" data-act="recheck">Check again</button><button type="button" class="btn" data-act="signout">Sign out</button></div></div>';
+    $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">DM only</p>' +
+      '<div class="empty">This is the Dungeon Master’s tool. ' + esc(session.user.email || 'This account') + ' isn’t the DM account.</div>' +
+      '<div class="actions" style="justify-content:center"><button type="button" class="btn" data-act="signout">Sign out</button></div></div>';
   }
   function renderAccount() {
     $view.innerHTML = '<div class="page narrow"><div><p class="eyebrow">Account</p><h1 class="page-title">' + esc(profile.display_name || 'Your account') + '</h1>' +
@@ -575,7 +570,6 @@
     var all = visibleArticles();
     var q = ui.homeQuery.trim().toLowerCase();
     var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">The World</p><h1>Avarenth</h1>' +
-      (isDM() ? '<p class="crumbs">' + (dmView() ? 'DM view: everything, secrets included' : 'Player preview: what your table sees') + '</p>' : '') +
       '</div></section><div class="page">';
     if (dmView()) {
       html += '<div class="actions"><button type="button" class="btn primary" data-act="new-article" data-campaign="">+ World article</button><a class="btn" href="#/campaign-edit">+ New campaign</a><a class="btn" href="#/customize">Customize</a></div>';
@@ -627,9 +621,6 @@
     if (camp.summary) html += '<p class="lede">' + inline(camp.summary) + '</p>';
     if (dmView()) {
       html += '<div class="actions"><button type="button" class="btn primary" data-act="new-article" data-campaign="' + esc(camp.id) + '">+ Campaign article</button><a class="btn" href="#/campaign-edit/' + encodeURIComponent(camp.slug) + '">Edit campaign</a></div>';
-      html += '<div class="group-box"><h2>Join PIN</h2>' + (pins[camp.id]
-        ? '<p style="margin:0;font-family:var(--ui);font-size:28px;font-weight:700;letter-spacing:0.18em">' + esc(pins[camp.id]) + '</p><p class="note" style="margin:0">Give this to players so they can join. Players never see it in the app.</p>'
-        : '<p class="note" style="margin:0">No PIN yet, so players can only be added from the Players tab. Set one under “Edit campaign”.</p>') + '</div>';
     }
     if (camp.status !== 'finished' || dmView()) html += journeySummary(camp);
     // A campaign shows its own articles plus all world lore, so players can look up rules and history.
@@ -644,8 +635,8 @@
         (hits.length ? '<div class="list">' + hits.map(function (a) { return articleRow(a, true); }).join('') + '</div>' : '<div class="empty">Nothing matches that search.</div>') + '</section>';
     } else {
       html += '<section class="block"><h2 class="sec-title">' + (isDM() ? 'Party' : 'Your characters here') + '</h2>' +
-        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><a class="btn small" href="#/battles/' + encodeURIComponent(camp.slug) + '">Battles</a><a class="btn small" href="#/realm/' + encodeURIComponent(camp.slug) + '">The realm</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><button type="button" class="btn small" data-act="newchar-in" data-campaign="' + esc(camp.id) + '">+ New character</button></div>';
-      html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
+        '<div class="actions tight">' + (dmView() ? '<a class="btn small" href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a><a class="btn small" href="#/reputation/' + encodeURIComponent(camp.slug) + '">Reputation</a><a class="btn small" href="#/battles/' + encodeURIComponent(camp.slug) + '">Battles</a><a class="btn small" href="#/realm/' + encodeURIComponent(camp.slug) + '">The realm</a>' : '') + '<a class="btn small" href="#/holdings/' + encodeURIComponent(camp.slug) + '">Holdings' + (dmView() && loaded.holdings && paydayDue(camp.id) ? ' <span class="badge">Payday</span>' : '') + '</a><a class="btn small" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Criminal record</a><a class="btn small" href="#/party">Party roster</a></div>';
+      html += party.length ? '<div class="list">' + party.map(function (c) { return charRow(c, false); }).join('') + '</div>' : '<div class="empty">No characters in this campaign yet.</div>';
       html += '</section>';
       html += '<section class="block"><h2 class="sec-title">Maps' + (dmView() ? '<small><button type="button" class="btn small quiet" data-act="new-map" data-campaign="' + esc(camp.id) + '">+ Add map</button></small>' : '') + '</h2>' +
         (cmaps.length ? mapList(cmaps) : '<div class="empty">' + (dmView() ? 'No maps yet. Tap “Add map” to upload one.' : 'No maps shared yet.') + '</div>') + '</section>';
@@ -1101,7 +1092,7 @@
   function charRow(c, showOwner) {
     var s = normSheet(c.sheet);
     var line = ['Level ' + num(s.level, 1), s.species, s.cls].filter(Boolean).join(' · ');
-    return '<a class="row" href="#/c/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
+    return '<a class="row" href="#/party/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
   }
 
   function renderCharacters() {
@@ -3759,7 +3750,8 @@
       if (d < bd) { bd = d; best = String(reg); }
     });
     if (!best) return null;
-    return /west/i.test(best) ? 'west' : /central/i.test(best) ? 'central' : /capital|crown/i.test(best) ? 'capital' : /north/i.test(best) ? 'north' : /south/i.test(best) ? 'south' : null;
+    // District names, old and new: the Wildreach (west), the Emberwood (central), the Crownlands, the Greywall Holds (north), the Golden Coast (south), and the Strait March under the Mournfells.
+    return /west|wildreach/i.test(best) ? 'west' : /central|emberwood/i.test(best) ? 'central' : /capital|crown/i.test(best) ? 'capital' : /north|greywall/i.test(best) ? 'north' : /south|golden coast/i.test(best) ? 'south' : /strait march|mournfell/i.test(best) ? 'mournfells' : null;
   }
   function watchRegion(campId) { var pick = (ui.regionPick || {})[campId]; return pick || autoRegion(campId); }
   function watchResult(campId, w) {
@@ -4365,9 +4357,13 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estates' }, function () { if (loaded.holdings) liveRefresh(loadHoldings); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'custom_subclasses' }, function () { liveRefresh(loadCustomSubs); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'spells' }, function () { if (spells !== null || isDM()) liveRefresh(loadSpells); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shops' }, function () { if (loaded.shops) liveRefresh(loadShops); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'characters' }, function () { liveRefresh(loadCharacters); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'articles' }, function () { liveRefresh(loadWiki); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'article_secrets' }, function () { liveRefresh(loadWiki); })
       .subscribe();
   }
-  function stopLive() { if (liveChannel) { sb.removeChannel(liveChannel); liveChannel = null; } }
+  function stopLive() { if (liveChannel) { sb.removeChannel(liveChannel); liveChannel = null; } if (linkChannel) { sb.removeChannel(linkChannel); linkChannel = null; } }
 
   /* ================= Holdings: ships, caravans, manors, castles, lordships ================= */
   // One loyalty score per crew (and per garrison), 1–10, kept DM-only in holding_secrets. Players see a mood word.
@@ -6586,11 +6582,6 @@
       case 'realm-step': case 'realm-rel': case 'realm-secret': case 'realm-rename': realmEdit(el.getAttribute('data-camp'), el, act.slice(6)); break;
       case 'hold-cash': var hca = holdingById(el.getAttribute('data-id')); if (hca) holdMoney(hca, el.getAttribute('data-dir')); break;
       case 'hold-mode': var hmo = holdingById(el.getAttribute('data-id')); if (hmo) holdSetMode(hmo, el.getAttribute('data-mode')); break;
-      case 'preview':
-        preview = el.getAttribute('data-mode');
-        writeLocal('avarenth-preview', preview);
-        render();
-        break;
       case 'filter':
         ui.filters = ui.filters || {}; ui.subs = ui.subs || {};
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('aria-pressed') === 'true' ? null : (el.getAttribute('data-group') || null);
@@ -6766,7 +6757,14 @@
           loadMaps().then(function () { toast('Map deleted'); go('#/wiki'); });
         });
         break;
-      case 'newchar-in': ui.newChar = true; ui.newCharCampaign = el.getAttribute('data-campaign'); go('#/characters'); break;
+      case 'newchar-in': go('#/party/new'); break;
+      case 'pc-edit': ui.pcEdit = el.getAttribute('data-id'); render(); break;
+      case 'pc-cancel': ui.pcEdit = null; render(); break;
+      case 'pc-delete':
+        var pcd = el.getAttribute('data-id');
+        if (ui.pendingDelete !== pcd) { ui.pendingDelete = pcd; render(); break; }
+        sb.from('characters').delete().eq('id', pcd).then(function (r) { if (r.error) return fail(r.error, 'Could not remove them.'); ui.pendingDelete = null; loadCharacters().then(function () { toast('Removed'); go('#/party'); }); });
+        break;
       case 'delete-campaign':
         var cpid = el.getAttribute('data-id');
         if (ui.pendingDelete !== cpid) { ui.pendingDelete = cpid; el.textContent = 'Tap again to delete'; return; }
@@ -7154,6 +7152,7 @@
       case 'edit-form': return saveEdit(f);
       case 'builder-form': return saveBuilder();
       case 'newchar-form': return createCharacter();
+      case 'pc-form': return savePartyForm(f);
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
       case 'rules-form': return saveRules(f);
@@ -7234,9 +7233,10 @@
     if (r.name !== 'crimes') ui.crimeFilter = null;
     if (r.name !== 'map-edit') ui.mapCampaign = ui.mapCampaign && r.name === 'map-edit' ? ui.mapCampaign : null;
     ui.placing = null; ui.pendingPin = null; ui.selectedMarker = null; ui.scale = null;
-    if (r.name !== 'map' || !ui.mapScroll || ui.mapScroll.id !== r.arg) { ui.mapZoom = 1; ui.mapScroll = null; }
+    if (r.name !== 'pins' || !ui.mapScroll || ui.mapScroll.id !== r.arg) { ui.mapZoom = 1; ui.mapScroll = null; }
+    if (r.name !== 'party') ui.pcEdit = null;
     render();
-    window.scrollTo(0, 0);
+    if (r.name !== 'map' && r.name !== '') window.scrollTo(0, 0);
   });
 
   // Pick up changes made elsewhere (another device, or Claude) when the app comes back into view.
@@ -7246,6 +7246,789 @@
     if (['edit', 'builder', 'customize', 'c'].indexOf(r.name) >= 0) return;
     loadAll().then(render).catch(function () {});
   });
+
+  /* ================= Atlas: the map-first DM screen =================
+     One map that fills the screen. Pinch, drag, scroll or trackpad to move; tap a pin for its panel.
+     Zoom far into a city that has its own map and the city map opens; zoom back out to return.
+     Panels reuse the full pages (article, shop, journey) drawn into the side panel. */
+  var CITIES = null;          // cities/index.json: slug -> { name, sub, levels: [{ id, name, src, w, h, marks }] }
+  var AT = {
+    key: null,                // 'isles' or 'city:<slug>:<level>'
+    k: 1, x: 0, y: 0,         // scale and offset: screen = world * k + (x, y)
+    fit: 1, W: 0, H: 0,
+    sel: null, hist: [],
+    placing: null,            // 'party' or 'dest' while waiting for a tap
+    measure: null,            // { pts: [{x, y}] } in normalized coords
+    linked: readLocal('avarenth-linked') === '1',
+    sheet: 'peek',            // phone panel height: 'peek' or 'full'
+    layers: (function () { try { return Object.assign({ towns: true, labels: true, ruins: true, tolls: true, party: true, shops: true, marks: true, grid: false }, JSON.parse(readLocal('avarenth-layers') || '{}')); } catch (e) { return { towns: true, labels: true, ruins: true, tolls: true, party: true, shops: true, marks: true, grid: false }; } })(),
+    q: '', qi: 0
+  };
+  var ENTER_AT = 5;           // zoom (times the fitted size) at which a city opens
+  var EXIT_AT = 0.72;         // zoom out below this on a city map to go back to the isles
+
+  function loadCities() {
+    if (CITIES) return Promise.resolve(CITIES);
+    return fetch('cities/index.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (d) { CITIES = d || {}; return CITIES; }).catch(function () { CITIES = {}; return CITIES; });
+  }
+  function activeCamp() { return campaigns.filter(function (c) { return c.status !== 'finished'; })[0] || campaigns[0] || null; }
+  function islesMap() {
+    var camp = activeCamp(), t = camp && travel[camp.id];
+    return (t && t.map_id && mapById(t.map_id)) || maps.filter(function (m) { return !!m.miles_across; })[0] || maps[0] || null;
+  }
+  function cityOfKey(key) { var p = String(key || '').split(':'); return p[0] === 'city' && CITIES && CITIES[p[1]] ? { slug: p[1], city: CITIES[p[1]], level: levelOf(CITIES[p[1]], p[2]) } : null; }
+  function levelOf(city, id) { var L = city.levels || []; return L.filter(function (l) { return l.id === id; })[0] || L.filter(function (l) { return l.id === city.start; })[0] || L[0]; }
+  function cityPin(slug) { var m = islesMap(); return m ? (markers[m.id] || []).filter(function (mk) { return mk.article_slug === slug && mk.kind !== 'party'; })[0] || null : null; }
+  function saveLayers() { writeLocal('avarenth-layers', JSON.stringify(AT.layers)); }
+
+  /* ---------- What the current view shows ---------- */
+  function atlasWorld() {
+    var c = cityOfKey(AT.key);
+    if (c) return { city: c, w: c.level.w, h: c.level.h, src: c.level.src, name: c.city.name };
+    var m = islesMap();
+    return m ? { map: m, w: m.width || 2048, h: m.height || 1536, name: m.name } : null;
+  }
+  function placeTier(mk) {
+    var a = mk.article_slug ? articleBySlug(mk.article_slug) : null, ty = String(a && a.fields ? (a.fields.Type || '') : '');
+    if (/capital|city/i.test(ty) || (CITIES && mk.article_slug && CITIES[mk.article_slug])) return 1;
+    if (/town|castle|fort|keep|port|seat|hold|monastery/i.test(ty)) return 2;
+    if (mk.kind === 'place' && !ty) return 1;
+    return 3;
+  }
+  function shopCount(slug) { var a = slug ? articleBySlug(slug) : null; return a && loaded.shops ? shopsAt(a.id).length : 0; }
+
+  function pinsHtml(w) {
+    var html = '', L = AT.layers;
+    if (w.city) {
+      if (L.marks) (w.city.level.marks || []).forEach(function (mk) {
+        var s = AT.sel && AT.sel.t === 'mark' && AT.sel.n === mk.n;
+        html += '<button type="button" class="ap ap-mark' + (s ? ' sel' : '') + '" style="left:' + (mk.x * w.w) + 'px;top:' + (mk.y * w.h) + 'px" data-pin="mark" data-n="' + mk.n + '" aria-label="' + esc(mk.n + '. ' + mk.name) + '"><i>' + mk.n + '</i><span class="lbl">' + esc(mk.name) + '</span></button>';
+      });
+      return html;
+    }
+    var m = w.map, list = markers[m.id] || [];
+    var camp = activeCamp(), t = camp && travel[camp.id];
+    list.forEach(function (mk) {
+      if (mk.kind === 'party' || mk.kind === 'character') return;
+      if (mk.kind === 'stop' && !L.towns) return;
+      if (mk.kind === 'ruin' && !L.ruins) return;
+      if (mk.kind === 'toll' && !L.tolls) return;
+      var tier = mk.kind === 'place' || mk.kind === 'stop' ? placeTier(mk) : 3;
+      var sel = AT.sel && ((AT.sel.t === 'marker' && AT.sel.id === mk.id) || (AT.sel.t === 'article' && mk.article_slug && AT.sel.slug === mk.article_slug));
+      var n = L.shops && (mk.kind === 'place' || mk.kind === 'stop') ? shopCount(mk.article_slug) : 0;
+      var city = CITIES && mk.article_slug && CITIES[mk.article_slug];
+      html += '<button type="button" class="ap ap-' + mk.kind + ' t' + tier + (sel ? ' sel' : '') + (city ? ' has-city' : '') + '" style="left:' + (mk.x * w.w) + 'px;top:' + (mk.y * w.h) + 'px" data-pin="marker" data-id="' + esc(mk.id) + '" aria-label="' + esc(markerLabel(mk)) + '"><i></i>' +
+        (L.labels ? '<span class="lbl">' + esc(markerLabel(mk)) + (n ? '<small>' + n + '</small>' : '') + '</span>' : '') + '</button>';
+    });
+    if (L.shops && loaded.shops) shops.filter(function (sp) { return sp.map_id === m.id && sp.map_x != null; }).forEach(function (sp) {
+      html += '<button type="button" class="ap ap-shop t3' + (AT.sel && AT.sel.t === 'shop' && AT.sel.id === sp.id ? ' sel' : '') + '" style="left:' + (sp.map_x * w.w) + 'px;top:' + (sp.map_y * w.h) + 'px" data-pin="shop" data-id="' + esc(sp.id) + '" aria-label="Shop: ' + esc(sp.name) + '"><i></i><span class="lbl">' + esc(sp.name) + '</span></button>';
+    });
+    if (L.party && t && t.map_id === m.id) {
+      var pm = partyMarker(m.id);
+      if (t.dest_x != null) html += '<span class="ap ap-dest" style="left:' + (t.dest_x * w.w) + 'px;top:' + (t.dest_y * w.h) + 'px"><i></i><span class="lbl">' + esc(t.dest_label || 'Destination') + '</span></span>';
+      if (pm) html += '<button type="button" class="ap ap-party' + (AT.sel && AT.sel.t === 'journey' ? ' sel' : '') + '" style="left:' + (pm.x * w.w) + 'px;top:' + (pm.y * w.h) + 'px" data-pin="party" aria-label="The party"><i></i><span class="lbl">The party · Day ' + esc(t.day) + '</span></button>';
+    }
+    return html;
+  }
+  function overlaySvg(w) {
+    var out = '';
+    if (!w.city) {
+      var camp = activeCamp(), t = camp && travel[camp.id];
+      if (AT.layers.party && t && t.map_id === w.map.id && t.dest_x != null && grids[w.map.id] !== undefined) {
+        var j = journey(t);
+        var pts = j.route ? j.route.pts.filter(function (pt, i, a) { return i % 2 === 0 || i === a.length - 1; }) : j.party ? [j.party, { x: t.dest_x, y: t.dest_y }] : [];
+        if (pts.length > 1) out += '<polyline class="at-route" points="' + pts.map(function (p) { return (p.x * w.w).toFixed(1) + ',' + (p.y * w.h).toFixed(1); }).join(' ') + '"></polyline>';
+      }
+    }
+    if (AT.measure && AT.measure.key === AT.key && AT.measure.pts.length) {
+      var mp = AT.measure.pts;
+      if (mp.length > 1) out += '<polyline class="at-measure" points="' + mp.map(function (p) { return (p.x * w.w).toFixed(1) + ',' + (p.y * w.h).toFixed(1); }).join(' ') + '"></polyline>';
+      mp.forEach(function (p) { out += '<circle class="at-mdot" cx="' + (p.x * w.w).toFixed(1) + '" cy="' + (p.y * w.h).toFixed(1) + '" r="5"></circle>'; });
+    }
+    return '<svg class="at-svg" viewBox="0 0 ' + w.w + ' ' + w.h + '" preserveAspectRatio="none" aria-hidden="true">' + out + '</svg>';
+  }
+  function drawGrid(w) {
+    var cv = document.getElementById('at-grid');
+    if (!cv) return;
+    var g = w.map ? grids[w.map.id] : null;
+    cv.hidden = !(AT.layers.grid && g);
+    if (!g || !AT.layers.grid || cv.getAttribute('data-for') === w.map.id) return;
+    cv.width = g.w; cv.height = g.h;
+    var ctx = cv.getContext('2d'), img = ctx.createImageData(g.w, g.h), C = { R: [242, 193, 78, 235], r: [236, 226, 196, 220], t: [201, 150, 90, 200], m: [120, 110, 100, 70], f: [40, 90, 40, 60] };
+    for (var i = 0; i < g.cells.length; i++) { var c = C[g.cells[i]]; if (!c) continue; img.data[i * 4] = c[0]; img.data[i * 4 + 1] = c[1]; img.data[i * 4 + 2] = c[2]; img.data[i * 4 + 3] = c[3]; }
+    ctx.putImageData(img, 0, 0);
+    cv.setAttribute('data-for', w.map.id);
+  }
+
+  /* ---------- Layout ---------- */
+  function atlasShell() {
+    return '<div class="atlas" id="atlas">' +
+      '<div class="at-stage" id="at-stage" tabindex="0" aria-label="Map. Drag to move, pinch or scroll to zoom.">' +
+      '<div class="at-world" id="at-world"><img class="at-img" id="at-img" alt="" draggable="false"><canvas class="at-grid" id="at-grid" hidden></canvas><div id="at-svg"></div><div class="at-pins" id="at-pins"></div></div></div>' +
+      '<div class="at-fade" id="at-fade"></div>' +
+      '<div class="at-top">' +
+      '<div class="at-search"><label class="sr" for="at-q">Search places, people and shops</label>' + SEARCH_ICON + '<input id="at-q" type="search" placeholder="Find a place, person or shop…" autocomplete="off" value="' + esc(AT.q) + '"><div class="at-results" id="at-results" hidden></div></div>' +
+      '<div class="at-tools">' +
+      '<button type="button" class="at-btn" data-at="party" title="The party">Party</button>' +
+      '<button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '" title="Measure distance">Measure</button>' +
+      '<button type="button" class="at-btn" data-at="layers" aria-expanded="false" title="Layers">Layers</button>' +
+      '<button type="button" class="at-btn" data-at="link" aria-pressed="' + AT.linked + '" title="Link this screen to your other devices">' + (AT.linked ? 'Linked' : 'Link screens') + '</button>' +
+      '<button type="button" class="at-btn icon" data-at="full" title="Full screen (F)" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>' +
+      '</div></div>' +
+      '<div class="at-crumbs" id="at-crumbs"></div>' +
+      '<div class="at-layers" id="at-layers" hidden></div>' +
+      '<div class="at-hint" id="at-hint" hidden></div>' +
+      '<div class="at-zoom"><button type="button" class="at-btn icon" data-at="zin" aria-label="Zoom in">+</button><button type="button" class="at-btn icon" data-at="zout" aria-label="Zoom out">−</button></div>' +
+      '<aside class="at-panel" id="at-panel" data-sheet="' + AT.sheet + '" hidden><div class="at-ph"><button type="button" class="at-grip" data-at="sheet" aria-label="Expand or shrink the panel"></button><button type="button" class="at-btn small" data-at="back" id="at-back" hidden>‹ Back</button><span class="at-pt" id="at-pt"></span><button type="button" class="at-btn icon" data-at="close" aria-label="Close panel">✕</button></div><div class="at-pb" id="at-pb"></div></aside>' +
+      '</div>';
+  }
+
+  function renderAtlas(arg) {
+    document.body.classList.add('atlas-mode');
+    if (!loaded.wiki || !loaded.maps || !CITIES) {
+      if (!CITIES) loadCities().then(function () { if (isAtlasRoute()) render(); });
+      $view.innerHTML = '<div class="page"><div class="empty">Unrolling the map…</div></div>'; return;
+    }
+    if (arg && /^city:/.test(arg) && CITIES[arg.split(':')[1]]) AT.key = arg;
+    if (!AT.key) { var saved = readLocal('avarenth-view'); AT.key = saved && (saved === 'isles' || cityOfKey(saved)) ? saved : 'isles'; }
+    var im = islesMap();
+    if (!im) { $view.innerHTML = '<div class="page narrow"><div class="empty">No map yet. Add one from the wiki.</div></div>'; return; }
+    if (!markers[im.id] || grids[im.id] === undefined) {
+      if (!document.getElementById('atlas')) $view.innerHTML = '<div class="page"><div class="empty">Unrolling the map…</div></div>';
+      Promise.all([markers[im.id] ? null : loadMarkers(im.id), ensureGrid(im.id)]).then(function () { if (isAtlasRoute()) render(); }).catch(function (e) { fail(e); });
+      return;
+    }
+    if (!document.getElementById('atlas')) { $view.innerHTML = atlasShell(); bindAtlas(); AT.loadedKey = null; if (!AT.pendingView && AT.lastView && AT.lastView.key === AT.key) AT.pendingView = AT.lastView; }
+    refreshAtlas();
+  }
+  function isAtlasRoute() { var n = parseRoute().name; return n === 'map' || n === ''; }
+
+  function refreshAtlas() {
+    var w = atlasWorld();
+    if (!w) return;
+    var img = document.getElementById('at-img'), world = document.getElementById('at-world');
+    renderPanel();
+    if (AT.loadedKey !== AT.key) {
+      AT.loadedKey = AT.key; AT.W = w.w; AT.H = w.h;
+      world.style.width = w.w + 'px'; world.style.height = w.h + 'px';
+      img.removeAttribute('src');
+      if (w.city) img.src = w.src;
+      else mapImageUrl(w.map.image_path).then(function (u) { if (AT.loadedKey === AT.key) img.src = u; }).catch(function (e) { fail(e, 'Could not load the map image.'); });
+      document.getElementById('at-grid').removeAttribute('data-for');
+      fitView(AT.pendingView);
+      AT.pendingView = null;
+      writeLocal('avarenth-view', AT.key);
+    }
+    document.getElementById('at-pins').innerHTML = pinsHtml(w);
+    document.getElementById('at-svg').innerHTML = overlaySvg(w);
+    drawGrid(w);
+    crumbsHtml(w);
+    applyView();
+    if (!document.getElementById('at-layers').hidden) layersHtml();
+  }
+  function crumbsHtml(w) {
+    var el = document.getElementById('at-crumbs');
+    if (!w.city) { el.innerHTML = '<b>' + esc(w.name) + '</b>' + (AT.placing ? '<span class="at-placing">Tap the map to ' + (AT.placing === 'party' ? 'move the party' : 'set the destination') + ' <button type="button" class="at-btn small" data-at="place-cancel">Cancel</button></span>' : ''); return; }
+    var c = w.city;
+    el.innerHTML = '<button type="button" class="at-btn small" data-at="isles">‹ ' + esc((islesMap() || {}).name || 'The isles') + '</button><b>' + esc(c.city.name) + '</b>' +
+      (c.city.levels.length > 1 ? '<label class="sr" for="at-level">Level</label><select id="at-level" class="at-sel">' + c.city.levels.map(function (l) { return '<option value="' + esc(l.id) + '"' + (l.id === c.level.id ? ' selected' : '') + '>' + esc((/^-?\d+$/.test(l.id) ? 'Level ' + l.id + ': ' : '') + l.name) + '</option>'; }).join('') + '</select>' : '');
+  }
+  function layersHtml() {
+    var w = atlasWorld(), L = AT.layers;
+    var opts = w && w.city ? [['marks', 'Numbered key']] : [['labels', 'Names'], ['towns', 'Towns and villages'], ['shops', 'Shop counts'], ['ruins', 'Ruins'], ['tolls', 'Tolls'], ['party', 'Party and route'], ['grid', 'Travel roads (what the app uses)']];
+    document.getElementById('at-layers').innerHTML = '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('');
+  }
+
+  /* ---------- View math ---------- */
+  function stageSize() { var s = document.getElementById('at-stage'); return s ? { w: s.clientWidth, h: s.clientHeight } : { w: 1, h: 1 }; }
+  function panelCover() {
+    var p = document.getElementById('at-panel'), s = stageSize();
+    if (!p || p.hidden) return { right: 0, bottom: 0 };
+    return window.innerWidth >= 900 ? { right: p.offsetWidth + 16, bottom: 0 } : { right: 0, bottom: Math.min(p.offsetHeight, s.h * 0.6) };
+  }
+  function fitView(v) {
+    var s = stageSize();
+    AT.fit = Math.min(s.w / AT.W, s.h / AT.H);
+    if (v) { setView(v.cx, v.cy, v.r * AT.fit); return; }
+    // Fill a tall phone screen instead of leaving a band of sea above and below.
+    AT.k = Math.min(Math.max(s.w / AT.W, s.h / AT.H) * 0.92, AT.fit * 1.9); AT.x = (s.w - AT.W * AT.k) / 2; AT.y = (s.h - AT.H * AT.k) / 2;
+  }
+  function maxK() { return cityOfKey(AT.key) ? Math.max(AT.fit * 6, 2.2) : Math.max(AT.fit * 7, 3); }
+  function clampView() {
+    var s = stageSize(), mk = maxK(), mn = AT.fit * (cityOfKey(AT.key) ? 0.6 : 0.8);
+    AT.k = Math.max(mn, Math.min(mk, AT.k));
+    // Keep at least a good piece of the map on screen, wherever it is dragged.
+    var w = AT.W * AT.k, h = AT.H * AT.k, keepX = Math.min(w, s.w) * 0.35, keepY = Math.min(h, s.h) * 0.35;
+    AT.x = Math.min(s.w - keepX, Math.max(keepX - w, AT.x));
+    AT.y = Math.min(s.h - keepY, Math.max(keepY - h, AT.y));
+  }
+  function setView(cx, cy, k) {
+    var s = stageSize(), cov = panelCover();
+    AT.k = k; AT.x = (s.w - cov.right) / 2 - cx * AT.W * k; AT.y = (s.h - cov.bottom) / 2 - cy * AT.H * k;
+  }
+  function applyView() {
+    clampView();
+    var world = document.getElementById('at-world');
+    if (!world) return;
+    world.style.transform = 'translate(' + AT.x.toFixed(2) + 'px,' + AT.y.toFixed(2) + 'px) scale(' + AT.k.toFixed(5) + ')';
+    world.style.setProperty('--inv', (1 / AT.k).toFixed(5));
+    // How much detail to show: by how big the map is drawn, so phones and laptops both stay readable.
+    var px = AT.k * AT.W, sz = stageSize(), mid = screenToWorld(sz.w / 2, sz.h / 2);
+    AT.lastView = { key: AT.key, cx: mid.x, cy: mid.y, r: AT.k / AT.fit };
+    world.setAttribute('data-z', px < 2200 ? 0 : px < 4200 ? 1 : 2);
+    cityHint();
+  }
+  function zoomAt(sx, sy, f) {
+    var k0 = AT.k, k1 = Math.max(AT.fit * 0.5, Math.min(maxK(), k0 * f));
+    AT.x = sx - (sx - AT.x) * (k1 / k0); AT.y = sy - (sy - AT.y) * (k1 / k0); AT.k = k1;
+    applyView();
+    AT.focus = { x: sx, y: sy };
+    checkCityZoom(sx, sy);
+  }
+  function animateTo(cx, cy, k, ms, fromRemote) {
+    var s = stageSize(), cov = panelCover(), x0 = AT.x, y0 = AT.y, k0 = AT.k, t0 = performance.now(); ms = ms || 450;
+    var x1 = (s.w - cov.right) / 2 - cx * AT.W * k, y1 = (s.h - cov.bottom) / 2 - cy * AT.H * k;
+    cancelAnimationFrame(animateTo.raf);
+    // Tell linked screens where we're heading now, so they fly alongside instead of waiting.
+    animateTo.busy = true; animateTo.target = { cx: cx, cy: cy, r: k / AT.fit };
+    if (!fromRemote) sendLink(false, animateTo.target);
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / ms), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      var kk = k0 * Math.pow(k / k0, e);
+      AT.k = kk; AT.x = x0 + (x1 - x0) * e; AT.y = y0 + (y1 - y0) * e;
+      // keep the path smooth: offset follows the scale so the target stays on its way to the middle
+      applyView();
+      if (p < 1) animateTo.raf = requestAnimationFrame(step); else animateTo.busy = false;
+    })(t0);
+  }
+  function screenToWorld(sx, sy) { return { x: (sx - AT.x) / AT.k / AT.W, y: (sy - AT.y) / AT.k / AT.H }; }
+  function worldToScreen(nx, ny) { return { x: nx * AT.W * AT.k + AT.x, y: ny * AT.H * AT.k + AT.y }; }
+
+  /* ---------- Cities: zoom in to enter, out to leave ---------- */
+  function nearestCity(sx, sy, maxPx) {
+    var m = islesMap(); if (!m || !CITIES) return null;
+    var best = null, bd = maxPx;
+    (markers[m.id] || []).forEach(function (mk) {
+      if (!mk.article_slug || !CITIES[mk.article_slug] || mk.kind === 'party') return;
+      var p = worldToScreen(mk.x, mk.y), d = Math.hypot(p.x - sx, p.y - sy);
+      if (d < bd) { bd = d; best = mk; }
+    });
+    return best;
+  }
+  function cityHint() {
+    var el = document.getElementById('at-hint'); if (!el) return;
+    var s = stageSize(), cov = panelCover(), r = AT.k / AT.fit, c = cityOfKey(AT.key);
+    if (c) {
+      if (r < 0.95) { el.hidden = false; el.innerHTML = 'Zoom out more to go back to the isles'; } else el.hidden = true;
+      return;
+    }
+    var mk = r >= 2.4 ? nearestCity((s.w - cov.right) / 2, (s.h - cov.bottom) / 2, Math.min(s.w, s.h) * 0.3) : null;
+    if (!mk) { el.hidden = true; return; }
+    el.hidden = false;
+    el.innerHTML = '<button type="button" class="at-btn" data-at="enter" data-slug="' + esc(mk.article_slug) + '">Open the ' + esc(CITIES[mk.article_slug].name) + ' map</button><span>or keep zooming</span>';
+  }
+  function checkCityZoom(sx, sy) {
+    if (AT.switching) return;
+    var r = AT.k / AT.fit, c = cityOfKey(AT.key);
+    if (c && r < EXIT_AT) return leaveCity();
+    if (!c && r >= ENTER_AT) {
+      var mk = nearestCity(sx, sy, 110);
+      if (mk) enterCity(mk.article_slug);
+    }
+  }
+  function swapTo(key, view, done) {
+    AT.switching = true;
+    var fade = document.getElementById('at-fade');
+    fade.classList.add('on');
+    setTimeout(function () {
+      AT.key = key; AT.pendingView = view; AT.measure = null;
+      refreshAtlas(); if (done) done();
+      setTimeout(function () { fade.classList.remove('on'); AT.switching = false; if (!AT.remote) sendLink(); }, 60);
+    }, 180);
+  }
+  function enterCity(slug, levelId) {
+    var c = CITIES[slug]; if (!c) return;
+    var lv = levelOf(c, levelId), a = articleBySlug(slug);
+    if (a && !(AT.sel && AT.sel.t === 'article' && AT.sel.slug === slug)) { if (AT.sel) AT.hist.push(AT.sel); AT.sel = { t: 'article', slug: slug }; }
+    swapTo('city:' + slug + ':' + lv.id, { cx: 0.5, cy: 0.5, r: 1 });
+  }
+  function leaveCity() {
+    var c = cityOfKey(AT.key); if (!c) return;
+    var pin = cityPin(c.slug);
+    swapTo('isles', pin ? { cx: pin.x, cy: pin.y, r: ENTER_AT * 0.55 } : null);
+  }
+
+  /* ---------- Gestures ---------- */
+  function bindAtlas() {
+    var stage = document.getElementById('at-stage'), pts = {}, start = null, moved = false, lastPinch = null;
+    function count() { return Object.keys(pts).length; }
+    function rel(e) { var b = stage.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; }
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.button > 0) return;
+      cancelAnimationFrame(animateTo.raf);
+      pts[e.pointerId] = rel(e);
+      if (count() === 1) { start = { x: pts[e.pointerId].x, y: pts[e.pointerId].y, t: Date.now(), target: e.target }; moved = false; }
+      else { moved = true; lastPinch = null; }
+      try { stage.setPointerCapture(e.pointerId); } catch (er) {}
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      var p = rel(e), prev = pts[e.pointerId];
+      pts[e.pointerId] = p;
+      var n = count();
+      if (n === 1) {
+        if (!moved && start && Math.hypot(p.x - start.x, p.y - start.y) < 6) return;
+        moved = true; stage.classList.add('dragging');
+        AT.x += p.x - prev.x; AT.y += p.y - prev.y; applyView();
+      } else if (n === 2) {
+        var ks = Object.keys(pts), a = pts[ks[0]], b = pts[ks[1]];
+        var mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (lastPinch) { AT.x += mid.x - lastPinch.mid.x; AT.y += mid.y - lastPinch.mid.y; zoomAt(mid.x, mid.y, d / lastPinch.d); }
+        lastPinch = { mid: mid, d: d };
+      }
+    });
+    function end(e) {
+      if (!pts[e.pointerId]) return;
+      var wasOne = count() === 1;
+      delete pts[e.pointerId];
+      lastPinch = null;
+      if (count() === 0) {
+        stage.classList.remove('dragging');
+        if (wasOne && !moved && start && e.type === 'pointerup') tapAt(start.x, start.y, e);
+        else userMoved();
+        start = null;
+      }
+    }
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+    stage.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var p = rel(e);
+      if (e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX) && !(e.deltaMode === 0 && Math.abs(e.deltaY) < 4 && e.deltaX !== 0)) {
+        var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+        zoomAt(p.x, p.y, Math.exp(-dy * (e.ctrlKey ? 0.012 : 0.0018)));
+      } else { AT.x -= e.deltaX; AT.y -= e.deltaY; applyView(); }
+      userMoved();
+    }, { passive: false });
+    stage.addEventListener('dblclick', function (e) { var p = rel(e); var w = screenToWorld(p.x, p.y); var c = AT.k * 2; var s = stageSize(); var cov = panelCover(); animateTo(w.x - ((p.x - (s.w - cov.right) / 2) / (AT.W * c)), w.y - ((p.y - (s.h - cov.bottom) / 2) / (AT.H * c)), Math.min(maxK(), c), 300); setTimeout(function () { checkCityZoom(p.x, p.y); }, 320); });
+    window.addEventListener('resize', function () { if (!document.getElementById('atlas')) return; var r = AT.k / AT.fit, c = screenToWorld(stageSize().w / 2, stageSize().h / 2); var s = stageSize(); AT.fit = Math.min(s.w / AT.W, s.h / AT.H); setView(c.x, c.y, r * AT.fit); applyView(); });
+    document.getElementById('at-q').addEventListener('input', function (e) { AT.q = e.target.value; AT.qi = 0; searchResults(); });
+    document.getElementById('at-q').addEventListener('keydown', function (e) {
+      var hits = AT.hits || [];
+      if (e.key === 'ArrowDown') { AT.qi = Math.min(hits.length - 1, AT.qi + 1); searchResults(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { AT.qi = Math.max(0, AT.qi - 1); searchResults(); e.preventDefault(); }
+      else if (e.key === 'Enter' && hits[AT.qi]) { pickHit(hits[AT.qi]); e.preventDefault(); }
+      else if (e.key === 'Escape') { AT.q = ''; e.target.value = ''; searchResults(); e.target.blur(); }
+    });
+    document.getElementById('at-q').addEventListener('focus', function () { if (AT.q) searchResults(); });
+  }
+  function userMoved() { clearTimeout(userMoved.t); userMoved.t = setTimeout(sendLink, 250); }
+
+  function tapAt(sx, sy, e) {
+    var el = document.elementFromPoint(e.clientX, e.clientY), pin = el && el.closest ? el.closest('[data-pin]') : null;
+    var w = screenToWorld(sx, sy);
+    if (AT.placing) {
+      var m = islesMap(); if (cityOfKey(AT.key) || !m) return;
+      var what = AT.placing; AT.placing = null;
+      var x = w.x, y = w.y;
+      if (pin && pin.getAttribute('data-pin') === 'marker') { var pm = (markers[m.id] || []).filter(function (k) { return k.id === pin.getAttribute('data-id'); })[0]; if (pm) { x = pm.x; y = pm.y; } }
+      ui.placing = { mapId: m.id, kind: what };
+      placeAt(m, x, y);
+      return;
+    }
+    if (AT.measure) {
+      var snap = pin && pin.getAttribute('data-pin') === 'marker' ? (markers[(islesMap() || {}).id] || []).filter(function (k) { return k.id === pin.getAttribute('data-id'); })[0] : null;
+      AT.measure.key = AT.key;
+      AT.measure.pts.push(snap ? { x: snap.x, y: snap.y, label: markerLabel(snap) } : { x: w.x, y: w.y });
+      openSel({ t: 'measure' }, true);
+      return;
+    }
+    if (!pin) { if (window.innerWidth < 900 && AT.sel) { AT.sheet = 'peek'; var p0 = document.getElementById('at-panel'); if (p0) p0.setAttribute('data-sheet', 'peek'); } return; }
+    var kind = pin.getAttribute('data-pin');
+    if (kind === 'mark') return openSel({ t: 'mark', key: AT.key, n: num(pin.getAttribute('data-n'), 0) });
+    if (kind === 'party') return openSel({ t: 'journey' });
+    if (kind === 'shop') return openSel({ t: 'shop', id: pin.getAttribute('data-id') });
+    var mk = (markers[(islesMap() || {}).id] || []).filter(function (k) { return k.id === pin.getAttribute('data-id'); })[0];
+    if (!mk) return;
+    if (mk.article_slug && articleBySlug(mk.article_slug)) openSel({ t: 'article', slug: mk.article_slug, marker: mk.id });
+    else openSel({ t: 'marker', id: mk.id });
+    revealPin(mk.x, mk.y);
+  }
+  // If the panel now covers the pin that was tapped, slide the map so it shows.
+  function revealPin(nx, ny) {
+    var p = worldToScreen(nx, ny), s = stageSize(), cov = panelCover();
+    if (p.x > s.w - cov.right - 30 || p.y > s.h - cov.bottom - 30) animateTo(nx, ny, AT.k, 300);
+  }
+
+  /* ---------- Search ---------- */
+  function searchIndex() {
+    var out = [], m = islesMap(), list = m ? markers[m.id] || [] : [], seen = {};
+    list.forEach(function (mk) { if (mk.kind === 'party' || mk.kind === 'character') return; var a = mk.article_slug ? articleBySlug(mk.article_slug) : null; if (a) seen[a.slug] = 1; out.push({ label: markerLabel(mk), sub: a ? (a.fields && (a.fields.Type || a.template)) || a.template : mk.kind === 'toll' ? 'Toll' : mk.kind === 'ruin' ? 'Ruin' : 'Place', kind: 'pin', mk: mk, rank: mk.kind === 'place' ? 0 : 1 }); });
+    articles.forEach(function (a) { if (!seen[a.slug]) out.push({ label: a.title, sub: [a.template, a.fields && (a.fields.Home || a.fields.Settlement || a.fields.Region || a.fields.Faction)].filter(Boolean).join(' · ').replace(/\[\[|\]\]/g, ''), kind: 'article', a: a, rank: 2 }); });
+    if (loaded.shops) shops.forEach(function (s) { var p = s.place_id ? articleById(s.place_id) : null; out.push({ label: s.name, sub: 'Shop · ' + [String(s.keeper || '').replace(/\[\[|\]\]/g, '').split(',')[0], p && p.title].filter(Boolean).join(' · '), kind: 'shop', s: s, rank: 3, alt: String(s.keeper || '') }); });
+    if (CITIES) Object.keys(CITIES).forEach(function (slug) { CITIES[slug].levels.forEach(function (lv) { (lv.marks || []).forEach(function (mk) { out.push({ label: mk.name, sub: CITIES[slug].name + (CITIES[slug].levels.length > 1 ? ' · ' + lv.name : '') + ' map · ' + mk.n, kind: 'mark', slug: slug, level: lv.id, n: mk.n, rank: 4 }); }); }); });
+    return out;
+  }
+  function searchResults() {
+    var box = document.getElementById('at-results'); if (!box) return;
+    var q = AT.q.trim().toLowerCase();
+    if (!q) { box.hidden = true; AT.hits = []; return; }
+    var hits = searchIndex().map(function (h) {
+      var l = h.label.toLowerCase(), alt = String(h.alt || '').toLowerCase(), sc = l === q ? 0 : l.indexOf(q) === 0 ? 1 : l.indexOf(' ' + q) >= 0 ? 2 : l.indexOf(q) >= 0 ? 3 : alt.indexOf(q) >= 0 ? 4 : 9;
+      return { h: h, sc: sc * 10 + h.rank };
+    }).filter(function (x) { return x.sc < 90; }).sort(function (a, b) { return a.sc - b.sc || a.h.label.localeCompare(b.h.label); }).slice(0, 14).map(function (x) { return x.h; });
+    AT.hits = hits; AT.qi = Math.min(AT.qi, Math.max(0, hits.length - 1));
+    box.hidden = false;
+    box.innerHTML = hits.length ? hits.map(function (h, i) { return '<button type="button" class="at-hit' + (i === AT.qi ? ' on' : '') + '" data-at="hit" data-i="' + i + '"><b>' + esc(h.label) + '</b><span>' + esc(h.sub || '') + '</span></button>'; }).join('') : '<p class="note" style="margin:8px 12px">Nothing by that name.</p>';
+  }
+  function pickHit(h) {
+    AT.q = ''; var qi = document.getElementById('at-q'); if (qi) { qi.value = ''; qi.blur(); } searchResults();
+    if (h.kind === 'pin') {
+      goIsles(function () { animateTo(h.mk.x, h.mk.y, Math.max(AT.k, AT.fit * 3)); });
+      return openSel(h.mk.article_slug && articleBySlug(h.mk.article_slug) ? { t: 'article', slug: h.mk.article_slug, marker: h.mk.id } : { t: 'marker', id: h.mk.id });
+    }
+    if (h.kind === 'mark') {
+      var key = 'city:' + h.slug + ':' + h.level, lv = levelOf(CITIES[h.slug], h.level), mk = lv.marks.filter(function (x) { return x.n === h.n; })[0];
+      var go2 = function () { animateTo(mk.x, mk.y, AT.fit * 2.5); };
+      if (AT.key !== key) swapTo(key, { cx: mk.x, cy: mk.y, r: 2.5 }); else go2();
+      return openSel({ t: 'mark', key: key, n: h.n });
+    }
+    if (h.kind === 'shop') { flyToArticle(h.s.place_id ? articleById(h.s.place_id) : null); return openSel({ t: 'shop', id: h.s.id }); }
+    flyToArticle(h.a);
+    openSel({ t: 'article', slug: h.a.slug });
+  }
+  function goIsles(then) { if (cityOfKey(AT.key)) swapTo('isles', null, then); else if (then) then(); }
+  // Fly to an article's pin, or to the pin of the place it names (Home, Settlement, Seat, Region…).
+  function pinForArticle(a) {
+    var m = islesMap(); if (!m || !a) return null;
+    var list = markers[m.id] || [];
+    var own = list.filter(function (mk) { return mk.article_slug === a.slug; })[0];
+    if (own) return own;
+    var f = a.fields || {}, names = [f.Home, f.Settlement, f.Seat, f.Location, f.Place, f.Base, f.Headquarters].filter(Boolean).join(' ');
+    var re = /\[\[([^\]]+)\]\]/g, mm, hit = null;
+    while (!hit && (mm = re.exec(names))) { var t = articleByTitle(mm[1]); if (t) hit = list.filter(function (mk) { return mk.article_slug === t.slug; })[0] || null; }
+    return hit;
+  }
+  function flyToArticle(a) {
+    var pin = pinForArticle(a);
+    if (pin) goIsles(function () { animateTo(pin.x, pin.y, Math.max(AT.k, AT.fit * 3)); });
+  }
+
+  /* ---------- Panel ---------- */
+  function openSel(sel, quiet) {
+    if (AT.sel && !quiet && JSON.stringify(AT.sel) !== JSON.stringify(sel)) AT.hist.push(AT.sel);
+    if (AT.hist.length > 20) AT.hist.shift();
+    AT.sel = sel; AT.panelScroll = 0;
+    if (window.innerWidth < 900 && AT.sheet === 'closed') AT.sheet = 'peek';
+    refreshAtlas();
+    if (!AT.remote) { clearTimeout(openSel.t); openSel.t = setTimeout(function () { sendLink(false, animateTo.busy ? animateTo.target : null); }, 30); }
+  }
+  function closePanel() { AT.sel = null; AT.hist = []; AT.measure = null; refreshAtlas(); sendLink(); }
+  // Draw a full page renderer into the panel instead of the page.
+  function intoPanel(el, fn) { var keep = $view; $view = el; try { fn(); } finally { $view = keep; } }
+  function renderPanel() {
+    var panel = document.getElementById('at-panel'), body = document.getElementById('at-pb'), title = document.getElementById('at-pt');
+    if (!panel) return;
+    var sel = AT.sel;
+    panel.hidden = !sel;
+    document.getElementById('at-back').hidden = !AT.hist.length;
+    if (!sel) return;
+    panel.setAttribute('data-sheet', AT.sheet);
+    var keepScroll = body.getAttribute('data-for') === JSON.stringify(sel) ? body.scrollTop : 0;
+    body.setAttribute('data-for', JSON.stringify(sel));
+    var camp = activeCamp(), m = islesMap(), html = '';
+    if (sel.t === 'article') {
+      var a = articleBySlug(sel.slug);
+      if (!a) { title.textContent = 'Not found'; body.innerHTML = '<div class="empty">That article is gone.</div>'; return; }
+      title.textContent = a.title;
+      var pin = pinForArticle(a), isCity = CITIES && CITIES[a.slug];
+      html = '<div class="at-acts">' +
+        (pin ? '<button type="button" class="btn small" data-at="fly" data-x="' + pin.x + '" data-y="' + pin.y + '">Show on map</button>' : '') +
+        (isCity && AT.key.indexOf('city:' + a.slug + ':') !== 0 ? '<button type="button" class="btn small primary" data-at="enter" data-slug="' + esc(a.slug) + '">Open city map</button>' : '') +
+        (pin && pin.article_slug === a.slug && camp && travel[camp.id] ? '<button type="button" class="btn small" data-at="dest-here" data-id="' + esc(pin.id) + '">Travel here</button><button type="button" class="btn small" data-at="party-here" data-id="' + esc(pin.id) + '">Party is here</button>' : '') +
+        '</div><div id="at-art"></div>';
+      body.innerHTML = html;
+      intoPanel(document.getElementById('at-art'), function () { renderArticle(a.slug); });
+    } else if (sel.t === 'shop') {
+      var sp = shopById(sel.id);
+      title.textContent = sp ? sp.name : 'Shop';
+      body.innerHTML = '<div id="at-shop"></div>';
+      intoPanel(document.getElementById('at-shop'), function () { renderShop(sel.id); });
+    } else if (sel.t === 'journey') {
+      title.textContent = 'The party' + (camp && travel[camp.id] ? ' · Day ' + travel[camp.id].day : '');
+      var pmk = m ? partyMarker(m.id) : null;
+      body.innerHTML = '<div class="at-acts">' + (pmk ? '<button type="button" class="btn small" data-at="fly" data-x="' + pmk.x + '" data-y="' + pmk.y + '">Show the party</button>' : '') +
+        '<button type="button" class="btn small" data-at="place" data-what="party">Move the party</button><button type="button" class="btn small" data-at="place" data-what="dest">Set destination</button><a class="btn small quiet" href="#/party">Roster</a></div>' + partyStrip() + '<div id="at-journey"></div>';
+      if (camp) intoPanel(document.getElementById('at-journey'), function () { renderTravel(camp.slug); });
+    } else if (sel.t === 'mark') {
+      var c = cityOfKey(sel.key), mk2 = c ? (c.level.marks || []).filter(function (x) { return x.n === sel.n; })[0] : null;
+      title.textContent = mk2 ? mk2.n + '. ' + mk2.name : 'Key';
+      var ca = c ? articleBySlug(c.slug) : null;
+      body.innerHTML = mk2 ? '<p class="eyebrow">' + esc(c.city.name) + (c.city.levels.length > 1 ? ' · ' + esc(c.level.name) : '') + '</p><h2 class="at-h">' + esc(mk2.name) + '</h2><p class="prose">' + esc(mk2.why) + '</p>' +
+        '<div class="at-acts">' + (ca ? '<button type="button" class="btn small" data-at="art" data-slug="' + esc(ca.slug) + '">About ' + esc(ca.title) + '</button>' : '') + '</div>' +
+        '<section class="block"><h3 class="kind-h">Also on this map</h3><div class="at-keylist">' + c.level.marks.map(function (x) { return '<button type="button" class="at-key' + (x.n === sel.n ? ' on' : '') + '" data-at="mark" data-n="' + x.n + '"><i>' + x.n + '</i>' + esc(x.name) + '</button>'; }).join('') + '</div></section>' : '<div class="empty">Gone.</div>';
+    } else if (sel.t === 'marker') {
+      var mk3 = m ? (markers[m.id] || []).filter(function (x) { return x.id === sel.id; })[0] : null;
+      title.textContent = mk3 ? markerLabel(mk3) : 'Pin';
+      if (!mk3) { body.innerHTML = '<div class="empty">Gone.</div>'; return; }
+      var info = mk3.info || {}, tl = mk3.kind === 'toll' ? tollOf(mk3) : null;
+      body.innerHTML = '<p class="eyebrow">' + esc(mk3.kind === 'toll' ? 'Toll' : mk3.kind === 'ruin' ? 'Ruin' + (info.found ? ' · found' : ' · not found yet') : 'Place') + '</p>' +
+        (tl ? '<p>' + money(tl.foot) + ' each on foot · ' + money(tl.mount) + ' each riding or with a cart</p>' : '') +
+        (info.desc ? '<div class="prose">' + rich(info.desc) + '</div>' : '') +
+        '<div class="at-acts"><button type="button" class="btn small" data-at="fly" data-x="' + mk3.x + '" data-y="' + mk3.y + '">Show on map</button>' + (camp && travel[camp.id] ? '<button type="button" class="btn small" data-at="dest-here" data-id="' + esc(mk3.id) + '">Travel here</button>' : '') +
+        '<a class="btn small quiet" href="#/pins/' + encodeURIComponent(m.id) + '">Edit pins</a></div>';
+    } else if (sel.t === 'measure') {
+      title.textContent = 'Measure';
+      body.innerHTML = measureHtml();
+    }
+    body.scrollTop = keepScroll;
+  }
+  function partyStrip() {
+    var camp = activeCamp(), chars = camp ? campaignChars(camp.id) : [];
+    if (!chars.length) return '<p class="note">No one in the roster yet. <a href="#/party">Add the party</a>.</p>';
+    return '<div class="at-party">' + chars.map(function (c) { var s = normSheet(c.sheet); return '<a class="at-pc" href="#/party/' + encodeURIComponent(c.id) + '"><b>' + esc(c.name) + '</b><span>' + esc([s.species, s.cls, 'Lv ' + num(s.level, 1)].filter(Boolean).join(' · ')) + '</span><span>AC ' + esc(s.ac) + ' · HP ' + esc(s.hp.max) + '</span></a>'; }).join('') + '</div>';
+  }
+  function measureHtml() {
+    var w = atlasWorld(), M = AT.measure, pts = M ? M.pts : [];
+    var html = '<p class="note">Tap the map to add points. Tap a town to snap to it.</p>';
+    if (pts.length < 2) return html + '<div class="actions"><button type="button" class="btn small" data-at="measure-clear">Clear</button><button type="button" class="btn small quiet" data-at="measure">Done</button></div>';
+    if (w.city) {
+      var metres = 0; for (var i = 1; i < pts.length; i++) metres += Math.hypot((pts[i].x - pts[i - 1].x) * w.w, (pts[i].y - pts[i - 1].y) * w.h) * 100 / 154;
+      html += '<p class="at-big">' + Math.round(metres) + ' m</p><p class="note">About ' + Math.max(1, Math.round(metres / 80)) + ' minute' + (metres / 80 >= 1.5 ? 's' : '') + ' on foot.</p>';
+    } else {
+      var m = w.map, crow = 0;
+      for (var j = 1; j < pts.length; j++) crow += mapMiles(m, pts[j - 1].x, pts[j - 1].y, pts[j].x, pts[j].y);
+      html += '<p class="at-big">' + fmtMiles(crow) + '</p><p class="note">As the crow flies' + (pts[0].label || pts[pts.length - 1].label ? ', ' + esc([pts[0].label || 'start', pts[pts.length - 1].label || 'end'].join(' to ')) : '') + '.</p>';
+      var camp = activeCamp(), t = camp && travel[camp.id], g = grids[m.id];
+      if (t && g) {
+        var rows = rulesOf(t).modes.map(function (mode) {
+          var tt = Object.assign({}, t, { mode: mode, pace: 'Normal', weather: '' }), miles = 0, days = 0, ok = true;
+          for (var k = 1; k < pts.length; k++) { var rt = findRoute(m, g, tt, pts[k - 1].x, pts[k - 1].y, pts[k].x, pts[k].y); if (!rt) { ok = false; break; } miles += rt.miles; days += rt.days; }
+          return '<div class="tbl-row"><div class="main"><b>' + esc(mode) + '</b><span>' + (ok ? fmtMiles(miles) + ' by the roads' : 'No way through') + '</span></div>' + (ok ? '<span class="tag plain">' + (days < 0.95 ? Math.max(1, Math.round(days * 10)) + ' hours' : (Math.round(days * 10) / 10) + ' days') + '</span>' : '') + '</div>';
+        });
+        html += '<h3 class="kind-h">Travel time, normal pace</h3><div class="tbl">' + rows.join('') + '</div>';
+      }
+    }
+    return html + '<div class="actions"><button type="button" class="btn small" data-at="measure-undo">Undo point</button><button type="button" class="btn small" data-at="measure-clear">Clear</button><button type="button" class="btn small quiet" data-at="measure">Done</button></div>';
+  }
+
+  /* ---------- Buttons ---------- */
+  function atlasAct(el, e) {
+    var a = el.getAttribute('data-at');
+    switch (a) {
+      case 'hit': return pickHit((AT.hits || [])[num(el.getAttribute('data-i'), 0)]);
+      case 'close': return closePanel();
+      case 'back': AT.sel = AT.hist.pop() || null; return refreshAtlas();
+      case 'sheet': AT.sheet = AT.sheet === 'full' ? 'peek' : 'full'; document.getElementById('at-panel').setAttribute('data-sheet', AT.sheet); return;
+      case 'fly': return goIsles(function () { animateTo(Number(el.getAttribute('data-x')), Number(el.getAttribute('data-y')), Math.max(AT.k, AT.fit * 3)); });
+      case 'enter': return enterCity(el.getAttribute('data-slug'));
+      case 'isles': return leaveCity();
+      case 'art': return openSel({ t: 'article', slug: el.getAttribute('data-slug') });
+      case 'mark': var ms = cityOfKey(AT.key), mk = ms && ms.level.marks.filter(function (x) { return x.n === num(el.getAttribute('data-n'), 0); })[0]; if (mk) animateTo(mk.x, mk.y, Math.max(AT.k, AT.fit * 2)); return openSel({ t: 'mark', key: AT.key, n: num(el.getAttribute('data-n'), 0) }, true);
+      case 'party': var pm = islesMap() && partyMarker(islesMap().id); if (pm) goIsles(function () { animateTo(pm.x, pm.y, Math.max(AT.k, AT.fit * 2.5)); }); return openSel({ t: 'journey' });
+      case 'place': AT.placing = el.getAttribute('data-what'); AT.measure = null; if (window.innerWidth < 900) { AT.sheet = 'peek'; } goIsles(); refreshAtlas(); return toast(AT.placing === 'party' ? 'Tap where the party is' : 'Tap where they’re heading');
+      case 'place-cancel': AT.placing = null; return refreshAtlas();
+      case 'dest-here': case 'party-here':
+        var mm = islesMap(), pk = (markers[mm.id] || []).filter(function (x) { return x.id === el.getAttribute('data-id'); })[0];
+        if (!pk) return;
+        ui.placing = { mapId: mm.id, kind: a === 'dest-here' ? 'dest' : 'party' };
+        return placeAt(mm, pk.x, pk.y);
+      case 'measure': AT.measure = AT.measure ? null : { key: AT.key, pts: [] }; AT.placing = null; if (AT.measure) openSel({ t: 'measure' }, true); else { if (AT.sel && AT.sel.t === 'measure') AT.sel = AT.hist.pop() || null; refreshAtlas(); } return;
+      case 'measure-clear': AT.measure = { key: AT.key, pts: [] }; return refreshAtlas();
+      case 'measure-undo': if (AT.measure) AT.measure.pts.pop(); return refreshAtlas();
+      case 'layers': var lp = document.getElementById('at-layers'); lp.hidden = !lp.hidden; el.setAttribute('aria-expanded', String(!lp.hidden)); if (!lp.hidden) layersHtml(); return;
+      case 'full': return toggleFull();
+      case 'link': AT.linked = !AT.linked; writeLocal('avarenth-linked', AT.linked ? '1' : '0'); el.setAttribute('aria-pressed', String(AT.linked)); el.textContent = AT.linked ? 'Linked' : 'Link screens'; startLink(); toast(AT.linked ? 'Linked: this screen follows your other linked screens, and they follow it' : 'Unlinked'); if (AT.linked) sendLink(true); return;
+      case 'zin': case 'zout': var s = stageSize(); zoomAt(s.w / 2, s.h / 2, a === 'zin' ? 1.6 : 1 / 1.6); return userMoved();
+    }
+  }
+  function toggleFull() {
+    var on = !document.body.classList.contains('at-full');
+    document.body.classList.toggle('at-full', on);
+    var de = document.documentElement;
+    try {
+      if (on && de.requestFullscreen && !document.fullscreenElement) de.requestFullscreen().catch(function () {});
+      if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () {});
+    } catch (e) {}
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 120);
+  }
+  document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && document.body.classList.contains('at-full')) { document.body.classList.remove('at-full'); setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 80); } });
+
+  // Clicks inside the atlas: our own buttons, and links that should open in the panel rather than leave the map.
+  document.addEventListener('click', function (e) {
+    var atlas = e.target.closest && e.target.closest('#atlas');
+    if (!atlas) return;
+    var b = e.target.closest('[data-at]');
+    if (b) { e.preventDefault(); e.stopPropagation(); return atlasAct(b, e); }
+    var link = e.target.closest('a[href^="#/"]');
+    if (link && e.target.closest('#at-panel')) {
+      var h = link.getAttribute('href').replace(/^#\//, '').split('/'), arg = decodeURIComponent(h[1] || '');
+      if (h[0] === 'a' && articleBySlug(arg)) { e.preventDefault(); e.stopPropagation(); return openSel({ t: 'article', slug: arg }); }
+      if (h[0] === 'shop' && shopById(arg)) { e.preventDefault(); e.stopPropagation(); return openSel({ t: 'shop', id: arg }); }
+      if (h[0] === 'travel') { e.preventDefault(); e.stopPropagation(); return openSel({ t: 'journey' }); }
+      if (h[0] === 'map') { e.preventDefault(); e.stopPropagation(); return; }
+    }
+    var lp = document.getElementById('at-layers');
+    if (lp && !lp.hidden && !e.target.closest('#at-layers')) { lp.hidden = true; }
+    var res = document.getElementById('at-results');
+    if (res && !res.hidden && !e.target.closest('.at-search')) res.hidden = true;
+  }, true);
+  document.addEventListener('change', function (e) {
+    if (e.target.matches && e.target.matches('#at-layers [data-layer]')) { AT.layers[e.target.getAttribute('data-layer')] = e.target.checked; saveLayers(); refreshAtlas(); }
+    if (e.target.id === 'at-level') { var c = cityOfKey(AT.key); if (c) swapTo('city:' + c.slug + ':' + e.target.value, { cx: 0.5, cy: 0.5, r: 1 }); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!document.getElementById('atlas')) return;
+    var typing = /INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '') || (e.target && e.target.isContentEditable);
+    if (typing) return;
+    var s = stageSize();
+    if (e.key === 'f' || e.key === 'F') { toggleFull(); e.preventDefault(); }
+    else if (e.key === '/') { var q = document.getElementById('at-q'); if (q) { q.focus(); e.preventDefault(); } }
+    else if (e.key === 'Escape') { if (AT.placing) { AT.placing = null; refreshAtlas(); } else if (AT.measure) { AT.measure = null; refreshAtlas(); } else if (AT.sel) closePanel(); else if (document.body.classList.contains('at-full')) toggleFull(); }
+    else if (e.key === '+' || e.key === '=') { zoomAt(s.w / 2, s.h / 2, 1.4); userMoved(); }
+    else if (e.key === '-' || e.key === '_') { zoomAt(s.w / 2, s.h / 2, 1 / 1.4); userMoved(); }
+    else if (/^Arrow/.test(e.key) && document.activeElement && document.activeElement.id === 'at-stage') { AT.x += e.key === 'ArrowLeft' ? 80 : e.key === 'ArrowRight' ? -80 : 0; AT.y += e.key === 'ArrowUp' ? 80 : e.key === 'ArrowDown' ? -80 : 0; applyView(); userMoved(); e.preventDefault(); }
+  });
+
+  /* ---------- Linked screens: phone and laptop follow each other ---------- */
+  var linkChannel = null, linkId = Math.random().toString(36).slice(2);
+  function startLink() {
+    if (!sb || !sb.channel) return;
+    if (!AT.linked) { if (linkChannel) { sb.removeChannel(linkChannel); linkChannel = null; } return; }
+    if (linkChannel) return;
+    linkChannel = sb.channel('avarenth-screens', { config: { broadcast: { self: false } } })
+      .on('broadcast', { event: 'view' }, function (msg) { if (AT.linked && msg.payload && msg.payload.from !== linkId) applyLink(msg.payload); })
+      .subscribe();
+  }
+  function sendLink(force, target) {
+    if (!AT.linked || !linkChannel || AT.remote || !document.getElementById('atlas')) return;
+    var s = stageSize(), cov = panelCover(), c = target ? { x: target.cx, y: target.cy } : screenToWorld((s.w - cov.right) / 2, (s.h - cov.bottom) / 2);
+    var sel = AT.sel && AT.sel.t !== 'measure' ? AT.sel : null;
+    AT.lastSent = Date.now();
+    var sent = linkChannel.send({ type: 'broadcast', event: 'view', payload: { from: linkId, key: AT.key, cx: c.x, cy: c.y, r: target ? target.r : AT.k / AT.fit, sel: sel, force: !!force } });
+    if (sent && sent.catch) sent.catch(function () {});
+  }
+  function applyLink(p) {
+    // While this screen is the one being driven (touched in the last second), it leads and ignores the echo.
+    if (AT.lastSent && Date.now() - AT.lastSent < 900 && !p.force) return;
+    if (parseRoute().name !== 'map' && parseRoute().name !== '') { AT.key = p.key; AT.pendingView = { cx: p.cx, cy: p.cy, r: p.r }; AT.loadedKey = null; AT.sel = p.sel; location.hash = '#/map'; return; }
+    AT.remote = true;
+    try {
+      var same = JSON.stringify(AT.sel) === JSON.stringify(p.sel);
+      AT.sel = p.sel; if (!same) AT.hist = [];
+      if (p.key !== AT.key) { AT.key = p.key; AT.pendingView = { cx: p.cx, cy: p.cy, r: p.r }; refreshAtlas(); }
+      else { if (!same) refreshAtlas(); animateTo(p.cx, p.cy, p.r * AT.fit, 350, true); }
+    } finally { setTimeout(function () { AT.remote = false; }, 400); }
+  }
+
+  /* ================= Party: the DM's roster and class cheat sheets ================= */
+  var ABIL = [['str', 'Str'], ['dex', 'Dex'], ['con', 'Con'], ['int', 'Int'], ['wis', 'Wis'], ['cha', 'Cha']];
+  function renderParty(id) {
+    document.body.classList.remove('atlas-mode');
+    if (!loaded.wiki || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Gathering the party…</div></div>'; return; }
+    var camp = activeCamp();
+    if (id === 'new' || (id && charById(id))) return renderPartyMember(id === 'new' ? null : charById(id), camp);
+    var chars = camp ? campaignChars(camp.id) : characters;
+    var html = '<div class="page"><div><p class="eyebrow">' + esc(camp ? camp.name : 'Campaign') + '</p><h1 class="page-title">The party</h1></div>' +
+      '<div class="actions"><a class="btn primary" href="#/party/new">+ Add a character</a><a class="btn" href="#/map">Map</a></div>';
+    if (!chars.length) html += '<div class="empty">Nobody in the party yet. Add each player character with their race, class and level, and the app builds a cheat sheet for them.</div>';
+    else html += '<div class="pc-grid">' + chars.map(function (c) {
+      var s = normSheet(c.sheet), cd = classOf(s), L = num(s.level, 1);
+      var res = classResources(s).map(function (r) { return r.name + (r.max === 'unlimited' ? ' (∞)' : ' ' + r.max); });
+      var mana = manaMax(s);
+      return '<a class="pc-card" href="#/party/' + encodeURIComponent(c.id) + '"><div class="pc-top"><b>' + esc(c.name) + '</b><span class="tag plain">Lv ' + L + '</span></div>' +
+        '<p class="pc-line">' + esc([s.species, s.cls, s.subclass].filter(Boolean).join(' · ') || 'No class set') + '</p>' +
+        '<div class="pc-stats"><span><small>AC</small>' + esc(s.ac) + '</span><span><small>HP</small>' + esc(s.hp.max) + '</span><span><small>Prof</small>+' + profBonus(L) + '</span>' + (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + '<span><small>Passive</small>' + (10 + mod(s.abilities.wis) + (s.skills && s.skills.Perception ? profBonus(L) : 0)) + '</span></div>' +
+        (res.length ? '<p class="note" style="margin:0">' + esc(res.join(' · ')) + '</p>' : '') + (cd ? '' : '') + '</a>';
+    }).join('') + '</div>';
+    html += '</div>';
+    $view.innerHTML = html;
+  }
+  function renderPartyMember(c, camp) {
+    var s = normSheet(c ? c.sheet : null), editing = !c || ui.pcEdit === c.id;
+    var classes = Object.keys(RULES.classes), species = Object.keys(RULES.species || {});
+    var html = '<div class="page"><div><p class="crumbs"><a href="#/party">The party</a></p><h1 class="page-title">' + esc(c ? c.name : 'New character') + '</h1>' +
+      (c ? '<p class="note" style="margin:4px 0 0">' + esc([s.species, s.cls, s.subclass, 'Level ' + num(s.level, 1)].filter(Boolean).join(' · ')) + '</p>' : '') + '</div>';
+    if (editing) {
+      var subs = s.cls ? subclassOptions(s.cls, s.patron) : [];
+      html += '<form class="form group-box" id="pc-form" novalidate data-id="' + esc(c ? c.id : '') + '">' +
+        '<div class="two"><div class="field"><label for="pc-name">Name</label><input type="text" id="pc-name" maxlength="60" value="' + esc(c ? c.name : '') + '" required></div>' +
+        '<div class="field"><label for="pc-player">Player</label><input type="text" id="pc-player" maxlength="40" value="' + esc(s.player || '') + '" placeholder="Who plays them"></div></div>' +
+        '<div class="two"><div class="field"><label for="pc-species">Race</label><input type="text" id="pc-species" list="pc-species-list" value="' + esc(s.species) + '"><datalist id="pc-species-list">' + species.map(function (x) { return '<option value="' + esc(x) + '"></option>'; }).join('') + '</datalist></div>' +
+        '<div class="field"><label for="pc-level">Level</label><input type="number" id="pc-level" min="1" max="20" value="' + num(s.level, 1) + '" inputmode="numeric"></div></div>' +
+        '<div class="two"><div class="field"><label for="pc-cls">Class</label><select id="pc-cls"><option value="">Pick one</option>' + classes.map(function (x) { return '<option' + (x === s.cls ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="pc-sub">Subclass</label><input type="text" id="pc-sub" list="pc-sub-list" value="' + esc(s.subclass) + '"><datalist id="pc-sub-list">' + subs.map(function (x) { return '<option value="' + esc(x.name) + '"></option>'; }).join('') + '</datalist></div></div>' +
+        '<div class="two"><div class="field"><label for="pc-ac">AC</label><input type="number" id="pc-ac" min="0" max="40" value="' + esc(s.ac) + '" inputmode="numeric"></div>' +
+        '<div class="field"><label for="pc-hp">Max HP</label><input type="number" id="pc-hp" min="1" max="999" value="' + esc(s.hp.max) + '" inputmode="numeric"></div></div>' +
+        '<p class="eyebrow" style="font-size:11px;margin:6px 0 0">Ability scores (optional, for passive Perception and some class resources)</p>' +
+        '<div class="abil-row">' + ABIL.map(function (a) { return '<div class="field"><label for="pc-' + a[0] + '">' + a[1] + '</label><input type="number" id="pc-' + a[0] + '" min="1" max="30" value="' + num(s.abilities[a[0]], 10) + '" inputmode="numeric"></div>'; }).join('') + '</div>' +
+        '<label class="check"><input type="checkbox" id="pc-perc"' + (s.skills && s.skills.Perception ? ' checked' : '') + '> Proficient in Perception</label>' +
+        '<div class="field"><label for="pc-gp">Purse (gp, for shops)</label><input type="number" id="pc-gp" min="0" step="0.01" value="' + (walletCp(s) / 100) + '" inputmode="decimal"></div>' +
+        '<div class="field"><label for="pc-notes">Notes</label><textarea id="pc-notes" rows="4" placeholder="Hooks, secrets, what they want, what they owe">' + esc(s.notes || '') + '</textarea></div>' +
+        '<div class="actions"><button type="submit" class="btn primary">Save</button>' + (c ? '<button type="button" class="btn" data-act="pc-cancel">Cancel</button><button type="button" class="btn danger" data-act="pc-delete" data-id="' + esc(c.id) + '" style="margin-left:auto">' + (ui.pendingDelete === c.id ? 'Tap again to remove' : 'Remove') + '</button>' : '<a class="btn" href="#/party">Cancel</a>') + '</div></form>';
+    } else {
+      html += '<div class="actions"><button type="button" class="btn" data-act="pc-edit" data-id="' + esc(c.id) + '">Edit</button><a class="btn" href="#/party">Back</a></div>';
+    }
+    if (c && s.cls) html += cheatSheet(s);
+    if (c && !editing && s.notes) html += '<section class="block"><h2 class="sec-title">Notes</h2><div class="prose">' + rich(s.notes) + '</div></section>';
+    html += '</div>';
+    $view.innerHTML = html;
+  }
+  // The class at a glance: what they can do now, what they just got, and what's coming.
+  function cheatSheet(s) {
+    var cd = classOf(s), L = num(s.level, 1), pb = profBonus(L);
+    if (!cd) return '';
+    var html = '<section class="block cheat"><h2 class="sec-title">' + esc(s.cls) + ' cheat sheet<small>Level ' + L + '</small></h2>';
+    var mana = manaMax(s), learn = learnableLevel(s), kind = casterKind(s.cls);
+    html += '<div class="pc-stats big"><span><small>Prof bonus</small>+' + pb + '</span><span><small>Hit die</small>d' + cd.hd + '</span><span><small>Saves</small>' + esc(cd.saves.map(function (x) { return x.toUpperCase(); }).join(' ')) + '</span>' +
+      (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + (mana && learn ? '<span><small>Spells up to</small>' + ordinal(learn) + '</span>' : '') + '</div>';
+    var sa = RULES.magic.spellAbility[s.cls];
+    if (sa && kind !== 'martial') { var m = mod(s.abilities[sa]); html += '<p class="note" style="margin:0">Spell save DC ' + (8 + pb + m) + ' · spell attack ' + signed(pb + m) + ' (' + sa.toUpperCase() + ')</p>'; }
+    var res = classResources(s);
+    if (res.length) html += '<div class="tbl">' + res.map(function (r) { return '<div class="tbl-row"><div class="main"><b>' + esc(r.name) + '</b><span>' + esc((r.note ? r.note + ' · ' : '') + (r.rest === 'short' ? 'back on a short rest' : 'back on a long rest')) + '</span></div><span class="tag plain">' + (r.max === 'unlimited' ? '∞' : r.max) + '</span></div>'; }).join('') + '</div>';
+    html += '<p class="note" style="margin:0">' + esc(cd.armor) + '. ' + esc(cd.weapons) + '.</p>';
+    var feats = cd.features.filter(function (f) { return f[0] <= L; });
+    var fresh = feats.filter(function (f) { return f[0] === L; });
+    if (fresh.length) html += '<div class="group-box new-at"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">New at level ' + L + '</p>' + fresh.map(featLine).join('') + '</div>';
+    html += '<h3 class="kind-h">What they can do</h3><div class="cheat-list">' + feats.filter(function (f) { return f[0] < L; }).reverse().map(featLine).join('') + '</div>';
+    var subL = (RULES.subLevels[s.cls] || []).filter(function (l) { return l <= L; });
+    if (subL.length) {
+      var cs = s.subclass ? customSub(s.cls, s.subclass) : null;
+      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
+        : '<p class="note" style="margin:0">' + (s.subclass ? 'Features at level ' + subL.join(', ') + '. Check their sheet for the details.' : 'They reach a ' + esc(cd.subclassLabel.toLowerCase()) + ' at level ' + cd.subclassLevel + '. Not set yet.') + '</p>');
+    }
+    var next = cd.features.filter(function (f) { return f[0] > L; }).slice(0, 3);
+    if (next.length) html += '<h3 class="kind-h">Coming up</h3><div class="cheat-list soon">' + next.map(featLine).join('') + '</div>';
+    var sp = RULES.species[s.species];
+    if (sp) html += '<h3 class="kind-h">' + esc(s.species) + '</h3><div class="cheat-list">' + (sp.dark ? featLine([0, 'Darkvision', sp.dark + ' ft.']) : '') + sp.traits.map(function (t) { return featLine([0, t[0], t[1]]); }).join('') + '</div>';
+    return html + '</section>';
+  }
+  function featLine(f) { return '<div class="cheat-row"><b>' + esc(f[1]) + (f[0] ? ' <small>' + f[0] + '</small>' : '') + '</b><span>' + esc(f[2]) + '</span></div>'; }
+  function savePartyForm(form) {
+    var id = form.getAttribute('data-id'), c = id ? charById(id) : null, camp = activeCamp();
+    var name = document.getElementById('pc-name').value.trim();
+    if (!name) return toast('Give them a name first.');
+    var s = normSheet(c ? c.sheet : null);
+    s.species = document.getElementById('pc-species').value.trim();
+    s.cls = document.getElementById('pc-cls').value;
+    s.subclass = document.getElementById('pc-sub').value.trim();
+    s.level = Math.max(1, Math.min(20, num(document.getElementById('pc-level').value, 1)));
+    s.ac = num(document.getElementById('pc-ac').value, 10);
+    s.hp.max = Math.max(1, num(document.getElementById('pc-hp').value, 10)); if (!c) s.hp.cur = s.hp.max;
+    ABIL.forEach(function (a) { s.abilities[a[0]] = num(document.getElementById('pc-' + a[0]).value, 10); });
+    s.skills = s.skills || {}; if (document.getElementById('pc-perc').checked) s.skills.Perception = 1; else delete s.skills.Perception;
+    s.player = document.getElementById('pc-player').value.trim();
+    s.notes = document.getElementById('pc-notes').value;
+    setWallet(s, Math.round(Math.max(0, Number(document.getElementById('pc-gp').value) || 0) * 100));
+    var row = { name: name, sheet: s };
+    var op = c ? sb.from('characters').update(row).eq('id', c.id).select('id').single()
+      : sb.from('characters').insert(Object.assign(row, { owner_id: uid(), campaign_id: camp ? camp.id : null })).select('id').single();
+    op.then(function (r) {
+      if (r.error) throw r.error;
+      ui.pcEdit = null;
+      return loadCharacters().then(function () { toast('Saved'); go('#/party/' + encodeURIComponent(r.data.id)); });
+    }).catch(function (e) { fail(e, 'Could not save the character.'); });
+  }
 
   /* ================= Boot ================= */
   try { var cached = readLocal('avarenth-look'); if (cached) look = normalizeLook(JSON.parse(cached)); } catch (e) {}
@@ -7261,7 +8044,7 @@
     if (!s) { stopLive(); profile = null; articles = []; secrets = {}; characters = []; members = []; spells = null; loaded = { wiki: false, chars: false, members: false }; render(); return; }
     if (prev === s.user.id && booted) return;
     booted = loadProfile()
-      .then(function () { render(); if (isMember()) return loadAll().then(startLive); })
+      .then(function () { render(); if (isMember()) return loadAll().then(function () { startLive(); startLink(); loadCities().then(render); }); })
       .then(render)
       .catch(function (e) { fail(e, 'Could not reach the archive. If the app sat unused for a week, the DM may need to resume it in Supabase.'); render(); });
   }
