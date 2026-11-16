@@ -14,6 +14,11 @@ The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first scr
 - **Link screens**: phone and laptop follow each other's view and panel (Supabase broadcast).
   Data changes (journey, pins, shops, articles, party) sync live on every device.
 - **Party**: a roster with a class cheat sheet for each character.
+- **Table screen**: sign a laptop in as the `table` account and it becomes a shared map for the players:
+  the party, their route and trail, their own pins, and only the wiki pages they know. It reads
+  everything through the `table_world()` function, so secrets never reach it. Each article has an
+  "At the table" setting (Unknown / Heard of / Met or Visited); places the party reaches are marked
+  visited automatically. "Show the table" on the DM's side flies the table to a place or person.
 - Installable on phones and Chromebooks ("Install" / "Add to Home Screen").
 
 ## Files
