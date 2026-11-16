@@ -3528,11 +3528,11 @@
   function boatOf(t) { return t ? rulesOf(t).boats.filter(function (b) { return b.name === t.mode; })[0] || null : null; }
   function weatherMul(t, r) { r = r || rulesOf(t); var air = airOf(t), tab = air ? r.skies : r.weathers, v = Number(tab[t.weather]); v = isFinite(v) && t.weather in tab ? v : 1; if (air && air.storm && v === 0) return 0.5; var bt = air ? null : boatOf(t); if (bt && bt.weather && v < 1) v = bt.weather >= 2 ? 1 : 1 - (1 - v) / 2; if (bt && bt.sweeps && v < 0.75) v = 0.75; if (bt && bt.nostorm && t.weather === 'Storm') return 0; return v; }
   function groundName(t, c) { return airOf(t) ? 'Air' : boatOf(t) ? WATER_NAMES[c] || c : rulesOf(t).ground[c] || c; }
-  var GROUND_NAMES = { R: 'Main roads', r: 'Other roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
-  var GROUND_KEYS = ['R', 'r', 'g', 'f', 'm'];
+  var GROUND_NAMES = { R: 'King’s roads', r: 'Lesser roads', t: 'Civilian roads', g: 'Open land', f: 'Forest', m: 'Mountains' };
+  var GROUND_KEYS = ['R', 'r', 't', 'g', 'f', 'm'];
   function groundOf(r, terrains) {
-    var gmap = Object.assign({ R: 'Major Road', r: 'Normal Road', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
-    Object.keys(gmap).forEach(function (k) { if (terrains.length && terrains.indexOf(gmap[k]) < 0) gmap[k] = terrains[Math.min(terrains.length - 1, k === 'r' || k === 'R' ? 0 : terrains.length - 1)]; });
+    var gmap = Object.assign({ R: 'Major Road', r: 'Normal Road', t: 'Trail', g: 'Rough Terrain', f: 'Rough Terrain', m: 'Mountain or Swamp' }, r.ground || {});
+    Object.keys(gmap).forEach(function (k) { if (terrains.length && terrains.indexOf(gmap[k]) < 0) gmap[k] = k === 't' && terrains.indexOf('Normal Road') >= 0 ? 'Normal Road' : terrains[Math.min(terrains.length - 1, k === 'r' || k === 'R' || k === 't' ? 0 : terrains.length - 1)]; });
     return gmap;
   }
   function milesPerDay(t) {
