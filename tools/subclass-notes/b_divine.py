@@ -1,0 +1,211 @@
+# Own-words summaries (not book text). [level, feature, what it does]. Slot costs are given in Avarenth mana.
+S = {}
+DS = "Avarenth: subclasses add no spells. Your domain's spells suit your god; learn them from tomes or your temple at the usual cost."
+OS = "Avarenth: subclasses add no spells. Your oath's spells suit your vows; learn them from tomes or your order at the usual cost."
+CD = "Channel Divinity"
+
+S["Cleric"] = {
+ "Knowledge Domain": ("Priests of learning who know secrets and read minds.", [
+  [1, "Domain spells", DS],
+  [1, "Blessings of Knowledge", "Two extra languages, and proficiency with double bonus in two of Arcana, History, Nature or Religion."],
+  [2, CD + ": Knowledge of the Ages", "Gain proficiency in any skill or tool for 10 minutes."],
+  [6, CD + ": Read Thoughts", "Read a creature's surface thoughts (Wis save), then cast Suggestion on it without spending mana."],
+  [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
+  [17, "Visions of the Past", "Meditate to see recent events around an object you hold or the area you're in."]]),
+ "Light Domain": ("Bearers of fire and dawn who burn away darkness.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Cantrip", "Learn Light."],
+  [1, "Warding Flare", "Reaction: impose disadvantage on an attack against you, Wisdom-mod times per long rest."],
+  [2, CD + ": Radiance of the Dawn", "Dispel magical darkness and deal radiant damage to hostile creatures within 30 ft (Con save halves)."],
+  [6, "Improved Flare", "Warding Flare can protect allies too."],
+  [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
+  [17, "Corona of Light", "Shed sunlight; enemies in it have disadvantage on saves against fire and radiant spells."]]),
+ "Nature Domain": ("Servants of the wild who charm beasts and shape plants.", [
+  [1, "Domain spells", DS],
+  [1, "Acolyte of Nature", "Learn a druid cantrip and one of Animal Handling, Nature or Survival."],
+  [1, "Bonus Proficiency", "Heavy armor."],
+  [2, CD + ": Charm Animals and Plants", "Charm beasts and plant creatures within 30 ft for a minute (Wis save)."],
+  [6, "Dampen Elements", "Reaction: give resistance to acid, cold, fire, lightning or thunder damage to a creature within 30 ft."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra cold, fire or lightning damage (1d8, 2d8 at 14th)."],
+  [17, "Master of Nature", "Command charmed beasts and plants with a bonus action."]]),
+ "Tempest Domain": ("Storm priests who answer blows with thunder.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiencies", "Martial weapons and heavy armor."],
+  [1, "Wrath of the Storm", "Reaction: a creature that hits you takes lightning or thunder damage (Dex save halves), Wisdom-mod times per long rest."],
+  [2, CD + ": Destructive Wrath", "Make a lightning or thunder spell deal maximum damage."],
+  [6, "Thunderbolt Strike", "Your lightning damage can push Large or smaller creatures 10 ft."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra thunder damage (1d8, 2d8 at 14th)."],
+  [17, "Stormborn", "Fly at your walking speed when outdoors and not underground."]]),
+ "Trickery Domain": ("Tricksters who deceive with illusions and doubles.", [
+  [1, "Domain spells", DS],
+  [1, "Blessing of the Trickster", "Give a creature advantage on Stealth for an hour."],
+  [2, CD + ": Invoke Duplicity", "Create an illusory duplicate you can cast through, and gain advantage when you and it flank a creature."],
+  [6, CD + ": Cloak of Shadows", "Become invisible until the end of your next turn."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra poison damage (1d8, 2d8 at 14th)."],
+  [17, "Improved Duplicity", "Create up to four duplicates."]]),
+ "War Domain": ("Champions of battle who strike with divine force.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiencies", "Martial weapons and heavy armor."],
+  [1, "War Priest", "Make a weapon attack as a bonus action after the Attack action, Wisdom-mod times per long rest."],
+  [2, CD + ": Guided Strike", "+10 to an attack roll after you see the roll."],
+  [6, CD + ": War God's Blessing", "Reaction: give an ally +10 to an attack roll."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra damage of the weapon's type (1d8, 2d8 at 14th)."],
+  [17, "Avatar of Battle", "Resistance to bludgeoning, piercing and slashing from nonmagical attacks."]]),
+ "Forge Domain": ("Smith-priests who craft and wear the finest armor.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiencies", "Heavy armor and smith's tools."],
+  [1, "Blessing of the Forge", "After a long rest, give a weapon or armor +1 until your next long rest."],
+  [2, CD + ": Artisan's Blessing", "An hour-long ritual to create a simple metal item worth up to 100 gp."],
+  [6, "Soul of the Forge", "Resistance to fire, and +1 AC in heavy armor."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra fire damage (1d8, 2d8 at 14th)."],
+  [17, "Saint of Forge and Fire", "Immunity to fire, and resistance to nonmagical weapon damage in heavy armor."]]),
+ "Grave Domain": ("Guardians against undeath who keep the dying alive and finish the doomed.", [
+  [1, "Domain spells", DS],
+  [1, "Circle of Mortality", "Healing a creature at 0 HP uses maximum dice; Spare the Dying works at 30 ft as a bonus action."],
+  [1, "Eyes of the Grave", "Sense undead within 60 ft, Wisdom-mod times per long rest."],
+  [2, CD + ": Path to the Grave", "Curse a creature so the next attack against it deals double damage."],
+  [6, "Sentinel at Death's Door", "Reaction: turn a critical hit on you or an ally into a normal hit, Wisdom-mod times per long rest."],
+  [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
+  [17, "Keeper of Souls", "When an enemy dies nearby, you or an ally regains HP equal to its Hit Dice."]]),
+ "Order Domain": ("Enforcers of law who command allies and punish disobedience.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiencies", "Heavy armor, and Intimidation or Persuasion."],
+  [1, "Voice of Authority", "When you cast a spell with mana on an ally, they can make one attack as a reaction."],
+  [2, CD + ": Order's Demand", "Charm creatures of your choice within 30 ft until your next turn and make them drop what they hold (Wis save)."],
+  [6, "Embodiment of the Law", "Cast enchantment spells as a bonus action, Wisdom-mod times per long rest."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra psychic damage (1d8, 2d8 at 14th)."],
+  [17, "Order's Wrath", "Mark a creature you hit; the next ally hit on it adds psychic damage."]]),
+ "Peace Domain": ("Peacemakers who bind allies together.", [
+  [1, "Domain spells", DS],
+  [1, "Implement of Peace", "Insight, Performance or Persuasion."],
+  [1, "Emboldening Bond", "Bond a few creatures: once per turn each can add a d4 to an attack, check or save while near another bonded creature."],
+  [2, CD + ": Balm of Peace", "Move without provoking and heal each creature you pass."],
+  [6, "Protective Bond", "Bonded creatures can teleport to each other to take damage for one another."],
+  [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
+  [17, "Expansive Bond", "The bond reaches 60 ft, and the creature that takes the hit gains resistance."]]),
+ "Twilight Domain": ("Watchers of the dusk who guard sleepers and shine in darkness.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiencies", "Martial weapons and heavy armor."],
+  [1, "Eyes of Night", "Darkvision 300 ft, which you can share."],
+  [1, "Vigilant Blessing", "Give a creature advantage on its next initiative roll."],
+  [2, CD + ": Twilight Sanctuary", "A sphere of dim light around you for a minute: each turn allies in it gain temporary HP or shake off charm or fear."],
+  [6, "Steps of Night", "Fly in dim light or darkness for a minute, a few times per long rest."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra radiant damage (1d8, 2d8 at 14th)."],
+  [17, "Twilight Shroud", "Your sanctuary also gives half cover."]]),
+ "Arcana Domain": ("Priests of magic who learn wizard spells and break spells apart.", [
+  [1, "Domain spells", DS],
+  [1, "Arcane Initiate", "Arcana proficiency and two wizard cantrips."],
+  [2, CD + ": Arcane Abjuration", "Turn (and later banish) celestials, elementals, fey and fiends."],
+  [6, "Spell Breaker", "When you heal an ally with a spell, also end one spell on them."],
+  [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
+  [17, "Arcane Mastery", "Add wizard spells of 6th to 9th level to your list (you still need the charges or channel to cast them)."]]),
+ "Death Domain": ("Priests of death who wield necrotic power.", [
+  [1, "Domain spells", DS],
+  [1, "Bonus Proficiency", "Martial weapons."],
+  [1, "Reaper", "Learn a necromancy cantrip that can target two creatures next to each other."],
+  [2, CD + ": Touch of Death", "Melee hit deals extra necrotic damage: 5 + twice your cleric level."],
+  [6, "Inescapable Destruction", "Your necrotic damage ignores resistance."],
+  [8, "Divine Strike", "Once per turn, a weapon hit deals extra necrotic damage (1d8, 2d8 at 14th)."],
+  [17, "Improved Reaper", "Single-target necromancy spells of 1st to 5th level can target a second creature."]]),
+}
+
+S["Paladin"] = {
+ "Oath of the Ancients": ("Knights who protect light, life and joy in the world.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Nature's Wrath", "Spectral vines restrain a creature (Str or Dex save)."],
+  [3, CD + ": Turn the Faithless", "Turn fey and fiends, revealing their true forms."],
+  [7, "Aura of Warding", "You and allies within 10 ft have resistance to spell damage (30 ft at 18th)."],
+  [15, "Undying Sentinel", "Drop to 1 HP instead of 0 once per long rest, and you stop aging."],
+  [20, "Elder Champion", "Transform for a minute, once per long rest: regain HP each turn, cast faster, and enemies nearby have disadvantage on saves against you."]]),
+ "Oath of Vengeance": ("Avengers who hunt the wicked without rest.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Abjure Enemy", "Frighten one creature and freeze its speed (Wis save)."],
+  [3, CD + ": Vow of Enmity", "Advantage on attacks against one creature for a minute."],
+  [7, "Relentless Avenger", "After an opportunity attack hit, move half your speed without provoking."],
+  [15, "Soul of Vengeance", "Reaction: attack the target of your Vow of Enmity when it attacks."],
+  [20, "Avenging Angel", "Grow wings and a menacing aura for an hour, once per long rest."]]),
+ "Oathbreaker": ("Fallen paladins who command undead and dread.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Control Undead", "Take control of an undead creature (Wis save)."],
+  [3, CD + ": Dreadful Aspect", "Frighten creatures within 30 ft (Wis save)."],
+  [7, "Aura of Hate", "You and undead or fiends within 10 ft add Charisma to melee damage (30 ft at 18th)."],
+  [15, "Supernatural Resistance", "Resistance to nonmagical bludgeoning, piercing and slashing."],
+  [20, "Dread Lord", "A minute-long aura of gloom that frightens and damages enemies, once per long rest."]]),
+ "Oath of Conquest": ("Conquerors who crush resistance through fear.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Conquering Presence", "Frighten creatures within 30 ft (Wis save)."],
+  [3, CD + ": Guided Strike", "+10 to an attack roll."],
+  [7, "Aura of Conquest", "Frightened enemies within 10 ft can't move and take psychic damage (30 ft at 18th)."],
+  [15, "Scornful Rebuke", "Creatures that hit you take psychic damage equal to your Charisma."],
+  [20, "Invincible Conqueror", "A minute of resistance to all damage, an extra attack and critical hits on 19–20, once per long rest."]]),
+ "Oath of Redemption": ("Peacemakers who protect others and talk before they fight.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Emissary of Peace", "+5 to Persuasion for 10 minutes."],
+  [3, CD + ": Rebuke the Violent", "Reaction: a creature that hurts another takes radiant damage equal to what it dealt (Wis save halves)."],
+  [7, "Aura of the Guardian", "Reaction: take the damage meant for an ally within 10 ft (30 ft at 18th)."],
+  [15, "Protective Spirit", "Regain HP at the end of your turn while below half."],
+  [20, "Emissary of Redemption", "Resistance to all damage, and attackers take radiant damage back, unless you attack them."]]),
+ "Oath of Glory": ("Heroes destined for great deeds.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Peerless Athlete", "Advantage on Athletics and Acrobatics, and bigger jumps and carrying, for 10 minutes."],
+  [3, CD + ": Inspiring Smite", "After Divine Smite, share temporary HP among allies."],
+  [7, "Aura of Alacrity", "+10 ft speed, and allies who start near you move faster (aura grows at 18th)."],
+  [15, "Glorious Defense", "Reaction: add Charisma to AC against an attack and strike back if it misses."],
+  [20, "Living Legend", "For a minute, once per long rest: advantage on Charisma checks, turn a miss into a hit once per turn, and reroll failed saves."]]),
+ "Oath of the Watchers": ("Guardians against invaders from other planes.", [
+  [3, "Oath spells", OS],
+  [3, CD + ": Watcher's Will", "Allies gain advantage on Int, Wis and Cha saves for a minute."],
+  [3, CD + ": Abjure the Extraplanar", "Turn aberrations, celestials, elementals, fey and fiends."],
+  [7, "Aura of the Sentinel", "You and allies add your proficiency bonus to initiative (aura grows at 18th)."],
+  [15, "Vigilant Rebuke", "Reaction: when an ally succeeds on a mental save, deal force damage to the creature that forced it."],
+  [20, "Mortal Bulwark", "For a minute, once per long rest: truesight, advantage on attacks against extraplanar creatures, and banish them on a hit."]]),
+}
+
+S["Warlock"] = {
+ "The Archfey": ("A pact with a lord or lady of the fey.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Fey Presence", "Charm or frighten creatures in a 10 ft cube (Wis save), once per short rest."],
+  [6, "Misty Escape", "When you take damage, turn invisible and teleport 60 ft, once per short rest."],
+  [10, "Beguiling Defenses", "Immune to charm, and turn charm attempts back on the caster."],
+  [14, "Dark Delirium", "Trap a creature in an illusory realm for a minute, once per short rest."]]),
+ "The Great Old One": ("A pact with an alien mind beyond the stars.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Awakened Mind", "Speak telepathically to any creature within 30 ft."],
+  [6, "Entropic Ward", "Reaction: impose disadvantage on an attack; if it misses, gain advantage on your next attack against that creature. Once per short rest."],
+  [10, "Thought Shield", "Your thoughts can't be read, resistance to psychic damage, and psychic attackers get hurt back."],
+  [14, "Create Thrall", "Touch an incapacitated humanoid to charm it permanently and talk to it telepathically."]]),
+ "The Celestial": ("A pact with a being of the upper realms. In Avarenth, every good god grants this pact.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Bonus Cantrips", "Learn Light and Sacred Flame."],
+  [1, "Healing Light", "A pool of d6s (1 + warlock level) to heal creatures at range with a bonus action. Back on a long rest."],
+  [6, "Radiant Soul", "Resistance to radiant damage; add Charisma to one fire or radiant spell damage roll."],
+  [10, "Celestial Resilience", "Gain temporary HP after each rest, and give some to allies."],
+  [14, "Searing Vengeance", "When you'd make a death save, spring back to half HP and blind nearby enemies with radiant light, once per long rest."]]),
+ "The Hexblade": ("A pact with a sentient weapon from the shadows.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Hexblade's Curse", "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."],
+  [1, "Hex Warrior", "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."],
+  [6, "Accursed Specter", "Raise a slain humanoid as a specter that serves you until your next long rest."],
+  [10, "Armor of Hexes", "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."],
+  [14, "Master of Hexes", "When your cursed target dies, move the curse to another creature."]]),
+ "The Fathomless": ("A pact with a power of the deep sea. In Avarenth, Thorum and Lull grant it.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Tentacle of the Deeps", "Summon a spectral tentacle that lashes for cold damage and slows, as a bonus action. Uses per long rest equal to proficiency bonus."],
+  [1, "Gift of the Sea", "Swim speed and breathe underwater."],
+  [6, "Oceanic Soul", "Resistance to cold, and talk to anything underwater."],
+  [6, "Guardian Coil", "Your tentacle can shield an ally from damage."],
+  [10, "Grasping Tentacles", "Cast Evard's Black Tentacles without spending mana once per long rest, with temp HP and steady concentration."],
+  [14, "Fathomless Plunge", "Teleport yourself and up to five creatures to a body of water within a mile, once per short rest."]]),
+ "The Genie": ("A pact with a noble genie, with a vessel as your focus.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Genie's Vessel", "A lamp, ring or bottle: retreat inside it for hours, and add extra elemental damage once per turn."],
+  [6, "Elemental Gift", "Resistance to your genie's damage type, and fly for 10 minutes a few times per long rest."],
+  [10, "Sanctuary Vessel", "Bring up to five creatures into your vessel; a short rest there heals more."],
+  [14, "Limited Wish", "Once per long-ish rest (1d4 long rests), cast any 6th-level or lower spell with a casting time of one action, without needing a tome. Your patron will remember the favor."]]),
+ "The Undead": ("A pact with a deathless being.", [
+  [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
+  [1, "Form of Dread", "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."],
+  [6, "Grave Touched", "No need to eat, drink or breathe; once per turn, an attack can deal necrotic and extra damage in your dread form."],
+  [10, "Necrotic Husk", "Resistance (immunity in dread form) to necrotic; once per long rest, burst back to 1 HP when you'd drop."],
+  [14, "Spirit Projection", "Project your spirit for an hour: fly, pass through objects and resist physical damage."]]),
+}

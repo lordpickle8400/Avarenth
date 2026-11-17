@@ -661,3 +661,4 @@ details.srd .srd-body { border-top: 1px solid var(--soft); padding-top: 8px; }
 details.srd.orig { margin: 10px 0 0; background: transparent; border-style: dashed; }
 details.srd.orig > summary { color: var(--muted); font-weight: 500; }
 .srd-patrons { margin: 4px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--panel); }
+.sub-sum { margin-top: 8px; }

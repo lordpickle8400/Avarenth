@@ -1101,7 +1101,9 @@
     if (cd) {
       cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) { var sf = srdClassFeat(s.cls, f[0], f[1]); out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3], srd: sf ? sf[2] : null, srdMeta: sf ? sf[3] : null }); } });
       var csub = s.subclass ? customSub(s.cls, s.subclass) : null, ssub = !csub ? srdSub(s.cls, s.subclass) : null;
-      if (ssub) ssub.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: srdFirst(f[2]), src: s.subclass + ' ' + f[0], sub: true, srd: f[2], srdMeta: f[3] || null, ruling: !!(f[3] && f[3].ruling) }); });
+      var snote = !csub && !ssub ? subNote(s.cls, s.subclass) : null;
+      if (snote) snote.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: f[2], src: s.subclass + ' ' + f[0], sub: true, summary: true }); });
+      else if (ssub) ssub.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: srdFirst(f[2]), src: s.subclass + ' ' + f[0], sub: true, srd: f[2], srdMeta: f[3] || null, ruling: !!(f[3] && f[3].ruling) }); });
       else if (csub) (csub.features || []).forEach(function (f) { if (num(f.level, 1) <= num(s.level, 1)) out.push({ name: f.name, text: f.text || '', src: s.subclass + ' ' + num(f.level, 1), sub: true }); });
       else (RULES.subLevels[s.cls] || []).forEach(function (l) {
         if (l <= num(s.level, 1)) out.push({ name: (s.subclass || cd.subclassLabel) + ' feature', text: s.subclass ? 'Your ' + cd.subclassLabel.toLowerCase() + ' grants a feature at level ' + l + '. Add its details below, or ask your DM.' : 'You reach a ' + cd.subclassLabel.toLowerCase() + ' feature at level ' + l + ', once you choose one.', src: s.cls + ' ' + l, sub: true });
@@ -1275,8 +1277,9 @@
       html += '<p class="guide">' + (step === 'Domain' ? 'Your domain is the part of ' + (b.patron ? esc(b.patron) + '’s' : 'your god’s') + ' power you carry. It decides your domain spells and your Channel Divinity.' :
         step === 'Pact' ? 'What kind of pact did you make' + (b.patron ? ' with ' + esc(b.patron) : '') + '? It decides your extra spells and the gifts your patron gives you.' :
         'Where does your magic come from? Your origin shapes the gifts it gives you.') + '</p>' +
-        choiceGrid(sopts.map(function (o) { return [o.name, o.custom ? (o.about || 'Avarenth') : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the D&D rules']; }), b.sub, 'bd-sub');
-      var csel = b.sub ? customSub(b.cls, b.sub) : null;
+        choiceGrid(sopts.map(function (o) { var nt = subNote(b.cls, o.name), ss = srdSub(b.cls, o.name); return [o.name, o.custom ? (o.about || 'Avarenth') : nt ? nt.about : ss ? ss.tagline || ss.about : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the D&D rules']; }), b.sub, 'bd-sub');
+      var csel = b.sub ? customSub(b.cls, b.sub) : null, nsel = !csel && b.sub ? subNote(b.cls, b.sub) : null, ssel = !csel && !nsel && b.sub ? srdSub(b.cls, b.sub) : null;
+      if (nsel || ssel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(b.sub) + '</h2><div class="tbl">' + (nsel ? nsel.features : ssel.features.map(function (f) { return [f[0], f[1], srdFirst(f[2])]; })).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div>' + (nsel ? '<p class="note" style="margin:6px 0 0">' + SUMMARY_NOTE + '</p>' : '') + '</div>';
       if (csel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(csel.name) + '</h2>' + (csel.about ? '<p class="note" style="margin-top:0">' + esc(csel.about) + '</p>' : '') +
         '<div class="tbl">' + (csel.features || []).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + num(f.level, 1) + ': ' + esc(f.name) + '</b><span>' + esc(f.text || '') + '</span></div></div>'; }).join('') + '</div></div>';
       if (b.patron && scd && sopts.length < scd.subclasses.length) html += '<p class="note">Only the ones ' + esc(b.patron) + ' grants are shown.</p>';
@@ -1921,6 +1924,8 @@
       var all = derivedFeatures(s);
       var ssub2 = SRD && s.subclass ? srdSub(s.cls, s.subclass) : null;
       if (ssub2 && ssub2.about) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.subclass) + '</h2><p class="prose" style="margin:0">' + srdInline(ssub2.about) + '</p></section>';
+      var snote2 = !ssub2 && s.subclass && !customSub(s.cls, s.subclass) ? subNote(s.cls, s.subclass) : null;
+      if (snote2) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.subclass) + '</h2><p class="prose" style="margin:0">' + esc(snote2.about) + '</p><p class="note" style="margin:4px 0 0">' + SUMMARY_NOTE + '</p></section>';
       all.forEach(function (f) {
         html += '<section class="section feat"><h2>' + esc(f.name) + (f.ruling ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '<small>' + esc(f.src) + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + srdDetails(f.srd, f.srdMeta ? 'Full rules, Avarenth mana version' : 'Full rules text', f.srdMeta) + '</section>';
       });
@@ -8043,15 +8048,21 @@
      srd.json holds the System Reference Document 5.2.1 by Wizards of the Coast (CC-BY-4.0): full class
      feature text, one subclass per class, feats, species, backgrounds, Metamagic and Invocations.
      It loads once after sign-in. Anything from the paid books stays a name only. */
-  var SRD = null;
+  var SRD = null, SUBNOTES = null;
   var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
   var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
   function loadSrd() {
     if (SRD) return Promise.resolve(SRD);
     if (loadSrd.p) return loadSrd.p;
-    loadSrd.p = fetch('srd.json').then(function (r) { if (!r.ok) throw new Error('srd'); return r.json(); }).then(function (d) { SRD = d; render(); return d; }).catch(function () { loadSrd.p = null; });
+    loadSrd.p = Promise.all([
+      fetch('srd.json').then(function (r) { if (!r.ok) throw new Error('srd'); return r.json(); }),
+      fetch('subclass-notes.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+    ]).then(function (d) { SRD = d[0]; SUBNOTES = d[1] || {}; render(); return SRD; }).catch(function () { loadSrd.p = null; });
     return loadSrd.p;
   }
+  // Our own short summaries of the subclasses in the paid books (not the book text).
+  function subNote(cls, sub) { return SUBNOTES && SUBNOTES[cls] && sub ? SUBNOTES[cls][sub] || null : null; }
+  var SUMMARY_NOTE = 'Summary in our own words. Check the exact wording in the book.';
   function srdName(n) { return String(n || '').toLowerCase().replace(/[^a-z]/g, ''); }
   function srdSub(cls, sub) { var x = SRD && SRD.subclasses[cls]; return x && sub && (x.name === sub || SRD_SUB_ALIAS[x.name] === sub) ? x : null; }
   function srdClassFeat(cls, level, name) {
@@ -8114,6 +8125,9 @@
         var sb2 = SRD.subclasses[cls];
         html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + srdPatrons(cls, sb2.name) + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
           sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
+        var others = SUBNOTES && SUBNOTES[cls] ? Object.keys(SUBNOTES[cls]) : [];
+        if (others.length) html += '<section class="block"><h2 class="sec-title">From the other books<small>' + others.length + ' summaries</small></h2><p class="note" style="margin:0">' + SUMMARY_NOTE + ' Levels follow the 2014 books, like the rest of the app.</p>' +
+          others.map(function (n) { var x = SUBNOTES[cls][n]; return '<details class="srd sub-sum"><summary>' + esc(n) + '</summary><div class="prose srd-body"><p><i>' + esc(x.about) + '</i></p>' + srdPatrons(cls, n) + '<div class="tbl">' + x.features.map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
       }
     } else if (tab === 'feats') {
       var cats = []; SRD.feats.forEach(function (f) { if (cats.indexOf(f.category) < 0) cats.push(f.category); });
@@ -8400,7 +8414,8 @@
     var subL = (RULES.subLevels[s.cls] || []).filter(function (l) { return l <= L; });
     if (subL.length) {
       var cs = s.subclass ? customSub(s.cls, s.subclass) : null, ss2 = !cs ? srdSub(s.cls, s.subclass) : null;
-      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (ss2 ? ss2.features.filter(function (f) { return f[0] <= L; }).map(function (f) { return featLine([f[0], f[1], srdFirst(f[2])]) + srdDetails(f[2], 'Full rules', f[3]); }).join('') : cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
+      var sn3 = !cs && !ss2 ? subNote(s.cls, s.subclass) : null;
+      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (sn3 ? sn3.features.filter(function (f) { return f[0] <= L; }).map(featLine).join('') + '<p class="note" style="margin:4px 0 0">' + SUMMARY_NOTE + '</p>' : ss2 ? ss2.features.filter(function (f) { return f[0] <= L; }).map(function (f) { return featLine([f[0], f[1], srdFirst(f[2])]) + srdDetails(f[2], 'Full rules', f[3]); }).join('') : cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
         : '<p class="note" style="margin:0">' + (s.subclass ? 'Features at level ' + subL.join(', ') + '. Check their sheet for the details.' : 'They reach a ' + esc(cd.subclassLabel.toLowerCase()) + ' at level ' + cd.subclassLevel + '. Not set yet.') + '</p>');
     }
     var next = cd.features.filter(function (f) { return f[0] > L; }).slice(0, 3);
