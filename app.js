@@ -345,19 +345,27 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['rules', 'Rules'], ['members', 'Players']];
+  var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells']];
   var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
     var r = parseRoute();
     document.body.classList.toggle('table-mode', isTable());
     document.body.classList.toggle('atlas-mode', r.name === 'map' || r.name === '');
+    if (session && isMember() && !isDM()) {
+      $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
+      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells' })[r.name] || '';
+      $tabs.innerHTML = PLAYER_NAV.map(function (t) { return '<a href="#/' + t[0] + '"' + (psec === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
+      $tabs.hidden = false;
+      return;
+    }
     if (!session || !isDM()) {
       $barRight.innerHTML = session ? '<button type="button" class="btn small" data-act="signout">Sign out</button>' : '';
       $tabs.hidden = true;
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', subclasses: 'party' })[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -369,7 +377,8 @@
     if (!session) return renderAuth();
     if (!profile) return renderMessage('Setting up your account…', 'This only takes a moment. If it sticks, refresh the page.');
     if (isTable()) { if (!TABLE) startTable(); return renderAtlas(''); }
-    if (!isDM()) return renderPending();
+    if (!isMember()) return renderPending();
+    if (!isDM()) return renderPlayer(parseRoute());
     var r = parseRoute();
     if (r.name !== 'map' && r.name !== '') document.body.classList.remove('atlas-mode');
     if (r.name !== 'shop') ui.freshened = null;
@@ -384,7 +393,13 @@
       case 'edit': return renderEdit(r.arg);
       case 'builder': return renderBuilder();
       case 'customize': return renderCustomize();
-      case 'characters': case 'c': case 'build': case 'level-up': case 'members': case 'join': location.replace('#/party'); return;
+      case 'characters': return renderCharacters();
+      case 'c': return renderSheet(r.arg);
+      case 'build': return renderBuild();
+      case 'level-up': return renderLevelUp(r.arg);
+      case 'members': return renderMembers();
+      case 'rules': return renderRules(r.arg);
+      case 'join': location.replace('#/party'); return;
       case 'party': return renderParty(r.arg);
       case 'wiki': return renderHome();
       case 'pins': return renderMap(r.arg);
@@ -410,6 +425,25 @@
     }
   }
 
+  // Players, on their own phones: the shared map (only what the party knows), their characters, the rules and spells.
+  function renderPlayer(r) {
+    if (!TABLE) startTable();
+    if (r.name !== 'map' && r.name !== '' && r.name !== 'a') document.body.classList.remove('atlas-mode');
+    switch (r.name) {
+      case 'characters': return renderCharacters();
+      case 'c': return renderSheet(r.arg);
+      case 'build': return renderBuild();
+      case 'level-up': return renderLevelUp(r.arg);
+      case 'join': return renderJoin();
+      case 'rules': return renderRules(r.arg);
+      case 'spells': return renderSpells();
+      case 'spell-new': return renderSpellForm('');
+      case 'account': return renderAccount();
+      case 'a': if (articleBySlug(r.arg)) { AT.sel = { t: 'article', slug: r.arg }; } location.replace('#/map'); return;
+      default: document.body.classList.add('atlas-mode'); return renderAtlas('');
+    }
+  }
+
   /* ================= Auth & account ================= */
   function renderNoLibrary() {
     $view.innerHTML = '<div class="page narrow"><div class="empty">The app couldn’t load its connection library. Check that you’re online, then refresh.</div></div>';
@@ -418,10 +452,10 @@
     $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">' + esc(title) + '</p><div class="empty">' + esc(body) + '</div></div>';
   }
   function renderAuth() {
-    var signup = false;
+    var signup = ui.authMode === 'signup';
     $view.innerHTML = '<div class="auth">' +
       '<h1>AVARENTH</h1><p class="eyebrow sub">The World</p>' +
-      '<p class="note" style="text-align:center;margin:0">The Dungeon Master’s table. Sign in to open it.</p>' +
+      '<div class="seg" role="group" aria-label="Account" style="align-self:center"><button type="button" data-act="authmode" data-mode="signin" aria-pressed="' + !signup + '">Sign in</button><button type="button" data-act="authmode" data-mode="signup" aria-pressed="' + signup + '">Create account</button></div>' +
       '<form class="form" id="auth-form" novalidate>' +
       (signup ? '<div class="field"><label for="a-name">Your name</label><input type="text" id="a-name" autocomplete="nickname" placeholder="What the table calls you"></div>' : '') +
       '<div class="field"><label for="a-email">Email</label><input type="email" id="a-email" autocomplete="email" required></div>' +
@@ -455,9 +489,9 @@
     }
   }
   function renderPending() {
-    $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">DM only</p>' +
-      '<div class="empty">This is the Dungeon Master’s tool. ' + esc(session.user.email || 'This account') + ' isn’t the DM account.</div>' +
-      '<div class="actions" style="justify-content:center"><button type="button" class="btn" data-act="signout">Sign out</button></div></div>';
+    $view.innerHTML = '<div class="auth"><h1>AVARENTH</h1><p class="eyebrow sub">Almost there</p>' +
+      '<div class="empty">Your account is set up as <b>' + esc(profile.display_name || 'a new player') + '</b>. The DM needs to approve you before the map and your character sheet open up. Once they do, tap Check again.</div>' +
+      '<div class="actions" style="justify-content:center"><button type="button" class="btn primary" data-act="recheck">Check again</button><button type="button" class="btn" data-act="signout">Sign out</button></div></div>';
   }
   function renderAccount() {
     $view.innerHTML = '<div class="page narrow"><div><p class="eyebrow">Account</p><h1 class="page-title">' + esc(profile.display_name || 'Your account') + '</h1>' +
@@ -1065,9 +1099,10 @@
   function derivedFeatures(s) {
     var out = [], cd = classOf(s), sp = RULES.species[s.species];
     if (cd) {
-      cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3] }); });
-      var csub = s.subclass ? customSub(s.cls, s.subclass) : null;
-      if (csub) (csub.features || []).forEach(function (f) { if (num(f.level, 1) <= num(s.level, 1)) out.push({ name: f.name, text: f.text || '', src: s.subclass + ' ' + num(f.level, 1), sub: true }); });
+      cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) { var sf = srdClassFeat(s.cls, f[0], f[1]); out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3], srd: sf ? sf[2] : null }); } });
+      var csub = s.subclass ? customSub(s.cls, s.subclass) : null, ssub = !csub ? srdSub(s.cls, s.subclass) : null;
+      if (ssub) ssub.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: srdFirst(f[2]), src: s.subclass + ' ' + f[0], sub: true, srd: f[2] }); });
+      else if (csub) (csub.features || []).forEach(function (f) { if (num(f.level, 1) <= num(s.level, 1)) out.push({ name: f.name, text: f.text || '', src: s.subclass + ' ' + num(f.level, 1), sub: true }); });
       else (RULES.subLevels[s.cls] || []).forEach(function (l) {
         if (l <= num(s.level, 1)) out.push({ name: (s.subclass || cd.subclassLabel) + ' feature', text: s.subclass ? 'Your ' + cd.subclassLabel.toLowerCase() + ' grants a feature at level ' + l + '. Add its details below, or ask your DM.' : 'You reach a ' + cd.subclassLabel.toLowerCase() + ' feature at level ' + l + ', once you choose one.', src: s.cls + ' ' + l, sub: true });
       });
@@ -1094,7 +1129,7 @@
   function charRow(c, showOwner) {
     var s = normSheet(c.sheet);
     var line = ['Level ' + num(s.level, 1), s.species, s.cls].filter(Boolean).join(' · ');
-    return '<a class="row" href="#/party/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
+    return '<a class="row" href="#/' + (isDM() ? 'party' : 'c') + '/' + encodeURIComponent(c.id) + '"><span class="row-main"><b>' + esc(c.name) + '</b><span>' + esc(line) + (showOwner ? ' · ' + esc(memberName(c.owner_id)) : '') + '</span></span></a>';
   }
 
   function renderCharacters() {
@@ -1275,10 +1310,22 @@
         choiceGrid(Object.keys(RULES.species).map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species');
       var sp = RULES.species[b.species];
       if (sp) html += '<div class="group-box"><h2>' + esc(b.species) + '</h2><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
-        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></div>';
+        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)') : '') + '</div>';
     } else if (step === 'Background') {
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills.</p>' +
         choiceGrid(Object.keys(RULES.backgrounds).map(function (k) { return [k, RULES.backgrounds[k].join(', ')]; }), b.bg, 'bd-bg');
+      var sbg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
+      if (sbg) html += '<div class="group-box"><h2>' + esc(b.bg) + ' (2024 rules)</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd></dl></div>';
+      if (SRD && b.bg) {
+        var origins = SRD.feats.filter(function (f) { return f.category === 'Origin'; });
+        var def = sbg ? sbg.feat.replace(/\s*\(.*$/, '') : '';
+        if (b.ofeat === undefined && def) b.ofeat = def;
+        html += '<h2 class="sec-title" style="margin-top:14px">Origin feat</h2><p class="guide">In the 2024 rules every background gives a level 1 feat. Skip it if your DM doesn’t use them.</p>' +
+          choiceGrid(origins.map(function (f) { return [f.name, srdFirst(f.text)]; }), b.ofeat, 'bd-ofeat') +
+          '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-ofeat" data-val="">No origin feat</button></div>';
+        var of = b.ofeat ? srdFeat(b.ofeat) : null;
+        if (of) html += srdDetails(of.text, 'What ' + of.name + ' does');
+      }
     } else if (step === 'Abilities') {
       html += buildAbilitiesHtml(b, cd);
     } else if (step === 'Skills') {
@@ -1384,6 +1431,8 @@
     cd.saves.forEach(function (k) { s.saves[k] = true; });
     buildFixedSkills(b).concat(b.skills).forEach(function (k) { s.skills[k] = 1; });
     s.spells = b.spells.map(function (n) { var sp = spellByName(n); return { name: n, level: sp ? sp.level : 0, school: sp ? sp.school : '', source: 'Class' }; });
+    var ofeat = b.ofeat ? srdFeat(b.ofeat) : null;
+    if (ofeat) s.features.push({ name: ofeat.name, text: srdFirst(ofeat.text) + ' (Origin feat.)', feat: ofeat.name });
     s.log = [{ level: 1, text: 'Created with the character builder.' }];
     return s;
   }
@@ -1451,7 +1500,7 @@
       var opt = function (cur) { return '<option value="">—</option>' + ABILITIES.map(function (a) { var v = num(s.abilities[a[0]], 10); return '<option value="' + a[0] + '"' + (cur === a[0] ? ' selected' : '') + (v >= 20 ? ' disabled' : '') + '>' + a[1] + ' (' + v + ')</option>'; }).join(''); };
       html += '<section class="block"><h2 class="sec-title">Ability score improvement</h2><p class="note">Raise one ability by 2, two abilities by 1 each, or take a feat instead. Scores can’t go above 20. Even numbers matter most: that’s when a modifier goes up.</p>' +
         '<div class="seg wide" role="group" aria-label="Improvement">' + [['two', '+1 and +1'], ['one', '+2 to one'], ['feat', 'A feat']].map(function (o) { return '<button type="button" data-act="lv-asi" data-val="' + o[0] + '" aria-pressed="' + (L.asi === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-        (L.asi === 'feat' ? '<div class="field"><label for="lv-feat">Feat</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. War Caster"><span class="hint">Check with your DM which feats are allowed.</span></div>'
+        (L.asi === 'feat' ? levelFeatHtml(L, nxt)
           : '<div class="two"><div class="field"><label for="lv-a">' + (L.asi === 'one' ? '+2 to' : 'First +1') + '</label><select id="lv-a" data-lv="a">' + opt(L.a) + '</select></div>' + (L.asi === 'two' ? '<div class="field"><label for="lv-b">Second +1</label><select id="lv-b" data-lv="b">' + opt(L.b) + '</select></div>' : '') + '</div>') + '</section>';
     }
     var arcLevel = s.cls === 'Warlock' ? (RULES.magic.arcanum || {})[nxt] : 0;
@@ -1476,12 +1525,21 @@
     html += '<p class="err" ' + (err ? '' : 'hidden') + '>' + esc(err) + '</p><div class="actions"><a class="btn" href="#/c/' + encodeURIComponent(c.id) + '">Cancel</a><button type="button" class="btn primary" data-act="lv-apply">Level up to ' + nxt + '</button></div></div>';
     $view.innerHTML = html;
   }
+  // Feats at an Ability Score Improvement: the free SRD ones by name with their text, or any other by name.
+  function levelFeatHtml(L, nxt) {
+    var list = SRD ? SRD.feats.filter(function (f) { return f.category !== 'Origin' && f.name !== 'Ability Score Improvement' && (f.category !== 'Epic Boon' || nxt >= 19); }) : [];
+    var other = L.featPick === '__other' || !list.length;
+    var picked = !other && L.featPick ? srdFeat(L.featPick) : null;
+    return '<div class="field"><label for="lv-featpick">Feat</label><select id="lv-featpick" data-lv="featPick"><option value="">Choose…</option>' + list.map(function (f) { return '<option value="' + esc(f.name) + '"' + (L.featPick === f.name ? ' selected' : '') + '>' + esc(f.name) + (f.prereq ? ' (' + esc(f.prereq) + ')' : '') + '</option>'; }).join('') + '<option value="__other"' + (L.featPick === '__other' ? ' selected' : '') + '>Another feat (type its name)</option></select></div>' +
+      (picked ? srdDetails(picked.text, 'What ' + picked.name + ' does') : '') +
+      (other ? '<div class="field"><label for="lv-feat">Feat name</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. War Caster"><span class="hint">Feats from the paid books: check with your DM, and type in what it does on your sheet.</span></div>' : '');
+  }
   function levelUpError(L, needSub, isAsi, needArc) {
     if (L.hp === 'roll' && !L.rolled) return 'Enter what your hit die rolled, or take the average.';
     if (needArc && !L.arc) return 'Choose the spell your patron grants.';
     if (needSub && (!L.sub || (L.sub === 'Other…' && !L.subOther.trim()))) return 'Choose your subclass.';
     if (isAsi) {
-      if (L.asi === 'feat' && !L.feat.trim()) return 'Name your feat.';
+      if (L.asi === 'feat' && !(L.featPick && L.featPick !== '__other') && !String(L.feat || '').trim()) return 'Choose or name your feat.';
       if (L.asi === 'one' && !L.a) return 'Pick an ability to raise.';
       if (L.asi === 'two' && (!L.a || !L.b || L.a === L.b)) return 'Pick two different abilities.';
     }
@@ -1497,7 +1555,11 @@
     var conBefore = mod(s.abilities.con);
     var notes = [];
     if (isAsi) {
-      if (L.asi === 'feat') { s.features.push({ name: L.feat.trim(), text: 'Feat taken at level ' + nxt + '.' }); notes.push('took the ' + L.feat.trim() + ' feat'); }
+      if (L.asi === 'feat') {
+        var fp = L.featPick && L.featPick !== '__other' ? srdFeat(L.featPick) : null, fname = fp ? fp.name : String(L.feat || '').trim();
+        s.features.push(fp ? { name: fp.name, text: srdFirst(fp.text) + ' (Feat, taken at level ' + nxt + '.)', feat: fp.name } : { name: fname, text: 'Feat taken at level ' + nxt + '.' });
+        notes.push('took the ' + fname + ' feat');
+      }
       else if (L.asi === 'one') { s.abilities[L.a] = Math.min(20, num(s.abilities[L.a], 10) + 2); notes.push('+2 ' + L.a.toUpperCase()); }
       else { s.abilities[L.a] = Math.min(20, num(s.abilities[L.a], 10) + 1); s.abilities[L.b] = Math.min(20, num(s.abilities[L.b], 10) + 1); notes.push('+1 ' + L.a.toUpperCase() + ', +1 ' + L.b.toUpperCase()); }
     }
@@ -1858,10 +1920,10 @@
       html += '<div class="stack" style="margin-top:12px">';
       var all = derivedFeatures(s);
       all.forEach(function (f) {
-        html += '<section class="section feat"><h2>' + esc(f.name) + (f.ruling ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '<small>' + esc(f.src) + '</small></h2><div class="prose">' + rich(f.text) + '</div></section>';
+        html += '<section class="section feat"><h2>' + esc(f.name) + (f.ruling ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '<small>' + esc(f.src) + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + srdDetails(f.srd, 'Full rules text (2024 SRD)') + '</section>';
       });
       s.features.forEach(function (f, i) {
-        html += '<section class="section feat"><h2>' + esc(f.name) + '<small>Added' + (edit ? ' <button type="button" class="btn small danger" data-act="rm" data-list="features" data-i="' + i + '">Remove</button>' : '') + '</small></h2><div class="prose">' + rich(f.text) + '</div></section>';
+        html += '<section class="section feat"><h2>' + esc(f.name) + '<small>Added' + (edit ? ' <button type="button" class="btn small danger" data-act="rm" data-list="features" data-i="' + i + '">Remove</button>' : '') + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + (f.feat && srdFeat(f.feat) ? srdDetails(srdFeat(f.feat).text, 'Full rules text (2024 SRD)') : '') + '</section>';
       });
       if (!all.length && !s.features.length) html += '<div class="empty">No features yet. Set a class and species to fill these in.</div>';
       html += '</div>';
@@ -4339,7 +4401,7 @@
     liveRefresh.jobs = (liveRefresh.jobs || []).concat([job]);
     liveRefresh.t = setTimeout(function () {
       var jobs = liveRefresh.jobs; liveRefresh.jobs = [];
-      Promise.all(jobs.map(function (fn) { return fn(); })).then(function () {
+      Promise.all(jobs.map(function (fn) { return fn(); })).then(function () { return TABLE ? loadTable() : null; }).then(function () {
         checkVisited(); tableNudge();
         if (!busy()) { rememberMapScroll(); render(); }
       }).catch(function () {});
@@ -6822,7 +6884,10 @@
       case 'role':
         sb.rpc('set_member_role', { target: el.getAttribute('data-id'), new_role: el.getAttribute('data-role') }).then(function (r) {
           if (r.error) return fail(r.error, 'Could not change that player’s access.');
-          loadMembers().then(function () { toast(el.getAttribute('data-role') === 'player' ? 'Approved' : 'Access removed'); renderMembers(); });
+          var who = el.getAttribute('data-id'), camp0 = activeCamp();
+          var seat = el.getAttribute('data-role') === 'player' && camp0 && !memberships.some(function (x) { return x.campaign_id === camp0.id && x.user_id === who; })
+            ? sb.from('campaign_members').insert({ campaign_id: camp0.id, user_id: who }).then(function () { return loadMembers(); }) : Promise.resolve();
+          seat.then(function () { return Promise.all([loadMembers(), loadWiki()]); }).then(function () { toast(el.getAttribute('data-role') === 'player' ? 'Approved and seated in ' + (camp0 ? camp0.name : 'the campaign') : 'Access removed'); renderMembers(); });
         });
         break;
       case 'reload-members': loadMembers().then(renderMembers).catch(function (err) { fail(err); }); break;
@@ -6885,6 +6950,7 @@
         else if (act === 'bd-species') { if (bb.species !== val) bb.skills = []; bb.species = val; }
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
+      case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
       case 'bd-patron':
         ui.build.patron = el.getAttribute('data-val');
         if (ui.build.sub && !subclassOptions(ui.build.cls, ui.build.patron).some(function (o) { return o.name === ui.build.sub; })) ui.build.sub = '';
@@ -7971,6 +8037,87 @@
     } finally { setTimeout(function () { AT.remote = false; }, 400); }
   }
 
+  /* ================= The free D&D rules (SRD 5.2.1) =================
+     srd.json holds the System Reference Document 5.2.1 by Wizards of the Coast (CC-BY-4.0): full class
+     feature text, one subclass per class, feats, species, backgrounds, Metamagic and Invocations.
+     It loads once after sign-in. Anything from the paid books stays a name only. */
+  var SRD = null;
+  var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
+  var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
+  function loadSrd() {
+    if (SRD) return Promise.resolve(SRD);
+    if (loadSrd.p) return loadSrd.p;
+    loadSrd.p = fetch('srd.json').then(function (r) { if (!r.ok) throw new Error('srd'); return r.json(); }).then(function (d) { SRD = d; render(); return d; }).catch(function () { loadSrd.p = null; });
+    return loadSrd.p;
+  }
+  function srdName(n) { return String(n || '').toLowerCase().replace(/[^a-z]/g, ''); }
+  function srdSub(cls, sub) { var x = SRD && SRD.subclasses[cls]; return x && sub && (x.name === sub || SRD_SUB_ALIAS[x.name] === sub) ? x : null; }
+  function srdClassFeat(cls, level, name) {
+    var list = SRD && SRD.classes[cls], n = srdName(name);
+    if (!list || !n) return null;
+    return list.filter(function (f) { var m = srdName(f[1]); return f[0] === level && (m === n || m.indexOf(n) >= 0 || n.indexOf(m) >= 0); })[0] || null;
+  }
+  function srdFeat(name) { var n = srdName(name); return SRD ? SRD.feats.filter(function (f) { return srdName(f.name) === n; })[0] || null : null; }
+  function srdFirst(blocks) {
+    var ps = (blocks || []).filter(function (b) { return b[0] === 'p'; }), p = ps[0];
+    var t = p ? p[1] : '';
+    // "You gain the following benefits." says nothing on its own: list the benefits' names instead.
+    if (/following benefits|these benefits|the following/i.test(t) && t.length < 80) {
+      var names = ps.slice(1).map(function (x) { var m = /^_([^_]+?)\.?_/.exec(x[1]); return m ? m[1] : ''; }).filter(Boolean);
+      if (names.length) t = names.join(' · ') + '.';
+    }
+    t = t.replace(/_/g, '').replace(/\*\*/g, '');
+    return t.length > 240 ? t.slice(0, 237).replace(/\s+\S*$/, '') + '…' : t;
+  }
+  function srdInline(t) { return esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[\s(“"])_([^_]+)_/g, '$1<i>$2</i>'); }
+  function srdBlocks(b) {
+    return (b || []).map(function (x) {
+      if (x[0] === 'p') return '<p>' + srdInline(x[1]) + '</p>';
+      if (x[0] === 'h') return '<h4>' + esc(x[1]) + '</h4>';
+      if (x[0] === 'ul') return '<ul>' + x[1].map(function (i) { return '<li>' + srdInline(i) + '</li>'; }).join('') + '</ul>';
+      if (x[0] === 'table') return '<div class="srd-tw"><table class="srd-t">' + (x[1].length ? '<thead><tr>' + x[1].map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead>' : '') + '<tbody>' + x[2].map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+      return '';
+    }).join('');
+  }
+  function srdDetails(blocks, label) { return blocks && blocks.length ? '<details class="srd"><summary>' + esc(label || 'Full rules text') + '</summary><div class="prose srd-body">' + srdBlocks(blocks) + '</div></details>' : ''; }
+
+  // The rules reference: everything in the free SRD, for players and the DM.
+  function renderRules(arg) {
+    document.body.classList.remove('atlas-mode');
+    if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
+    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations']];
+    var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
+    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1). Subclasses from the paid books are listed in the builder by name; ask your DM about those.</p></div>' +
+      '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
+    if (tab === 'classes' || tab === 'subclasses') {
+      var names = Object.keys(SRD.classes);
+      var cls = names.indexOf(pick) >= 0 ? pick : names[0];
+      html += '<div class="pill-row">' + names.map(function (n) { return '<a class="pill small" href="#/rules/' + tab + ':' + encodeURIComponent(n) + '"' + (n === cls ? ' aria-current="page"' : '') + '>' + n + '</a>'; }).join('') + '</div>';
+      if (tab === 'classes') {
+        html += '<section class="block"><h2 class="sec-title">' + esc(cls) + '</h2>' + SRD.classes[cls].map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div></section>'; }).join('') + '</section>';
+      } else {
+        var sb2 = SRD.subclasses[cls];
+        html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
+          sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div></section>'; }).join('') + '</section>';
+      }
+    } else if (tab === 'feats') {
+      var cats = []; SRD.feats.forEach(function (f) { if (cats.indexOf(f.category) < 0) cats.push(f.category); });
+      cats.forEach(function (c) {
+        html += '<section class="block"><h2 class="sec-title">' + esc(c) + ' feats</h2>' + SRD.feats.filter(function (f) { return f.category === c; }).map(function (f) { return '<section class="section feat"><h2>' + esc(f.name) + (f.prereq ? '<small>' + esc(f.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(f.text) + '</div></section>'; }).join('') + '</section>';
+      });
+    } else if (tab === 'species') {
+      Object.keys(SRD.species).forEach(function (n) { var sp = SRD.species[n]; html += '<section class="section feat"><h2>' + esc(n) + '<small>' + esc([sp.size, sp.speed].join(' · ')) + '</small></h2><div class="prose srd-body">' + srdBlocks(sp.text) + '</div></section>'; });
+      html += '<p class="note">Avarenth’s own species (kobolds, lizardfolk, half-elves, half-orcs and the rest) use the traits in the character builder.</p>';
+    } else if (tab === 'backgrounds') {
+      Object.keys(SRD.backgrounds).forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + '</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd></dl></section>'; });
+    } else {
+      var key = tab === 'metamagic' ? 'Metamagic' : 'Eldritch Invocation';
+      html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div></section>'; }).join('');
+    }
+    html += '<p class="note srd-credit">' + esc(SRD_CREDIT) + '</p></div>';
+    $view.innerHTML = html;
+  }
+
   /* ================= The table screen =================
      A laptop in the middle of the table, signed in as the 'table' account. It shows the map, the party,
      their route and trail, their own pins, and the wiki pages they know. The database only ever hands it
@@ -7985,7 +8132,7 @@
     TBL.loading = sb.rpc('table_world').then(function (r) {
       if (r.error) throw r.error;
       var w = r.data || {}, m = w.map;
-      campaigns = w.campaign ? [{ id: w.campaign, slug: 'table', name: '', status: 'active' }] : [];
+      if (isTable() && w.campaign && !campaigns.some(function (c) { return c.id === w.campaign; })) campaigns = campaigns.concat([{ id: w.campaign, slug: 'table', name: '', status: 'active' }]);
       articles = (w.articles || []).map(function (a) { return { id: 'a:' + a.slug, slug: a.slug, title: a.title, template: a.template, summary: a.summary || '', fields: a.fields || {}, sections: a.sections || [], hidden: false, state: a.state, campaign_id: null }; });
       secrets = {};
       if (m) {
@@ -8001,7 +8148,7 @@
       }
       travel = {}; if (w.travel && w.campaign) travel[w.campaign] = w.travel;
       TBL.trail = w.trail || [];
-      loaded.wiki = true; loaded.maps = true; loaded.shops = false;
+      loaded.wiki = true; loaded.maps = true; if (isTable()) loaded.shops = false;
       return m ? sb.from('table_pins').select('*').eq('map_id', m.id).order('created_at') : null;
     }).then(function (r) {
       if (r && !r.error) TBL.pins = r.data || [];
@@ -8013,7 +8160,7 @@
     TABLE = true;
     AT.linked = false;
     AT.layers = { towns: true, labels: false, ruins: false, tolls: false, party: true, shops: false, marks: false, grid: false };
-    document.body.classList.add('table-mode');
+    if (isTable()) document.body.classList.add('table-mode');
     loadTable().then(render).catch(function (e) { fail(e, 'Could not load the table map.'); });
     if (sb.channel && !tableChannel) {
       tableChannel = sb.channel('avarenth-table', { config: { broadcast: { self: false } } })
@@ -8211,7 +8358,7 @@
         '<div class="field"><label for="pc-notes">Notes</label><textarea id="pc-notes" rows="4" placeholder="Hooks, secrets, what they want, what they owe">' + esc(s.notes || '') + '</textarea></div>' +
         '<div class="actions"><button type="submit" class="btn primary">Save</button>' + (c ? '<button type="button" class="btn" data-act="pc-cancel">Cancel</button><button type="button" class="btn danger" data-act="pc-delete" data-id="' + esc(c.id) + '" style="margin-left:auto">' + (ui.pendingDelete === c.id ? 'Tap again to remove' : 'Remove') + '</button>' : '<a class="btn" href="#/party">Cancel</a>') + '</div></form>';
     } else {
-      html += '<div class="actions"><button type="button" class="btn" data-act="pc-edit" data-id="' + esc(c.id) + '">Edit</button><a class="btn" href="#/party">Back</a></div>';
+      html += '<div class="actions"><button type="button" class="btn" data-act="pc-edit" data-id="' + esc(c.id) + '">Edit</button><a class="btn" href="#/c/' + encodeURIComponent(c.id) + '">Full sheet</a><a class="btn" href="#/party">Back</a></div>';
     }
     if (c && s.cls) html += cheatSheet(s);
     if (c && !editing && s.notes) html += '<section class="block"><h2 class="sec-title">Notes</h2><div class="prose">' + rich(s.notes) + '</div></section>';
@@ -8234,11 +8381,11 @@
     var feats = cd.features.filter(function (f) { return f[0] <= L; });
     var fresh = feats.filter(function (f) { return f[0] === L; });
     if (fresh.length) html += '<div class="group-box new-at"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">New at level ' + L + '</p>' + fresh.map(featLine).join('') + '</div>';
-    html += '<h3 class="kind-h">What they can do</h3><div class="cheat-list">' + feats.filter(function (f) { return f[0] < L; }).reverse().map(featLine).join('') + '</div>';
+    html += '<h3 class="kind-h">What they can do</h3><div class="cheat-list">' + feats.filter(function (f) { return f[0] < L; }).reverse().map(function (f) { var sf = srdClassFeat(s.cls, f[0], f[1]); return featLine(f) + (sf ? srdDetails(sf[2]) : ''); }).join('') + '</div>';
     var subL = (RULES.subLevels[s.cls] || []).filter(function (l) { return l <= L; });
     if (subL.length) {
-      var cs = s.subclass ? customSub(s.cls, s.subclass) : null;
-      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
+      var cs = s.subclass ? customSub(s.cls, s.subclass) : null, ss2 = !cs ? srdSub(s.cls, s.subclass) : null;
+      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (ss2 ? ss2.features.filter(function (f) { return f[0] <= L; }).map(function (f) { return featLine([f[0], f[1], srdFirst(f[2])]) + srdDetails(f[2]); }).join('') : cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
         : '<p class="note" style="margin:0">' + (s.subclass ? 'Features at level ' + subL.join(', ') + '. Check their sheet for the details.' : 'They reach a ' + esc(cd.subclassLabel.toLowerCase()) + ' at level ' + cd.subclassLevel + '. Not set yet.') + '</p>');
     }
     var next = cd.features.filter(function (f) { return f[0] > L; }).slice(0, 3);
@@ -8288,7 +8435,7 @@
     if (!s) { stopLive(); TABLE = false; document.body.classList.remove('table-mode'); clearInterval(startTable.poll); if (tableChannel) { sb.removeChannel(tableChannel); tableChannel = null; } $view.innerHTML = ''; profile = null; articles = []; secrets = {}; characters = []; members = []; spells = null; loaded = { wiki: false, chars: false, members: false }; render(); return; }
     if (prev === s.user.id && booted) return;
     booted = loadProfile()
-      .then(function () { render(); if (isMember()) return loadAll().then(function () { startLive(); startLink(); loadCities().then(render); }); })
+      .then(function () { render(); if (isTable()) loadSrd(); if (isMember()) return loadAll().then(function () { startLive(); loadSrd(); if (isDM()) { startLink(); loadCities().then(render); } else return loadTable().then(render); }); })
       .then(render)
       .catch(function (e) { fail(e, 'Could not reach the archive. If the app sat unused for a week, the DM may need to resume it in Supabase.'); render(); });
   }

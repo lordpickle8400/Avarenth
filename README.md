@@ -1,6 +1,6 @@
 # Avarenth
 
-The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first screen with the wiki, shops, the party and the journey behind every pin. DM only; there are no player accounts.
+The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first screen with the wiki, shops, the party and the journey behind every pin. Players sign in on their phones for the shared map (only what the party knows), their characters, the rules and spells.
 
 **App:** https://lordpickle8400.github.io/Avarenth/
 
@@ -29,3 +29,9 @@ The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first scr
 - `cities/` — city maps and their numbered keys (`index.json`)
 - `config.js` — public Supabase URL and anon key (safe to publish)
 - `sw.js`, `manifest.webmanifest`, `icons/` — what makes it installable
+
+## Rules text
+
+`srd.json` is built from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under
+CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/). It was converted from the markdown edition at
+github.com/downfallx/dnd-5e-srd-markdown and arranged into structured blocks for this app.
