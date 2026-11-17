@@ -1310,9 +1310,13 @@
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
-        choiceGrid(Object.keys(RULES.species).map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species');
+        [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.']].map(function (g) {
+          var keys = Object.keys(RULES.species).filter(function (k) { return (RULES.species[k].group || 'isles') === g[0]; });
+          return keys.length ? '<h2 class="sec-title" style="margin-top:14px">' + g[1] + '<small>' + keys.length + '</small></h2>' + (g[2] ? '<p class="note" style="margin:0 0 6px">' + g[2] + '</p>' : '') +
+            choiceGrid(keys.map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.fly ? ' · flies' : sp.swim ? ' · swims' : sp.climb ? ' · climbs' : '') + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species') : '';
+        }).join('');
       var sp = RULES.species[b.species];
-      if (sp) html += '<div class="group-box"><h2>' + esc(b.species) + '</h2><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
+      if (sp) html += '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<p class="note" style="margin:0 0 8px">' + esc(sp.note) + '</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
         sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>';
     } else if (step === 'Background') {
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills.</p>' +
@@ -1429,7 +1433,8 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
-    s.ac = b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : b.species === 'Lizardfolk' ? 13 + dex : 10 + dex;
+    var natural = { Lizardfolk: 13 + dex, Tortle: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Autognome: 13 + dex, Loxodon: 12 + con }[b.species] || 0;
+    s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Warforged' ? 1 : 0);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
     buildFixedSkills(b).concat(b.skills).forEach(function (k) { s.skills[k] = 1; });
@@ -8136,7 +8141,11 @@
       });
     } else if (tab === 'species') {
       Object.keys(SRD.species).forEach(function (n) { var sp = SRD.species[n]; html += '<section class="section feat"><h2>' + esc(n) + '<small>' + esc([sp.size, sp.speed].join(' · ')) + '</small></h2><div class="prose srd-body">' + srdBlocks(sp.text) + '</div>' + srdOrig(sp.meta) + '</section>'; });
-      html += '<p class="note">Avarenth’s own species (kobolds, lizardfolk, half-elves, half-orcs and the rest) use the traits in the character builder.</p>';
+      var mine = Object.keys(RULES.species).filter(function (k) { return !SRD.species[k]; });
+      html += '<section class="block"><h2 class="sec-title">More peoples<small>' + mine.length + '</small></h2><p class="note" style="margin:0">Summaries in our own words. Check the exact wording in the book; the Troglodyte is Avarenth’s own.</p>' +
+        mine.map(function (k) { var sp = RULES.species[k], grp = { rare: 'Rarely seen in the isles', far: 'From beyond the empire' }[sp.group] || 'Peoples of the isles';
+          return '<details class="srd sub-sum"><summary>' + esc(k) + '</summary><div class="prose srd-body"><p class="note" style="margin:0">' + esc([grp, sp.size, sp.speed + ' ft', sp.fly ? 'flies ' + sp.fly + ' ft' : '', sp.swim ? 'swims ' + sp.swim + ' ft' : '', sp.climb ? 'climbs ' + sp.climb + ' ft' : '', sp.dark ? 'darkvision ' + sp.dark + ' ft' : ''].filter(Boolean).join(' · ')) + '</p>' + (sp.note ? '<p><i>' + esc(sp.note) + '</i></p>' : '') +
+            '<div class="tbl">' + sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
     } else if (tab === 'backgrounds') {
       Object.keys(SRD.backgrounds).forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + '</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd></dl></section>'; });
     } else {
