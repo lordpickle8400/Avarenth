@@ -1071,7 +1071,7 @@
     return label + (art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron));
   }
   function isFullCaster(cls) { return RULES.magic.fullCasters.indexOf(cls) >= 0; }
-  function casterKind(cls) { return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger') ? 'half' : 'martial'; }
+  function casterKind(cls) { return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger' || cls === 'Artificer') ? 'half' : 'martial'; }
   function listCap(cls) { return isFullCaster(cls) ? 5 : 4; }
   function autoMana(cls, level) { var m = RULES.magic.mana[cls]; return m ? m[0] + m[1] * (Math.max(1, num(level, 1)) - 1) : null; }
   function manaMax(s) { var a = autoMana(s.cls, s.level); return (s.mana.override || a === null) ? num(s.mana.max, 0) : a; }
@@ -1747,6 +1747,9 @@
         add('sense', 'Divine Sense', Math.max(1, 1 + cha), 'long');
         add('cd', 'Channel Divinity', L >= 3 ? 1 : 0, 'short'); break;
       case 'Rogue': add('luck', 'Stroke of Luck', L >= 20 ? 1 : 0, 'short'); break;
+      case 'Artificer': add('flash', 'Flash of Genius', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long'); break;
+      case 'Blood Hunter':
+        add('maledict', 'Blood Maledict', byLevel(L, [[1, 1], [6, 2], [13, 3], [17, 4]]), 'short', { note: 'hemocraft d' + byLevel(L, [[1, 4], [5, 6], [11, 8], [17, 10]]) }); break;
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
     return out;
@@ -1961,9 +1964,9 @@
       var nameHtml = art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(sp.name) + '</a>' : esc(sp.name);
       var needs = lv >= 6 && lv <= 8 ? ' + 1 High Magic Charge' : lv === 9 ? ' + Reality Channel' : '';
       var blocked = num(s.mana.cur, 0) < cost || (lv >= 6 && lv <= 8 && hmMax(s.cls, s.level) - num(s.charges.hm, 0) <= 0) || (lv === 9 && rcMax(s.cls, s.level) - num(s.charges.rc, 0) <= 0);
-      html += '<div class="tbl-row"><div class="main"><b>' + nameHtml + '</b><span>' + (cost ? cost + ' mana' : 'Free') + needs + (sp.school ? ' · ' + esc(sp.school) : '') + (sp.notes ? ' · ' + esc(sp.notes) : '') + '</span></div><span class="src ' + esc(sp.source) + '">' + esc(sp.source) + '</span>' +
+      html += '<div class="tbl-row sp-row"><div class="main"><b>' + nameHtml + '</b><span>' + (cost ? cost + ' mana' : 'Free') + needs + (sp.school ? ' · ' + esc(sp.school) : '') + (sp.notes ? ' · ' + esc(sp.notes) : '') + '</span></div><span class="src ' + esc(sp.source) + '">' + esc(sp.source) + '</span>' +
         (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="spells" data-i="' + o.i + '" aria-label="Remove ' + esc(sp.name) + '">Remove</button>'
-          : can ? '<button type="button" class="btn small" data-act="cast" data-i="' + o.i + '"' + (blocked ? ' disabled' : '') + '>Cast</button>' : '') + '</div>';
+          : can ? '<button type="button" class="btn small" data-act="cast" data-i="' + o.i + '"' + (blocked ? ' disabled' : '') + '>Cast</button>' : '') + spellInfoHtml(spellByName(sp.name) || sp) + '</div>';
     });
     if (can) {
       html += '<div class="actions" style="margin-top:14px"><button type="button" class="btn' + (ui.spellPick ? '' : ' primary') + '" data-act="pick-toggle">' + (ui.spellPick ? 'Close' : 'Learn a spell') + '</button></div>';
@@ -2492,7 +2495,7 @@
 
   /* ================= Spell tomes ================= */
   var RARITIES = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
-  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
+  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Blood Hunter', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
   var SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
   var SPELL_COLS = 'name, level, school, classes, book, ritual, concentration, rarity, notes, homebrew, status, submitted_by, casting_time, spell_range, components, duration, description, dm_note, created_at';
   function loadSpells() {
@@ -2541,8 +2544,8 @@
       var right = dm ? '<div class="spell-right"><label class="sr" for="rar-' + esc(sp.name) + '">Rarity of ' + esc(sp.name) + '</label><select class="input rar-sel" id="rar-' + esc(sp.name) + '" data-spell-rarity="' + esc(sp.name) + '">' +
         RARITIES.map(function (r) { return '<option' + (r === sp.rarity ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' +
         (sp.homebrew ? '<a class="btn small quiet" href="#/spell-edit/' + encodeURIComponent(sp.name) + '">Edit</a>' : '') + '</div>' : rarityTag(sp.rarity);
-      return '<div class="tbl-row"><div class="main"><b>' + esc(sp.name) + (sp.homebrew ? ' <span class="tag plain" style="font-size:10px">Homebrew</span>' : '') + '</b><span>' + esc(spellMeta(sp)) + '</span><span>' + esc(cls) + ' · ' + esc(src) + '</span>' +
-        (sp.homebrew ? spellDetails(sp) : '') + (sp.notes ? '<span>' + esc(sp.notes) + '</span>' : '') + '</div>' + right + '</div>';
+      return '<div class="tbl-row sp-row"><div class="main"><b>' + esc(sp.name) + (sp.homebrew ? ' <span class="tag plain" style="font-size:10px">Homebrew</span>' : '') + '</b><span>' + esc(spellMeta(sp)) + '</span><span>' + esc(cls) + ' · ' + esc(src) + '</span>' +
+        (sp.notes ? '<span>' + esc(sp.notes) + '</span>' : '') + '</div>' + right + spellInfoHtml(sp) + '</div>';
     }).join('') + '</div>';
     return html;
   }
@@ -8065,6 +8068,84 @@
     ]).then(function (d) { SRD = d[0]; SUBNOTES = d[1] || {}; render(); return SRD; }).catch(function () { loadSrd.p = null; });
     return loadSrd.p;
   }
+  /* Spell text. spells-srd.json is every spell in the SRD 5.2.1 (CC-BY-4.0), with spell slots rewritten as mana.
+     spell-notes.json is our own short summaries of spells from the other books (null = not written up yet).
+     The spells table keeps the list (level, classes, rarity); homebrew spells carry their own text. */
+  var SPTEXT = null;
+  var SP_ALIAS = { hand: 'arcane hand', sword: 'arcane sword', 'magic aura': "arcanist's magic aura" };
+  var SP_OWNERS = /^(tasha|bigby|evard|leomund|mordenkainen|otiluke|otto|rary|tenser|drawmij|nystul|melf)'s /;
+  function loadSpellText() {
+    if (SPTEXT) return Promise.resolve(SPTEXT);
+    if (loadSpellText.p) return loadSpellText.p;
+    loadSpellText.p = Promise.all([
+      fetch('spells-srd.json').then(function (r) { if (!r.ok) throw new Error('spells'); return r.json(); }),
+      fetch('spell-notes.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+    ]).then(function (d) { SPTEXT = { srd: d[0], notes: d[1] || {} }; return SPTEXT; }).catch(function () { loadSpellText.p = null; });
+    return loadSpellText.p;
+  }
+  function spellText(sp) {
+    if (!sp) return null;
+    if (sp.homebrew || sp.description) return { src: 'homebrew', casting_time: sp.casting_time, range: sp.spell_range, components: sp.components, duration: sp.duration, description: sp.description || '' };
+    if (!SPTEXT) return null;
+    var n = String(sp.name || '').toLowerCase(), k = n.replace(SP_OWNERS, '');
+    var srd = SPTEXT.srd[n] || SPTEXT.srd[k] || SPTEXT.srd[SP_ALIAS[k]];
+    if (srd) return Object.assign({ src: 'srd' }, srd);
+    if (SPTEXT.notes[sp.name]) return Object.assign({ src: 'notes' }, SPTEXT.notes[sp.name]);
+    return { src: 'none' };
+  }
+  var ORDN = ['', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th'];
+  function spellCostLine(lv) {
+    lv = num(lv, 0);
+    if (!lv) return 'Cantrip: free to cast.';
+    return 'Costs ' + RULES.magic.manaCost[lv] + ' mana' + (lv >= 6 && lv <= 8 ? ' and a High Magic Charge' : lv === 9 ? ' and a Reality Channel (once a day)' : '') + '.';
+  }
+  function spellMoreLine(lv, more) {
+    var steps = [];
+    for (var l = num(lv, 0) + 1; l <= 9; l++) steps.push(ORDN[l] + ' ' + RULES.magic.manaCost[l]);
+    return 'Spending More Mana. You can cast this as a higher-level spell by paying that level’s cost (' + steps.join(', ') + '). 6th to 8th level also needs a High Magic Charge, 9th a Reality Channel. ' + more;
+  }
+  function spellParas(t) {
+    return String(t || '').split(/\n\n+/).map(function (p) {
+      if (/^- /.test(p)) return '<ul>' + p.split('\n').map(function (li) { return '<li>' + srdInline(li.replace(/^- /, '')) + '</li>'; }).join('') + '</ul>';
+      if (p.indexOf(' | ') >= 0 && p.indexOf('\n') >= 0) return '<div class="sp-rows">' + p.split('\n').map(function (r) { return '<div>' + esc(r) + '</div>'; }).join('') + '</div>';
+      var m = /^([A-Z][A-Za-z’'\- ]{1,40}\.) (.*)$/.exec(p);
+      var head = m && m[1].slice(0, -1).split(' ');
+      return head && head.length <= 6 && head.every(function (w) { return w.length <= 3 || /^[A-Z]/.test(w); }) ? '<p><b>' + esc(m[1]) + '</b> ' + srdInline(m[2]) + '</p>' : '<p>' + srdInline(p) + '</p>';
+    }).join('');
+  }
+  // The "What it does" fold-out for a spell, in the spell list and on character sheets. The body is filled in
+  // when it's opened, so a list of 500+ spells stays light.
+  function spellInfoHtml(sp) {
+    if (!sp || !sp.name) return '';
+    return '<details class="srd spell-more" data-sp="' + esc(sp.name) + '" data-lv="' + num(sp.level, 0) + '"><summary>What it does</summary></details>';
+  }
+  function spellBodyHtml(sp) {
+    var t = spellText(sp);
+    if (!t) return '<div class="srd-body spell-body"><p class="note">Opening the tome…</p></div>';
+    var lv = num(sp.level, 0), body;
+    if (t.src === 'none') {
+      body = '<p class="note" style="margin:0">Not written up yet. It’s in ' + esc(sp.book || 'one of the books') + '. Ask the DM.</p>';
+    } else {
+      var bits = [['Casting time', t.casting_time], ['Range', t.range], ['Components', t.components], ['Duration', t.duration]].filter(function (x) { return x[1]; });
+      body = (bits.length ? '<dl class="sp-facts">' + bits.map(function (x) { return '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+        '<p class="sp-cost">' + esc(spellCostLine(lv)) + '</p>' + spellParas(t.description) +
+        (t.src === 'notes' && t.more && lv < 9 ? spellParas(spellMoreLine(lv, t.more)) : '') +
+        (t.src === 'notes' ? '<p class="note sub-sum">' + esc(SUMMARY_NOTE) + '</p>' : t.src === 'srd' ? '<p class="note sub-sum">From the free SRD 5.2.1 (CC-BY-4.0), spell slots rewritten as mana.</p>' : '');
+    }
+    return '<div class="srd-body spell-body">' + body + '</div>';
+  }
+  function fillSpellMore(d) {
+    var name = d.getAttribute('data-sp'), sp = spellByName(name) || { name: name, level: num(d.getAttribute('data-lv'), 0) };
+    var old = d.querySelector('.spell-body');
+    if (old) old.remove();
+    d.insertAdjacentHTML('beforeend', spellBodyHtml(sp));
+    if (!SPTEXT) loadSpellText().then(function () { if (d.open && d.isConnected) fillSpellMore(d); });
+  }
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (d && d.classList && d.classList.contains('spell-more') && d.open) fillSpellMore(d);
+  }, true);
+
   // Our own short summaries of the subclasses in the paid books (not the book text).
   function subNote(cls, sub) { return SUBNOTES && SUBNOTES[cls] && sub ? SUBNOTES[cls][sub] || null : null; }
   var SUMMARY_NOTE = 'Summary in our own words. Check the exact wording in the book.';
@@ -8113,6 +8194,20 @@
   }
 
   // The rules reference: everything in the free SRD, for players and the DM.
+  // A class from outside the SRD (Artificer, Blood Hunter): our own summaries from rules.js.
+  function extraClassHtml(cls) {
+    var cd = RULES.classes[cls], m = RULES.magic.mana[cls], ch = RULES.magic.charges[cls] || [[], 0];
+    var facts = [['Hit die', 'd' + cd.hd], ['Main ability', cd.primary], ['Saves', cd.saves.map(function (x) { return x.toUpperCase(); }).join(', ')], ['Armor', cd.armor], ['Weapons', cd.weapons], ['Tools', cd.tools || 'None'],
+      ['Skills', 'Pick ' + cd.skills.n + (cd.skills.from === 'any' ? ' of any' : ' from ' + cd.skills.from.join(', '))],
+      ['Mana', m ? m[0] + ' at 1st level, +' + m[1] + ' each level' : '—'],
+      ['High magic', ch[0].length ? 'High Magic Charges at ' + ch[0].join(' and ') + (ch[1] ? ', a Reality Channel at ' + ch[1] : ', never a Reality Channel') : 'None'],
+      ['Class list', 'Stops at ' + ordinal(listCap(cls)) + ' level']];
+    return '<section class="block"><h2 class="sec-title">' + esc(cls) + '<small>' + esc(cd.book || '') + '</small></h2>' +
+      (cd.about ? '<p class="prose">' + esc(cd.about) + '</p>' : '') +
+      '<dl class="tbl-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
+      '<p class="note">' + esc(SUMMARY_NOTE) + ' The mana numbers are the DM’s call.</p>' +
+      cd.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body"><p>' + esc(f[2]) + '</p></div></section>'; }).join('') + '</section>';
+  }
   function renderRules(arg) {
     document.body.classList.remove('atlas-mode');
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
@@ -8121,14 +8216,16 @@
     var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Subclasses from the paid books are listed in the builder by name.</p></div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
     if (tab === 'classes' || tab === 'subclasses') {
-      var names = Object.keys(SRD.classes);
+      var names = Object.keys(SRD.classes).concat(Object.keys(RULES.classes).filter(function (k) { return !SRD.classes[k]; }));
       var cls = names.indexOf(pick) >= 0 ? pick : names[0];
       html += '<div class="pill-row">' + names.map(function (n) { return '<a class="pill small" href="#/rules/' + tab + ':' + encodeURIComponent(n) + '"' + (n === cls ? ' aria-current="page"' : '') + '>' + n + '</a>'; }).join('') + '</div>';
-      if (tab === 'classes') {
+      if (tab === 'classes' && !SRD.classes[cls]) {
+        html += extraClassHtml(cls);
+      } else if (tab === 'classes') {
         html += '<section class="block"><h2 class="sec-title">' + esc(cls) + '</h2>' + SRD.classes[cls].map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
       } else {
         var sb2 = SRD.subclasses[cls];
-        html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + srdPatrons(cls, sb2.name) + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
+        if (sb2) html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + srdPatrons(cls, sb2.name) + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
           sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
         var others = SUBNOTES && SUBNOTES[cls] ? Object.keys(SUBNOTES[cls]) : [];
         if (others.length) html += '<section class="block"><h2 class="sec-title">From the other books<small>' + others.length + ' summaries</small></h2><p class="note" style="margin:0">' + SUMMARY_NOTE + ' Levels follow the 2014 books, like the rest of the app.</p>' +

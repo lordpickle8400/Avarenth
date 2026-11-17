@@ -36,3 +36,8 @@ The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first scr
 CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/). It was converted from the markdown edition at
 github.com/downfallx/dnd-5e-srd-markdown and arranged into structured blocks for this app (`tools/srd_build.py`). `tools/srd_mana.py` then rewrites every
 spell-slot rule for Avarenth's mana (from the wiki's Mana Guide), keeping the 2024 text alongside.
+
+`spells-srd.json` holds every spell in the same SRD 5.2.1 (CC-BY-4.0), pulled out by `tools/spells_srd.py`, with
+spell slots rewritten as mana. `spell-notes.json` and `subclass-notes.json` are short summaries written in our own
+words for the spells and subclasses from the other books (`tools/spell-notes/`, `tools/subclass-notes/`); they are
+not book text. The Artificer and Blood Hunter classes in `rules.js` are summarized the same way.

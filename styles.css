@@ -662,3 +662,16 @@ details.srd.orig { margin: 10px 0 0; background: transparent; border-style: dash
 details.srd.orig > summary { color: var(--muted); font-weight: 500; }
 .srd-patrons { margin: 4px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--panel); }
 .sub-sum { margin-top: 8px; }
+
+/* Spell text fold-outs */
+.spell-more { font-weight: 400; }
+.spell-body p { margin: 8px 0; line-height: 1.5; }
+.spell-body ul { margin: 6px 0 6px 18px; padding: 0; }
+.sp-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 14px; margin: 4px 0 8px; font-family: var(--ui); }
+.sp-facts dt { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.sp-facts dd { margin: 0; font-size: 14px; }
+.sp-cost { font-family: var(--ui); font-size: 14px; font-weight: 600; color: var(--accent-ink); }
+.sp-rows { font-family: var(--ui); font-size: 13px; margin: 8px 0; border-top: 1px solid var(--soft); }
+.sp-rows > div { padding: 4px 0; border-bottom: 1px solid var(--soft); overflow-wrap: anywhere; }
+.tbl-row.sp-row { flex-wrap: wrap; }
+.tbl-row.sp-row > .spell-more { flex-basis: 100%; margin-top: 0; }
