@@ -658,3 +658,6 @@ details.srd .srd-body { border-top: 1px solid var(--soft); padding-top: 8px; }
 .srd-t th, .srd-t td { padding: 5px 8px; border-bottom: 1px solid var(--soft); text-align: left; white-space: nowrap; }
 .srd-t th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .srd-credit { font-size: 12px; }
+details.srd.orig { margin: 10px 0 0; background: transparent; border-style: dashed; }
+details.srd.orig > summary { color: var(--muted); font-weight: 500; }
+.srd-patrons { margin: 4px 0 0; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--panel); }

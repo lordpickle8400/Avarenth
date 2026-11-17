@@ -1099,9 +1099,9 @@
   function derivedFeatures(s) {
     var out = [], cd = classOf(s), sp = RULES.species[s.species];
     if (cd) {
-      cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) { var sf = srdClassFeat(s.cls, f[0], f[1]); out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3], srd: sf ? sf[2] : null }); } });
+      cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) { var sf = srdClassFeat(s.cls, f[0], f[1]); out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3], srd: sf ? sf[2] : null, srdMeta: sf ? sf[3] : null }); } });
       var csub = s.subclass ? customSub(s.cls, s.subclass) : null, ssub = !csub ? srdSub(s.cls, s.subclass) : null;
-      if (ssub) ssub.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: srdFirst(f[2]), src: s.subclass + ' ' + f[0], sub: true, srd: f[2] }); });
+      if (ssub) ssub.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) out.push({ name: f[1], text: srdFirst(f[2]), src: s.subclass + ' ' + f[0], sub: true, srd: f[2], srdMeta: f[3] || null, ruling: !!(f[3] && f[3].ruling) }); });
       else if (csub) (csub.features || []).forEach(function (f) { if (num(f.level, 1) <= num(s.level, 1)) out.push({ name: f.name, text: f.text || '', src: s.subclass + ' ' + num(f.level, 1), sub: true }); });
       else (RULES.subLevels[s.cls] || []).forEach(function (l) {
         if (l <= num(s.level, 1)) out.push({ name: (s.subclass || cd.subclassLabel) + ' feature', text: s.subclass ? 'Your ' + cd.subclassLabel.toLowerCase() + ' grants a feature at level ' + l + '. Add its details below, or ask your DM.' : 'You reach a ' + cd.subclassLabel.toLowerCase() + ' feature at level ' + l + ', once you choose one.', src: s.cls + ' ' + l, sub: true });
@@ -1310,7 +1310,7 @@
         choiceGrid(Object.keys(RULES.species).map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species');
       var sp = RULES.species[b.species];
       if (sp) html += '<div class="group-box"><h2>' + esc(b.species) + '</h2><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
-        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)') : '') + '</div>';
+        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>';
     } else if (step === 'Background') {
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills.</p>' +
         choiceGrid(Object.keys(RULES.backgrounds).map(function (k) { return [k, RULES.backgrounds[k].join(', ')]; }), b.bg, 'bd-bg');
@@ -1324,7 +1324,7 @@
           choiceGrid(origins.map(function (f) { return [f.name, srdFirst(f.text)]; }), b.ofeat, 'bd-ofeat') +
           '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-ofeat" data-val="">No origin feat</button></div>';
         var of = b.ofeat ? srdFeat(b.ofeat) : null;
-        if (of) html += srdDetails(of.text, 'What ' + of.name + ' does');
+        if (of) html += srdDetails(of.text, 'What ' + of.name + ' does', of.meta);
       }
     } else if (step === 'Abilities') {
       html += buildAbilitiesHtml(b, cd);
@@ -1531,7 +1531,7 @@
     var other = L.featPick === '__other' || !list.length;
     var picked = !other && L.featPick ? srdFeat(L.featPick) : null;
     return '<div class="field"><label for="lv-featpick">Feat</label><select id="lv-featpick" data-lv="featPick"><option value="">Choose…</option>' + list.map(function (f) { return '<option value="' + esc(f.name) + '"' + (L.featPick === f.name ? ' selected' : '') + '>' + esc(f.name) + (f.prereq ? ' (' + esc(f.prereq) + ')' : '') + '</option>'; }).join('') + '<option value="__other"' + (L.featPick === '__other' ? ' selected' : '') + '>Another feat (type its name)</option></select></div>' +
-      (picked ? srdDetails(picked.text, 'What ' + picked.name + ' does') : '') +
+      (picked ? srdDetails(picked.text, 'What ' + picked.name + ' does', picked.meta) : '') +
       (other ? '<div class="field"><label for="lv-feat">Feat name</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. War Caster"><span class="hint">Feats from the paid books: check with your DM, and type in what it does on your sheet.</span></div>' : '');
   }
   function levelUpError(L, needSub, isAsi, needArc) {
@@ -1919,11 +1919,13 @@
       }
       html += '<div class="stack" style="margin-top:12px">';
       var all = derivedFeatures(s);
+      var ssub2 = SRD && s.subclass ? srdSub(s.cls, s.subclass) : null;
+      if (ssub2 && ssub2.about) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.subclass) + '</h2><p class="prose" style="margin:0">' + srdInline(ssub2.about) + '</p></section>';
       all.forEach(function (f) {
-        html += '<section class="section feat"><h2>' + esc(f.name) + (f.ruling ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '<small>' + esc(f.src) + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + srdDetails(f.srd, 'Full rules text (2024 SRD)') + '</section>';
+        html += '<section class="section feat"><h2>' + esc(f.name) + (f.ruling ? ' <span class="tag" style="font-size:10px">Ask your DM</span>' : '') + '<small>' + esc(f.src) + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + srdDetails(f.srd, f.srdMeta ? 'Full rules, Avarenth mana version' : 'Full rules text', f.srdMeta) + '</section>';
       });
       s.features.forEach(function (f, i) {
-        html += '<section class="section feat"><h2>' + esc(f.name) + '<small>Added' + (edit ? ' <button type="button" class="btn small danger" data-act="rm" data-list="features" data-i="' + i + '">Remove</button>' : '') + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + (f.feat && srdFeat(f.feat) ? srdDetails(srdFeat(f.feat).text, 'Full rules text (2024 SRD)') : '') + '</section>';
+        html += '<section class="section feat"><h2>' + esc(f.name) + '<small>Added' + (edit ? ' <button type="button" class="btn small danger" data-act="rm" data-list="features" data-i="' + i + '">Remove</button>' : '') + '</small></h2><div class="prose">' + rich(f.text) + '</div>' + (f.feat && srdFeat(f.feat) ? srdDetails(srdFeat(f.feat).text, 'Full rules text', srdFeat(f.feat).meta) : '') + '</section>';
       });
       if (!all.length && !s.features.length) html += '<div class="empty">No features yet. Set a class and species to fill these in.</div>';
       html += '</div>';
@@ -8079,7 +8081,20 @@
       return '';
     }).join('');
   }
-  function srdDetails(blocks, label) { return blocks && blocks.length ? '<details class="srd"><summary>' + esc(label || 'Full rules text') + '</summary><div class="prose srd-body">' + srdBlocks(blocks) + '</div></details>' : ''; }
+  function srdDetails(blocks, label, meta) {
+    if (!blocks || !blocks.length) return '';
+    return '<details class="srd"><summary>' + esc(label || 'Full rules text') + (meta && meta.ruling ? ' <span class="tag" style="font-size:10px;margin-left:6px">DM’s call</span>' : '') + '</summary><div class="prose srd-body">' + srdBlocks(blocks) + srdOrig(meta) + '</div></details>';
+  }
+  // The 2024 text as written, for features rewritten for mana.
+  function srdOrig(meta) { return meta && meta.orig ? '<details class="srd orig"><summary>2024 rules as written (spell slots)</summary><div class="prose srd-body">' + srdBlocks(meta.orig) + '</div></details>' : ''; }
+  // Which of Avarenth's gods and demons grant a subclass (Clerics, Paladins and Warlocks).
+  function srdPatrons(cls, subName) {
+    var app = SRD_SUB_ALIAS[subName] || subName, who = [];
+    Object.keys(RULES.patronSubclasses || {}).forEach(function (p) { var m = RULES.patronSubclasses[p][cls]; if (m && m.indexOf(app) >= 0) who.push(p); });
+    if (!devotionRequired(cls) && !who.length) return '';
+    var noun = cls === 'Warlock' ? 'Warlocks whose patron is' : cls === 'Cleric' ? 'Clerics of' : 'Paladins sworn to';
+    return '<p class="note srd-patrons"><b>In Avarenth:</b> ' + (who.length ? noun + ' ' + esc(who.join(', ').replace(/, ([^,]*)$/, ' or $1')) + (cls === 'Paladin' ? ', or to their oath alone' : '') + '.' : 'no god or patron grants this one; ask your DM.') + (app !== subName ? ' Listed in the builder as ' + esc(app) + '.' : '') + '</p>';
+  }
 
   // The rules reference: everything in the free SRD, for players and the DM.
   function renderRules(arg) {
@@ -8087,32 +8102,32 @@
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
     var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
-    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1). Subclasses from the paid books are listed in the builder by name; ask your DM about those.</p></div>' +
+    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Subclasses from the paid books are listed in the builder by name.</p></div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
     if (tab === 'classes' || tab === 'subclasses') {
       var names = Object.keys(SRD.classes);
       var cls = names.indexOf(pick) >= 0 ? pick : names[0];
       html += '<div class="pill-row">' + names.map(function (n) { return '<a class="pill small" href="#/rules/' + tab + ':' + encodeURIComponent(n) + '"' + (n === cls ? ' aria-current="page"' : '') + '>' + n + '</a>'; }).join('') + '</div>';
       if (tab === 'classes') {
-        html += '<section class="block"><h2 class="sec-title">' + esc(cls) + '</h2>' + SRD.classes[cls].map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div></section>'; }).join('') + '</section>';
+        html += '<section class="block"><h2 class="sec-title">' + esc(cls) + '</h2>' + SRD.classes[cls].map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
       } else {
         var sb2 = SRD.subclasses[cls];
-        html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
-          sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div></section>'; }).join('') + '</section>';
+        html += '<section class="block"><h2 class="sec-title">' + esc(sb2.name) + '<small>' + esc(cls) + '</small></h2>' + (sb2.tagline ? '<p class="note" style="margin:0"><i>' + esc(sb2.tagline) + '</i></p>' : '') + srdPatrons(cls, sb2.name) + (sb2.about ? '<p class="prose">' + srdInline(sb2.about) + '</p>' : '') +
+          sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
       }
     } else if (tab === 'feats') {
       var cats = []; SRD.feats.forEach(function (f) { if (cats.indexOf(f.category) < 0) cats.push(f.category); });
       cats.forEach(function (c) {
-        html += '<section class="block"><h2 class="sec-title">' + esc(c) + ' feats</h2>' + SRD.feats.filter(function (f) { return f.category === c; }).map(function (f) { return '<section class="section feat"><h2>' + esc(f.name) + (f.prereq ? '<small>' + esc(f.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(f.text) + '</div></section>'; }).join('') + '</section>';
+        html += '<section class="block"><h2 class="sec-title">' + esc(c) + ' feats</h2>' + SRD.feats.filter(function (f) { return f.category === c; }).map(function (f) { return '<section class="section feat"><h2>' + esc(f.name) + (f.prereq ? '<small>' + esc(f.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(f.text) + '</div>' + srdOrig(f.meta) + '</section>'; }).join('') + '</section>';
       });
     } else if (tab === 'species') {
-      Object.keys(SRD.species).forEach(function (n) { var sp = SRD.species[n]; html += '<section class="section feat"><h2>' + esc(n) + '<small>' + esc([sp.size, sp.speed].join(' · ')) + '</small></h2><div class="prose srd-body">' + srdBlocks(sp.text) + '</div></section>'; });
+      Object.keys(SRD.species).forEach(function (n) { var sp = SRD.species[n]; html += '<section class="section feat"><h2>' + esc(n) + '<small>' + esc([sp.size, sp.speed].join(' · ')) + '</small></h2><div class="prose srd-body">' + srdBlocks(sp.text) + '</div>' + srdOrig(sp.meta) + '</section>'; });
       html += '<p class="note">Avarenth’s own species (kobolds, lizardfolk, half-elves, half-orcs and the rest) use the traits in the character builder.</p>';
     } else if (tab === 'backgrounds') {
       Object.keys(SRD.backgrounds).forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + '</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd></dl></section>'; });
     } else {
       var key = tab === 'metamagic' ? 'Metamagic' : 'Eldritch Invocation';
-      html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div></section>'; }).join('');
+      html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div>' + srdOrig(o.meta) + '</section>'; }).join('');
     }
     html += '<p class="note srd-credit">' + esc(SRD_CREDIT) + '</p></div>';
     $view.innerHTML = html;
@@ -8381,11 +8396,11 @@
     var feats = cd.features.filter(function (f) { return f[0] <= L; });
     var fresh = feats.filter(function (f) { return f[0] === L; });
     if (fresh.length) html += '<div class="group-box new-at"><p class="eyebrow" style="margin:0 0 6px;font-size:11px">New at level ' + L + '</p>' + fresh.map(featLine).join('') + '</div>';
-    html += '<h3 class="kind-h">What they can do</h3><div class="cheat-list">' + feats.filter(function (f) { return f[0] < L; }).reverse().map(function (f) { var sf = srdClassFeat(s.cls, f[0], f[1]); return featLine(f) + (sf ? srdDetails(sf[2]) : ''); }).join('') + '</div>';
+    html += '<h3 class="kind-h">What they can do</h3><div class="cheat-list">' + feats.filter(function (f) { return f[0] < L; }).reverse().map(function (f) { var sf = srdClassFeat(s.cls, f[0], f[1]); return featLine(f) + (sf ? srdDetails(sf[2], 'Full rules', sf[3]) : ''); }).join('') + '</div>';
     var subL = (RULES.subLevels[s.cls] || []).filter(function (l) { return l <= L; });
     if (subL.length) {
       var cs = s.subclass ? customSub(s.cls, s.subclass) : null, ss2 = !cs ? srdSub(s.cls, s.subclass) : null;
-      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (ss2 ? ss2.features.filter(function (f) { return f[0] <= L; }).map(function (f) { return featLine([f[0], f[1], srdFirst(f[2])]) + srdDetails(f[2]); }).join('') : cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
+      html += '<h3 class="kind-h">' + esc(s.subclass || cd.subclassLabel) + '</h3>' + (ss2 ? ss2.features.filter(function (f) { return f[0] <= L; }).map(function (f) { return featLine([f[0], f[1], srdFirst(f[2])]) + srdDetails(f[2], 'Full rules', f[3]); }).join('') : cs ? (cs.features || []).filter(function (f) { return num(f.level, 1) <= L; }).map(function (f) { return featLine([num(f.level, 1), f.name, f.text || '']); }).join('')
         : '<p class="note" style="margin:0">' + (s.subclass ? 'Features at level ' + subL.join(', ') + '. Check their sheet for the details.' : 'They reach a ' + esc(cd.subclassLabel.toLowerCase()) + ' at level ' + cd.subclassLevel + '. Not set yet.') + '</p>');
     }
     var next = cd.features.filter(function (f) { return f[0] > L; }).slice(0, 3);

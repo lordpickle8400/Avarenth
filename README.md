@@ -34,4 +34,5 @@ The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first scr
 
 `srd.json` is built from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under
 CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/). It was converted from the markdown edition at
-github.com/downfallx/dnd-5e-srd-markdown and arranged into structured blocks for this app.
+github.com/downfallx/dnd-5e-srd-markdown and arranged into structured blocks for this app (`tools/srd_build.py`). `tools/srd_mana.py` then rewrites every
+spell-slot rule for Avarenth's mana (from the wiki's Mana Guide), keeping the 2024 text alongside.
