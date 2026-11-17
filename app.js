@@ -1322,7 +1322,7 @@
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills.</p>' +
         choiceGrid(Object.keys(RULES.backgrounds).map(function (k) { return [k, RULES.backgrounds[k].join(', ')]; }), b.bg, 'bd-bg');
       var sbg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
-      if (sbg) html += '<div class="group-box"><h2>' + esc(b.bg) + ' (2024 rules)</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd></dl></div>';
+      if (sbg) html += '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Feature</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>';
       if (SRD && b.bg) {
         var origins = SRD.feats.filter(function (f) { return f.category === 'Origin'; });
         var def = sbg ? sbg.feat.replace(/\s*\(.*$/, '') : '';
@@ -1943,7 +1943,7 @@
       if (!all.length && !s.features.length) html += '<div class="empty">No features yet. Set a class and species to fill these in.</div>';
       html += '</div>';
       if (all.some(function (f) { return f.ruling; })) html += '<p class="note">“Ask your DM” marks features written around 5e spell slots. Your DM decides how they work with mana.</p>';
-      if (can) html += '<form class="form" id="add-feature" novalidate style="margin-top:12px"><div class="field"><label for="ft-name">Add a feature, feat or trait</label><input type="text" id="ft-name" maxlength="80"></div><div class="field"><label for="ft-text">Description</label><textarea id="ft-text"></textarea></div><div class="actions"><button type="submit" class="btn primary">Add feature</button></div></form>';
+      if (can) html += '<form class="form" id="add-feature" novalidate style="margin-top:12px">' + featurePickHtml(s) + '<div class="field"><label for="ft-name">Add a feature, feat or trait</label><input type="text" id="ft-name" maxlength="80"></div><div class="field"><label for="ft-text">Description</label><textarea id="ft-text"></textarea></div><div class="actions"><button type="submit" class="btn primary">Add feature</button></div></form>';
       if (s.log.length) html += '<section class="block"><h2 class="sec-title">Level history</h2><div class="tbl">' + s.log.slice().reverse().map(function (l) { return '<div class="tbl-row"><div class="main"><b>Level ' + l.level + '</b><span>' + esc(l.text) + '</span></div></div>'; }).join('') + '</div></section>';
     } else {
       html += '<div class="field" style="margin-top:12px"><label for="ch-notes">Notes</label>' + (can ? '<textarea id="ch-notes" data-sf="notes" style="min-height:240px" placeholder="Backstory, goals, people you’ve met, things to remember…">' + esc(s.notes) + '</textarea><span class="hint">Saves automatically.</span>' : '<div class="prose">' + (s.notes ? rich(s.notes) : '<p class="note">No notes.</p>') + '</div>') + '</div>';
@@ -7307,7 +7307,8 @@
         if (!c) return;
         var fname = document.getElementById('ft-name').value.trim();
         if (!fname) return toast('Name the feature first.');
-        c.sheet.features.push({ name: fname, text: document.getElementById('ft-text').value.trim() });
+        var fpick = document.getElementById('ft-pick'), fopt = fpick && fpick.value ? fpick.value.split('|') : null;
+        c.sheet.features.push(fopt && fopt[1] === fname ? (fopt[0] === 'Feat' ? { name: fname, text: document.getElementById('ft-text').value.trim(), feat: fname } : { name: fname, text: document.getElementById('ft-text').value.trim(), opt: fopt[0] }) : { name: fname, text: document.getElementById('ft-text').value.trim() });
         render(); saveCharSoon(c); return;
     }
   });
@@ -8059,13 +8060,50 @@
   var SRD = null, SUBNOTES = null;
   var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
   var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
+  // Pick a feat, invocation, metamagic, infusion or blood curse from the lists instead of typing it in.
+  var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Artificer: 'Artificer Infusion', 'Blood Hunter': 'Blood Curse' };
+  function blocksText(b) { return (b || []).map(function (x) { return x[0] === 'ul' ? x[1].map(function (li) { return '• ' + li; }).join('\n') : x[0] === 'p' || x[0] === 'h' ? x[1] : ''; }).filter(Boolean).join('\n\n').replace(/_/g, '').replace(/\*\*/g, ''); }
+  function featurePickHtml(s) {
+    if (!SRD) return '';
+    var groups = [], ok = CLASS_OPTS[s.cls];
+    if (ok && SRD.options[ok]) groups.push([ok + 's', ok, SRD.options[ok]]);
+    var cats = ['General', 'Origin', 'Fighting Style', 'Epic Boon'];
+    cats.forEach(function (c) { groups.push([c + ' feats', 'Feat', SRD.feats.filter(function (f) { return f.category === c && f.name !== 'Ability Score Improvement'; })]); });
+    return '<div class="field"><label for="ft-pick">Pick from the lists</label><select id="ft-pick"><option value="">Choose, or type your own below…</option>' + groups.map(function (g) {
+      return '<optgroup label="' + esc(g[0]) + '">' + g[2].map(function (o) { return '<option value="' + esc(g[1] + '|' + o.name) + '">' + esc(o.name) + (o.prereq ? ' (' + esc(o.prereq) + ')' : '') + '</option>'; }).join('') + '</optgroup>';
+    }).join('') + '</select></div>';
+  }
+  document.addEventListener('change', function (e) {
+    if (!e.target || e.target.id !== 'ft-pick' || !SRD) return;
+    var v = e.target.value.split('|'), o = null;
+    if (v[0] === 'Feat') o = srdFeat(v[1]); else if (SRD.options[v[0]]) o = SRD.options[v[0]].filter(function (x) { return x.name === v[1]; })[0];
+    if (!o) return;
+    document.getElementById('ft-name').value = o.name;
+    document.getElementById('ft-text').value = blocksText(o.text);
+  });
+  // extras.json: our own summaries of feats, backgrounds, infusions and blood curses from outside the SRD.
+  function mergeExtras(ex) {
+    var have = {}; SRD.feats.forEach(function (f) { have[f.name] = 1; });
+    (ex.feats || []).forEach(function (f) { if (!have[f.name]) SRD.feats.push(f); });
+    var catOrder = ['Origin', 'General', 'Fighting Style', 'Epic Boon'];
+    SRD.feats.sort(function (a, b) { return (catOrder.indexOf(a.category) - catOrder.indexOf(b.category)) || a.name.localeCompare(b.name); });
+    Object.keys(ex.backgrounds || {}).forEach(function (n) {
+      var b = ex.backgrounds[n];
+      if (!SRD.backgrounds[n]) SRD.backgrounds[n] = b;
+      var skills = (b.skillList || []).filter(function (k) { return SKILLS.some(function (x) { return x[0] === k; }); });
+      if (skills.length) RULES.backgrounds[n] = skills;
+    });
+    var sorted = {}; Object.keys(RULES.backgrounds).sort().forEach(function (k) { sorted[k] = RULES.backgrounds[k]; }); RULES.backgrounds = sorted;
+    Object.keys(ex.options || {}).forEach(function (k) { SRD.options[k] = (SRD.options[k] || []).concat(ex.options[k]); });
+  }
   function loadSrd() {
     if (SRD) return Promise.resolve(SRD);
     if (loadSrd.p) return loadSrd.p;
     loadSrd.p = Promise.all([
       fetch('srd.json').then(function (r) { if (!r.ok) throw new Error('srd'); return r.json(); }),
-      fetch('subclass-notes.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
-    ]).then(function (d) { SRD = d[0]; SUBNOTES = d[1] || {}; render(); return SRD; }).catch(function () { loadSrd.p = null; });
+      fetch('subclass-notes.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+      fetch('extras.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+    ]).then(function (d) { SRD = d[0]; SUBNOTES = d[1] || {}; mergeExtras(d[2] || {}); render(); return SRD; }).catch(function () { loadSrd.p = null; });
     return loadSrd.p;
   }
   /* Spell text. spells-srd.json is every spell in the SRD 5.2.1 (CC-BY-4.0), with spell slots rewritten as mana.
@@ -8130,7 +8168,7 @@
       body = (bits.length ? '<dl class="sp-facts">' + bits.map(function (x) { return '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
         '<p class="sp-cost">' + esc(spellCostLine(lv)) + '</p>' + spellParas(t.description) +
         (t.src === 'notes' && t.more && lv < 9 ? spellParas(spellMoreLine(lv, t.more)) : '') +
-        (t.src === 'notes' ? '<p class="note sub-sum">' + esc(SUMMARY_NOTE) + '</p>' : t.src === 'srd' ? '<p class="note sub-sum">From the free SRD 5.2.1 (CC-BY-4.0), spell slots rewritten as mana.</p>' : '');
+        (t.src === 'notes' ? '<p class="note sub-sum">' + esc(t.idea ? 'The idea of the spell, not the book’s numbers. Check the book, or ask the DM.' : SUMMARY_NOTE) + '</p>' : t.src === 'srd' ? '<p class="note sub-sum">From the free SRD 5.2.1 (CC-BY-4.0), spell slots rewritten as mana.</p>' : '');
     }
     return '<div class="srd-body spell-body">' + body + '</div>';
   }
@@ -8211,9 +8249,9 @@
   function renderRules(arg) {
     document.body.classList.remove('atlas-mode');
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
-    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations']];
+    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Infusions'], ['curses', 'Blood curses']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
-    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Subclasses from the paid books are listed in the builder by name.</p></div>' +
+    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.</p></div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
     if (tab === 'classes' || tab === 'subclasses') {
       var names = Object.keys(SRD.classes).concat(Object.keys(RULES.classes).filter(function (k) { return !SRD.classes[k]; }));
@@ -8233,8 +8271,9 @@
       }
     } else if (tab === 'feats') {
       var cats = []; SRD.feats.forEach(function (f) { if (cats.indexOf(f.category) < 0) cats.push(f.category); });
+      html += '<p class="note">Feats with a book name are summaries in our own words. Check the exact wording in the book.</p>';
       cats.forEach(function (c) {
-        html += '<section class="block"><h2 class="sec-title">' + esc(c) + ' feats</h2>' + SRD.feats.filter(function (f) { return f.category === c; }).map(function (f) { return '<section class="section feat"><h2>' + esc(f.name) + (f.prereq ? '<small>' + esc(f.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(f.text) + '</div>' + srdOrig(f.meta) + '</section>'; }).join('') + '</section>';
+        html += '<section class="block"><h2 class="sec-title">' + esc(c) + ' feats</h2>' + SRD.feats.filter(function (f) { return f.category === c; }).map(function (f) { return '<section class="section feat"><h2>' + esc(f.name) + (f.prereq || f.book ? '<small>' + esc([f.prereq, f.own ? f.book : ''].filter(Boolean).join(' · ')) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(f.text) + '</div>' + srdOrig(f.meta) + '</section>'; }).join('') + '</section>';
       });
     } else if (tab === 'species') {
       Object.keys(SRD.species).forEach(function (n) { var sp = SRD.species[n]; html += '<section class="section feat"><h2>' + esc(n) + '<small>' + esc([sp.size, sp.speed].join(' · ')) + '</small></h2><div class="prose srd-body">' + srdBlocks(sp.text) + '</div>' + srdOrig(sp.meta) + '</section>'; });
@@ -8244,10 +8283,12 @@
           return '<details class="srd sub-sum"><summary>' + esc(k) + '</summary><div class="prose srd-body"><p class="note" style="margin:0">' + esc([grp, sp.size, sp.speed + ' ft', sp.fly ? 'flies ' + sp.fly + ' ft' : '', sp.swim ? 'swims ' + sp.swim + ' ft' : '', sp.climb ? 'climbs ' + sp.climb + ' ft' : '', sp.dark ? 'darkvision ' + sp.dark + ' ft' : ''].filter(Boolean).join(' · ')) + '</p>' + (sp.note ? '<p><i>' + esc(sp.note) + '</i></p>' : '') +
             '<div class="tbl">' + sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
     } else if (tab === 'backgrounds') {
-      Object.keys(SRD.backgrounds).forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + '</h2><dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd></dl></section>'; });
+      html += '<p class="note">Backgrounds with a book name are summaries in our own words; for the older books, the abilities and feat are suggestions in the 2024 style.</p>';
+      Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Feature</dt><dd>' + esc(b.feature) + '</dd>' : '') + '</dl></section>'; });
     } else {
-      var key = tab === 'metamagic' ? 'Metamagic' : 'Eldritch Invocation';
-      html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div>' + srdOrig(o.meta) + '</section>'; }).join('');
+      var key = { metamagic: 'Metamagic', infusions: 'Artificer Infusion', curses: 'Blood Curse' }[tab] || 'Eldritch Invocation';
+      if (key === 'Artificer Infusion' || key === 'Blood Curse') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
+      html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + (o.prereq ? '<small>' + esc(o.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div>' + srdOrig(o.meta) + '</section>'; }).join('');
     }
     html += '<p class="note srd-credit">' + esc(SRD_CREDIT) + '</p></div>';
     $view.innerHTML = html;

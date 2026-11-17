@@ -7,5 +7,9 @@ for f in 'abcd':
     for k, v in m.NOTES.items():
         assert k not in out, k
         out[k] = None if v is None else {'casting_time': v[0], 'range': v[1], 'components': v[2], 'duration': v[3], 'description': v[4], 'more': v[5]}
+spec = importlib.util.spec_from_file_location('e', os.path.join(here, 'e.py')); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+for k, v in m.IDEAS.items():
+    assert k in out and out[k] is None, k
+    out[k] = {'casting_time': v[0], 'range': v[1], 'components': v[2], 'duration': v[3], 'description': v[4], 'more': v[5], 'idea': True}
 json.dump(out, open(sys.argv[1], 'w'), ensure_ascii=False, separators=(',', ':'))
 print(len(out), 'entries,', sum(1 for v in out.values() if v), 'written,', sum(1 for v in out.values() if v is None), 'not yet')

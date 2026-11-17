@@ -1,0 +1,38 @@
+# Class options outside the SRD, in our own words: Artificer infusions (Tasha's Cauldron of Everything) and
+# Blood Hunter blood curses (Matthew Mercer's Blood Hunter, 2020). (name, prerequisite, what it does)
+OPTIONS = {
+"Artificer Infusion": [
+("Armor of Magical Strength", "", "Armor that adds your Intelligence modifier to Strength checks and saves, and lets you refuse to be knocked prone a few times per day."),
+("Boots of the Winding Path", "6th level", "Boots that let you teleport back to a spot you stood on in the last turn (up to 15 feet) as a bonus action."),
+("Enhanced Arcane Focus", "", "A rod, staff or wand gives +1 to spell attack rolls and lets your spells ignore half cover. +2 at 10th level."),
+("Enhanced Defense", "", "Armor or a shield gives +1 AC (+2 at 10th level)."),
+("Enhanced Weapon", "", "A simple or martial weapon becomes a +1 weapon (+2 at 10th level)."),
+("Helm of Awareness", "10th level", "A helmet gives advantage on initiative, and you can't be surprised while awake."),
+("Homunculus Servant", "", "Build a tiny mechanical homunculus that obeys you, fights alongside you and can deliver your touch spells."),
+("Mind Sharpener", "", "Armor or robes that can turn a failed concentration save into a success a few times per day."),
+("Radiant Weapon", "6th level", "A +1 weapon that sheds light on command, and can blind a creature that hits you as a reaction a few times per day."),
+("Repeating Shot", "", "A ranged weapon becomes +1, ignores the loading property, and makes its own ammunition."),
+("Replicate Magic Item", "", "Make a copy of a common or uncommon magic item from the artificer's list (bag of holding, goggles of night, rope of climbing, and many more, with better ones at higher levels)."),
+("Repulsion Shield", "6th level", "A +1 shield that can push an attacker 15 feet away as a reaction a few times per day."),
+("Resistant Armor", "6th level", "Armor that gives resistance to one damage type: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder."),
+("Returning Weapon", "", "A thrown weapon becomes +1 and flies back to your hand after the attack."),
+("Spell-Refueling Ring", "6th level", "A ring that, once per day, gives you back the mana of a spell of 3rd level or lower (up to 18 mana)."),
+("Arcane Propulsion Armor", "14th level", "Armor that adds 5 feet of speed, gives you powered gauntlets as weapons (1d8 force, thrown 20/60 that return), and replaces missing limbs."),
+],
+"Blood Curse": [
+("Blood Curse of the Anxious", "", "Make a creature more vulnerable to intimidation: Intimidation checks against it have advantage until your next turn. Amplified, it also has disadvantage on its next Wisdom save."),
+("Blood Curse of Binding", "", "As a bonus action, a Large or smaller creature makes a Strength save or its speed drops to 0 and it can't use reactions until the end of its next turn. Amplified, it lasts a minute (it repeats the save each turn) and works on bigger creatures."),
+("Blood Curse of Bloated Agony", "", "A creature's body swells: it has disadvantage on Strength and Dexterity checks and takes damage each time it acts, for a minute (Constitution save each turn to end it). Amplified, it takes more damage."),
+("Blood Curse of the Eyeless", "", "As a reaction when a creature attacks, roll your hemocraft die and subtract it from the attack roll. Amplified, it applies to all its attacks this turn."),
+("Blood Curse of the Fallen Puppet", "", "When a creature near you drops to 0 hit points, use your reaction to make it immediately make one attack against a target of your choice before it falls. Amplified, it can move first and gets a bonus to hit."),
+("Blood Curse of the Marked", "", "As a bonus action, mark a creature: your Crimson Rite damage against it is doubled until the end of your turn. Amplified, you also have advantage on your next attack against it."),
+("Blood Curse of Mutual Suffering", "", "Link a creature to you: when it damages you, it takes half that damage as necrotic. Amplified, it takes the full amount."),
+("Blood Curse of the Muddled Mind", "", "A spellcaster has disadvantage on its next concentration save. Amplified, on all of them for a while."),
+("Blood Curse of Exposure", "", "As a reaction when a creature takes damage, remove its resistance to that damage for that hit. Amplified, also for the rest of the turn."),
+("Blood Curse of Spurned Movement", "", "As a reaction when a creature moves near you, its speed drops to 0 until the end of the turn. Amplified, works on a creature farther away and it also can't take reactions."),
+("Blood Curse of the Exorcist", "Order of the Ghostslayer", "End a charm, fright or possession effect on a creature; the possessor takes psychic damage."),
+("Blood Curse of the Howl", "Order of the Lycan", "As an action, howl: creatures that hear it make a Wisdom save or are frightened and can't move."),
+("Blood Curse of Corrosion", "Order of the Mutant", "A creature is poisoned and takes poison damage each turn until it shakes it off (Constitution save)."),
+("Blood Curse of the Souleater", "Order of the Profane Soul", "When a creature dies near you, feed on its soul to regain mana and gain advantage on your next attacks. Once per long rest."),
+],
+}
