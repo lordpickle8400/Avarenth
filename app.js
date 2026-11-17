@@ -1251,6 +1251,35 @@
   }
   function pointsSpent(b) { return ABILITIES.reduce(function (t, a) { return t + (RULES.pointBuyCost[num(b.pb[a[0]], 8)] || 0); }, 0); }
 
+  // The live summary beside the builder: the character filling in as you choose.
+  function buildSummaryHtml(b) {
+    var cd = RULES.classes[b.cls], sp = RULES.species[b.species] || null, sc = buildScores(b), haveScores = ABILITIES.every(function (a) { return num(sc[a[0]], 0) > 0; });
+    var con = haveScores ? mod(sc.con) : 0, m = cd ? RULES.magic.mana[b.cls] : null;
+    var rows = [['Class', b.cls ? b.cls + (b.sub ? ' (' + b.sub + ')' : '') : ''], [devotionLabel(b.cls) || '', b.patron || ''], ['Species', b.species], ['Background', b.bg + (b.ofeat ? ' · ' + b.ofeat : '')]].filter(function (r) { return r[0]; });
+    var html = '<div class="bd-card"><div class="bd-who"><span class="cs-ava" aria-hidden="true">' + esc(initials(b.name || '?')) + '</span><div><b>' + esc(b.name || 'Unnamed') + '</b><span>' + esc(['Level 1', b.species, b.cls].filter(Boolean).join(' ')) + '</span></div></div>' +
+      '<dl class="bd-facts">' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + (r[1] ? esc(r[1]) : '<span class="note">Not chosen</span>') + '</dd>'; }).join('') + '</dl>';
+    html += '<div class="bd-abils">' + ABILITIES.map(function (a) { var v = num(sc[a[0]], 0); return '<div><span class="k">' + a[0].toUpperCase() + '</span><span class="m">' + (v ? signed(mod(v)) : '—') + '</span><span class="sc">' + (v || '') + '</span></div>'; }).join('') + '</div>';
+    html += '<div class="bd-vit">' + [['Hit points', cd ? cd.hd + con : '—'], ['Mana', m ? m[0] : '—'], ['Speed', sp ? sp.speed + ' ft' : '—'], ['Prof.', '+2']].map(function (v) { return '<div><span class="k">' + v[0] + '</span><span class="v">' + esc(String(v[1])) + '</span></div>'; }).join('') + '</div>';
+    var sk = uniq(buildFixedSkills(b).concat(b.skills || []));
+    if (sk.length) html += '<p class="bd-sk"><span class="k">Skills</span> ' + esc(sk.join(', ')) + '</p>';
+    if ((b.spells || []).length) html += '<p class="bd-sk"><span class="k">Spells</span> ' + esc(b.spells.join(', ')) + '</p>';
+    return '<details class="bd-sum"' + (isPhoneSheet() ? '' : ' open') + '><summary><span>Your character</span><span class="note">' + esc([b.name, b.species, b.cls].filter(Boolean).join(' · ') || 'Nothing chosen yet') + '</span></summary>' + html + '</div></details>';
+  }
+  // A list of choices; the chosen one opens up in place to show what it gives you.
+  function choiceList(items, selected, act, detail) {
+    return '<div class="choice-list">' + items.map(function (it) {
+      var on = it[0] === selected;
+      return '<div class="cl-item' + (on ? ' on' : '') + '"><button type="button" class="cl-row" data-act="' + act + '" data-val="' + esc(it[0]) + '" aria-pressed="' + on + '" aria-expanded="' + on + '">' +
+        '<span class="cl-badge" aria-hidden="true">' + esc(initials(it[0])) + '</span><span class="cl-txt"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</span><span class="cl-chev" aria-hidden="true">' + (on ? '✓' : '›') + '</span></button>' +
+        (on && detail ? '<div class="cl-detail">' + detail + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+  function classFeatureList(cls) {
+    var cd = RULES.classes[cls];
+    return '<details class="srd" style="margin-top:10px"><summary>Every ' + esc(cls) + ' feature, level by level</summary><div class="tbl">' + cd.features.map(function (f) {
+      return '<div class="tbl-row"><span class="lvl-badge">' + f[0] + '</span><div class="main"><b>' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>';
+    }).join('') + '</div></details>';
+  }
   function choiceGrid(items, selected, act) {
     return '<div class="choice-grid">' + items.map(function (it) {
       return '<button type="button" class="choice" data-act="' + act + '" data-val="' + esc(it[0]) + '" aria-pressed="' + (it[0] === selected) + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</button>';
@@ -1261,8 +1290,12 @@
     var b = ui.build || (ui.build = newBuild());
     if (spells === null && b.step >= 6) { loadSpells().then(render).catch(function (e) { fail(e); }); }
     var steps = buildSteps(b), step = steps[b.step];
-    var html = '<div class="page narrow"><p class="crumbs"><a href="#/characters">Characters</a></p><h1 class="page-title">Build a character</h1>' +
-      '<ol class="steps">' + steps.map(function (t, i) { return '<li' + (i === b.step ? ' aria-current="step"' : '') + (i < b.step ? ' class="done"' : '') + '>' + t + '</li>'; }).join('') + '</ol>';
+    var stepErr = buildStepError(b);
+    var html = '<div class="page bd"><div class="bd-top"><p class="crumbs"><a href="#/characters">Characters</a></p><h1 class="page-title">Build a character</h1></div>' +
+      '<nav class="bd-steps" aria-label="Steps"><ol>' + steps.map(function (t, i) {
+        var reach = i <= b.step || (i === b.step + 1 && !stepErr);
+        return '<li' + (i === b.step ? ' aria-current="step"' : '') + (i < b.step ? ' class="done"' : '') + '><button type="button" data-act="bd-goto" data-i="' + i + '"' + (reach ? '' : ' disabled') + '><span class="n">' + (i < b.step ? '✓' : i + 1) + '</span><span class="t">' + esc(t) + '</span></button></li>';
+      }).join('') + '</ol></nav><div class="bd-grid"><div class="bd-main"><h2 class="bd-h">' + esc(step === 'Review' ? 'Review your character' : step) + '</h2>';
     var cd = RULES.classes[b.cls];
     if (step === 'Name') {
       html += '<p class="guide">Start with who they are. You can change the name any time.</p>' +
@@ -1270,8 +1303,7 @@
         '<div class="field"><label for="bd-camp">Campaign</label><select id="bd-camp" data-build="campaign">' + campaignOptions(b.campaign, true, 'No campaign yet') + '</select></div>';
     } else if (step === 'Class') {
       html += '<p class="guide">Your class is what you do best. It sets your hit points, your skills, how much mana you have and which spells are on your list.</p>' +
-        choiceGrid(Object.keys(RULES.classes).map(function (k) { var c = RULES.classes[k], m = RULES.magic.mana[k]; return [k, 'd' + c.hd + ' hit die · ' + (m ? m[0] + ' mana' : 'no mana') + ' · ' + c.primary]; }), b.cls, 'bd-class');
-      if (cd) html += classCard(b.cls);
+        choiceList(Object.keys(RULES.classes).map(function (k) { var c = RULES.classes[k], m = RULES.magic.mana[k]; return [k, 'd' + c.hd + ' hit die · ' + (m ? m[0] + ' mana' : 'no mana') + ' · ' + c.primary + (c.book ? ' · ' + c.book : '')]; }), b.cls, 'bd-class', cd ? classCard(b.cls) + classFeatureList(b.cls) : '');
     } else if (step === 'Domain' || step === 'Pact' || step === 'Origin') {
       var sopts = subclassOptions(b.cls, b.patron), scd = RULES.classes[b.cls];
       html += '<p class="guide">' + (step === 'Domain' ? 'Your domain is the part of ' + (b.patron ? esc(b.patron) + '’s' : 'your god’s') + ' power you carry. It decides your domain spells and your Channel Divinity.' :
@@ -1309,20 +1341,19 @@
       }
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
+      var sp = RULES.species[b.species], spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<p class="note" style="margin:0 0 8px">' + esc(sp.note) + '</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
+        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>' : '';
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.']].map(function (g) {
           var keys = Object.keys(RULES.species).filter(function (k) { return (RULES.species[k].group || 'isles') === g[0]; });
           return keys.length ? '<h2 class="sec-title" style="margin-top:14px">' + g[1] + '<small>' + keys.length + '</small></h2>' + (g[2] ? '<p class="note" style="margin:0 0 6px">' + g[2] + '</p>' : '') +
-            choiceGrid(keys.map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.fly ? ' · flies' : sp.swim ? ' · swims' : sp.climb ? ' · climbs' : '') + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species') : '';
+            choiceList(keys.map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.fly ? ' · flies' : sp.swim ? ' · swims' : sp.climb ? ' · climbs' : '') + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species', spDetail) : '';
         }).join('');
-      var sp = RULES.species[b.species];
-      if (sp) html += '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<p class="note" style="margin:0 0 8px">' + esc(sp.note) + '</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
-        sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>';
     } else if (step === 'Background') {
-      html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills.</p>' +
-        choiceGrid(Object.keys(RULES.backgrounds).map(function (k) { return [k, RULES.backgrounds[k].join(', ')]; }), b.bg, 'bd-bg');
       var sbg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
-      if (sbg) html += '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Feature</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>';
+      var bgDetail = sbg ? '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Feature</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>' : '';
+      html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills, a tool and a feat.</p>' +
+        choiceList(Object.keys(RULES.backgrounds).map(function (k) { var x = SRD && SRD.backgrounds[k]; return [k, RULES.backgrounds[k].join(', ') + (x && x.book ? ' · ' + x.book : '')]; }), b.bg, 'bd-bg', bgDetail);
       if (SRD && b.bg) {
         var origins = SRD.feats.filter(function (f) { return f.category === 'Origin'; });
         var def = sbg ? sbg.feat.replace(/\s*\(.*$/, '') : '';
@@ -1352,10 +1383,13 @@
       html += buildReviewHtml(b);
     }
     var err = buildStepError(b);
-    html += '<div class="actions build-nav">' + (b.step > 0 ? '<button type="button" class="btn" data-act="bd-back">Back</button>' : '<a class="btn" href="#/characters">Cancel</a>') +
-      (step === 'Review' ? '<button type="button" class="btn primary" data-act="bd-create">Create character</button>' : '<button type="button" class="btn primary" data-act="bd-next">Next</button>') + '</div>' +
-      (err && step !== 'Review' ? '<p class="note" style="text-align:right">' + esc(err) + '</p>' : '') + '</div>';
+    html += '</div><aside class="bd-side" aria-label="Your character so far">' + buildSummaryHtml(b) + '</aside></div>';
+    html += '<div class="bd-nav">' + (b.step > 0 ? '<button type="button" class="btn" data-act="bd-back">‹ Back</button>' : '<a class="btn" href="#/characters">Cancel</a>') +
+      '<span class="bd-where">' + (err && step !== 'Review' ? esc(err) : 'Step ' + (b.step + 1) + ' of ' + steps.length) + '</span>' +
+      (step === 'Review' ? '<button type="button" class="btn primary" data-act="bd-create">Create character</button>' : '<button type="button" class="btn primary" data-act="bd-next">Next ›</button>') + '</div></div>';
     $view.innerHTML = html;
+    var stepNav = $view.querySelector('.bd-steps'), curStep = stepNav && stepNav.querySelector('[aria-current]');
+    if (curStep) stepNav.scrollLeft = Math.max(0, curStep.offsetLeft - stepNav.clientWidth / 2 + curStep.offsetWidth / 2);
   }
 
   function classCard(cls) {
@@ -1621,15 +1655,20 @@
     var mMax = manaMax(s);
     if (num(s.mana.cur, 0) > mMax) s.mana.cur = mMax;
 
-    var who = ['Level ' + num(s.level, 1), s.species, s.cls, s.subclass ? '(' + s.subclass + ')' : '', s.background ? '· ' + s.background : ''].filter(Boolean).join(' ');
-    var html = '<div class="page sheet" data-char="' + esc(c.id) + '">';
-    html += '<div class="sheet-head"><div style="min-width:0"><p class="crumbs"><a href="#/characters">Characters</a>' + (c.owner_id !== uid() ? ' · ' + esc(memberName(c.owner_id)) : '') + '</p>';
-    if (edit) html += '<div class="field" style="margin-top:6px"><label for="ch-name">Name</label><input type="text" id="ch-name" data-cf="name" value="' + esc(c.name) + '" maxlength="80"></div>';
-    else html += '<h1>' + esc(c.name) + '</h1><p class="who" style="margin:4px 0 0">' + esc(who) + '</p>' + (s.patron ? '<p class="who" style="margin:2px 0 0">' + patronLine(s) + '</p>' : '');
-    html += '</div><div class="actions">' + (can ? '<span class="saved" id="saved" aria-live="polite"></span>' +
-      (cd && num(s.level, 1) < 20 && !edit ? '<a class="btn primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') +
-      '<button type="button" class="btn' + (edit ? ' primary' : '') + '" data-act="sheet-edit">' + (edit ? 'Done editing' : 'Edit sheet') + '</button>' : '') +
-      (c.ddb_url && /^https:\/\//i.test(c.ddb_url) ? '<a class="btn quiet" href="' + esc(c.ddb_url) + '" target="_blank" rel="noopener noreferrer">D&amp;D Beyond ↗</a>' : '') + '</div></div>';
+    var sp0 = RULES.species[s.species] || {};
+    var who = [s.species, s.cls, s.subclass ? '(' + s.subclass + ')' : ''].filter(Boolean).join(' ');
+    var phone = isPhoneSheet();
+    var html = '<div class="page sheet cs" data-char="' + esc(c.id) + '">';
+    // Header bar: portrait, name, who they are, rests and level up.
+    html += '<p class="crumbs cs-crumbs"><a href="#/characters">Characters</a>' + (c.owner_id !== uid() ? ' · ' + esc(memberName(c.owner_id)) : '') + '</p>';
+    html += '<header class="cs-head"><div class="cs-ava" aria-hidden="true">' + esc(initials(c.name)) + '</div><div class="cs-id">';
+    if (edit) html += '<div class="field" style="margin:0"><label for="ch-name">Name</label><input type="text" id="ch-name" data-cf="name" value="' + esc(c.name) + '" maxlength="80"></div>';
+    else html += '<h1>' + esc(c.name) + '</h1><p class="cs-who">' + esc(who || 'No class yet') + '</p><p class="cs-lvl">Level ' + num(s.level, 1) + (s.background ? ' · ' + esc(s.background) : '') + (s.patron ? ' · ' + patronLine(s) : '') + '</p>';
+    html += '</div><div class="cs-acts">' + (can ? '<span class="saved" id="saved" aria-live="polite"></span>' +
+      '<button type="button" class="btn small" data-act="short-rest">Short rest</button><button type="button" class="btn small" data-act="long-rest">Long rest</button>' +
+      (cd && num(s.level, 1) < 20 && !edit ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') +
+      '<button type="button" class="btn small' + (edit ? ' primary' : ' quiet') + '" data-act="sheet-edit">' + (edit ? 'Done' : 'Edit') + '</button>' : '') +
+      (c.ddb_url && /^https:\/\//i.test(c.ddb_url) ? '<a class="btn small quiet" href="' + esc(c.ddb_url) + '" target="_blank" rel="noopener noreferrer">D&amp;D Beyond ↗</a>' : '') + '</div></header>';
 
     if (can && !edit) {
       var steps = nextSteps(c, s).slice(0, 3);
@@ -1649,48 +1688,103 @@
         sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') +
         (devotionLabel(s.cls) || s.patron ? sheetInput(devotionLabel(s.cls) || 'Deity or patron', 'patron', s.patron, '', 'dl-patrons') : '') +
         sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class', 'ac', s.ac, 'number') +
-        sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') +
+        sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') + sheetInput('Languages', 'langs', s.langs || '', '') +
         '</div><p class="hint">To gain a level, use the level-up guide. It adds hit points, mana and choices for you. Changing the level here doesn’t.</p>' +
         '<div class="field"><label for="ch-camp">Campaign</label><select id="ch-camp" data-cf="campaign_id">' + campaignOptions(c.campaign_id, true, 'No campaign') + '</select></div><div class="field"><label for="ch-ddb">D&amp;D Beyond link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
     }
 
-    html += '<div class="abilities">';
-    ABILITIES.forEach(function (a) {
-      html += '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + signed(abil[a[0]]) + '</span>' +
-        (edit ? '<label class="sr" for="ab-' + a[0] + '">' + a[1] + ' score</label><input type="number" id="ab-' + a[0] + '" data-ab="' + a[0] + '" min="1" max="30" value="' + num(s.abilities[a[0]], 10) + '">' : '<span class="score">' + num(s.abilities[a[0]], 10) + '</span>') + '</div>';
-    });
-    var sa = spellAbilityMod(s, abil);
-    html += '</div><div class="vitals">' +
-      vital('Armor', num(s.ac, 10)) + vital('Initiative', signed(init)) + vital('Speed', num(s.speed, 30) + ' ft') + vital('Proficiency', signed(pb)) +
-      (sa ? vital('Spell save DC', 8 + pb + sa.mod) + vital('Spell attack', signed(pb + sa.mod)) : '') + '</div>';
 
+    // Top strip: the six abilities, proficiency, speed, inspiration, hit points and mana.
+    html += '<div class="cs-top"><div class="cs-abils">' + ABILITIES.map(function (a) {
+      return '<div class="cs-ab"><span class="k">' + esc(a[1]) + '</span><span class="m">' + signed(abil[a[0]]) + '</span>' +
+        (edit ? '<label class="sr" for="ab-' + a[0] + '">' + a[1] + ' score</label><input type="number" id="ab-' + a[0] + '" data-ab="' + a[0] + '" min="1" max="30" value="' + num(s.abilities[a[0]], 10) + '">' : '<span class="sc">' + num(s.abilities[a[0]], 10) + '</span>') + '</div>';
+    }).join('') + '</div>';
+    html += '<div class="cs-mini">' + csStat('Proficiency', signed(pb), 'bonus') + csStat('Walking', num(s.speed, 30) + ' ft', 'speed') +
+      '<div class="cs-stat"><span class="k">Heroic</span>' + (can ? '<button type="button" class="cs-insp" data-act="inspiration" aria-pressed="' + s.inspiration + '" aria-label="Heroic Inspiration">' + (s.inspiration ? '★' : '☆') + '</button>' : '<span class="v">' + (s.inspiration ? '★' : '☆') + '</span>') + '<span class="u">inspiration</span></div></div>';
     var hpPct = Math.max(0, Math.min(100, Math.round(100 * num(s.hp.cur, 0) / Math.max(1, num(s.hp.max, 1)))));
     var mpPct = mMax > 0 ? Math.max(0, Math.min(100, Math.round(100 * num(s.mana.cur, 0) / mMax))) : 0;
     var hdLeft = Math.max(0, num(s.level, 1) - num(s.hd.used, 0));
-    html += '<div class="pools">' +
-      '<section class="pool" aria-label="Hit points"><div class="pool-top"><span class="k">Hit points</span><span class="v">' + num(s.hp.cur, 0) + ' <small>/ ' + num(s.hp.max, 0) + (num(s.hp.temp, 0) ? ' · ' + num(s.hp.temp, 0) + ' temp' : '') + '</small></span></div>' +
-      '<div class="meter" role="img" aria-label="' + hpPct + '% health"><i style="width:' + hpPct + '%"></i></div>' +
-      (can ? '<div class="pool-ctl"><label class="sr" for="hp-amt">Amount</label><input type="number" id="hp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small danger" data-act="hp" data-dir="-1">Damage</button><button type="button" class="btn small" data-act="hp" data-dir="1">Heal</button></div>' : '') +
-      deathSavesHtml(s, can) +
-      (cd ? '<p class="note" style="margin:6px 0 0">Hit dice: ' + hdLeft + ' of ' + num(s.level, 1) + ' (d' + cd.hd + ')' + (can && hdLeft ? ' · <button type="button" class="linkish" data-act="spend-hd">Spend one on a short rest</button>' : '') + '</p>' : '') +
-      (edit ? '<div class="pool-edit"><label for="hp-max">Max</label><input type="number" id="hp-max" data-pool="hp.max" value="' + num(s.hp.max, 0) + '"><label for="hp-temp">Temp</label><input type="number" id="hp-temp" data-pool="hp.temp" value="' + num(s.hp.temp, 0) + '"></div>' : '') + '</section>' +
-      '<section class="pool" aria-label="Mana"><div class="pool-top"><span class="k">Mana</span><span class="v">' + num(s.mana.cur, 0) + ' <small>/ ' + mMax + '</small></span></div>' +
-      '<div class="meter mana" role="img" aria-label="' + mpPct + '% mana"><i style="width:' + mpPct + '%"></i></div>' +
-      chargesHtml(s) +
-      (can ? '<div class="pool-ctl"><label class="sr" for="mp-amt">Amount</label><input type="number" id="mp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small" data-act="mp" data-dir="-1">Spend</button><button type="button" class="btn small" data-act="mp" data-dir="1">Restore</button></div>' : '') +
+    html += '<section class="cs-box cs-hp" aria-label="Hit points"><h2 class="cs-h">Hit points</h2>' +
+      (can ? '<div class="cs-hpctl"><button type="button" class="btn small" data-act="hp" data-dir="1">Heal</button><label class="sr" for="hp-amt">Amount</label><input type="number" id="hp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small danger" data-act="hp" data-dir="-1">Damage</button></div>' : '') +
+      '<div class="cs-hpnums"><div><span class="k">Current</span><span class="v">' + num(s.hp.cur, 0) + '</span></div><span class="sl">/</span><div><span class="k">Max</span><span class="v">' + num(s.hp.max, 0) + '</span></div><div class="tmp"><span class="k">Temp</span><span class="v">' + (num(s.hp.temp, 0) || '—') + '</span></div></div>' +
+      '<div class="meter" role="img" aria-label="' + hpPct + '% health"><i style="width:' + hpPct + '%"></i></div>' + deathSavesHtml(s, can) +
+      (cd ? '<p class="note cs-hd">Hit dice ' + hdLeft + '/' + num(s.level, 1) + ' (d' + cd.hd + ')' + (can && hdLeft ? ' · <button type="button" class="linkish" data-act="spend-hd">Spend one</button>' : '') + '</p>' : '') +
+      (edit ? '<div class="pool-edit"><label for="hp-max">Max</label><input type="number" id="hp-max" data-pool="hp.max" value="' + num(s.hp.max, 0) + '"><label for="hp-temp">Temp</label><input type="number" id="hp-temp" data-pool="hp.temp" value="' + num(s.hp.temp, 0) + '"></div>' : '') + '</section>';
+    html += '<section class="cs-box cs-mp" aria-label="Mana"><h2 class="cs-h">Mana</h2>' +
+      '<div class="cs-hpnums"><div><span class="k">Current</span><span class="v">' + num(s.mana.cur, 0) + '</span></div><span class="sl">/</span><div><span class="k">Max</span><span class="v">' + mMax + '</span></div></div>' +
+      '<div class="meter mana" role="img" aria-label="' + mpPct + '% mana"><i style="width:' + mpPct + '%"></i></div>' + chargesHtml(s) +
+      (can ? '<div class="cs-hpctl"><label class="sr" for="mp-amt">Amount</label><input type="number" id="mp-amt" min="0" value="1" inputmode="numeric"><button type="button" class="btn small" data-act="mp" data-dir="-1">Spend</button><button type="button" class="btn small" data-act="mp" data-dir="1">Restore</button></div>' : '') +
       (edit ? '<div class="pool-edit"><label class="check"><input type="checkbox" id="mp-ovr" data-mana-override' + (s.mana.override ? ' checked' : '') + '> Set max by hand</label>' + (s.mana.override ? '<label for="mp-max">Max</label><input type="number" id="mp-max" data-pool="mana.max" value="' + num(s.mana.max, 0) + '">' : '<span class="note">' + (autoMana(s.cls, s.level) !== null ? 'Worked out from class and level.' : 'Set a class to work it out.') + '</span>') + '</div>' : '') + '</section></div>';
-    html += resourcesHtml(s, can);
-    html += conditionHtml(s, can);
-    if (can) html += '<div class="actions rest-row"><button type="button" class="btn" data-act="short-rest">Short rest</button><button type="button" class="btn" data-act="long-rest">Long rest</button><span class="note">A long rest refills everything and gives back half your hit dice.</span></div>';
 
-    var tabs = ['Actions', 'Spells', 'Skills', 'Inventory', 'Features', 'Reputation', 'Record', 'Notes'];
-    if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = 'Actions';
-    html += '<div class="subtabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + t + '</button>'; }).join('') + '</div>';
-    html += '<div role="tabpanel">' + sheetTab(c, s, edit, can, abil, pb, perc) + '</div>';
+    // Body: saves, senses and proficiencies | skills | combat stats and the tabs.
+    var sa = spellAbilityMod(s, abil);
+    var colA = csSavesHtml(s, abil, pb, can) + csSensesHtml(s, abil, pb, perc, sp0) + csProfsHtml(s, cd, sp0);
+    var colB = csSkillsHtml(s, abil, pb, can);
+    html += '<div class="cs-body">' + (phone ? '' : '<div class="cs-col cs-a">' + colA + '</div><div class="cs-col cs-b">' + colB + '</div>') + '<div class="cs-col cs-c">';
+    html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class"><span class="k">Armor</span><span class="v">' + num(s.ac, 10) + '</span><span class="k">Class</span></div>' +
+      csStat('Initiative', signed(init), '') + (sa ? csStat('Spell save', String(8 + pb + sa.mod), 'DC') + csStat('Spell attack', signed(pb + sa.mod), sa.key.toUpperCase()) : '') + '</div>';
+    html += conditionHtml(s, can, true);
+    var tabs = (phone ? ['Abilities', 'Skills'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
+    if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
+    var tabName = { Features: 'Features & Traits', Abilities: 'Saves & Senses' };
+    html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
+    html += '<div role="tabpanel" class="cs-panel">' + (ui.sheetTab === 'Abilities' ? colA : ui.sheetTab === 'Skills' ? colB : ui.sheetTab === 'Background' ? csBackgroundHtml(c, s, sp0) : (ui.sheetTab === 'Actions' ? resourcesHtml(s, can) : '') + sheetTab(c, s, edit, can, abil, pb, perc)) + '</div>';
+    html += '</div></div>';
 
     if (edit) html += '<div class="actions" style="justify-content:flex-end"><button type="button" class="btn danger" data-act="delete-char" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again to delete' : 'Delete character') + '</button></div>';
     html += '</div>';
     $view.innerHTML = html;
+  }
+  /* ---------- Character sheet pieces (laid out like the familiar online sheets) ---------- */
+  function isPhoneSheet() { return window.matchMedia && window.matchMedia('(max-width: 899px)').matches; }
+  (function () {
+    if (!window.matchMedia) return;
+    var mq = window.matchMedia('(max-width: 899px)');
+    var on = function () { if (parseRoute().name === 'c') { if (!mq.matches && (ui.sheetTab === 'Abilities' || ui.sheetTab === 'Skills')) ui.sheetTab = 'Actions'; render(); } };
+    if (mq.addEventListener) mq.addEventListener('change', on); else if (mq.addListener) mq.addListener(on);
+  })();
+  function initials(n) { return String(n || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || '?'; }
+  function csStat(k, v, u) { return '<div class="cs-stat"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span>' + (u ? '<span class="u">' + esc(u) + '</span>' : '') + '</div>'; }
+  function csDot(kind, key, lvl, can) {
+    var aria = (lvl === 2 ? 'Expertise' : lvl === 1 ? 'Proficient' : 'Not proficient') + ' in ' + key;
+    var cls = 'cs-dot' + (lvl === 2 ? ' exp' : lvl === 1 ? ' on' : '');
+    return can ? '<button type="button" class="' + cls + '" data-act="prof" data-kind="' + kind + '" data-key="' + esc(key) + '" aria-label="' + esc(aria) + '. Tap to change."></button>' : '<span class="' + cls + '" aria-label="' + esc(aria) + '"></span>';
+  }
+  function csSavesHtml(s, abil, pb, can) {
+    return '<section class="cs-box"><h2 class="cs-h">Saving throws</h2><div class="cs-saves">' + ABILITIES.map(function (a) {
+      var lvl = s.saves[a[0]] ? 1 : 0;
+      return '<div class="cs-row">' + csDot('save', a[0], lvl, can) + '<span class="n">' + a[0].toUpperCase() + '</span><span class="b">' + signed(abil[a[0]] + lvl * pb) + '</span></div>';
+    }).join('') + '</div></section>';
+  }
+  function csSensesHtml(s, abil, pb, perc, sp0) {
+    var pas = function (k, ab) { return 10 + abil[ab] + num(s.skills[k], 0) * pb; };
+    return '<section class="cs-box"><h2 class="cs-h">Senses</h2>' +
+      '<div class="cs-sense"><span class="b">' + perc + '</span><span>Passive Perception</span></div>' +
+      '<div class="cs-sense"><span class="b">' + pas('Investigation', 'int') + '</span><span>Passive Investigation</span></div>' +
+      '<div class="cs-sense"><span class="b">' + pas('Insight', 'wis') + '</span><span>Passive Insight</span></div>' +
+      (sp0.dark ? '<p class="note" style="margin:6px 0 0">Darkvision ' + sp0.dark + ' ft</p>' : '') + '</section>';
+  }
+  function csProfsHtml(s, cd, sp0) {
+    var bg = SRD && s.background ? SRD.backgrounds[s.background] : null;
+    var rows = [['Armor', cd ? cd.armor : ''], ['Weapons', cd ? cd.weapons : ''], ['Tools', [cd && cd.tools, bg && bg.tool].filter(Boolean).join(', ')], ['Languages', s.langs || 'Common, and any others your DM allows']];
+    return '<section class="cs-box"><h2 class="cs-h">Proficiencies &amp; training</h2>' + rows.map(function (r) { return '<div class="cs-prof"><span class="k">' + r[0] + '</span><span>' + esc(r[1] || 'None') + '</span></div>'; }).join('') + '</section>';
+  }
+  function csSkillsHtml(s, abil, pb, can) {
+    return '<section class="cs-box cs-skills"><h2 class="cs-h">Skills</h2><div class="cs-skhead"><span>Prof</span><span>Mod</span><span>Skill</span><span>Bonus</span></div>' + SKILLS.map(function (k) {
+      var lvl = num(s.skills[k[0]], 0);
+      return '<div class="cs-row">' + csDot('skill', k[0], lvl, can) + '<span class="a">' + k[1].toUpperCase() + '</span><span class="n">' + k[0] + '</span><span class="b">' + signed(abil[k[1]] + lvl * pb) + '</span></div>';
+    }).join('') + (can ? '<p class="note" style="margin:8px 0 0">Tap a dot: proficient, expertise, none.</p>' : '') + '</section>';
+  }
+  function csBackgroundHtml(c, s, sp0) {
+    var bg = SRD && s.background ? SRD.backgrounds[s.background] : null, html = '';
+    html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.background || 'Background') + (bg && bg.own ? '<small>' + esc(bg.book) + '</small>' : '') + '</h2>';
+    if (!s.background) html += '<div class="empty">No background yet.' + (canEditChar(c) ? ' Tap Edit to set one.' : '') + '</div>';
+    else if (bg) html += (bg.about ? '<p class="prose" style="margin:0 0 8px">' + esc(bg.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Skills</dt><dd>' + esc(bg.skills) + '</dd><dt>Tool</dt><dd>' + esc(bg.tool) + '</dd><dt>Feat</dt><dd>' + esc(bg.feat) + '</dd>' + (bg.feature ? '<dt>Feature</dt><dd>' + esc(bg.feature) + '</dd>' : '') + '</dl>';
+    else html += '<p class="note">Skills: ' + esc((RULES.backgrounds[s.background] || []).join(', ') || '—') + '</p>';
+    html += '</section>';
+    if (s.species) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.species) + '<small>' + esc([sp0.size, (sp0.speed || 30) + ' ft'].filter(Boolean).join(' · ')) + '</small></h2>' + (sp0.note ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.note) + '</p>' : '') +
+      '<div class="tbl">' + (sp0.traits || []).map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></section>';
+    return html;
   }
   /* Class resources from the D&D rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
   /* ---------- Conditions, exhaustion, inspiration, death saves, carrying ---------- */
@@ -1705,8 +1799,15 @@
       (can && d.f < 3 && d.s < 3 ? '<p class="note" style="margin:0 0 6px">Roll a d20 at the table: 10 or higher is a success.</p><div class="pool-ctl"><button type="button" class="btn small" data-act="death" data-kind="s">Success</button><button type="button" class="btn small" data-act="death" data-kind="f">Failure</button><button type="button" class="btn small" data-act="death" data-kind="nat1">Natural 1</button><button type="button" class="btn small primary" data-act="death" data-kind="nat20">Natural 20</button></div>' : '') +
       (can && (d.s || d.f) ? '<button type="button" class="linkish" data-act="death" data-kind="reset">Clear</button>' : '') + '</div>';
   }
-  function conditionHtml(s, can) {
+  function conditionHtml(s, can, compact) {
     var active = s.conditions.filter(function (x) { return CONDITIONS.indexOf(x) >= 0; }), ex = s.exhaustion;
+    if (compact) {
+      var sum = active.concat(ex ? ['Exhaustion ' + ex] : []);
+      return '<details class="cs-box cs-cond"' + (ui.condOpen ? ' open' : '') + '><summary><span class="cs-h" style="margin:0">Conditions</span><span class="cs-condnow">' + (sum.length ? sum.map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') : '<span class="note">None</span>') + '</span>' + (can ? '<span class="linkish">Manage</span>' : '') + '</summary>' +
+        '<div class="res-row"><div class="main"><b>Exhaustion ' + ex + '</b><span>' + esc(ex ? EXHAUSTION.slice(1, ex + 1).join('; ') : 'None') + '</span></div>' +
+        (can ? '<button type="button" class="btn small" data-act="exhaustion" data-dir="-1"' + (ex <= 0 ? ' disabled' : '') + ' aria-label="One less exhaustion">−</button><button type="button" class="btn small" data-act="exhaustion" data-dir="1"' + (ex >= 6 ? ' disabled' : '') + ' aria-label="One more exhaustion">+</button>' : '') + '</div>' +
+        (can ? '<div class="chips cond-chips">' + CONDITIONS.map(function (x) { return '<button type="button" class="chip pick" data-act="condition" data-name="' + x + '" aria-pressed="' + (active.indexOf(x) >= 0) + '">' + x + '</button>'; }).join('') + '</div>' : '') + '</details>';
+    }
     var html = '<section class="pool cond-pool" aria-label="Condition"><div class="pool-top"><span class="k">Condition</span>' +
       (can ? '<button type="button" class="chip pick insp" data-act="inspiration" aria-pressed="' + s.inspiration + '">' + (s.inspiration ? '★ Inspired' : '☆ Inspiration') + '</button>' : (s.inspiration ? '<span class="tag ok">★ Inspired</span>' : '')) + '</div>';
     html += '<div class="res-row"><div class="main"><b>Exhaustion ' + ex + '</b><span>' + esc(ex ? EXHAUSTION.slice(1, ex + 1).join('; ') : 'None') + '</span></div>' +
@@ -6976,6 +7077,10 @@
         if (berr) return toast(berr);
         ui.build.step = Math.min(buildSteps(ui.build).length - 1, ui.build.step + 1); render(); window.scrollTo(0, 0); break;
       case 'bd-back': ui.build.step = Math.max(0, ui.build.step - 1); render(); window.scrollTo(0, 0); break;
+      case 'bd-goto':
+        var gi = num(el.getAttribute('data-i'), 0);
+        if (gi > ui.build.step) { var gerr = buildStepError(ui.build); if (gerr) return toast(gerr); gi = ui.build.step + 1; }
+        ui.build.step = gi; render(); window.scrollTo(0, 0); break;
       case 'bd-method': ui.build.method = el.getAttribute('data-val'); ui.build.assign = {}; render(); break;
       case 'bd-pb':
         var k = el.getAttribute('data-ab'), v = num(ui.build.pb[k], 8) + num(el.getAttribute('data-dir'), 1);
@@ -8182,6 +8287,7 @@
   document.addEventListener('toggle', function (e) {
     var d = e.target;
     if (d && d.classList && d.classList.contains('spell-more') && d.open) fillSpellMore(d);
+    if (d && d.classList && d.classList.contains('cs-cond')) ui.condOpen = d.open;
   }, true);
 
   // Our own short summaries of the subclasses in the paid books (not the book text).
