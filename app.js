@@ -346,7 +346,7 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['monsters', 'Monsters'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
   var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['homebrew', 'Homebrew']];
   var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
@@ -366,7 +366,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -423,6 +423,7 @@
       case 'spell-new': return renderSpellForm('');
       case 'spell-edit': return renderSpellForm(r.arg);
       case 'homebrew': return renderHomebrew(r.arg);
+      case 'monsters': return renderMonsters(r.arg);
       default: return renderAtlas('');
     }
   }
@@ -2189,6 +2190,132 @@
     var t = document.getElementById('hb-type');
     if (!t) return;
     Array.prototype.forEach.call(document.querySelectorAll('.hb-sub'), function (el) { el.hidden = el.getAttribute('data-for').split(' ').indexOf(t.value) < 0; });
+  }
+
+  /* ---------- Monster appendix (DM only): the SRD 5.2.1 monsters and animals, plus homebrew monsters ---------- */
+  var MONS = null;
+  var MON_SECS = ['Traits', 'Actions', 'Bonus Actions', 'Reactions', 'Legendary Actions'];
+  var MON_SIZES = ['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'];
+  var CR_XP = { '0': 10, '1/8': 25, '1/4': 50, '1/2': 100, '1': 200, '2': 450, '3': 700, '4': 1100, '5': 1800, '6': 2300, '7': 2900, '8': 3900, '9': 5000, '10': 5900, '11': 7200, '12': 8400, '13': 10000, '14': 11500, '15': 13000, '16': 15000, '17': 18000, '18': 20000, '19': 22000, '20': 25000, '21': 33000, '22': 41000, '23': 50000, '24': 62000, '25': 75000, '26': 90000, '27': 105000, '28': 120000, '29': 135000, '30': 155000 };
+  function loadMonsters() {
+    if (MONS) return Promise.resolve(MONS);
+    if (loadMonsters.p) return loadMonsters.p;
+    loadMonsters.p = fetch('monsters.json').then(function (r) { if (!r.ok) throw new Error('monsters'); return r.json(); })
+      .then(function (d) { MONS = d.monsters || []; render(); return MONS; }).catch(function () { loadMonsters.p = null; });
+    return loadMonsters.p;
+  }
+  function crNum(cr) { var s = String(cr || '0'); if (s.indexOf('/') > 0) { var p = s.split('/'); return num(p[0], 0) / Math.max(1, num(p[1], 1)); } return num(s, 0); }
+  function monSlug(n) { return String(n || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function allMonsters() {
+    var hb = homebrew.filter(function (h) { return h.kind === 'monster'; }).map(function (h) { return Object.assign({}, h.data || {}, { name: h.name, hb: true, id: h.id, group: 'Homebrew' }); });
+    return hb.concat(MONS || []);
+  }
+  function monBySlug(slug) { return allMonsters().filter(function (m) { return monSlug(m.name) === slug; })[0] || null; }
+  function monText(t) { return esc(t || '').replace(/«([^»]+)»/g, '<i>$1</i>').replace(/\n/g, '<br>'); }
+  function monXp(m) { return m.xp ? m.xp.replace(/^XP\s*/i, '') : CR_XP[String(m.cr)] != null ? CR_XP[String(m.cr)].toLocaleString() : '—'; }
+
+  function renderMonsters(arg) {
+    if (!isDM()) { location.replace('#/map'); return; }
+    if (!MONS) { loadMonsters(); $view.innerHTML = '<div class="page"><div class="empty">Opening the bestiary…</div></div>'; return; }
+    var parts = String(arg || '').split(':');
+    if (parts[0] === 'new' || parts[0] === 'edit' || parts[0] === 'copy') return renderMonsterForm(parts[0], parts.slice(1).join(':'));
+    if (arg) return renderMonster(arg);
+    var F = ui.monF || (ui.monF = { q: '', type: '', size: '', src: '', crMin: '', crMax: '', sort: 'name' });
+    var list = allMonsters().filter(function (m) {
+      if (F.q && (m.name + ' ' + (m.type || '') + ' ' + (m.group || '')).toLowerCase().indexOf(F.q.toLowerCase()) < 0) return false;
+      if (F.type && String(m.type || '').toLowerCase().indexOf(F.type.toLowerCase()) !== 0) return false;
+      if (F.size && String(m.size || '').indexOf(F.size) < 0) return false;
+      if (F.src === 'srd' && m.hb) return false;
+      if (F.src === 'hb' && !m.hb) return false;
+      if (F.crMin !== '' && crNum(m.cr) < crNum(F.crMin)) return false;
+      if (F.crMax !== '' && crNum(m.cr) > crNum(F.crMax)) return false;
+      return true;
+    }).sort(function (a, b) { return F.sort === 'cr' ? crNum(a.cr) - crNum(b.cr) || a.name.localeCompare(b.name) : a.name.localeCompare(b.name); });
+    var types = uniq(allMonsters().map(function (m) { return String(m.type || '').split(' (')[0]; })).sort();
+    var crs = Object.keys(CR_XP);
+    var sel = function (id, label, val, opts, any) { return '<div class="field"><label for="' + id + '">' + label + '</label><select id="' + id + '" data-monf="' + id.replace('mf-', '') + '"><option value="">' + any + '</option>' + opts.map(function (o) { o = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(o[0]) + '"' + (String(val) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; };
+    var html = '<div class="page"><h1 class="page-title">Monsters<small>' + list.length + ' of ' + allMonsters().length + '</small></h1>' +
+      '<p class="guide">Your appendix: every monster and animal from the free SRD 5.2.1, plus your own. Players never see this page.</p>' +
+      '<div class="actions" style="margin:0 0 10px"><a class="btn primary" href="#/monsters/new">New monster</a></div>' +
+      '<label class="search"><span class="sr">Search monsters</span>' + SEARCH_ICON + '<input id="mon-q" type="search" placeholder="Search by name or type…" value="' + esc(F.q) + '" autocomplete="off"></label>' +
+      '<div class="mon-filters">' + sel('mf-type', 'Type', F.type, types, 'Any type') + sel('mf-size', 'Size', F.size, MON_SIZES, 'Any size') + sel('mf-crMin', 'CR from', F.crMin, crs, 'Any') + sel('mf-crMax', 'CR to', F.crMax, crs, 'Any') +
+      sel('mf-src', 'Source', F.src, [['srd', 'SRD'], ['hb', 'Homebrew']], 'All') + sel('mf-sort', 'Sort by', F.sort, [['name', 'Name'], ['cr', 'Challenge']], 'Name') + '</div>';
+    html += '<div class="mon-list" role="table"><div class="mon-th" role="row"><span>Name</span><span>CR</span><span>Type</span><span>Size</span><span>HP</span><span>AC</span></div>' +
+      (list.length ? list.slice(0, 400).map(function (m) {
+        return '<a class="mon-tr" role="row" href="#/monsters/' + monSlug(m.name) + '"><span class="nm"><b>' + esc(m.name) + '</b>' + (m.hb ? ' <span class="tag plain" style="font-size:10px">Homebrew</span>' : '') + (m.group && m.group !== m.name && m.group !== 'Homebrew' ? '<small>' + esc(m.group) + '</small>' : '') + '</span>' +
+          '<span class="cr">' + esc(m.cr || '—') + '</span><span>' + esc(m.type || '') + '</span><span>' + esc(m.size || '') + '</span><span>' + esc(String(m.hp || '').split(' (')[0]) + '</span><span>' + esc(String(m.ac || '').split(' ')[0]) + '</span></a>';
+      }).join('') : '<div class="empty">No monsters match.</div>') + '</div>';
+    html += '<p class="note" style="margin-top:12px">Stat blocks from the System Reference Document 5.2.1 by Wizards of the Coast, CC-BY-4.0.</p></div>';
+    $view.innerHTML = html;
+  }
+
+  function monStatBlock(m) {
+    var abil = m.abil || {}, rows = function (k, label) { return m[k] ? '<p><b>' + label + '</b> ' + esc(m[k]) + '</p>' : ''; };
+    var html = '<div class="mon-block"><h2>' + esc(m.name) + '</h2><p class="mon-meta">' + esc([m.size, m.type].filter(Boolean).join(' ') + (m.align ? ', ' + m.align : '')) + '</p><hr>' +
+      '<p><b>AC</b> ' + esc(m.ac || '—') + (m.init ? ' &nbsp; <b>Initiative</b> ' + esc(m.init) : '') + '</p><p><b>HP</b> ' + esc(m.hp || '—') + '</p><p><b>Speed</b> ' + esc(m.speed || '—') + '</p><hr>' +
+      '<div class="mon-abils">' + ABILITIES.map(function (a) { var v = abil[a[0]] || [10, '+0', '+0']; return '<div><b>' + a[0].toUpperCase() + '</b><span class="sc">' + v[0] + '</span><span>mod ' + esc(v[1]) + '</span><span>save ' + esc(v[2]) + '</span></div>'; }).join('') + '</div><hr>' +
+      rows('skills', 'Skills') + rows('vuln', 'Vulnerabilities') + rows('res', 'Resistances') + rows('imm', 'Immunities') + rows('gear', 'Gear') + rows('senses', 'Senses') + rows('langs', 'Languages') +
+      '<p><b>CR</b> ' + esc(m.cr || '—') + ' (XP ' + esc(monXp(m)) + ')</p>';
+    MON_SECS.forEach(function (sec) {
+      var v = (m.secs || {})[sec];
+      if (!v) return;
+      var list = Array.isArray(v) ? v : v.list || [], intro = Array.isArray(v) ? '' : v.intro;
+      if (!list.length && !intro) return;
+      html += '<h3>' + sec + '</h3>' + (intro ? '<p class="mon-intro">' + monText(intro) + '</p>' : '') + list.map(function (x) { return '<p><b><i>' + esc(x[0]) + '.</i></b> ' + monText(x[1]) + '</p>'; }).join('');
+    });
+    return html + '</div>';
+  }
+  function renderMonster(slug) {
+    var m = monBySlug(slug);
+    if (!m) { $view.innerHTML = '<div class="page"><p class="crumbs"><a href="#/monsters">Monsters</a></p><div class="empty">No monster by that name.</div></div>'; return; }
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/monsters">Monsters</a>' + (m.group && m.group !== m.name ? ' · ' + esc(m.group) : '') + '</p>' + monStatBlock(m) +
+      '<div class="actions" style="margin-top:14px">' + (m.hb ? '<a class="btn" href="#/monsters/edit:' + m.id + '">Edit</a><button type="button" class="btn danger" data-act="hb-delete" data-id="' + m.id + '" data-back="#/monsters">Delete</button>' : '') +
+      '<a class="btn quiet" href="#/monsters/copy:' + monSlug(m.name) + '">' + (m.hb ? 'Copy' : 'Make a homebrew version') + '</a></div>' +
+      (m.hb ? '' : '<p class="note">From the System Reference Document 5.2.1, CC-BY-4.0.</p>') + '</div>';
+    $view.innerHTML = html;
+  }
+  function renderMonsterForm(mode, key) {
+    var src = mode === 'edit' ? allMonsters().filter(function (m) { return m.id === key; })[0] : mode === 'copy' ? monBySlug(key) : null;
+    var m = src ? JSON.parse(JSON.stringify(src)) : { size: 'Medium', type: 'Humanoid', align: 'Neutral', ac: '12', hp: '11 (2d8 + 2)', speed: '30 ft.', cr: '1/2', abil: {}, secs: {} };
+    if (mode === 'copy') m.name = m.name + ' (variant)';
+    var f = function (id, label, v, ph) { return '<div class="field"><label for="mn-' + id + '">' + label + '</label><input type="text" id="mn-' + id + '" value="' + esc(v || '') + '" maxlength="300"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></div>'; };
+    var secText = function (sec) { var v = (m.secs || {})[sec]; var list = Array.isArray(v) ? v : v ? v.list || [] : []; return list.map(function (x) { return x[0] + ' | ' + String(x[1]).replace(/«|»/g, '').replace(/\n/g, ' '); }).join('\n'); };
+    var legIntro = m.secs && m.secs['Legendary Actions'] && !Array.isArray(m.secs['Legendary Actions']) ? m.secs['Legendary Actions'].intro : '';
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/monsters">Monsters</a></p><h1 class="page-title">' + (mode === 'edit' ? 'Edit ' + esc(m.name) : 'New monster') + '</h1>' +
+      '<form class="form" id="mon-form" data-id="' + (mode === 'edit' ? esc(key) : '') + '" novalidate>' + f('name', 'Name', mode === 'new' ? '' : m.name) +
+      '<div class="grid2">' + '<div class="field"><label for="mn-size">Size</label><select id="mn-size">' + MON_SIZES.map(function (s) { return '<option' + (m.size === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select></div>' + f('type', 'Type', m.type, 'Fiend (Demon)') + '</div>' +
+      '<div class="grid2">' + f('align', 'Alignment', m.align) + f('cr', 'Challenge rating', m.cr, '1/2, 3, 10…') + '</div>' +
+      '<div class="grid2">' + f('ac', 'Armor class', m.ac, '15') + f('init', 'Initiative', m.init, '+2 (12)') + '</div>' +
+      '<div class="grid2">' + f('hp', 'Hit points', m.hp, '52 (8d8 + 16)') + f('speed', 'Speed', m.speed, '30 ft., Fly 60 ft.') + '</div>' +
+      '<h2 class="sec-title" style="margin-top:10px">Abilities</h2><div class="mon-abil-form">' + ABILITIES.map(function (a) { var v = (m.abil || {})[a[0]] || [10, '+0', '+0']; return '<div class="field"><label for="mn-' + a[0] + '">' + a[0].toUpperCase() + '</label><input type="number" id="mn-' + a[0] + '" value="' + v[0] + '" min="1" max="30"><label for="mn-' + a[0] + 's" class="sr">' + a[1] + ' save</label><input type="text" id="mn-' + a[0] + 's" value="' + esc(v[2] !== v[1] ? v[2] : '') + '" placeholder="save" maxlength="4"></div>'; }).join('') + '</div>' +
+      '<p class="note">Leave a save blank to use the plain modifier.</p>' +
+      f('skills', 'Skills', m.skills, 'Perception +4, Stealth +6') + '<div class="grid2">' + f('res', 'Resistances', m.res) + f('imm', 'Immunities', m.imm) + '</div><div class="grid2">' + f('vuln', 'Vulnerabilities', m.vuln) + f('gear', 'Gear', m.gear) + '</div>' +
+      f('senses', 'Senses', m.senses, 'Darkvision 60 ft.; Passive Perception 12') + f('langs', 'Languages', m.langs, 'Common') +
+      MON_SECS.map(function (sec) { return '<div class="field"><label for="mn-s-' + monSlug(sec) + '">' + sec + ' — one per line: name | what it does</label><textarea id="mn-s-' + monSlug(sec) + '" maxlength="12000">' + esc(secText(sec)) + '</textarea></div>'; }).join('') +
+      f('leg', 'Legendary action intro (optional)', legIntro, 'Legendary Action Uses: 3…') +
+      '<div class="actions"><a class="btn" href="#/monsters">Cancel</a><button type="submit" class="btn primary">Save monster</button></div></form></div>';
+    $view.innerHTML = html;
+  }
+  function saveMonster(form) {
+    var g = function (id) { var el = document.getElementById('mn-' + id); return el ? el.value.trim() : ''; };
+    var name = g('name');
+    if (!name) return toast('Give it a name.');
+    var abil = {};
+    ABILITIES.forEach(function (a) { var sc = Math.max(1, Math.min(30, num(g(a[0]), 10))), md = Math.floor((sc - 10) / 2), mods = (md >= 0 ? '+' : '') + md; abil[a[0]] = [sc, mods, g(a[0] + 's') || mods]; });
+    var secs = {};
+    MON_SECS.forEach(function (sec) {
+      var list = hbLines(g('s-' + monSlug(sec))).map(function (p) { return [p[0], p.slice(1).join(' | ')]; });
+      if (sec === 'Legendary Actions' && g('leg')) secs[sec] = { intro: g('leg'), list: list }; else if (list.length) secs[sec] = list;
+    });
+    var d = { size: g('size'), type: g('type'), align: g('align'), cr: g('cr') || '0', ac: g('ac'), init: g('init'), hp: g('hp'), speed: g('speed'), skills: g('skills'), res: g('res'), imm: g('imm'), vuln: g('vuln'), gear: g('gear'), senses: g('senses'), langs: g('langs'), abil: abil, secs: secs };
+    Object.keys(d).forEach(function (k) { if (d[k] === '') delete d[k]; });
+    var id = form.getAttribute('data-id'), row = { kind: 'monster', name: name, data: d, status: 'approved', updated_at: new Date().toISOString() };
+    if (!id) row.submitted_by = uid();
+    (id ? sb.from('homebrew').update(row).eq('id', id) : sb.from('homebrew').insert(row)).then(function (r) {
+      if (r.error) return toast(/duplicate|unique/i.test(r.error.message) ? 'There’s already a monster called that.' : 'Could not save: ' + r.error.message);
+      toast('Monster saved.');
+      loadHomebrew().then(function () { location.hash = '#/monsters/' + monSlug(name); });
+    });
   }
 
   /* ---------- Gear from the SRD 5.2.1 (gear.json): equipped items, armor class, weapon attacks ---------- */
@@ -5047,6 +5174,7 @@
     var r = parseRoute();
     if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up', 'shop-edit'].indexOf(r.name) >= 0) return true;
     if (r.name === 'homebrew' && /:/.test(r.arg || '')) return true;
+    if (r.name === 'monsters' && /^(new|edit|copy)/.test(r.arg || '')) return true;
     if (ui.pendingPin || ui.placing || ui.holdEdit) return true;
     var a = document.activeElement;
     return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -7605,7 +7733,7 @@
       case 'hb-delete':
         var hbid = el.getAttribute('data-id'), hbrow = homebrew.filter(function (x) { return x.id === hbid; })[0];
         if (ui.pendingDelete !== 'hb' + hbid) { ui.pendingDelete = 'hb' + hbid; el.textContent = 'Tap again to delete'; return; }
-        sb.from('homebrew').delete().eq('id', hbid).then(function (r) { if (r.error) return toast('Could not delete: ' + r.error.message); toast('Deleted.'); loadHomebrew().then(function () { location.hash = '#/homebrew/' + (hbrow ? hbrow.kind : ''); }); });
+        sb.from('homebrew').delete().eq('id', hbid).then(function (r) { if (r.error) return toast('Could not delete: ' + r.error.message); toast('Deleted.'); loadHomebrew().then(function () { location.hash = hbrow && hbrow.kind === 'monster' ? '#/monsters' : '#/homebrew/' + (hbrow ? hbrow.kind : ''); }); });
         break;
       case 'peek': peekShow(el.getAttribute('data-kind'), el.getAttribute('data-key')); break;
       case 'peek-close': peekClose(); break;
@@ -7794,6 +7922,11 @@
     if (t.getAttribute('data-build') === 'name' && ui.build) { ui.build.name = t.value; var hint = document.querySelector('.build-nav + .note'); if (hint) hint.hidden = !!t.value.trim(); return; }
     if (t.hasAttribute('data-manual') && ui.build) { ui.build.manual[t.getAttribute('data-manual')] = Math.max(3, Math.min(20, num(t.value, 10))); var sbx = document.getElementById('bd-scores'); if (sbx) sbx.innerHTML = buildScoresHtml(ui.build); return; }
     if (ui.lvl && t.hasAttribute('data-lv') && t.tagName === 'INPUT') { ui.lvl[t.getAttribute('data-lv')] = t.value; return; }
+    if (t.id === 'mon-q') {
+      (ui.monF = ui.monF || {}).q = t.value; var mpos = t.selectionStart; render();
+      var mq = document.getElementById('mon-q'); if (mq) { mq.focus(); try { mq.setSelectionRange(mpos, mpos); } catch (err) {} }
+      return;
+    }
     if (t.id === 'pick-q') {
       ui.pick.q = t.value;
       var pc = currentChar(), ppos = t.selectionStart;
@@ -7921,6 +8054,7 @@
       case 'newchar-form': return createCharacter();
       case 'pc-form': return savePartyForm(f);
       case 'hb-form': return saveHomebrew(f);
+      case 'mon-form': return saveMonster(f);
       case 'tpin-form': return saveTablePin(f);
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
@@ -8757,6 +8891,7 @@
   }
   document.addEventListener('change', function (e) {
     if (e.target && e.target.id === 'hb-type') return hbSyncItemType();
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-monf')) { (ui.monF = ui.monF || {})[e.target.getAttribute('data-monf')] = e.target.value; return render(); }
     if (!e.target || e.target.id !== 'ft-pick' || !SRD) return;
     var v = e.target.value.split('|'), o = null;
     if (v[0] === 'Feat') o = srdFeat(v[1]); else if (SRD.options[v[0]]) o = SRD.options[v[0]].filter(function (x) { return x.name === v[1]; })[0];

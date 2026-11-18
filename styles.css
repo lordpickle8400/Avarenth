@@ -976,3 +976,38 @@ body.pk-open { overflow: hidden; }
 .subtabs a[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
 .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
 @media (max-width: 520px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* ===== Monster appendix ===== */
+.mon-filters { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0 10px; margin-top: 10px; }
+.mon-list { display: flex; flex-direction: column; margin-top: 6px; font-family: var(--ui); }
+.mon-th, .mon-tr { display: grid; grid-template-columns: minmax(0, 2fr) 60px minmax(0, 1.4fr) 100px 60px 50px; gap: 10px; align-items: center; padding: 8px 6px; }
+.mon-th { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--line); }
+.mon-tr { border-bottom: 1px solid var(--soft); color: var(--text); text-decoration: none; font-size: 14px; min-height: 48px; }
+.mon-tr:hover { background: var(--panel); }
+.mon-tr .nm b { font-size: 15px; }
+.mon-tr .nm small { display: block; font-size: 11px; color: var(--muted); }
+.mon-tr .cr { font-weight: 700; color: var(--accent-ink); }
+.mon-block { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 6px; padding: 16px 18px; font-family: var(--ui); font-size: 15px; line-height: 1.5; }
+.mon-block h2 { margin: 0; font-family: var(--display); font-size: 30px; color: var(--accent-ink); }
+.mon-block .mon-meta { margin: 0 0 6px; font-style: italic; color: var(--muted); }
+.mon-block hr { border: 0; border-top: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); margin: 10px 0; }
+.mon-block p { margin: 4px 0; }
+.mon-block h3 { margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); font-family: var(--display); font-size: 20px; font-weight: 400; color: var(--accent-ink); }
+.mon-block .mon-intro { font-style: italic; color: var(--muted); }
+.mon-abils { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; text-align: center; }
+.mon-abils > div { display: flex; flex-direction: column; padding: 6px 2px; background: var(--bg); border-radius: 4px; font-size: 12px; color: var(--muted); }
+.mon-abils b { font-size: 11px; letter-spacing: .08em; color: var(--text); }
+.mon-abils .sc { font-size: 20px; font-weight: 700; color: var(--text); }
+.mon-abil-form { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0 8px; }
+.mon-abil-form input { margin-bottom: 4px; }
+@media (max-width: 899px) {
+  .mon-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mon-th { display: none; }
+  .mon-tr { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nm cr" "ty ty"; row-gap: 2px; }
+  .mon-tr .nm { grid-area: nm; } .mon-tr .cr { grid-area: cr; }
+  .mon-tr > :nth-child(3) { grid-area: ty; font-size: 12px; color: var(--muted); }
+  .mon-tr > :nth-child(4), .mon-tr > :nth-child(5), .mon-tr > :nth-child(6) { display: none; }
+  .mon-abils, .mon-abil-form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mon-block h2 { font-size: 24px; }
+}
+.page-title small { margin-left: 10px; font-family: var(--ui); font-size: 14px; font-weight: 600; color: var(--muted); }
