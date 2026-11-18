@@ -6116,10 +6116,17 @@
     var named = (markers[m.id] || []).filter(function (x) { return x.label && x.kind !== 'party' && x.label.length > 3; })
       .sort(function (a, b) { return b.label.length - a.label.length; });
     var low = String(text || '').toLowerCase();
-    for (var i = 0; i < named.length; i++) if (low.indexOf(midLabel(named[i].label).toLowerCase()) >= 0 || low.indexOf(named[i].label.toLowerCase()) >= 0) return named[i];
+    for (var i = 0; i < named.length; i++) if (low.indexOf(midLabel(named[i].label).toLowerCase()) >= 0 || low.indexOf(named[i].label.toLowerCase()) >= 0) return witness(m, named[i]);
     var seat = seatMarker(campId, f); if (!seat) return null;
     var reach = f.tier === 'minor' ? 25 : 80, near = townsOn(m.id).filter(function (x) { return x.label && mapMiles(m, seat.x, seat.y, x.x, x.y) <= reach; });
-    return near.length ? near[Math.floor(Math.random() * near.length)] : seat;
+    return near.length ? near[Math.floor(Math.random() * near.length)] : witness(m, seat);
+  }
+  // A ruin has nobody left to tell it: word comes out of the nearest living town, from whoever saw it or came across it.
+  function witness(m, mk) {
+    if (mk.kind !== 'ruin') return mk;
+    var best = null, bd = Infinity;
+    townsOn(m.id).forEach(function (t) { if (!t.label) return; var d = mapMiles(m, mk.x, mk.y, t.x, t.y); if (d < bd) { bd = d; best = t; } });
+    return best || mk;
   }
   function placeXY(campId, slug, label) {
     var m = realmMapOf(campId); if (!m) return null;
