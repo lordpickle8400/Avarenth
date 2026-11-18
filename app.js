@@ -2271,32 +2271,21 @@
     return (first + (last ? (/^of /.test(last) ? ' ' : ' ') + last : '')).trim();
   }
   function addStandIns(camp) {
-    var raceSel = document.getElementById('si-race').value, clsSel = document.getElementById('si-cls').value, lvl = Math.max(1, Math.min(20, num(document.getElementById('si-level').value, 1))), count = Math.max(1, Math.min(6, num(document.getElementById('si-count').value, 1)));
-    var races = Object.keys(RULES.species || {}).filter(function (k) { return (RULES.species[k].group || 'isles') === 'isles'; }), classes = Object.keys(RULES.classes);
-    var rows = [];
-    for (var i = 0; i < count; i++) {
-      var race = raceSel || rpick(races.length ? races : ['Human']), cls = clsSel || rpick(classes), cd = RULES.classes[cls];
-      var s = normSheet(null);
-      s.species = race; s.cls = cls; s.level = lvl; s.standin = true; s.player = 'Stand-in';
-      s.hp.max = s.hp.cur = Math.max(1, cd ? cd.hd + (lvl - 1) * (Math.floor(cd.hd / 2) + 1) : 8 * lvl);
-      s.ac = cd && /heavy/i.test(cd.armor) ? 16 : cd && /medium/i.test(cd.armor) ? 14 : 12;
-      if (cd) cd.saves.forEach(function (k) { s.saves[k] = true; });
-      rows.push({ name: standInName(race), sheet: s, owner_id: uid(), campaign_id: camp ? camp.id : null });
-    }
-    sb.from('characters').insert(rows).then(function (r) {
-      if (r.error) return fail(r.error, 'Could not add the stand-ins.');
+    var race = document.getElementById('si-race').value || 'Human', name = document.getElementById('si-name').value.trim() || standInName(race);
+    var chars = camp ? campaignChars(camp.id) : [], lvl = chars.length ? Math.round(chars.reduce(function (t, c) { return t + num(normSheet(c.sheet).level, 1); }, 0) / chars.length) : 1;
+    var s = normSheet(null);
+    s.species = race; s.cls = ''; s.level = lvl; s.standin = true; s.player = 'Stand-in';
+    sb.from('characters').insert([{ name: name, sheet: s, owner_id: uid(), campaign_id: camp ? camp.id : null }]).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not add the stand-in.');
       ui.standIn = false;
-      loadCharacters().then(function () { toast(count === 1 ? 'Stand-in added' : count + ' stand-ins added'); render(); });
+      loadCharacters().then(function () { toast(name + ' added'); render(); });
     });
   }
-  function standInFormHtml(chars) {
-    var avg = chars.length ? Math.round(chars.reduce(function (t, c) { return t + num(normSheet(c.sheet).level, 1); }, 0) / chars.length) : 1;
+  function standInFormHtml() {
     var opt = function (list) { return list.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join(''); };
-    return '<form class="form group-box" id="standin-form" novalidate><h2>Add stand-ins</h2><p class="note" style="margin-top:0">For players who won’t use the app. They count toward the party’s size for food and encounters, and you can edit or delete them like anyone else.</p>' +
-      '<div class="two"><div class="field"><label for="si-race">Race</label><select id="si-race"><option value="">Random (from the isles)</option>' + opt(Object.keys(RULES.species || {}).sort()) + '</select></div>' +
-      '<div class="field"><label for="si-cls">Class</label><select id="si-cls"><option value="">Random</option>' + opt(Object.keys(RULES.classes).sort()) + '</select></div></div>' +
-      '<div class="two"><div class="field"><label for="si-level">Level</label><input type="number" id="si-level" min="1" max="20" value="' + avg + '" inputmode="numeric"></div>' +
-      '<div class="field"><label for="si-count">How many</label><input type="number" id="si-count" min="1" max="6" value="1" inputmode="numeric"></div></div>' +
+    return '<form class="form group-box" id="standin-form" novalidate><h2>Add a stand-in</h2><p class="note" style="margin-top:0">For players who won’t use the app. They count toward the party’s size.</p>' +
+      '<div class="two"><div class="field"><label for="si-name">Name</label><input id="si-name" autocomplete="off"></div>' +
+      '<div class="field"><label for="si-race">Race</label><select id="si-race">' + opt(Object.keys(RULES.species || {}).sort()) + '</select></div></div>' +
       '<div class="actions"><button type="button" class="btn" data-act="standin-toggle">Cancel</button><button type="submit" class="btn primary">Add</button></div></form>';
   }
 
@@ -9518,7 +9507,7 @@
     if (id === 'new' || (id && charById(id))) return renderPartyMember(id === 'new' ? null : charById(id), camp);
     var chars = camp ? campaignChars(camp.id) : characters;
     var html = '<div class="page"><div><p class="eyebrow">' + esc(camp ? camp.name : 'Campaign') + '</p><h1 class="page-title">The party</h1></div>' +
-      '<div class="actions"><a class="btn primary" href="#/party/new">+ Add a character</a><button type="button" class="btn" data-act="standin-toggle">+ Add stand-ins</button><a class="btn" href="#/map">Map</a></div>' + (ui.standIn ? standInFormHtml(chars) : '');
+      '<div class="actions"><a class="btn primary" href="#/party/new">+ Add a character</a><button type="button" class="btn" data-act="standin-toggle">+ Add a stand-in</button><a class="btn" href="#/map">Map</a></div>' + (ui.standIn ? standInFormHtml(chars) : '');
     if (!chars.length) html += '<div class="empty">Nobody in the party yet. Add each player character with their race, class and level, and the app builds a cheat sheet for them.</div>';
     else html += '<div class="pc-grid">' + chars.map(function (c) {
       var s = normSheet(c.sheet), cd = classOf(s), L = num(s.level, 1);
@@ -9526,7 +9515,7 @@
       var mana = manaMax(s);
       return '<a class="pc-card" href="#/party/' + encodeURIComponent(c.id) + '"><div class="pc-top"><b>' + esc(c.name) + '</b>' + (s.standin ? '<span class="tag" style="font-size:10px">Stand-in</span>' : '') + '<span class="tag plain">Lv ' + L + '</span></div>' +
         '<p class="pc-line">' + esc([s.species, s.cls, s.subclass].filter(Boolean).join(' · ') || 'No class set') + '</p>' +
-        '<div class="pc-stats"><span><small>AC</small>' + esc(s.ac) + '</span><span><small>HP</small>' + esc(s.hp.max) + '</span><span><small>Prof</small>+' + profBonus(L) + '</span>' + (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + '<span><small>Passive</small>' + (10 + mod(s.abilities.wis) + (s.skills && s.skills.Perception ? profBonus(L) : 0)) + '</span></div>' +
+        (s.standin ? '' : '<div class="pc-stats"><span><small>AC</small>' + esc(s.ac) + '</span><span><small>HP</small>' + esc(s.hp.max) + '</span><span><small>Prof</small>+' + profBonus(L) + '</span>' + (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + '<span><small>Passive</small>' + (10 + mod(s.abilities.wis) + (s.skills && s.skills.Perception ? profBonus(L) : 0)) + '</span></div>') +
         (res.length ? '<p class="note" style="margin:0">' + esc(res.join(' · ')) + '</p>' : '') + (cd ? '' : '') + '</a>';
     }).join('') + '</div>';
     html += '</div>';
