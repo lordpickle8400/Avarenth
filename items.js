@@ -103,6 +103,11 @@
     var w = WEIGHT[p[0]]; if (w === undefined) w = (p[1] === 'p' || p[1] === 'z') ? 0.5 : (['m', 'v', 'b', 's'].indexOf(p[1]) >= 0 ? null : 0);
     return { name: p[0], kind: p[1], price: parseFloat(p[2]), size: parseInt(p[3], 10), tags: p[4] ? p[4].split(',') : [], weight: w };
   });
+  // Dornish steel: Stonehelm's dwarf-forged steel, in every metal weapon and every metal armor and shield. Three times the price,
+  // sold from towns up, and rare outside forge towns.
+  ITEMS.filter(function (it) { return ['sw', 'mw', 'la', 'ma', 'ha', 'sh'].indexOf(it.kind) >= 0 && it.tags.indexOf('metal') >= 0; }).forEach(function (it) {
+    ITEMS.push({ name: 'Dornish steel ' + it.name.charAt(0).toLowerCase() + it.name.slice(1), kind: it.kind, price: it.price * 3, size: Math.max(2, it.size), tags: it.tags.concat(['dornish']), weight: it.weight });
+  });
 
   // What each kind of shop can carry. "Kinds" takes whole kinds; "tags" pulls in gear with those tags too.
   var SHOP_KINDS = {

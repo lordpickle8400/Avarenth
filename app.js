@@ -3334,6 +3334,7 @@
     if (ac.notes.length) html += '<p class="note">' + esc(ac.notes.join(' · ')) + '</p>';
     if (can) {
       var names = GEAR ? ['weapons', 'armor', 'gear', 'tools', 'magic'].reduce(function (a, k) { return a.concat(GEAR[k].map(function (x) { return x.name; })); }, []) : [];
+      names = names.concat(ITEMS.items.filter(function (x) { return x.tags.indexOf('dornish') >= 0; }).map(function (x) { return x.name.replace(/^Dornish steel/, 'Dornish Steel'); }));
       html += '<datalist id="gear-list">' + names.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
         '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field grow"><label for="it-name">Add an item</label><input type="text" id="it-name" list="gear-list" maxlength="80" placeholder="Search weapons, armor, gear, magic items…" autocomplete="off"></div>' +
         '<div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div>' +
@@ -4661,6 +4662,7 @@
       if (hasTag(p, 'military') && WEAPON_ARMOR.indexOf(it.kind) >= 0) chance *= 1.5;
       if (hasTag(p, 'trade')) chance *= 1.15;
       if (it.size === eff && it.size > 0) chance *= 0.6;   // the best a place can carry is rarer
+      if (it.tags.indexOf('dornish') >= 0) chance *= hasTag(p, 'forge') ? 0.8 : 0.25;   // dwarf steel: common at the forges, rare elsewhere
       if (Math.random() > chance) return;
       var price = it.price * [1.3, 1.15, 1, 0.95, 0.9][size] * fnum(p.price_mod, 1) * (0.92 + Math.random() * 0.16);
       function pm(tag, itTag, x) { if (hasTag(p, tag) && (!itTag || it.tags.indexOf(itTag) >= 0 || it.kind === itTag)) price *= x; }
