@@ -1048,3 +1048,6 @@ body.pk-open { overflow: hidden; }
   .cal-cell .tday { display: none; }
   .cal-wd span { font-size: 9px; }
 }
+
+.si-more { margin: 4px 0 12px; }
+.si-more summary { cursor: pointer; color: var(--muted, #aaa); font-size: 14px; padding: 6px 0; }

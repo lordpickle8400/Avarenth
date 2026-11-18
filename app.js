@@ -2274,7 +2274,8 @@
     var race = document.getElementById('si-race').value || 'Human', name = document.getElementById('si-name').value.trim() || standInName(race);
     var chars = camp ? campaignChars(camp.id) : [], lvl = chars.length ? Math.round(chars.reduce(function (t, c) { return t + num(normSheet(c.sheet).level, 1); }, 0) / chars.length) : 1;
     var s = normSheet(null);
-    s.species = race; s.cls = ''; s.level = lvl; s.standin = true; s.player = 'Stand-in';
+    var v = function (id) { var el = document.getElementById(id); return el ? el.value : ''; };
+    s.species = race; s.cls = v('si-cls'); s.background = v('si-bg'); s.patron = v('si-faith'); s.level = lvl; s.standin = true; s.player = 'Stand-in';
     sb.from('characters').insert([{ name: name, sheet: s, owner_id: uid(), campaign_id: camp ? camp.id : null }]).then(function (r) {
       if (r.error) return fail(r.error, 'Could not add the stand-in.');
       ui.standIn = false;
@@ -2284,8 +2285,12 @@
   function standInFormHtml() {
     var opt = function (list) { return list.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join(''); };
     return '<form class="form group-box" id="standin-form" novalidate><h2>Add a stand-in</h2><p class="note" style="margin-top:0">For players who won’t use the app. They count toward the party’s size.</p>' +
-      '<div class="two"><div class="field"><label for="si-name">Name</label><input id="si-name" autocomplete="off"></div>' +
+      '<div class="two"><div class="field"><label for="si-name">Name</label><input type="text" id="si-name" maxlength="60" autocomplete="off"></div>' +
       '<div class="field"><label for="si-race">Race</label><select id="si-race">' + opt(Object.keys(RULES.species || {}).sort()) + '</select></div></div>' +
+      '<details class="si-more"><summary>More (optional)</summary><p class="note" style="margin:4px 0 8px">Only changes where they start with factions and towns. Leave any blank.</p>' +
+      '<div class="field"><label for="si-cls">Class</label><select id="si-cls"><option value="">—</option>' + opt(Object.keys(RULES.classes).sort()) + '</select></div>' +
+      '<div class="field"><label for="si-bg">Background</label><select id="si-bg"><option value="">—</option>' + opt(Object.keys(RULES.backgrounds || {}).sort()) + '</select></div>' +
+      '<div class="field"><label for="si-faith">Faith</label><select id="si-faith"><option value="">—</option>' + opt(patronOptions().map(function (x) { return x.name; })) + '</select></div></details>' +
       '<div class="actions"><button type="button" class="btn" data-act="standin-toggle">Cancel</button><button type="submit" class="btn primary">Add</button></div></form>';
   }
 
@@ -9516,7 +9521,7 @@
       return '<a class="pc-card" href="#/party/' + encodeURIComponent(c.id) + '"><div class="pc-top"><b>' + esc(c.name) + '</b>' + (s.standin ? '<span class="tag" style="font-size:10px">Stand-in</span>' : '') + '<span class="tag plain">Lv ' + L + '</span></div>' +
         '<p class="pc-line">' + esc([s.species, s.cls, s.subclass].filter(Boolean).join(' · ') || 'No class set') + '</p>' +
         (s.standin ? '' : '<div class="pc-stats"><span><small>AC</small>' + esc(s.ac) + '</span><span><small>HP</small>' + esc(s.hp.max) + '</span><span><small>Prof</small>+' + profBonus(L) + '</span>' + (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + '<span><small>Passive</small>' + (10 + mod(s.abilities.wis) + (s.skills && s.skills.Perception ? profBonus(L) : 0)) + '</span></div>') +
-        (res.length ? '<p class="note" style="margin:0">' + esc(res.join(' · ')) + '</p>' : '') + (cd ? '' : '') + '</a>';
+        (res.length && !s.standin ? '<p class="note" style="margin:0">' + esc(res.join(' · ')) + '</p>' : '') + '</a>';
     }).join('') + '</div>';
     html += '</div>';
     $view.innerHTML = html;
