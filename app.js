@@ -2422,18 +2422,14 @@
     }
     saveCombat(); render();
   }
-  function cbXp(st) {
-    var mons = st.list.filter(function (x) { return x.kind === 'mon'; }), pcs = st.list.filter(function (x) { return x.kind === 'pc'; }).length;
-    var tot = mons.reduce(function (t, x) { var m = allMonsters().filter(function (y) { return y.name === x.mon; })[0]; return t + (m ? num(String(monXp(m)).replace(/,/g, ''), 0) : 0); }, 0);
-    return { total: tot, each: pcs ? Math.floor(tot / pcs) : 0, pcs: pcs };
-  }
+
   function renderCombat() {
     if (!isDM()) { location.replace('#/map'); return; }
     var camp = activeCamp();
     if (!camp) { $view.innerHTML = '<div class="page"><div class="empty">Start a campaign first.</div></div>'; return; }
     if (!MONS) { loadMonsters(); $view.innerHTML = '<div class="page"><div class="empty">Opening the bestiary…</div></div>'; return; }
     if (!combat || combat.campaign_id !== camp.id) { loadCombat(camp); $view.innerHTML = '<div class="page"><div class="empty">Setting the table…</div></div>'; return; }
-    var st = combat.state, order = cbOrder(st), xp = cbXp(st);
+    var st = combat.state, order = cbOrder(st);
     ui.cbOpen = ui.cbOpen || {};
     var html = '<div class="page"><h1 class="page-title">Combat' + (st.list.length ? '<small>Round ' + st.round + '</small>' : '') + '</h1>' +
       (st.list.length ? '' : '<p class="guide">Add the party and the monsters, then type in everyone’s initiative as it’s rolled at the table. The fight saves as you go, so you can close the app mid-battle.</p>') +
@@ -2460,7 +2456,7 @@
           (m ? '<details class="cb-sb"' + (ui.cbOpen[x.id] ? ' open' : '') + '><summary data-act="cb-sb" data-id="' + x.id + '">Stat block</summary>' + monStatBlock(m) + '</details>' : '') +
           '</div>';
       }).join('') + '</div>';
-      html += '<p class="note" style="margin-top:12px">Monsters here are worth <b>' + xp.total.toLocaleString() + ' XP</b>' + (xp.pcs ? ', <b>' + xp.each.toLocaleString() + '</b> each for ' + xp.pcs + ' in the party.' : '.') + ' Players never see this page.</p>';
+      html += '<p class="note" style="margin-top:12px">Players never see this page.</p>';
     }
     $view.innerHTML = html + '</div>';
   }
@@ -2470,7 +2466,7 @@
   // A homebrew monster can have its own loot list, which replaces these.
   var LOOT_SIZE = { Tiny: 0.2, Small: 0.5, Medium: 1, Large: 2, Huge: 4, Gargantuan: 8 };
   var BEAST_PARTS = [
-    [/spider/i, [['{n} silk', 5, 1, 'a spool; weavers and rope-makers buy it'], ['{n} venom gland', 10, 0.7, 'handle with gloves']]],
+    [/spider/i, [['{n} silk', 5, 1, 'a spool; weavers and rope-makers buy it'], ['{n} venom gland', 10, 0.7, 'handle with gloves'], ['a clutch of {n} eggs', 15, 0.35, 'contraband in most towns']]],
     [/snake|serpent|viper|python|constrictor|cobra/i, [['{n} skin', 3, 1]]],
     [/wolf|dog|jackal|hyena|fox|mastiff|worg/i, [['{n} pelt', 4, 1], ['{n} fangs', 1, 0.6]]],
     [/bear/i, [['{n} pelt', 10, 1], ['{n} claws', 3, 0.8], ['bear fat', 1, 0.5, 'good for boots and lamps']]],
@@ -2589,8 +2585,55 @@
     if (mchance && Math.random() < mchance) { var mi = lootMagic(m.cr); if (mi) items.push(mi); }
     return { items: items, coins: lootPurse(m.cr, T.coin) };
   }
+  // Places: dens, camps, crypts and vaults. Each item is [name, value in gp, chance, note]; a bigger place is searched more times and holds more coin.
+  var LAIR_TIERS = { minor: { label: 'Minor', passes: 1, cr: 2, magic: 0 }, big: { label: 'Big', passes: 2, cr: 8, magic: 0.1 }, major: { label: 'Major', passes: 3, cr: 14, magic: 0.25 } };
+  var LAIRS = {
+    spider: { label: 'Spider den', coin: 0.3, items: [['a clutch of giant spider eggs', 40, 0.9, 'contraband in most towns'], ['spools of spider silk', 20, 0.8, 'weavers and rope-makers buy it'], ['a venom gland', 25, 0.5, 'handle with gloves'], ['a cocooned traveller, long dead', 0, 0.6, 'search them: see the purse']], list: 'victims', listChance: 0.8, about: 'Eggs, silk and whatever got caught in the webs.' },
+    spidercult: { label: 'Spider cult enclave', coin: 1, magic: 0.25, items: [['a clutch of giant spider eggs', 40, 1, 'contraband in most towns'], ['a spider idol of black glass', 150, 0.7], ['venom-dipped ritual daggers', 15, 0.8], ['silk robes', 5, 0.8], ['a ledger of the faithful', 0, 0.6, 'names worth a lot to the right people'], ['a vial of refined venom', 60, 0.5]], list: 'victims', listChance: 0.6, about: 'Eggs, idols, ritual blades and the names of the faithful.' },
+    bandits: { label: 'Bandit camp', coin: 1.5, items: [['crates of stolen trade goods', 30, 0.8, 'someone will want these back'], ['a cask of good wine', 10, 0.6], ['a rack of scimitars', 25, 0.5], ['stolen horses', 75, 0.4], ['a map with the next ambush marked', 0, 0.5], ['a ransom note, unsent', 0, 0.3]], about: 'Coin, stolen goods and plans.' },
+    goblins: { label: 'Goblin warren', coin: 0.6, items: [['a heap of shiny junk', 2, 0.9], ['stolen chickens', 1, 0.6], ['crude spears', 1, 0.6], ['the boss’s tin crown', 5, 0.5], ['a captive farmer, who would like to go home', 0, 0.3]], about: 'Junk, stolen livestock and a bit of coin.' },
+    kobolds: { label: 'Kobold warren', coin: 0.5, items: [['traps, still armed', 0, 0.8, 'careful'], ['mining picks', 2, 0.6], ['a shrine to a dragon, with offerings', 30, 0.5], ['a large cracked eggshell', 10, 0.3, 'whose?']], gems: 0.5, about: 'Traps, tools and dragon-shrine offerings.' },
+    orcs: { label: 'Orc war camp', coin: 1, items: [['war trophies', 10, 0.8], ['a war banner', 15, 0.6], ['greataxes', 20, 0.6], ['stolen cattle', 50, 0.4]], about: 'Trophies, weapons and plunder.' },
+    cult: { label: 'Cult hideout', coin: 1, magic: 0.2, items: [['ritual daggers', 15, 0.8], ['black candles', 1, 0.9], ['an idol', 100, 0.6], ['robes', 1, 0.8], ['letters from a patron', 0, 0.5, 'someone is paying for this'], ['a list of members', 0, 0.5, 'worth more to the right people']], about: 'Ritual gear, an idol and who’s involved.' },
+    crypt: { label: 'Crypt or tomb', coin: 0.8, magic: 0.2, items: [['burial jewellery', 50, 0.7], ['an old sword in a dead knight’s hands', 25, 0.4], ['funeral urns', 10, 0.5]], list: 'grave', listChance: 1, about: 'Grave goods and old coin.' },
+    dragon: { label: 'Dragon lair', coin: 6, gems: 6, magic: 0.8, items: [['a mountain of mixed coin', 0, 1, 'see the coin'], ['art objects', 250, 0.9, 'statuettes, goblets, crowns'], ['a dead adventurer’s gear', 50, 0.5]], about: 'The hoard.' },
+    beast: { label: 'Beast den', coin: 0.3, items: [['gnawed bones', 0, 1], ['a dead hunter’s bow', 25, 0.4], ['a purse among the bones', 0, 0.4, 'see the coin']], about: 'Bones, and what the last victims carried.' },
+    mine: { label: 'Abandoned mine', coin: 0.4, gems: 1.5, items: [['raw ore', 5, 0.9, 'by the cartload'], ['miners’ picks', 2, 0.7], ['a forgotten payroll chest', 0, 0.3, 'see the coin']], about: 'Ore, stones and forgotten pay.' },
+    smugglers: { label: 'Smugglers’ cave', coin: 1.2, items: [['barrels of untaxed brandy', 25, 0.8], ['bolts of silk', 40, 0.6], ['a crate of giant spider eggs', 40, 0.3, 'contraband in most towns'], ['a ledger of bribes', 0, 0.6, 'names who’s paid whom']], about: 'Contraband and who’s on the take.' },
+    manor: { label: 'Noble manor or vault', coin: 3, gems: 2, magic: 0.2, items: [['family silver', 150, 0.8], ['a portrait', 50, 0.5, 'worth more to the family'], ['deeds to land', 0, 0.4], ['fine wine', 30, 0.6]], about: 'Silver, jewels and papers.' },
+    warehouse: { label: 'Merchant warehouse', coin: 0.5, items: [['crates of trade goods', 50, 0.9], ['spices', 30, 0.6], ['bolts of cloth', 20, 0.7], ['a strongbox', 0, 0.4, 'see the coin']], about: 'Trade goods.' },
+    wizard: { label: 'Wizard’s tower', coin: 0.6, magic: 0.6, items: [['a spellbook', 0, 0.6, 'spells to learn from'], ['alchemy supplies', 50, 0.8], ['a jar of something still alive', 10, 0.4], ['strange components', 25, 0.7]], about: 'Books, supplies and magic.' },
+    shipwreck: { label: 'Shipwreck', coin: 1, gems: 1, items: [['waterlogged cargo', 10, 0.8], ['the ship’s bell', 30, 0.5], ['the captain’s log', 0, 0.6], ['a sea chest', 0, 0.4, 'see the coin']], about: 'Sea-soaked cargo and coin.' },
+    temple: { label: 'Ruined temple', coin: 0.7, magic: 0.2, items: [['a holy relic', 100, 0.4], ['silver candlesticks', 25, 0.7], ['an offering bowl', 5, 0.7]], about: 'Relics and offerings.' },
+    fort: { label: 'Abandoned fort or watchtower', coin: 0.3, items: [['an old armory: spears and shields', 20, 0.7], ['old orders, sealed', 0, 0.5], ['a rusted portcullis winch', 0, 0.2]], about: 'Old arms and old orders.' }
+  };
+  LOOT_LISTS.victims = ['a webbed-up traveller’s pack', 'a cocooned deer', 'a dead adventurer’s sword', 'a lantern', 'a merchant’s ledger', 'a pair of good boots', 'a pilgrim’s holy symbol'];
+  function lootPlace(key, tier) {
+    var L = LAIRS[key], T = LAIR_TIERS[tier] || LAIR_TIERS.minor, items = [];
+    if (!L) return { items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 } };
+    for (var p = 0; p < T.passes; p++) {
+      L.items.forEach(function (it) {
+        if (!it[1] && items.some(function (x) { return x.name === it[0]; })) return;   // one ledger, one map, one captive
+        if (Math.random() < it[2]) items.push({ name: it[0], qty: 1, val: it[1], note: it[3] || '' });
+      });
+      if (L.list && Math.random() < L.listChance) items.push({ name: rpick(LOOT_LISTS[L.list]), qty: 1, val: 0, note: '' });
+    }
+    var gemRolls = Math.round((L.gems || 0) * T.passes * (0.5 + Math.random()));
+    for (var g = 0; g < gemRolls; g++) { var top = tier === 'major' ? GEMS.length : tier === 'big' ? 12 : 8, gem = GEMS[Math.floor(Math.random() * top)]; items.push({ name: gem[1], qty: 1, val: gem[0], note: 'gem' }); }
+    var mch = Math.min(0.9, (L.magic || 0) + T.magic);
+    for (var m = 0; m < T.passes; m++) if (mch && Math.random() < mch) { var mi = lootMagic(T.cr); if (mi) items.push(mi); }
+    return { items: items, coins: lootPurse(T.cr, L.coin) };
+  }
   function lootRoll() {
     var L = ui.loot, items = [], coins = { cp: 0, sp: 0, gp: 0, pp: 0 };
+    var merge = function (r) {
+      Object.keys(coins).forEach(function (k) { coins[k] += num(r.coins[k], 0); });
+      r.items.forEach(function (it) {
+        var same = items.filter(function (x) { return x.name === it.name && x.val === it.val; })[0];
+        if (same) same.qty += it.qty; else items.push(Object.assign({ id: cbId(), to: '' }, it));
+      });
+    };
+    (L.places || []).forEach(function (pl) { merge(lootPlace(pl.key, pl.tier)); });
     L.picks.forEach(function (p) {
       var m = allMonsters().filter(function (x) { return x.name === p.name; })[0]; if (!m) return;
       for (var i = 0; i < p.n; i++) {
@@ -2615,14 +2658,18 @@
     if (!isDM()) { location.replace('#/map'); return; }
     var camp = activeCamp();
     if (!MONS || !GEAR) { loadMonsters(); loadGear(); $view.innerHTML = '<div class="page"><div class="empty">Opening the bestiary…</div></div>'; return; }
-    var L = ui.loot || (ui.loot = { picks: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false });
+    var L = ui.loot || (ui.loot = { picks: [], places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }); L.places = L.places || [];
     var party = camp ? campaignChars(camp.id) : [];
-    var html = '<div class="page narrow"><h1 class="page-title">Loot</h1><p class="guide">Pick what the party beat and roll it here, behind the screen. Loot goes by the kind of creature: a spider gives silk and venom, not gold; bandits carry purses and their gear; dragons sit on hoards. A homebrew monster can have its own list.</p>' +
+    var html = '<div class="page narrow"><h1 class="page-title">Loot</h1><p class="guide">Pick what the party beat, or the place they’re searching, and roll it here, behind the screen. Loot goes by the kind of creature: a spider gives silk, venom and eggs, not gold; bandits carry purses and their gear; dragons sit on hoards. Places come in three sizes. A homebrew monster can have its own list.</p>' +
       '<form class="form cb-add" id="lt-form" novalidate><div class="cb-add-row"><div class="field"><label for="lt-mon">Monster</label><input type="text" id="lt-mon" list="lt-mons" placeholder="Giant Spider, Bandit…" autocomplete="off"></div>' +
       '<div class="field cb-n"><label for="lt-n">How many</label><input type="number" id="lt-n" min="1" max="50" value="1" inputmode="numeric"></div><button type="submit" class="btn">Add</button></div>' +
-      '<datalist id="lt-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>';
-    if (L.picks.length) {
-      html += '<div class="lt-picks">' + L.picks.map(function (p, i) {
+      '<datalist id="lt-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>' +
+      '<form class="form cb-add" id="lt-place" novalidate><div class="cb-add-row"><div class="field"><label for="lt-pl">Or a place</label><select id="lt-pl">' + Object.keys(LAIRS).map(function (k) { return '<option value="' + k + '">' + esc(LAIRS[k].label) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field cb-n"><label for="lt-tier">Size</label><select id="lt-tier">' + Object.keys(LAIR_TIERS).map(function (k) { return '<option value="' + k + '">' + LAIR_TIERS[k].label + '</option>'; }).join('') + '</select></div><button type="submit" class="btn">Add</button></div></form>';
+    if (L.picks.length || L.places.length) {
+      html += '<div class="lt-picks">' + L.places.map(function (pl, i) {
+        return '<div class="tbl-row"><div class="main"><b>' + esc(LAIRS[pl.key].label) + ' <span class="tag plain">' + LAIR_TIERS[pl.tier].label + '</span></b><span>' + esc(LAIRS[pl.key].about) + '</span></div><button type="button" class="linkish cb-x" data-act="lt-unplace" data-i="' + i + '" aria-label="Remove">×</button></div>';
+      }).join('') + L.picks.map(function (p, i) {
         var m = allMonsters().filter(function (x) { return x.name === p.name; })[0], k = m ? (m.loot ? 'Own list' : lootKind(m)) : '';
         return '<div class="tbl-row"><div class="main"><b>' + (p.n > 1 ? p.n + ' × ' : '') + esc(p.name) + '</b><span>' + esc(k + (m && !m.loot ? ' · ' + (LOOT_TYPES[k] || {}).about : '')) + '</span></div><button type="button" class="linkish cb-x" data-act="lt-unpick" data-i="' + i + '" aria-label="Remove">×</button></div>';
       }).join('') + '</div><div class="actions"><button type="button" class="btn primary" data-act="lt-roll">' + (L.rolled ? 'Roll again' : 'Roll the loot') + '</button><button type="button" class="btn quiet" data-act="lt-reset">Start over</button></div>';
@@ -2643,6 +2690,7 @@
     }
     $view.innerHTML = html + '</div>';
   }
+  renderLoot.ensure = function () { ui.loot = ui.loot || { picks: [], places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; ui.loot.places = ui.loot.places || []; };
   function lootGive() {
     var L = ui.loot, touched = {}, camp = activeCamp();
     L.items.forEach(function (it) {
@@ -2673,7 +2721,7 @@
   function loadQuests() {
     if (loadQuests.p) return loadQuests.p;
     loadQuests.p = Promise.all([
-      sb.from('quests').select('id, campaign_id, title, details, giver, place, reward, status, visible, created_at').order('created_at', { ascending: false }),
+      sb.from('quests').select('id, campaign_id, title, details, giver, place, reward, tier, lair, status, visible, created_at').order('created_at', { ascending: false }),
       isDM() ? sb.from('quest_notes').select('quest_id, note') : Promise.resolve({ data: [] })
     ]).then(function (rs) {
       loadQuests.p = null; quests = rs[0].data || []; questNotes = {};
@@ -2723,28 +2771,83 @@
   var QUEST_REWARDS = ['2 gp', '5 gp', '8 gp', 'a hot meal and a bed for the night', 'a whole pie', 'free drinks for a week', 'a favour, owed', 'a slightly used dagger', 'a jar of honey', '10 gp, all in copper', 'a lucky charm (it isn’t)', 'a dozen eggs', 'a hand-drawn map of the area (mostly wrong)', 'a cured ham', 'a potion of healing', 'their second-best cloak'];
   var QUEST_TWISTS = ['They’re lying about why they want it.', 'Someone else wants the same thing done the opposite way.', 'It’s much bigger, heavier or angrier than described.', 'A local child has already done half of it and wants paying too.', 'They can’t actually pay.', 'Something involved is mildly cursed.', 'It’s a test for a bigger job.', 'Two people claim to be the owner.', 'Nothing. It really is that simple.', 'Nothing. It really is that simple.'];
   var QUEST_TOWNS = { central: ['Dragonsneck', 'Timberfall'], north: ['Stonehelm', 'Anvilborn'], capital: ['Loreaon', 'Kingswatch', 'Queenswatch'], south: ['Caspian', 'Crisfey', 'Akorsrest'], mournfells: ['Straitwatch'], west: ['Marloo', 'Hermitsbay'], sea: ['Coralyn', 'Wreckholm'] };
-  function randomQuest(dk) {
-    var npc = makeNpc({ district: dk }), D = NPCD.districts[dk] || NPCD.districts.capital, q = rpick(SMALL_QUESTS);
-    var job = npc.race + ' ' + npc.job, who = npc.name + ', ' + (/^[AEIOU]/.test(job) ? 'an ' : 'a ') + job;
-    var towns = (QUEST_TOWNS[dk] || []).filter(function (t) { return articleByTitle(t); }), town = towns.length ? rpick(towns) : '';
-    return { title: q[0], details: q[1].replace(/\{g\}/g, npc.name).replace(/\{p\}/g, town || 'town'), giver: who, place: town ? town + ', ' + D.label : D.label, reward: rpick(QUEST_REWARDS), note: rpick(QUEST_TWISTS), district: dk };
+  // Bigger jobs. [title, details, lair to roll loot for]. {g} is who's asking, {p} is where.
+  var BIG_QUESTS = [
+    ['The den in the quarry', 'Giant spiders have taken the old quarry near {p}. {g} wants it burned out before the eggs hatch.', 'spider'],
+    ['Bandits on the road', 'A bandit crew is robbing every cart on the road to {p}. {g} wants them gone, or at least their leader’s head.', 'bandits'],
+    ['The missing caravan', '{g}’s caravan never reached {p}. Find it, and whoever took it.', 'bandits'],
+    ['The goblin problem', 'Goblins are raiding farms outside {p}. {g} wants the warren found and cleared.', 'goblins'],
+    ['Chanting under the granary', 'Folk are going missing in {p}, and {g} has heard chanting under the old granary at night.', 'cult'],
+    ['The tomb that opened', 'The ground shook and an old tomb outside {p} cracked open. Something walks at night. {g} wants it sealed.', 'crypt'],
+    ['The tax wagon', '{g} needs the season’s taxes carried safely to {p}. Someone else knows the route.', ''],
+    ['The beast of {p}', 'Something big is taking sheep, and lately shepherds. {g} has put up a bounty.', 'beast'],
+    ['Smugglers in the cove', '{g} knows untaxed goods are coming ashore near {p} and wants the operation broken.', 'smugglers'],
+    ['The flooded mine', '{g}’s mine flooded and the miners came out screaming. Find out what’s down there.', 'mine'],
+    ['A knight’s errand', '{g} swore an oath to recover a family sword from the ruined fort near {p}, and can’t do it alone.', 'fort'],
+    ['The orc banner', 'An orc war band is camped a day from {p}. {g} wants their numbers, or wants them gone.', 'orcs'],
+    ['Kobold traps', 'Kobolds have trapped the pass to {p}. Wagons are losing wheels and drivers. {g} wants it open.', 'kobolds'],
+    ['The stolen relic', 'A relic was stolen from the temple in {p}. {g} wants it back, quietly.', 'temple'],
+    ['The warehouse fire', 'Someone set fire to {g}’s warehouse in {p}. The guards have stopped asking questions. {g} hasn’t.', 'warehouse'],
+    ['The wreck on the rocks', 'A merchant ship broke up off {p}. {g} wants the cargo before the scavengers get it.', 'shipwreck']
+  ];
+  var MAJOR_QUESTS = [
+    ['The spider cult', 'A cult that worships a spider goddess has an enclave hidden near {p}. Children are missing. {g} wants it destroyed: every egg, every priest.', 'spidercult'],
+    ['The bandit lord', 'The road bandits answer to someone, and that someone now has a small army. {g} wants the bandit lord brought down before the harvest is taken.', 'bandits'],
+    ['The dragon', 'A dragon has made a lair in the hills above {p}. {g} will pay almost anything to be rid of it.', 'dragon'],
+    ['A knife for the heir', '{g} has proof someone at court plans to kill a royal heir. Find out who before they act.', 'manor'],
+    ['The lost heir', 'An heir everyone thought dead has been seen in {p}. {g} wants them found first.', ''],
+    ['The war host', 'An orc host is gathering beyond {p}. {g} needs it scattered before it marches.', 'orcs'],
+    ['The drowned treasury', 'A ship carrying the crown’s gold went down off {p}. {g} wants it raised before pirates find it.', 'shipwreck'],
+    ['The silent tower', 'A mage near {p} has stopped answering letters and the sky over the tower has turned the wrong colour. {g} wants answers.', 'wizard'],
+    ['Rot in the household', 'A cult has members inside {g}’s own household. Root them out without starting a panic.', 'cult'],
+    ['The rebel baron', 'A baron near {p} has stopped paying taxes and started hiring swords. {g} wants it ended, by talk or by steel.', 'manor'],
+    ['The cult’s brood', 'The spider cult has a breeding pit somewhere under {p}. If the eggs hatch, the town falls. {g} is out of time.', 'spidercult'],
+    ['The plague barge', 'Barges from upriver arrive in {p} full of the dead, who don’t stay dead. {g} wants the source found.', 'crypt']
+  ];
+  var QUEST_GIVERS = {
+    big: [['Elder', 'Elder'], ['Sir', 'Dame'], ['Baron', 'Baroness'], ['Guildmaster', 'Guildmistress'], ['Father', 'Mother'], ['Captain', 'Captain'], ['Mayor', 'Mayor'], ['Master', 'Mistress']],
+    major: [['Lord', 'Lady'], ['Count', 'Countess'], ['Duke', 'Duchess'], ['High Priest', 'High Priestess'], ['Marshal', 'Marshal'], ['Spymaster', 'Spymaster'], ['CROWN', 'CROWN']]
+  };
+  var QUEST_PAY = {
+    minor: QUEST_REWARDS,
+    big: ['50 gp', '100 gp', '150 gp', '200 gp and a letter of thanks', 'a fine horse each', 'a suit of chain mail', 'a favour owed by {g}', 'a plot of land outside town', 'a Potion of Healing each', 'free lodging in the district for a year', '100 gp and first pick of the loot'],
+    major: ['1,000 gp', '2,500 gp', '5,000 gp, half up front', 'a knighthood', 'a minor title and land', 'an uncommon or rare magic item each', 'a seat at court', 'a royal pardon for one crime', 'a keep of their own, in need of repair']
+  };
+  var QUEST_BIG_TWISTS = ['The one asking is behind it.', 'The target has a good reason.', 'A rival is paying someone to make it fail.', 'It’s far bigger than they said.', 'The reward will be “forgotten” unless they push.', 'Someone on their side is feeding the enemy.', 'One of the party is recognised.', 'Nothing. It’s just dangerous.'];
+  function randomQuest(dk, tier) {
+    if (!tier || tier === 'any') { var r = Math.random(); tier = r < 0.5 ? 'minor' : r < 0.85 ? 'big' : 'major'; }
+    var npc = makeNpc({ district: dk }), D = NPCD.districts[dk] || NPCD.districts.capital, f = npc.sex === 'f';
+    var q = rpick(tier === 'major' ? MAJOR_QUESTS : tier === 'big' ? BIG_QUESTS : SMALL_QUESTS), who, short;
+    if (tier === 'minor') { var job = npc.race + ' ' + npc.job; who = npc.name + ', ' + (/^[AEIOU]/.test(job) ? 'an ' : 'a ') + job; short = npc.name; }
+    else {
+      var t = rpick(QUEST_GIVERS[tier]), title = t[f ? 1 : 0];
+      if (title === 'CROWN') { who = 'The Crown, by royal summons'; short = 'The Crown'; }
+      else { short = title + ' ' + npc.name.split(' ')[0]; who = title + ' ' + npc.name + ' (' + npc.race + ')'; }
+    }
+    var towns = (QUEST_TOWNS[dk] || []).filter(function (x) { return articleByTitle(x); }), town = towns.length ? rpick(towns) : '';
+    var fill = function (x) { return String(x).replace(/\{g\}/g, short).replace(/\{p\}/g, town || 'town'); };
+    return { title: fill(q[0]), details: fill(q[1]), giver: who, place: town ? town + ', ' + D.label : D.label, reward: fill(rpick(QUEST_PAY[tier])),
+      note: rpick(tier === 'minor' ? QUEST_TWISTS : QUEST_BIG_TWISTS), district: dk, tier: tier, lair: q[2] || '' };
   }
+
   function saveQuest(q) {
     var camp = activeCamp(); if (!camp) return;
-    sb.from('quests').insert({ campaign_id: camp.id, title: q.title, details: q.details, giver: q.giver, place: q.place, reward: q.reward, status: 'open', visible: false }).select('id').single().then(function (r) {
+    sb.from('quests').insert({ campaign_id: camp.id, title: q.title, details: q.details, giver: q.giver, place: q.place, reward: q.reward, tier: q.tier || 'minor', lair: q.lair || '', status: 'open', visible: false }).select('id').single().then(function (r) {
       if (r.error) return fail(r.error, 'Could not add the quest.');
       var done = function () { ui.questDraft = null; toast('On the board. Players can’t see it until you show it.'); loadQuests(); };
       if (q.note) sb.from('quest_notes').insert({ quest_id: r.data.id, note: q.note }).then(done); else done();
     });
   }
   function questRow(q, dm) {
-    return '<div class="q-card' + (q.status !== 'open' ? ' closed' : '') + '"><div class="q-top"><h3>' + esc(q.title) + '</h3>' +
+    var tier = q.tier || 'minor';
+    return '<div class="q-card tier-' + tier + (q.status !== 'open' ? ' closed' : '') + '"><div class="q-top"><h3>' + esc(q.title) + '</h3><span class="tag q-tier">' + LAIR_TIERS[tier].label + '</span>' +
       (q.status !== 'open' ? '<span class="tag plain">' + (q.status === 'done' ? 'Done' : 'Failed') + '</span>' : '') + (dm && !q.visible ? '<span class="tag plain">Hidden</span>' : '') + '</div>' +
       (q.details ? '<p>' + esc(q.details) + '</p>' : '') +
       '<p class="q-meta">' + [q.giver ? 'From ' + esc(q.giver) : '', q.place ? esc(q.place) : '', q.reward ? 'Reward: ' + esc(q.reward) : ''].filter(Boolean).join(' · ') + '</p>' +
       (dm && questNotes[q.id] ? '<p class="q-note"><b>Twist:</b> ' + esc(questNotes[q.id]) + '</p>' : '') +
       (dm ? '<div class="q-ctl"><button type="button" class="btn small' + (q.visible ? '' : ' primary') + '" data-act="q-vis" data-id="' + q.id + '">' + (q.visible ? 'Hide from players' : 'Show players') + '</button>' +
         '<select class="input" data-qstatus="' + q.id + '" aria-label="Status of ' + esc(q.title) + '">' + [['open', 'Open'], ['done', 'Done'], ['failed', 'Failed']].map(function (o) { return '<option value="' + o[0] + '"' + (q.status === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+        (q.lair && LAIRS[q.lair] ? '<button type="button" class="btn small" data-act="q-loot" data-lair="' + q.lair + '" data-tier="' + tier + '">Loot: ' + esc(LAIRS[q.lair].label.toLowerCase()) + '</button>' : '') +
         '<button type="button" class="btn small quiet" data-act="q-del" data-id="' + q.id + '">' + (ui.qDel === q.id ? 'Tap again to delete' : 'Delete') + '</button></div>' : '') + '</div>';
   }
   function renderQuests() {
@@ -2754,16 +2857,18 @@
     var html = '<div class="page narrow"><h1 class="page-title">Quests</h1>';
     if (dm) {
       var dk = ui.qDistrict || ui.npcDistrict || 'capital', D = NPCD.districts, d = ui.questDraft;
-      html += '<section class="group-box q-gen"><h2>Random small job</h2><p class="note" style="margin-top:0">Silly little jobs for a spare afternoon. Who’s asking comes from the district’s folk.</p>' +
-        '<div class="field"><label for="q-district">District</label><select id="q-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
+      var qt = ui.qTier || 'any';
+      html += '<section class="group-box q-gen"><h2>Random quest</h2><p class="note" style="margin-top:0">Minor jobs come from ordinary folk; big ones from elders, knights and barons; major ones from lords, dukes and sometimes the Crown. Who’s asking follows the district’s folk.</p>' +
+        '<div class="two"><div class="field"><label for="q-district">District</label><select id="q-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="q-tier">Size</label><select id="q-tier">' + [['any', 'Any'], ['minor', 'Minor'], ['big', 'Big'], ['major', 'Major']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === qt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div></div>' +
         '<div class="actions"><button type="button" class="btn' + (d ? '' : ' primary') + '" data-act="q-random">' + (d ? 'Another one' : 'Give me one') + '</button><button type="button" class="btn quiet" data-act="q-manual">' + (ui.qManual ? 'Close' : 'Write my own') + '</button></div>' +
-        (d ? questRow({ id: 'draft', title: d.title, details: d.details, giver: d.giver, place: d.place, reward: d.reward, status: 'open', visible: true }, false) + '<p class="q-note"><b>Twist (only you see this):</b> ' + esc(d.note) + '</p><div class="actions"><button type="button" class="btn primary" data-act="q-keep">Put it on the board</button></div>' : '') +
+        (d ? questRow({ id: 'draft', title: d.title, details: d.details, giver: d.giver, place: d.place, reward: d.reward, tier: d.tier, status: 'open', visible: true }, false) + '<p class="q-note"><b>Twist (only you see this):</b> ' + esc(d.note) + '</p><div class="actions"><button type="button" class="btn primary" data-act="q-keep">Put it on the board</button></div>' : '') +
         '</section>';
       if (ui.qManual) {
         var f = function (id, label, ph) { return '<div class="field"><label for="qf-' + id + '">' + label + '</label><input type="text" id="qf-' + id + '" maxlength="200"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></div>'; };
         html += '<form class="form group-box" id="q-form" novalidate><h2>Your own quest</h2>' + f('title', 'Title') +
           '<div class="field"><label for="qf-details">What’s the job?</label><textarea id="qf-details" maxlength="2000"></textarea></div>' +
-          '<div class="two">' + f('giver', 'Who’s asking') + f('place', 'Where') + '</div>' + f('reward', 'Reward') + f('note', 'Your notes (only you see these)', 'The twist, who’s really behind it…') +
+          '<div class="two">' + f('giver', 'Who’s asking') + f('place', 'Where') + '</div>' + '<div class="two">' + f('reward', 'Reward') + '<div class="field"><label for="qf-tier">Size</label><select id="qf-tier"><option value="minor">Minor</option><option value="big">Big</option><option value="major">Major</option></select></div></div>' + f('note', 'Your notes (only you see these)', 'The twist, who’s really behind it…') +
           '<div class="actions"><button type="submit" class="btn primary">Add to the board</button></div></form>';
       }
     } else html += '<p class="guide">Jobs the party has picked up.</p>';
@@ -2799,14 +2904,16 @@
       case 'cb-end':
         var picks = {};
         st.list.filter(function (y) { return y.kind === 'mon'; }).forEach(function (y) { picks[y.mon] = (picks[y.mon] || 0) + 1; });
-        ui.loot = { picks: Object.keys(picks).map(function (k) { return { name: k, n: picks[k] }; }), items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false };
+        ui.loot = { picks: Object.keys(picks).map(function (k) { return { name: k, n: picks[k] }; }), places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false };
         location.hash = '#/loot'; return true;
       case 'lt-unpick': ui.loot.picks.splice(num(el.getAttribute('data-i'), 0), 1); render(); return true;
+      case 'lt-unplace': ui.loot.places.splice(num(el.getAttribute('data-i'), 0), 1); render(); return true;
       case 'lt-roll': lootRoll(); render(); return true;
       case 'lt-reset': ui.loot = null; render(); return true;
       case 'lt-drop': ui.loot.items = ui.loot.items.filter(function (it) { return it.id !== id; }); render(); return true;
       case 'lt-give': lootGive(); return true;
-      case 'q-random': ui.questDraft = randomQuest(ui.qDistrict || ui.npcDistrict || 'capital'); render(); return true;
+      case 'q-random': ui.questDraft = randomQuest(ui.qDistrict || ui.npcDistrict || 'capital', ui.qTier || 'any'); render(); return true;
+      case 'q-loot': ui.loot = { picks: [], places: [{ key: el.getAttribute('data-lair'), tier: el.getAttribute('data-tier') || 'minor' }], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; location.hash = '#/loot'; return true;
       case 'q-keep': if (ui.questDraft) saveQuest(ui.questDraft); return true;
       case 'q-manual': ui.qManual = !ui.qManual; render(); return true;
       case 'q-vis': var q = (quests || []).filter(function (y) { return y.id === id; })[0]; if (q) updateQuest(id, { visible: !q.visible }); return true;
@@ -2826,17 +2933,19 @@
     if (t.hasAttribute('data-ltsplit')) { var sid = t.getAttribute('data-ltsplit'), sp = ui.loot.split || []; ui.loot.split = t.checked ? uniq(sp.concat([sid])) : sp.filter(function (y) { return y !== sid; }); return true; }
     if (t.hasAttribute('data-qstatus')) { updateQuest(t.getAttribute('data-qstatus'), { status: t.value }); return true; }
     if (t.id === 'q-district') { ui.qDistrict = t.value; ui.questDraft = null; render(); return true; }
+    if (t.id === 'q-tier') { ui.qTier = t.value; ui.questDraft = null; render(); return true; }
     return false;
   }
   function cbqSubmit(f) {
     var v = function (id) { var e = document.getElementById(id); return e ? e.value.trim() : ''; };
     switch (f.id) {
       case 'cb-form': if (v('cb-mon')) cbAddMonster(v('cb-mon'), num(v('cb-n'), 1)); return true;
-      case 'lt-form': if (v('lt-mon')) lootAddPick(v('lt-mon'), Math.max(1, Math.min(50, num(v('lt-n'), 1)))); return true;
+      case 'lt-form': renderLoot.ensure(); if (v('lt-mon')) lootAddPick(v('lt-mon'), Math.max(1, Math.min(50, num(v('lt-n'), 1)))); return true;
+      case 'lt-place': renderLoot.ensure(); ui.loot.places.push({ key: v('lt-pl'), tier: v('lt-tier') || 'minor' }); render(); return true;
       case 'lt-line': if (v('lt-line-n')) { ui.loot.items.push({ id: cbId(), name: v('lt-line-n'), qty: 1, val: 0, note: 'added by hand', to: '' }); render(); } return true;
       case 'q-form':
         if (!v('qf-title')) { toast('Give it a title.'); return true; }
-        saveQuest({ title: v('qf-title'), details: v('qf-details'), giver: v('qf-giver'), place: v('qf-place'), reward: v('qf-reward'), note: v('qf-note') }); ui.qManual = false; return true;
+        saveQuest({ title: v('qf-title'), details: v('qf-details'), giver: v('qf-giver'), place: v('qf-place'), reward: v('qf-reward'), tier: v('qf-tier') || 'minor', note: v('qf-note') }); ui.qManual = false; return true;
     }
     return false;
   }
@@ -8726,7 +8835,7 @@
       case 'hb-form': return saveHomebrew(f);
       case 'mon-form': return saveMonster(f);
       case 'standin-form': return addStandIns(activeCamp());
-      case 'cb-form': case 'lt-form': case 'lt-line': case 'q-form': return cbqSubmit(f);
+      case 'cb-form': case 'lt-form': case 'lt-place': case 'lt-line': case 'q-form': return cbqSubmit(f);
       case 'npc-form':
         var fix = readNpcPrompt(document.getElementById('npc-words').value);
         if (fix.district) ui.npcDistrict = fix.district;

@@ -1101,3 +1101,7 @@ body.pk-open { overflow: hidden; }
 .q-ctl select { width: auto; }
 .lt-coins input { width: 100%; min-width: 0; }
 .cb-conds select.input, .lt-item select.input, .q-ctl select.input { width: auto; min-height: 36px; padding: 4px 8px; }
+.q-tier { font-size: 10px; }
+.q-card.tier-big { border-left: 3px solid var(--accent); }
+.q-card.tier-major { border-left: 3px solid #b5523b; }
+.q-card.tier-major .q-tier { background: #b5523b; color: #fff; }
