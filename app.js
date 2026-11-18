@@ -2600,8 +2600,8 @@
     dragon: { label: 'Dragon lair', coin: 6, gems: 6, magic: 0.8, items: [['a mountain of mixed coin', 0, 1, 'see the coin'], ['art objects', 250, 0.9, 'statuettes, goblets, crowns'], ['a dead adventurer’s gear', 50, 0.5]], about: 'The hoard.' },
     beast: { label: 'Beast den', coin: 0.3, items: [['gnawed bones', 0, 1], ['a dead hunter’s bow', 25, 0.4], ['a purse among the bones', 0, 0.4, 'see the coin']], about: 'Bones, and what the last victims carried.' },
     mine: { label: 'Abandoned mine', coin: 0.4, gems: 1.5, items: [['raw ore', 5, 0.9, 'by the cartload'], ['miners’ picks', 2, 0.7], ['a forgotten payroll chest', 0, 0.3, 'see the coin']], about: 'Ore, stones and forgotten pay.' },
-    smugglers: { label: 'Smugglers’ cave', coin: 1.2, items: [['barrels of untaxed brandy', 25, 0.8], ['bolts of silk', 40, 0.6], ['a crate of giant spider eggs', 40, 0.3, 'contraband in most towns'], ['a ledger of bribes', 0, 0.6, 'names who’s paid whom']], about: 'Contraband and who’s on the take.' },
-    manor: { label: 'Noble manor or vault', coin: 3, gems: 2, magic: 0.2, items: [['family silver', 150, 0.8], ['a portrait', 50, 0.5, 'worth more to the family'], ['deeds to land', 0, 0.4], ['fine wine', 30, 0.6]], about: 'Silver, jewels and papers.' },
+    smugglers: { label: 'Smugglers’ cave', coin: 1.2, items: [['barrels of untaxed brandy', 25, 0.8], ['bolts of silk', 40, 0.6], ['a crate of giant spider eggs', 40, 0.3, 'contraband in most towns'], ['a ledger of bribes', 0, 0.6, 'names who’s paid whom'], ['Dornish steel ingots', 100, 0.3, 'smuggled out past the crown’s tax']], about: 'Contraband and who’s on the take.' },
+    manor: { label: 'Noble manor or vault', coin: 3, gems: 2, magic: 0.2, items: [['family silver', 150, 0.8], ['a portrait', 50, 0.5, 'worth more to the family'], ['deeds to land', 0, 0.4], ['fine wine', 30, 0.6], ['Dornish Steel Longsword', 150, 0.3, 'dwarf-forged: +1 damage']], about: 'Silver, jewels and papers.' },
     warehouse: { label: 'Merchant warehouse', coin: 0.5, items: [['crates of trade goods', 50, 0.9], ['spices', 30, 0.6], ['bolts of cloth', 20, 0.7], ['a strongbox', 0, 0.4, 'see the coin']], about: 'Trade goods.' },
     wizard: { label: 'Wizard’s tower', coin: 0.6, magic: 0.6, items: [['a spellbook', 0, 0.6, 'spells to learn from'], ['alchemy supplies', 50, 0.8], ['a jar of something still alive', 10, 0.4], ['strange components', 25, 0.7]], about: 'Books, supplies and magic.' },
     shipwreck: { label: 'Shipwreck', coin: 1, gems: 1, items: [['waterlogged cargo', 10, 0.8], ['the ship’s bell', 30, 0.5], ['the captain’s log', 0, 0.6], ['a sea chest', 0, 0.4, 'see the coin']], about: 'Sea-soaked cargo and coin.' },
@@ -3127,7 +3127,10 @@
     return null;
   }
   function gearItem(ref) { var r = ref && GEAR ? gearFind(ref.n) : null; return r && r.k === ref.k ? r.it : r ? r.it : null; }
-  function itemRef(it) { if (it.ref) return it.ref; var r = gearFind(it.name); return r ? { k: r.k, n: r.it.name } : null; }
+  function itemRef(it) { if (it.ref) return it.ref; var r = gearFind(it.name) || gearFind(dornishBase(it.name)); return r ? { k: r.k, n: r.it.name } : null; }
+  // Dornish steel: Stonehelm's dwarf-forged steel. Any weapon +1 damage, any armor or shield +1 AC. Not magic, so it stacks with a magic bonus.
+  function dornishBase(name) { var m = /^dornish[- ]steel\s+(.+)$/i.exec(String(name || '').trim()); return m ? m[1] : ''; }
+  function isDornish(it) { return !!(it && (it.ds || dornishBase(it.name))); }
   // "2 Daggers, Thieves' Tools, 10 days of Rations, and 15 GP" -> items and coins. Packs are opened up.
   function parseGear(text, from) {
     var out = { items: [], gp: 0 };
@@ -3186,8 +3189,8 @@
       if (g.shield) { if (!shield) shield = { g: g, it: it }; } else if (!armor) armor = { g: g, it: it };
     });
     if (!armor && !shield) return { ac: num(s.ac, 10), how: 'Unarmored', worn: false, notes: notes };
-    var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) : num(s.ac, 10);
-    if (shield) ac += 2 + num(shield.it.bonus, 0);
+    var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) : num(s.ac, 10);
+    if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0);
     if (armor && armor.g.stealth) notes.push('Disadvantage on Stealth');
     if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
     return { ac: ac, how: [armor ? armor.it.name : '', shield ? 'Shield' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
@@ -3205,7 +3208,7 @@
     if (!w) return null;
     var ranged = /Ranged/.test(w.cat), fin = w.props.some(function (p) { return /^Finesse/.test(p); });
     var ab = ranged ? 'dex' : fin ? (abil.dex > abil.str ? 'dex' : 'str') : 'str';
-    var prof = weaponProf(classOf(s), w), bonus = num(it.bonus, 0), dm = abil[ab] + bonus;
+    var prof = weaponProf(classOf(s), w), bonus = num(it.bonus, 0), dm = abil[ab] + bonus + (isDornish(it) ? 1 : 0);
     var rng = w.props.map(function (p) { var m = /Range (\d+\/\d+)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
     var reach = w.props.some(function (p) { return /^Reach/.test(p); });
     var vers = w.props.map(function (p) { var m = /Versatile \(([^)]+)\)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
@@ -3317,10 +3320,10 @@
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
       return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
-        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') +
         '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
-        (edit ? '<span class="inv-edit"><label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
+        (edit ? '<span class="inv-edit">' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
         '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
         '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
         '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
@@ -8797,6 +8800,11 @@
       var lrc = charById(parseRoute().arg), lrd = lrc ? classOf(normSheet(lrc.sheet)) : null, lrv = num(t.value, 0);
       ui.lvl.rolled = lrd && lrv >= 1 && lrv <= lrd.hd ? lrv : 0; render(); return;
     }
+    if (t.hasAttribute('data-ids')) {
+      var dc = currentChar(), dit = dc && dc.sheet.items[num(t.getAttribute('data-ids'), -1)];
+      if (dit) { if (t.checked) dit.ds = true; else delete dit.ds; render(); saveCharSoon(dc); }
+      return;
+    }
     if (t.hasAttribute('data-ibonus')) {
       var bc = currentChar(), bi = bc && bc.sheet.items[num(t.getAttribute('data-ibonus'), -1)];
       if (!bi) return;
@@ -8916,9 +8924,10 @@
         var iname = document.getElementById('it-name').value.trim();
         if (!iname) return toast('Name the item first.');
         var iwv = document.getElementById('it-w') ? document.getElementById('it-w').value : '';
-        var ifound = gearFind(iname);
+        var idb = dornishBase(iname), ifound = gearFind(idb || iname);
         var newItem = { name: ifound ? ifound.it.name : iname, notes: document.getElementById('it-notes').value.trim(), qty: Math.max(1, num(document.getElementById('it-qty').value, 1)) };
         if (ifound) newItem.ref = { k: ifound.k, n: ifound.it.name };
+        if (idb && ifound) { newItem.name = 'Dornish Steel ' + ifound.it.name; newItem.ds = true; }
         if (iwv !== '' && !isNaN(parseFloat(iwv))) newItem.w = Math.max(0, parseFloat(iwv));
         c.sheet.items.push(newItem);
         render(); saveCharSoon(c); var n2 = document.getElementById('it-name'); if (n2) n2.focus(); return;
