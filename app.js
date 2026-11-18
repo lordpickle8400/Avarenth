@@ -282,6 +282,7 @@
     return sb.from('custom_subclasses').select('id, class, name, about, patrons, features').order('name').then(function (r) {
       if (r.error) throw r.error;
       customSubs = r.data || [];
+      applyHomebrew();
     });
   }
   function loadCharacters() {
@@ -1983,7 +1984,8 @@
   /* ---------- Homebrew: items, classes, species, backgrounds and feats (spells and subclasses have their own pages) ----------
      Anyone can submit; the DM reviews. Approved entries join the same lists as the official ones. */
   var homebrew = [], HB_KEYS = { cls: [], species: [], bg: [] };
-  var HB_KINDS = [['item', 'Items'], ['class', 'Classes'], ['species', 'Species'], ['background', 'Backgrounds'], ['feat', 'Feats']];
+  var HB_KINDS = [['item', 'Items'], ['class', 'Classes'], ['subclass', 'Subclasses'], ['species', 'Species'], ['background', 'Backgrounds'], ['feat', 'Feats']];
+  var HB_ONE = { item: 'item', 'class': 'class', subclass: 'subclass', species: 'species', background: 'background', feat: 'feat' };
   function loadHomebrew() {
     return sb.from('homebrew').select('id, kind, name, data, status, dm_note, submitted_by, created_at, updated_at').order('name').then(function (r) {
       if (r.error) { if (/homebrew/.test(r.error.message || '')) return; throw r.error; }
@@ -1994,6 +1996,7 @@
   // Put approved homebrew into the rules, the SRD lists and the gear catalog. Safe to run again: last run's entries come out first.
   function applyHomebrew() {
     HB_KEYS.cls.forEach(function (k) { delete RULES.classes[k]; delete RULES.magic.mana[k]; delete RULES.magic.charges[k]; delete RULES.magic.spellAbility[k]; var i = RULES.magic.fullCasters.indexOf(k); if (i >= 0) RULES.magic.fullCasters.splice(i, 1); var j = SPELL_CLASSES.indexOf(k); if (j >= 0) SPELL_CLASSES.splice(j, 1); });
+    customSubs = customSubs.filter(function (x) { return !x.hb; });
     HB_KEYS.species.forEach(function (k) { delete RULES.species[k]; });
     HB_KEYS.bg.forEach(function (k) { delete RULES.backgrounds[k]; if (SRD) delete SRD.backgrounds[k]; });
     HB_KEYS = { cls: [], species: [], bg: [] };
@@ -2013,6 +2016,11 @@
       if (d.caster === 'full') RULES.magic.fullCasters.push(n);
       if (SPELL_CLASSES.indexOf(n) < 0) SPELL_CLASSES.push(n);
       HB_KEYS.cls.push(n);
+    });
+    hbApproved('subclass').forEach(function (h) {
+      var d = h.data || {};
+      if (!d.cls || customSub(d.cls, h.name)) return;
+      customSubs.push({ id: h.id, class: d.cls, name: h.name, about: d.about || '', patrons: d.patrons || [], features: (d.features || []).map(function (f) { return { level: num(f[0], 1), name: f[1], text: f[2] || '' }; }), hb: true });
     });
     hbApproved('species').forEach(function (h) {
       var d = h.data || {};
@@ -2050,6 +2058,7 @@
     var d = h.data || {};
     switch (h.kind) {
       case 'item': return ({ weapon: (d.wcat || 'Weapon') + ' · ' + (d.dmg || '') + ' ' + (d.dtype || ''), armor: (d.acat || '') + ' armor · AC ' + (d.ac || ''), shield: 'Shield · +' + (d.ac || 2) + ' AC', magic: (d.mkind || 'Magic item') + ' · ' + (d.rarity || ''), gear: 'Gear' })[d.type] || 'Item';
+      case 'subclass': return (d.cls || 'Any class') + ' · ' + (d.features || []).length + ' features';
       case 'class': return 'd' + (d.hd || 8) + ' hit die · ' + (d.caster === 'full' ? 'full caster' : d.caster === 'half' ? 'half caster' : 'martial') + ' · ' + (d.features || []).length + ' features';
       case 'species': return (d.size || 'Medium') + ' · ' + (d.speed || 30) + ' ft · ' + (d.traits || []).length + ' traits';
       case 'background': return (d.skills || []).join(', ') + (d.feat ? ' · ' + d.feat : '');
@@ -2059,13 +2068,13 @@
   }
   function renderHomebrew(arg) {
     var parts = String(arg || '').split(':'), kind = HB_KINDS.some(function (k) { return k[0] === parts[0]; }) ? parts[0] : 'item', edit = parts[1] || '';
-    var dm = isDM(), html = '<div class="page"><h1 class="page-title">Homebrew</h1><p class="guide">Make your own items, classes, species, backgrounds and feats. ' + (dm ? 'Yours go live right away; players’ wait for your review.' : 'Your DM reviews each one before it joins the lists.') + '</p>';
+    var dm = isDM(), html = '<div class="page"><h1 class="page-title">Homebrew</h1><p class="guide">Make your own items, classes, subclasses, species, backgrounds and feats. ' + (dm ? 'Yours go live right away; players’ wait for your review.' : 'Your DM reviews each one before it joins the lists.') + '</p>';
     html += '<div class="subtabs" role="tablist">' + HB_KINDS.map(function (k) { return '<a role="tab" href="#/homebrew/' + k[0] + '" aria-selected="' + (kind === k[0]) + '">' + k[1] + '</a>'; }).join('') +
-      '<a role="tab" href="#/spells" aria-selected="false">Spells ↗</a>' + (dm ? '<a role="tab" href="#/subclasses" aria-selected="false">Subclasses ↗</a>' : '') + '</div>';
+      '<a role="tab" href="#/spells" aria-selected="false">Spells ↗</a></div>';
     if (edit) { html += hbFormHtml(kind, edit === 'new' ? null : homebrew.filter(function (h) { return h.id === edit; })[0]); $view.innerHTML = html + '</div>'; hbSyncItemType(); return; }
     var list = homebrew.filter(function (h) { return h.kind === kind; });
     var pending = dm ? list.filter(function (h) { return h.status === 'pending'; }) : [];
-    html += '<div class="actions" style="margin:12px 0"><a class="btn primary" href="#/homebrew/' + kind + ':new">New ' + HB_KINDS.filter(function (k) { return k[0] === kind; })[0][1].replace(/es$/, '').replace(/s$/, '').replace('Specie', 'species').toLowerCase() + '</a></div>';
+    html += '<div class="actions" style="margin:12px 0"><a class="btn primary" href="#/homebrew/' + kind + ':new">New ' + HB_ONE[kind] + '</a></div>';
     if (pending.length) html += '<section class="block"><h2 class="sec-title">Waiting for you<small>' + pending.length + '</small></h2><div class="tbl">' + pending.map(function (h) { return hbRow(h, true); }).join('') + '</div></section>';
     var rest = list.filter(function (h) { return pending.indexOf(h) < 0; });
     html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + (dm ? 'All' : 'Shared and yours') + '<small>' + rest.length + '</small></h2><div class="tbl">' + (rest.length ? rest.map(function (h) { return hbRow(h, false); }).join('') : '<div class="empty">Nothing here yet.</div>') + '</div></section>';
@@ -2108,8 +2117,12 @@
         '<div class="grid2">' + hbF('manaStart', 'Mana at 1st level', d.manaStart != null ? d.manaStart : 15, 'number', ' min="0" max="200"') + hbF('manaPer', 'Mana per level', d.manaPer != null ? d.manaPer : 7, 'number', ' min="0" max="50"') + '</div>' +
         '<div class="grid2">' + hbF('hm', 'High Magic Charges at levels', (d.hm || []).join(', '), 'text', ' placeholder="e.g. 15, 19"') + hbF('rc', 'Reality Channel at level (0 = never)', d.rc || 0, 'number', ' min="0" max="20"') + '</div>' +
         '<h2 class="sec-title" style="margin-top:12px">Subclass</h2><div class="grid2">' + hbF('subLabel', 'Subclass is called', d.subLabel || '', 'text', ' maxlength="40" placeholder="e.g. Order"') + hbF('subLevel', 'Chosen at level', d.subLevel || 3, 'number', ' min="1" max="20"') + '</div>' +
-        '<p class="note">Subclasses are added by the DM on the Subclasses page.</p>' +
+        '<p class="note">Add its subclasses on the Subclasses tab once the class is approved.</p>' +
         hbArea('features', 'Features, one per line: level | name | what it does', (d.features || []).map(function (f) { return f.join(' | '); }).join('\n'), '1 | Battle Rhythm | Your first attack each turn deals an extra 1d4 damage.');
+    } else if (kind === 'subclass') {
+      html += hbSel('cls', 'Class', d.cls || 'Fighter', Object.keys(RULES.classes).sort()) + hbArea('about', 'About', d.about, 'What this path is, in a sentence or two.') +
+        hbArea('features', 'Features, one per line: level | name | what it does', (d.features || []).map(function (f) { return f.join(' | '); }).join('\n'), '3 | Stormborn | You resist lightning and thunder damage.') +
+        '<p class="note">Use the levels your class gets subclass features at (the class on the Rules page lists them).</p>';
     } else if (kind === 'species') {
       html += hbArea('note', 'About', d.note, '') + '<div class="grid2">' + hbSel('size', 'Size', d.size || 'Medium', ['Small', 'Medium', 'Small or Medium', 'Large']) + hbF('speed', 'Walking speed (ft)', d.speed || 30, 'number', ' min="0" max="60"') + '</div>' +
         '<div class="grid2">' + hbF('dark', 'Darkvision (ft, 0 = none)', d.dark || 0, 'number', ' min="0" max="300"') + hbF('fly', 'Fly speed (ft)', d.fly || 0, 'number', ' min="0" max="120"') + '</div><div class="grid2">' + hbF('swim', 'Swim speed (ft)', d.swim || 0, 'number', ' min="0" max="120"') + hbF('climb', 'Climb speed (ft)', d.climb || 0, 'number', ' min="0" max="120"') + '</div>' +
@@ -2145,6 +2158,8 @@
       d = { about: hbVal('about'), hd: num(hbVal('hd'), 8), primary: hbVal('primary'), saves: saves, armor: hbVal('armor'), weapons: hbVal('weapons'), tools: hbVal('tools'), skillN: num(hbVal('skillN'), 2), skillFrom: hbChecked('skillFrom'),
         caster: hbVal('caster'), spellAbility: hbVal('spellAbility'), manaStart: num(hbVal('manaStart'), 15), manaPer: num(hbVal('manaPer'), 7), hm: hbVal('hm').split(/[,\s]+/).map(function (x) { return num(x, 0); }).filter(function (x) { return x >= 1 && x <= 20; }),
         rc: num(hbVal('rc'), 0), subLabel: hbVal('subLabel'), subLevel: num(hbVal('subLevel'), 3), features: feats };
+    } else if (kind === 'subclass') {
+      d = { cls: hbVal('cls'), about: hbVal('about'), features: hbLines(hbVal('features')).map(function (p) { return p.length >= 3 ? [num(p[0], 3), p[1], p.slice(2).join(' | ')] : [3, p[0], p[1] || '']; }) };
     } else if (kind === 'species') {
       d = { note: hbVal('note'), size: hbVal('size'), speed: num(hbVal('speed'), 30), dark: num(hbVal('dark'), 0), fly: num(hbVal('fly'), 0), swim: num(hbVal('swim'), 0), climb: num(hbVal('climb'), 0), traits: hbLines(hbVal('traits')).map(function (p) { return [p[0], p.slice(1).join(' | ')]; }) };
     } else if (kind === 'background') {
