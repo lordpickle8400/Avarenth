@@ -2363,7 +2363,7 @@
   }
 
   /* ================= Combat tracker (DM only) ================= */
-  // Players roll their own initiative at the table and the DM types it in; monsters' initiative is rolled here, behind the screen.
+  // Everyone's initiative is rolled at the table, monsters too; the DM types the numbers in.
   var combat = null;
   function loadCombat(camp) {
     if (!camp) return Promise.resolve(null);
@@ -2394,7 +2394,7 @@
     var st = combat.state, have = st.list.filter(function (x) { return x.mon === m.name; }).length, n = Math.max(1, Math.min(20, count));
     for (var i = 0; i < n; i++) {
       var mod = monInitMod(m), hp = monHp(m), label = (have + n > 1) ? m.name + ' ' + (have + i + 1) : m.name;
-      st.list.push({ id: cbId(), kind: 'mon', mon: m.name, name: label, init: roll(1, 20) + mod, mod: mod, hp: hp, max: hp, ac: String(m.ac || '').split(' ')[0], conds: [] });
+      st.list.push({ id: cbId(), kind: 'mon', mon: m.name, name: label, init: '', mod: mod, hp: hp, max: hp, ac: String(m.ac || '').split(' ')[0], conds: [] });
     }
     if (have === 0 && n === 1) { /* single, keep the plain name */ }
     saveCombat(); render();
@@ -2436,7 +2436,7 @@
     var st = combat.state, order = cbOrder(st), xp = cbXp(st);
     ui.cbOpen = ui.cbOpen || {};
     var html = '<div class="page"><h1 class="page-title">Combat' + (st.list.length ? '<small>Round ' + st.round + '</small>' : '') + '</h1>' +
-      (st.list.length ? '' : '<p class="guide">Add the party and the monsters. Type in the initiative your players roll; monsters roll their own here, behind the screen. The fight saves as you go, so you can close the app mid-battle.</p>') +
+      (st.list.length ? '' : '<p class="guide">Add the party and the monsters, then type in everyone’s initiative as it’s rolled at the table. The fight saves as you go, so you can close the app mid-battle.</p>') +
       '<form class="form cb-add" id="cb-form" novalidate><div class="cb-add-row"><div class="field"><label for="cb-mon">Monster</label><input type="text" id="cb-mon" list="cb-mons" placeholder="Goblin Warrior, Wolf…" autocomplete="off"></div>' +
       '<div class="field cb-n"><label for="cb-n">How many</label><input type="number" id="cb-n" min="1" max="20" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></div>' +
       '<datalist id="cb-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>' +
@@ -2449,7 +2449,7 @@
         var pct = x.kind === 'mon' ? Math.max(0, Math.min(100, Math.round(100 * x.hp / Math.max(1, x.max)))) : 0;
         return '<div class="cb-row' + (x.id === st.cur ? ' cur' : '') + (x.down ? ' down' : '') + (x.kind === 'pc' ? ' pc' : '') + '">' +
           '<div class="cb-main"><label class="cb-init"><span class="sr">Initiative for ' + esc(x.name) + '</span><input class="input" type="number" inputmode="numeric" data-cbinit="' + x.id + '" value="' + esc(x.init) + '" placeholder="—"></label>' +
-          '<div class="cb-name"><b>' + esc(x.name) + '</b><small>' + (x.kind === 'pc' ? 'Party' : esc('AC ' + (x.ac || '—') + (m ? ' · CR ' + m.cr : ''))) + (x.down ? ' · down' : '') + '</small></div>' +
+          '<div class="cb-name"><b>' + esc(x.name) + '</b><small>' + (x.kind === 'pc' ? 'Party' : esc('AC ' + (x.ac || '—') + (m ? ' · CR ' + m.cr + ' · Init ' + (x.mod >= 0 ? '+' : '') + x.mod : ''))) + (x.down ? ' · down' : '') + '</small></div>' +
           '<button type="button" class="linkish cb-x" data-act="cb-rm" data-id="' + x.id + '" aria-label="Remove ' + esc(x.name) + '">×</button></div>' +
           (x.kind === 'mon' ? '<div class="cb-hp"><span class="cb-hpbar"><i style="width:' + pct + '%"></i></span><b>' + x.hp + '</b><small>/ ' + x.max + '</small>' +
             '<input class="input" type="number" inputmode="numeric" min="0" id="cbd-' + x.id + '" placeholder="amt" aria-label="Damage or healing for ' + esc(x.name) + '">' +
