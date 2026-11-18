@@ -6966,6 +6966,7 @@
       atks.push(Object.assign({ n: f.name }, w));
     });
     if (base.note) notes.push(base.note);
+    if (d.emberwood !== false && h.kind !== 'caravan') notes.push('Emberwood: takes half damage from fire');
     if (st.list.indexOf('Fighting top') >= 0) atks.push({ n: 'Archers in the top', hit: 5, dmg: '2d6 piercing, twice', range: '150/600 ft.', crew: 4 });
     var traits = st.list.filter(function (n) { return TRAITS[n]; }).map(function (n) { return n + ': ' + TRAITS[n]; });
     var hp = d.hp == null ? max : Math.max(0, Math.min(max, num(d.hp, max)));
@@ -7302,6 +7303,7 @@
     }
     if (kind === 'ship' || kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-marque"' + (d.marque ? ' checked' : '') + '> Letter of marque from the king (may raid his enemies)</label>' +
       '<label class="check"><input type="checkbox" id="hd-commission"' + (d.commission ? ' checked' : '') + '> The king’s commission (may serve the crown for pay)</label>';
+    if (kind === 'ship' || kind === 'airship' || kind === 'siege') html += '<label class="check"><input type="checkbox" id="hd-ember"' + (d.emberwood !== false ? ' checked' : '') + '> Built of Emberwood (takes half damage from fire)</label>';
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-gnome"' + (d.gnome ? ' checked' : '') + '> A gnome first mate or technician is aboard</label>';
     if (kind === 'airship') html += '<label class="check"><input type="checkbox" id="hd-dwarves"' + (d.dwarves ? ' checked' : '') + '> Trained dwarf hull-wrights aboard (+30 gp a month; they can mend the hull fully)</label>';
     var loyF = function (unit, label) { if (isNew && POP_DEF[kind]) return ''; var l = h ? loyOf(h, unit) : 5; return '<div class="field"><label for="hd-loy-' + unit + '">' + label + ' loyalty (only you see this)</label><select id="hd-loy-' + unit + '">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (n) { return '<option value="' + n + '"' + (n === l ? ' selected' : '') + '>' + n + ' · ' + band(n) + '</option>'; }).join('') + '</select></div>'; };
@@ -7342,6 +7344,7 @@
     d.hull = false;
     if (document.getElementById('hd-marque')) d.marque = document.getElementById('hd-marque').checked;
     if (document.getElementById('hd-commission')) d.commission = document.getElementById('hd-commission').checked;
+    if (document.getElementById('hd-ember')) d.emberwood = document.getElementById('hd-ember').checked;
     if (val('hd-guards') != null) d.guards = Math.round(n('hd-guards', 0));
     if (val('hd-wtype') != null) { var wn = Math.max(1, Math.round(n('hd-wagons', 1))), wt = val('hd-wtype'); d.wagonList = []; for (var wi = 0; wi < wn; wi++) d.wagonList.push({ id: 'w' + wi, type: wt, fits: [] }); d.wagons = wn; d.crew = wn; }
     d.notes = (val('hd-notes') || '').slice(0, 400);
