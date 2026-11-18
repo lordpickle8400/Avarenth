@@ -315,7 +315,7 @@
   }
   function loadTravel() {
     return Promise.all([
-      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival'),
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival, calendar'),
       sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, paid, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -346,7 +346,7 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['monsters', 'Monsters'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['monsters', 'Monsters'], ['npcs', 'NPCs'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
   var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['homebrew', 'Homebrew']];
   var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
@@ -366,7 +366,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -424,6 +424,8 @@
       case 'spell-edit': return renderSpellForm(r.arg);
       case 'homebrew': return renderHomebrew(r.arg);
       case 'monsters': return renderMonsters(r.arg);
+      case 'npcs': return renderNpcs();
+      case 'calendar': return renderCalendar(r.arg);
       default: return renderAtlas('');
     }
   }
@@ -1096,7 +1098,7 @@
   function onClassList(sp, cls) { return (sp.classes || []).indexOf(cls) >= 0 && sp.level <= listCap(cls); }
   function hdAvg(die) { return Math.floor(die / 2) + 1; }
   function roll(n, die) { var t = 0; for (var i = 0; i < n; i++) t += 1 + Math.floor(Math.random() * die); return t; }
-  function ordinal(L) { return ORD[L] || L; }
+  function ordinal(L) { if (ORD[L]) return ORD[L]; var n = num(L, 0), t = n % 100; return n + ((t >= 11 && t <= 13) ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'); }
   function coinName(k) { return RULES.coins[k] || ({ pp: 'Platinum' })[k] || k; }
 
   // Everything the sheet shows as a feature: class features up to the current level, subclass levels, species traits, then the owner's own.
@@ -2190,6 +2192,176 @@
     var t = document.getElementById('hb-type');
     if (!t) return;
     Array.prototype.forEach.call(document.querySelectorAll('.hb-sub'), function (el) { el.hidden = el.getAttribute('data-for').split(' ').indexOf(t.value) < 0; });
+  }
+
+  /* ---------- The Imperial Calendar: 13 months of 28 days plus Crowning Day, which opens the year ----------
+     The journey's day count maps onto a date. travel_state.calendar = { start: { y, doy }, notes: [{ y|null, doy, text }] }.
+     doy 0 is Crowning Day; doy 1..364 run through the thirteen months. */
+  var CAL_MONTHS = [['Akortide', 'Thaw'], ['Roseltide', 'Seedfall'], ['Rookstide', 'the Marching'], ['Aurelmas', 'Highsun'], ['Fifth Pale', 'Haymoon'], ['Sixth Pale', 'the Burning'], ['Seventh Pale', 'Reaping'],
+    ['Eighth Pale', 'Stormwake'], ['Ninth Pale', 'Leaffall'], ['Tenth Pale', 'Firstfrost'], ['Thorumtide', 'the Gales'], ['Azrul\'s Dark', 'the Long Night'], ['Florinsmas', 'Fools\' Pale']];
+  var CAL_DAYS = ['Sunday', 'Paleday', 'Nailsday', 'Emberday', 'Lanternday', 'Houndsday', 'Crownsday'];
+  // Feast days from the Dornish Holidays page. The article gives a month for some, not a day: those days are picks, so move them if you like.
+  var CAL_HOLIDAYS = [{ doy: 0, name: 'Crowning Day' }, { m: 1, d: 1, name: 'Firstlight' }, { m: 2, d: 14, name: 'Sowing Day' }, { m: 4, d: 1, name: 'Conqueror\'s Day' },
+    { m: 5, d: 14, name: 'Landfather\'s Day' }, { m: 7, d: 28, name: 'Harvest Home' }, { m: 12, d: 14, name: 'The Long Night' }, { m: 13, d: 1, to: 28, name: 'Fools\' Pale' }];
+  function calOf(t) { var c = (t && t.calendar) || {}; return { start: c.start && c.start.y ? c.start : { y: 412, doy: 1 }, notes: c.notes || [], set: !!(c.start && c.start.y) }; }
+  function calAbs(t, day) { var c = calOf(t); return c.start.y * 365 + c.start.doy + (num(day, 1) - 1); }
+  function calDate(abs) { var y = Math.floor(abs / 365), doy = abs - y * 365; return doy === 0 ? { y: y, doy: 0, m: 0, d: 0, wd: -1 } : { y: y, doy: doy, m: Math.floor((doy - 1) / 28) + 1, d: (doy - 1) % 28 + 1, wd: (doy - 1) % 7 }; }
+  function calDoy(m, d) { return m ? (m - 1) * 28 + d : 0; }
+  function calHolidays(dt) { return CAL_HOLIDAYS.filter(function (h) { return h.doy === 0 ? dt.doy === 0 : h.m === dt.m && dt.d >= h.d && dt.d <= (h.to || h.d); }).map(function (h) { return h.name; }); }
+  function calText(dt, folk) {
+    if (dt.doy === 0) return 'Crowning Day, ' + dt.y + ' AC';
+    var mo = CAL_MONTHS[dt.m - 1];
+    return CAL_DAYS[dt.wd] + ', the ' + ordinal(dt.d) + ' of ' + mo[0] + ', ' + dt.y + ' AC' + (folk ? ' (' + (dt.d <= 9 ? 'early ' : dt.d <= 19 ? 'mid-' : 'late ') + mo[1] + ')' : '');
+  }
+  function dayDate(t, day) { return calDate(calAbs(t, day == null ? t.day : day)); }
+  function dayLine(t, day) { var dt = dayDate(t, day), h = calHolidays(dt); return calText(dt, true) + (h.length ? ' · ' + h.join(', ') : ''); }
+  function calNotesOn(t, dt) { return calOf(t).notes.filter(function (n) { return n.doy === dt.doy && (n.y == null || n.y === dt.y); }); }
+  function saveCalendar(camp, cal) {
+    var t = travel[camp.id];
+    t.calendar = cal;
+    sb.from('travel_state').update({ calendar: cal }).eq('campaign_id', camp.id).then(function (r) { if (r.error) toast('Could not save the calendar: ' + r.error.message); });
+    render();
+  }
+  function renderCalendar(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug) || activeCamp();
+    if (!camp || !isDM()) { location.replace('#/map'); return; }
+    var t = travel[camp.id];
+    if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
+    var cal = calOf(t), today = dayDate(t), view = ui.calView && ui.calView.camp === camp.id ? ui.calView : (ui.calView = { camp: camp.id, y: today.y, m: today.m || 13 });
+    var logByAbs = {};
+    travelLog.filter(function (l) { return l.campaign_id === camp.id; }).forEach(function (l) { var a = calAbs(t, l.day); (logByAbs[a] = logByAbs[a] || []).push(l.text); });
+    var mo = CAL_MONTHS[view.m - 1];
+    var html = '<div class="page"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Calendar<small>Day ' + t.day + ' · ' + esc(calText(today, false)) + '</small></h1>';
+    if (!cal.set) html += '<div class="note-box">The journey hasn’t been given a date yet, so day 1 is the 1st of Akortide, 412 AC. Set today’s date below.</div>';
+    html += '<div class="cal-head"><button type="button" class="btn small" data-act="cal-move" data-dir="-1" aria-label="Previous month">‹</button><div><h2>' + esc(mo[0]) + ' <small>' + view.y + ' AC</small></h2><p class="note" style="margin:0">' + esc(mo[1]) + ', the ' + ordinal(view.m) + ' month</p></div><button type="button" class="btn small" data-act="cal-move" data-dir="1" aria-label="Next month">›</button></div>';
+    html += '<div class="cal-grid" role="grid"><div class="cal-wd" role="row">' + CAL_DAYS.map(function (d) { return '<span role="columnheader">' + d.slice(0, 3) + '</span>'; }).join('') + '</div><div class="cal-days">';
+    var cell = function (dt) {
+      var abs = dt.y * 365 + dt.doy, isToday = abs === calAbs(t, t.day), hol = calHolidays(dt), notes = calNotesOn(t, dt), logs = logByAbs[abs] || [];
+      var tday = abs - calAbs(t, 1) + 1;
+      return '<button type="button" class="cal-cell' + (isToday ? ' today' : '') + (hol.length ? ' hol' : '') + (dt.doy === 0 ? ' crown' : '') + '" data-act="cal-pick" data-doy="' + dt.doy + '" data-y="' + dt.y + '"' + (ui.calPick === dt.y + ':' + dt.doy ? ' aria-pressed="true"' : '') + '>' +
+        '<span class="n">' + (dt.doy === 0 ? '♛' : dt.d) + '</span>' + (tday >= 1 && tday <= t.day ? '<span class="tday">day ' + tday + '</span>' : '') +
+        hol.map(function (h) { return '<span class="ev hol">' + esc(h) + '</span>'; }).join('') + notes.map(function (n) { return '<span class="ev note">' + esc(n.text) + '</span>'; }).join('') + (logs.length ? '<span class="ev log">' + esc(shortText(logs.join(' '), 40)) + '</span>' : '') + '</button>';
+    };
+    for (var d = 1; d <= 28; d++) html += cell({ y: view.y, doy: calDoy(view.m, d), m: view.m, d: d, wd: (d - 1) % 7 });
+    html += '</div>';
+    if (view.m === 13) html += '<div class="cal-crown">' + cell({ y: view.y + 1, doy: 0, m: 0, d: 0, wd: -1 }) + '<p class="note">Crowning Day belongs to no month and no week, and opens ' + (view.y + 1) + ' AC.</p></div>';
+    html += '</div>';
+    // The picked day: what's on it, and adding a reminder.
+    var pick = ui.calPick ? ui.calPick.split(':').map(Number) : null;
+    if (pick) {
+      var pdt = calDate(pick[0] * 365 + pick[1]), pabs = pick[0] * 365 + pick[1];
+      html += '<section class="block cal-day"><h2 class="sec-title">' + esc(calText(pdt, true)) + '<small>' + (pabs - calAbs(t, 1) + 1 >= 1 ? 'journey day ' + (pabs - calAbs(t, 1) + 1) : 'before the journey') + '</small></h2>' +
+        calHolidays(pdt).map(function (h) { return '<p class="note" style="margin:0 0 4px">Feast: ' + esc(h) + '</p>'; }).join('') + '<div class="tbl">' +
+        cal.notes.map(function (n, i) { return { n: n, i: i }; }).filter(function (o) { return o.n.doy === pdt.doy && (o.n.y == null || o.n.y === pdt.y); }).map(function (o) {
+          return '<div class="tbl-row"><div class="main"><b>' + esc(o.n.text) + '</b><span>' + (o.n.y == null ? 'Every year' : 'This year only') + '</span></div><button type="button" class="btn small danger" data-act="cal-rm" data-i="' + o.i + '" data-camp="' + esc(camp.id) + '">Remove</button></div>';
+        }).join('') + (logByAbs[pabs] || []).map(function (x) { return '<div class="tbl-row"><div class="main"><b>Journey log</b><span>' + esc(x) + '</span></div></div>'; }).join('') + '</div>' +
+        '<form class="inline-form" id="cal-note" data-camp="' + esc(camp.id) + '" data-doy="' + pdt.doy + '" data-y="' + pdt.y + '" novalidate style="margin-top:10px"><div class="field grow"><label for="cal-text">Add a reminder or event</label><input type="text" id="cal-text" maxlength="200" placeholder="e.g. The Brine Lord’s ships reach Wreckholm"></div>' +
+        '<label class="check"><input type="checkbox" id="cal-yearly"> Every year</label><button type="submit" class="btn primary">Add</button></form>' +
+        '<div class="actions" style="margin-top:8px"><button type="button" class="btn small" data-act="cal-today" data-camp="' + esc(camp.id) + '" data-doy="' + pdt.doy + '" data-y="' + pdt.y + '">Make this today (day ' + t.day + ')</button></div></section>';
+    } else html += '<p class="note">Tap a day to see what’s on it, add a reminder, or make it today’s date.</p>';
+    html += '<p class="note">Reminders are yours alone. The table and players see only the date and the feast days.</p></div>';
+    $view.innerHTML = html;
+  }
+
+  /* ---------- Stand-ins: placeholder party members for players who don't use the app ---------- */
+  function standInName(race) {
+    var N = (window.AVARENTH_NPC || {}).names || {}, n = N[race] || N.Human || [['Hal'], ['Maud'], ['']];
+    var first = rpick(rpick([n[0], n[1]])), last = rpick(n[2] || ['']);
+    return (first + (last ? (/^of /.test(last) ? ' ' : ' ') + last : '')).trim();
+  }
+  function addStandIns(camp) {
+    var raceSel = document.getElementById('si-race').value, clsSel = document.getElementById('si-cls').value, lvl = Math.max(1, Math.min(20, num(document.getElementById('si-level').value, 1))), count = Math.max(1, Math.min(6, num(document.getElementById('si-count').value, 1)));
+    var races = Object.keys(RULES.species || {}).filter(function (k) { return (RULES.species[k].group || 'isles') === 'isles'; }), classes = Object.keys(RULES.classes);
+    var rows = [];
+    for (var i = 0; i < count; i++) {
+      var race = raceSel || rpick(races.length ? races : ['Human']), cls = clsSel || rpick(classes), cd = RULES.classes[cls];
+      var s = normSheet(null);
+      s.species = race; s.cls = cls; s.level = lvl; s.standin = true; s.player = 'Stand-in';
+      s.hp.max = s.hp.cur = Math.max(1, cd ? cd.hd + (lvl - 1) * (Math.floor(cd.hd / 2) + 1) : 8 * lvl);
+      s.ac = cd && /heavy/i.test(cd.armor) ? 16 : cd && /medium/i.test(cd.armor) ? 14 : 12;
+      if (cd) cd.saves.forEach(function (k) { s.saves[k] = true; });
+      rows.push({ name: standInName(race), sheet: s, owner_id: uid(), campaign_id: camp ? camp.id : null });
+    }
+    sb.from('characters').insert(rows).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not add the stand-ins.');
+      ui.standIn = false;
+      loadCharacters().then(function () { toast(count === 1 ? 'Stand-in added' : count + ' stand-ins added'); render(); });
+    });
+  }
+  function standInFormHtml(chars) {
+    var avg = chars.length ? Math.round(chars.reduce(function (t, c) { return t + num(normSheet(c.sheet).level, 1); }, 0) / chars.length) : 1;
+    var opt = function (list) { return list.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join(''); };
+    return '<form class="form group-box" id="standin-form" novalidate><h2>Add stand-ins</h2><p class="note" style="margin-top:0">For players who won’t use the app. They count toward the party’s size for food and encounters, and you can edit or delete them like anyone else.</p>' +
+      '<div class="two"><div class="field"><label for="si-race">Race</label><select id="si-race"><option value="">Random (from the isles)</option>' + opt(Object.keys(RULES.species || {}).sort()) + '</select></div>' +
+      '<div class="field"><label for="si-cls">Class</label><select id="si-cls"><option value="">Random</option>' + opt(Object.keys(RULES.classes).sort()) + '</select></div></div>' +
+      '<div class="two"><div class="field"><label for="si-level">Level</label><input type="number" id="si-level" min="1" max="20" value="' + avg + '" inputmode="numeric"></div>' +
+      '<div class="field"><label for="si-count">How many</label><input type="number" id="si-count" min="1" max="6" value="1" inputmode="numeric"></div></div>' +
+      '<div class="actions"><button type="button" class="btn" data-act="standin-toggle">Cancel</button><button type="submit" class="btn primary">Add</button></div></form>';
+  }
+
+  /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
+  var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
+  var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep gnome|\bsvirfneblin/i, 'Deep Gnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
+    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Firbolg'], [/\btiefling/i, 'Tiefling'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
+    [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Tortle'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
+  var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
+    [/caspian|crisfey|golden coast|akorsrest|south/i, 'south'], [/vor'?nak|strait|straitwatch|mournfell/i, 'mournfells'], [/marloo|wildreach|hermitsbay|west/i, 'west'], [/\bsea\b|island|coralyn|ship|brinewolf|wreckholm/i, 'sea']];
+  function rweighted(map) { var keys = Object.keys(map), tot = keys.reduce(function (t, k) { return t + map[k]; }, 0), r = Math.random() * tot; for (var i = 0; i < keys.length; i++) { r -= map[keys[i]]; if (r < 0) return keys[i]; } return keys[0]; }
+  function readNpcPrompt(text) {
+    var t = String(text || ''), out = { words: t.trim() };
+    RACE_WORDS.some(function (r) { if (r[0].test(t) && !(r[1] === 'Human' && /\b(dwar|elf|orc|gnom|halfl|kobold|dragon|lizard|tortle|goliath|tiefling|firbolg)/i.test(t))) { out.race = r[1]; return true; } return false; });
+    PLACE_WORDS.some(function (p) { if (p[0].test(t)) { out.district = p[1]; return true; } return false; });
+    if (/\b(woman|female|she|her|girl|lady|wife|mother|widow|daughter|sister|maid|queen|duchess|priestess)\b/i.test(t)) out.sex = 'f';
+    else if (/\b(man|male|he|his|boy|lord|husband|father|son|brother|king|duke|priest)\b/i.test(t)) out.sex = 'm';
+    if (/\b(old|elderly|ancient|aged|grey-haired|gray-haired|grandmother|grandfather|veteran)\b/i.test(t)) out.age = 'old';
+    else if (/\b(young|youth|child|kid|boy|girl|apprentice|teen)\b/i.test(t)) out.age = 'young';
+    var jobs = []; Object.keys(NPCD.districts).forEach(function (k) { jobs = jobs.concat(NPCD.districts[k].jobs); });
+    jobs = uniq(jobs.concat(['blacksmith', 'innkeeper', 'barmaid', 'bartender', 'guard', 'knight', 'noble', 'thief', 'beggar', 'bard', 'wizard', 'hermit', 'witch', 'healer', 'cook', 'butcher', 'jeweler', 'mercenary', 'spy', 'bandit', 'pilgrim', 'monk', 'squire', 'steward']));
+    jobs.sort(function (a, b) { return b.length - a.length; }).some(function (j) { if (new RegExp('\\b' + j.replace(/[.*+?^${}()|[\]\\']/g, '.') + 's?\\b', 'i').test(t)) { out.job = j; return true; } return false; });
+    return out;
+  }
+  function makeNpc(fix) {
+    fix = fix || {};
+    var dk = fix.district || ui.npcDistrict || 'capital', dist = NPCD.districts[dk] || NPCD.districts.capital;
+    var race = fix.race || rweighted(dist.races), sex = fix.sex || (Math.random() < 0.5 ? 'm' : 'f');
+    var N = NPCD.names[race] || NPCD.names.Human, first = rpick(sex === 'f' ? N[1] : N[0]), last = rpick(N[2]);
+    var age = fix.age || rpick(['young', 'adult', 'adult', 'adult', 'middle-aged', 'middle-aged', 'old']);
+    return {
+      district: dk, race: race, sex: sex, age: age, name: (first + (last ? ' ' + last : '')).trim(), job: fix.job || rpick(dist.jobs),
+      look: rpick(NPCD.look.build) + ', with ' + rpick(NPCD.look.feature) + '; smells of ' + rpick(NPCD.look.smell),
+      trait: rpick(NPCD.traits), voice: rpick(NPCD.voices), want: rpick(NPCD.wants), secret: rpick(NPCD.secrets), words: fix.words || ''
+    };
+  }
+  function renderNpcs() {
+    if (!isDM()) { location.replace('#/map'); return; }
+    var npc = ui.npc, dk = ui.npcDistrict || 'capital', D = NPCD.districts;
+    var html = '<div class="page narrow"><h1 class="page-title">NPC maker</h1><p class="guide">Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more dragonborn and kobolds, the Greywall Holds mostly dwarves.</p>' +
+      '<div class="field"><label for="npc-district">District</label><select id="npc-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
+      '<p class="note npc-odds">' + Object.keys(D[dk].races).sort(function (a, b) { return D[dk].races[b] - D[dk].races[a]; }).slice(0, 6).map(function (r) { var tot = Object.keys(D[dk].races).reduce(function (t, k) { return t + D[dk].races[k]; }, 0); return esc(r) + ' ' + Math.round(100 * D[dk].races[r] / tot) + '%'; }).join(' · ') + '</p>' +
+      '<form class="form" id="npc-form" novalidate><div class="field"><label for="npc-words">Describe them (optional)</label><input type="text" id="npc-words" maxlength="200" value="' + esc((npc && npc.words) || '') + '" placeholder="e.g. grumpy old dwarf smith in Stonehelm"></div>' +
+      '<div class="actions"><button type="submit" class="btn primary">' + 'Make an NPC' + '</button><button type="button" class="btn" data-act="npc-random">Totally random</button></div></form>';
+    if (npc) {
+      html += '<section class="npc-card"><div class="npc-top"><div><h2>' + esc(npc.name) + '</h2><p>' + esc([npc.age === 'adult' ? '' : npc.age, npc.sex === 'f' ? 'woman' : 'man'].filter(Boolean).join(' ') + ' · ' + npc.race + ' · ' + npc.job) + '</p><p class="note" style="margin:0">' + esc(D[npc.district] ? D[npc.district].label : '') + '</p></div>' +
+        '<button type="button" class="btn small" data-act="npc-reroll" data-part="name">New name</button></div>' +
+        [['look', 'Looks'], ['trait', 'Manner'], ['voice', 'Voice'], ['want', 'Wants'], ['secret', 'Secret']].map(function (p) {
+          return '<div class="npc-row"><span class="k">' + p[1] + '</span><span class="v">' + esc(npc[p[0]]) + '</span><button type="button" class="linkish" data-act="npc-reroll" data-part="' + p[0] + '" aria-label="New ' + p[1].toLowerCase() + '">↻</button></div>';
+        }).join('') + (npc.words ? '<div class="npc-row"><span class="k">You said</span><span class="v">' + esc(npc.words) + '</span></div>' : '') +
+        '<div class="actions"><button type="button" class="btn primary" data-act="npc-save">Save to the wiki</button><button type="button" class="btn" data-act="npc-again">Another like this</button></div>' +
+        '<p class="note">Saved NPCs start hidden from the table: the party only sees them once you mark them met.</p></section>';
+    }
+    $view.innerHTML = html + '</div>';
+  }
+  function saveNpc(npc) {
+    var camp = activeCamp(), base = slugify(npc.name), slug = base, n = 2;
+    while (articleBySlug(slug)) slug = base + '-' + (n++);
+    var row = { title: npc.name, slug: slug, template: 'Character', summary: (npc.age === 'adult' ? '' : npc.age.charAt(0).toUpperCase() + npc.age.slice(1) + ' ') + npc.race + ' ' + npc.job + '.', hidden: false, table_state: 'unknown', campaign_id: camp ? camp.id : null,
+      fields: { Species: npc.race, Age: npc.age, Home: NPCD.districts[npc.district] ? NPCD.districts[npc.district].label : '', Status: 'Alive' },
+      sections: [{ h: 'Appearance', b: npc.look.charAt(0).toUpperCase() + npc.look.slice(1) + '.' }, { h: 'Personality', b: 'Comes across as ' + npc.trait + '. ' + npc.voice.charAt(0).toUpperCase() + npc.voice.slice(1) + '. Wants ' + npc.want + '.' + (npc.words ? '\n\nFirst described as: ' + npc.words : '') }] };
+    sb.from('articles').insert(row).select('id, slug').single().then(function (r) {
+      if (r.error) throw r.error;
+      return sb.from('article_secrets').upsert({ article_id: r.data.id, dm: { Secrets: npc.name + ' ' + npc.secret + '.' }, dm_notes: '' }).then(function () { return loadWiki(); }).then(function () { toast('Saved ' + npc.name); go('#/a/' + encodeURIComponent(r.data.slug)); });
+    }).catch(function (e) { fail(e, 'Could not save the NPC.'); });
   }
 
   /* ---------- Monster appendix (DM only): the SRD 5.2.1 monsters and animals, plus homebrew monsters ---------- */
@@ -4561,7 +4733,7 @@
     var line = airOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + ' · ' + fmtMiles(j.mpd) + ' a day by air' : boatOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + (j.byMap ? ' · route over water' : ' · ' + fmtMiles(j.mpd) + ' a day')
       : j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
     var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
-    return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
+    return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + ' · ' + esc(calText(dayDate(t), false)) + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
       '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
       (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>' + arr;
   }
@@ -4673,7 +4845,7 @@
       if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
       return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
-    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1></div></section><div class="page">';
+    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
     html += arrivalBlock(camp);
     if (dm) html += watchBlock(camp);
@@ -7728,6 +7900,24 @@
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
+      case 'cal-move':
+        var cv = ui.calView; if (!cv) break;
+        cv.m += num(el.getAttribute('data-dir'), 1); if (cv.m > 13) { cv.m = 1; cv.y++; } if (cv.m < 1) { cv.m = 13; cv.y--; } ui.calPick = null; render(); break;
+      case 'cal-pick': ui.calPick = el.getAttribute('data-y') + ':' + el.getAttribute('data-doy'); render(); break;
+      case 'cal-rm':
+        var ccamp = campaignById(el.getAttribute('data-camp')), ccal = calOf(travel[ccamp.id]);
+        ccal.notes.splice(num(el.getAttribute('data-i'), -1), 1); saveCalendar(ccamp, { start: ccal.start, notes: ccal.notes }); break;
+      case 'cal-today':
+        var tcamp2 = campaignById(el.getAttribute('data-camp')), tt = travel[tcamp2.id], tcal = calOf(tt), target = num(el.getAttribute('data-y'), 412) * 365 + num(el.getAttribute('data-doy'), 1), st = target - (num(tt.day, 1) - 1);
+        var sy = Math.floor(st / 365); saveCalendar(tcamp2, { start: { y: sy, doy: st - sy * 365 }, notes: tcal.notes }); toast('Day ' + tt.day + ' is now ' + calText(calDate(target), false)); break;
+      case 'standin-toggle': ui.standIn = !ui.standIn; render(); break;
+      case 'npc-random': ui.npc = makeNpc({}); render(); break;
+      case 'npc-again': ui.npc = makeNpc(ui.npcFix || {}); render(); break;
+      case 'npc-reroll':
+        if (!ui.npc) break;
+        var part = el.getAttribute('data-part'), fresh = makeNpc({ district: ui.npc.district, race: ui.npc.race, sex: ui.npc.sex, age: ui.npc.age, job: ui.npc.job });
+        ui.npc[part] = fresh[part]; render(); break;
+      case 'npc-save': if (ui.npc) saveNpc(ui.npc); break;
       case 'hb-approve': hbSetStatus(el.getAttribute('data-id'), 'approved', ''); break;
       case 'hb-return': var hbn = document.getElementById('hbn-' + el.getAttribute('data-id')); hbSetStatus(el.getAttribute('data-id'), 'returned', hbn ? hbn.value.trim().slice(0, 300) : ''); break;
       case 'hb-delete':
@@ -8055,6 +8245,16 @@
       case 'pc-form': return savePartyForm(f);
       case 'hb-form': return saveHomebrew(f);
       case 'mon-form': return saveMonster(f);
+      case 'standin-form': return addStandIns(activeCamp());
+      case 'npc-form':
+        var fix = readNpcPrompt(document.getElementById('npc-words').value);
+        if (fix.district) ui.npcDistrict = fix.district;
+        ui.npcFix = fix; ui.npc = makeNpc(fix); return render();
+      case 'cal-note':
+        var ncamp = campaignById(f.getAttribute('data-camp')), ncal = calOf(travel[ncamp.id]), ntext = document.getElementById('cal-text').value.trim();
+        if (!ntext) return toast('Write the reminder first.');
+        ncal.notes.push({ y: document.getElementById('cal-yearly').checked ? null : num(f.getAttribute('data-y'), 412), doy: num(f.getAttribute('data-doy'), 1), text: ntext });
+        return saveCalendar(ncamp, { start: ncal.set ? ncal.start : ncal.start, notes: ncal.notes });
       case 'tpin-form': return saveTablePin(f);
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
@@ -8891,6 +9091,7 @@
   }
   document.addEventListener('change', function (e) {
     if (e.target && e.target.id === 'hb-type') return hbSyncItemType();
+    if (e.target && e.target.id === 'npc-district') { ui.npcDistrict = e.target.value; ui.npcFix = null; return render(); }
     if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-monf')) { (ui.monF = ui.monF || {})[e.target.getAttribute('data-monf')] = e.target.value; return render(); }
     if (!e.target || e.target.id !== 'ft-pick' || !SRD) return;
     var v = e.target.value.split('|'), o = null;
@@ -9232,7 +9433,7 @@
     var camp = activeCamp(), t = camp && travel[camp.id];
     if (!t) return '<div class="empty">No journey yet.</div>';
     var j = journey(t);
-    var html = '<p class="at-big">Day ' + esc(t.day) + '</p>';
+    var html = '<p class="at-big">Day ' + esc(t.day) + '</p><p class="note" style="margin:-4px 0 8px">' + esc(dayLine(t)) + '</p>';
     if (j.remaining != null) html += '<p class="prose">' + (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at <b>' + esc(t.dest_label) + '</b>' : '') + '.' : 'Heading for <b>' + esc(t.dest_label || 'the destination') + '</b>: ' + fmtMiles(j.remaining) + ', about ' + j.days + (j.days === 1 ? ' day' : ' days') + ' ' + esc(String(t.mode || '').toLowerCase() === 'on foot' ? 'on foot' : 'by ' + String(t.mode || 'road').toLowerCase()) + '.') + '</p>';
     else html += '<p class="prose">On the road.</p>';
     if (t.weather) html += '<p class="note">Weather: ' + esc(t.weather) + '</p>';
@@ -9317,13 +9518,13 @@
     if (id === 'new' || (id && charById(id))) return renderPartyMember(id === 'new' ? null : charById(id), camp);
     var chars = camp ? campaignChars(camp.id) : characters;
     var html = '<div class="page"><div><p class="eyebrow">' + esc(camp ? camp.name : 'Campaign') + '</p><h1 class="page-title">The party</h1></div>' +
-      '<div class="actions"><a class="btn primary" href="#/party/new">+ Add a character</a><a class="btn" href="#/map">Map</a></div>';
+      '<div class="actions"><a class="btn primary" href="#/party/new">+ Add a character</a><button type="button" class="btn" data-act="standin-toggle">+ Add stand-ins</button><a class="btn" href="#/map">Map</a></div>' + (ui.standIn ? standInFormHtml(chars) : '');
     if (!chars.length) html += '<div class="empty">Nobody in the party yet. Add each player character with their race, class and level, and the app builds a cheat sheet for them.</div>';
     else html += '<div class="pc-grid">' + chars.map(function (c) {
       var s = normSheet(c.sheet), cd = classOf(s), L = num(s.level, 1);
       var res = classResources(s).map(function (r) { return r.name + (r.max === 'unlimited' ? ' (∞)' : ' ' + r.max); });
       var mana = manaMax(s);
-      return '<a class="pc-card" href="#/party/' + encodeURIComponent(c.id) + '"><div class="pc-top"><b>' + esc(c.name) + '</b><span class="tag plain">Lv ' + L + '</span></div>' +
+      return '<a class="pc-card" href="#/party/' + encodeURIComponent(c.id) + '"><div class="pc-top"><b>' + esc(c.name) + '</b>' + (s.standin ? '<span class="tag" style="font-size:10px">Stand-in</span>' : '') + '<span class="tag plain">Lv ' + L + '</span></div>' +
         '<p class="pc-line">' + esc([s.species, s.cls, s.subclass].filter(Boolean).join(' · ') || 'No class set') + '</p>' +
         '<div class="pc-stats"><span><small>AC</small>' + esc(s.ac) + '</span><span><small>HP</small>' + esc(s.hp.max) + '</span><span><small>Prof</small>+' + profBonus(L) + '</span>' + (mana ? '<span><small>Mana</small>' + mana + '</span>' : '') + '<span><small>Passive</small>' + (10 + mod(s.abilities.wis) + (s.skills && s.skills.Perception ? profBonus(L) : 0)) + '</span></div>' +
         (res.length ? '<p class="note" style="margin:0">' + esc(res.join(' · ')) + '</p>' : '') + (cd ? '' : '') + '</a>';
