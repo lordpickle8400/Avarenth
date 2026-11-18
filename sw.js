@@ -1,7 +1,7 @@
 // Keeps the app shell available so Avarenth installs and opens like an app.
 // Network first, so updates show up right away; the cache is only a fallback.
 // Supabase data is never cached here.
-const CACHE = 'avarenth-v136';
+const CACHE = 'avarenth-v137';
 const SHELL = [
   './',
   './index.html',
