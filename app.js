@@ -508,7 +508,35 @@
     $view.innerHTML = '<div class="page narrow"><div><p class="eyebrow">Account</p><h1 class="page-title">' + esc(profile.display_name || 'Your account') + '</h1>' +
       '<p class="note" style="margin:6px 0 0">' + esc(session.user.email || '') + ' · ' + (isDM() ? 'Dungeon Master' : 'Player') + '</p></div>' +
       '<form class="form" id="account-form" novalidate><div class="field"><label for="acc-name">Display name</label><input type="text" id="acc-name" value="' + esc(profile.display_name) + '" maxlength="60"></div>' +
-      '<div class="actions"><button type="submit" class="btn primary">Save name</button><button type="button" class="btn" data-act="signout">Sign out</button></div></form></div>';
+      '<div class="actions"><button type="submit" class="btn primary">Save name</button><button type="button" class="btn" data-act="signout">Sign out</button></div></form>' +
+      (isDM() ? '<section class="group-box" style="margin-top:20px"><h2>Backup</h2><p class="note" style="margin-top:0">Downloads everything: the wiki, maps and pins, campaigns, characters, shops, crimes, quests, homebrew, the lot, as one file. Keep it somewhere safe. If anything is ever lost, that file puts it all back.</p>' +
+        '<div class="actions"><button type="button" class="btn primary" data-act="backup">Download a backup</button></div>' + (ui.lastBackup ? '<p class="note">Last one: ' + esc(ui.lastBackup) + '</p>' : '') + '</section>' : '') + '</div>';
+  }
+  var BACKUP_TABLES = ['articles', 'article_secrets', 'templates', 'settings', 'profiles', 'campaigns', 'campaign_members', 'campaign_pins', 'table_pins', 'maps', 'map_markers', 'places', 'characters',
+    'crimes', 'reputation', 'travel_state', 'travel_log', 'shops', 'holdings', 'holding_secrets', 'estates', 'realm', 'custom_subclasses', 'spells', 'libraries', 'library_tomes', 'homebrew', 'quests', 'quest_notes', 'combats'];
+  function downloadBackup() {
+    toast('Gathering everything…');
+    var out = { app: 'Avarenth', made: new Date().toISOString(), tables: {} }, PAGE = 1000;
+    function grab(t) {
+      var rows = [];
+      function page(i) {
+        return sb.from(t).select('*').range(i * PAGE, i * PAGE + PAGE - 1).then(function (r) {
+          if (r.error) { out.tables[t] = { error: r.error.message }; return; }
+          var d = r.data || []; rows = rows.concat(d);
+          if (d.length === PAGE && i < 50) return page(i + 1);
+          out.tables[t] = rows;
+        });
+      }
+      return page(0);
+    }
+    BACKUP_TABLES.reduce(function (p, t) { return p.then(function () { return grab(t); }); }, Promise.resolve()).then(function () {
+      var day = new Date().toISOString().slice(0, 10), blob = new Blob([JSON.stringify(out)], { type: 'application/json' }), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'avarenth-backup-' + day + '.json'; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+      var n = Object.keys(out.tables).reduce(function (t, k) { return t + (Array.isArray(out.tables[k]) ? out.tables[k].length : 0); }, 0);
+      try { localStorage.setItem('av-last-backup', day); } catch (e) { }
+      ui.lastBackup = day; toast('Backup saved: ' + n.toLocaleString() + ' records.'); render();
+    }).catch(function (err) { fail(err, 'The backup didn’t finish.'); });
   }
 
   /* ================= Wiki: home ================= */
@@ -2114,6 +2142,7 @@
         '<div class="hb-sub" data-for="armor shield">' + hbF('ac', 'Armor class (base AC, or the shield’s bonus)', d.ac, 'number', ' min="0" max="30"') + '</div>' +
         '<div class="hb-sub" data-for="magic"><div class="grid2">' + hbSel('mkind', 'Kind', d.mkind || 'Wondrous Item', ['Wondrous Item', 'Armor', 'Weapon', 'Potion', 'Ring', 'Rod', 'Scroll', 'Staff', 'Wand']) + hbSel('rarity', 'Rarity', d.rarity || 'Uncommon', ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Artifact']) + '</div>' +
         '<label class="check"><input type="checkbox" id="hb-attune"' + (d.attune ? ' checked' : '') + '> Requires attunement</label></div>' +
+        '<label class="check"><input type="checkbox" id="hb-contraband"' + (d.contraband ? ' checked' : '') + '> Contraband: illegal to carry; only fences buy or sell it</label>' +
         hbArea('text', 'What it does', d.text, 'Describe the item and its rules.');
     } else if (kind === 'class') {
       html += hbArea('about', 'About', d.about, 'Who they are, in a sentence or two.') +
@@ -2155,6 +2184,7 @@
     if (!name) return toast('Give it a name.');
     if (kind === 'item') {
       d = { type: hbVal('type'), cost: hbVal('cost'), w: hbVal('w'), text: hbVal('text') };
+      if (hbVal('contraband')) d.contraband = true;
       if (d.type === 'weapon') Object.assign(d, { wcat: hbVal('wcat'), dmg: hbVal('dmg'), dtype: hbVal('dtype'), mastery: hbVal('mastery'), props: hbVal('props'), extra: hbVal('extra') });
       if (d.type === 'armor') Object.assign(d, { acat: hbVal('acat'), dex: hbVal('dex'), str: hbVal('str'), stealth: hbVal('stealth') });
       if (d.type === 'armor' || d.type === 'shield') d.ac = hbVal('ac');
@@ -3320,10 +3350,10 @@
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
       return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
-        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
         '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
-        (edit ? '<span class="inv-edit">' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
+        (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
         '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
         '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
         '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
@@ -4611,11 +4641,13 @@
   // Opening a shop: empty shelves get stocked, and shelves left alone for a couple of days or more drift.
   function freshenShop(shop) {
     if (!dmView() || isWanderer(shop)) return;
+    if ((ITEMS.shopKinds[shop.kind] || {}).fence && (shop.stock || []).length && ensureContraband(shop)) saveShop(shop);
     var day = gameDay(shop);
     ui.shopNews = ui.shopNews || {};
     delete ui.shopNews[shop.id];
     if (!(shop.stock || []).length) {
       shop.stock = stockFor(shop); shop.stocked_at = new Date().toISOString(); shop.stock_day = day;
+      if ((ITEMS.shopKinds[shop.kind] || {}).fence) ensureContraband(shop);
       ui.shopNews[shop.id] = 'Stocked for the first time' + (day != null ? ' (day ' + day + ')' : '') + '.';
       saveShop(shop); return;
     }
@@ -4734,7 +4766,8 @@
   function offerFor(shop, c, itemName) {
     var it = itemByName(itemName), K = ITEMS.shopKinds[shop.kind] || {};
     var row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === String(itemName).toLowerCase(); })[0];
-    var base = it ? it.price : row ? row.p : null;
+    var cb = contrabandMatch(itemName, contrabandList(shop.campaign_id));
+    var base = it ? it.price : row ? row.p : cb ? cb.p : null;
     if (base === null) return null;
     var st = shopStanding(shop, c), m = BUY_MULT[st.name], r = recogMult(shop, c);
     if (m === null) return null;
@@ -4924,8 +4957,10 @@
       html += '<section class="block"><h2 class="sec-title">Buy from ' + esc(c.name) + '<small>' + (K.fence ? 'fences pay little' : 'about half value') + '</small></h2>';
       if (!inv.length) html += '<div class="empty">Nothing in their pack to sell.</div>';
       else html += '<div class="tbl">' + inv.map(function (it) {
-        var i = s.items.indexOf(it), off = offerFor(shop, c, it.name);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
+        var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : '';
+        if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
+        var off = offerFor(shop, c, it.name);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
           '<button type="button" class="btn small" data-act="shop-buy" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Buy 1</button></div>';
       }).join('') + '</div>';
@@ -5003,6 +5038,35 @@
       if (i >= 0) places[i] = row; else places.push(row);
       render();
     });
+  }
+  /* Contraband and stolen goods. Contraband is anything the law forbids: the catalog's poisons and kits, any homebrew item
+     ticked as contraband, anything logged as contraband on a campaign's Crimes page, and spider eggs. Fences stock all of it and
+     buy it; honest shops won't touch contraband or anything marked stolen. */
+  var CONTRABAND_BASE = [['Giant spider eggs', 40]];
+  function contrabandList(campId) {
+    var out = [], seen = {};
+    function add(n, p) { var k = String(n).toLowerCase().trim(); if (!k || seen[k]) return; seen[k] = 1; out.push({ n: n, p: p }); }
+    ITEMS.items.forEach(function (it) { if (it.kind === 'x') add(it.name, it.price); });
+    homebrew.forEach(function (h) { if (h.kind === 'item' && h.status === 'approved' && (h.data || {}).contraband) add(h.name, parseFloat(String((h.data || {}).cost || '').replace(/[^\d.]/g, '')) || 25); });
+    CONTRABAND_BASE.forEach(function (x) { add(x[0], x[1]); });
+    crimes.forEach(function (c) { if (c.kind === 'contraband' && (!campId || c.campaign_id === campId) && c.title) { var known = contrabandMatch(c.title, out); if (!known) add(c.title, 25); } });
+    return out;
+  }
+  function contrabandMatch(name, list) {
+    var k = String(name || '').toLowerCase().replace(/^(a|an|the|some)\s+|clutch of\s+|crate of\s+|vial of\s+/g, '').trim();
+    return list.filter(function (x) { var c = x.n.toLowerCase(); return c === k || (c.length > 4 && k.indexOf(c) >= 0) || (k.length > 4 && c.indexOf(k) >= 0); })[0] || null;
+  }
+  function isContraband(name, campId) { return !!contrabandMatch(name, contrabandList(campId)); }
+  function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
+  // Every fence carries every piece of contraband the realm knows about.
+  function ensureContraband(shop) {
+    var have = {}, added = 0, p = shop.place_id ? placeOf(shop.place_id) : { price_mod: 1 };
+    (shop.stock || []).forEach(function (r) { have[r.n.toLowerCase()] = 1; });
+    contrabandList(shop.campaign_id).forEach(function (x) {
+      if (have[x.n.toLowerCase()]) return;
+      (shop.stock = shop.stock || []).push({ n: x.n, k: 'x', p: niceCp(x.p * 100 * fnum(p.price_mod, 1)) / 100, q: rint(1, 3) }); added++;
+    });
+    return added;
   }
   /* Commissions: a smith or armorer makes a piece to order, in plain or Dornish steel. Paid up front, ready on a set day.
      Dornish steel is only forged at Stonehelm, so outside a forge town the order is sent for and takes two weeks longer. */
@@ -5089,6 +5153,7 @@
     var s = normSheet(c.sheet), it = s.items[i];
     if (!it || num(it.qty, 1) <= 0) return;
     if (recogMult(shop, c).blocked) return toast('They won’t deal with ' + c.name + '.');
+    if (!(ITEMS.shopKinds[shop.kind] || {}).fence && (isContraband(it.name, shop.campaign_id) || isStolen(it))) return toast('Only a fence will take that.');
     var inp = document.getElementById('bo-' + i), cp = toCp(inp ? inp.value : 0);
     if (!cp) return toast('Name a price first.');
     setWallet(s, walletCp(s) + cp);
@@ -8236,6 +8301,7 @@
     var act = el.getAttribute('data-act');
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
+    if (act === 'backup') { downloadBackup(); return; }
     if (/^comm-/.test(act)) { var csh = shopById(el.getAttribute('data-shop')); if (!csh) return; if (act === 'comm-order') commissionOrder(csh); else if (act === 'comm-collect') commissionCollect(csh, num(el.getAttribute('data-i'), -1)); else if (act === 'comm-cancel') commissionCancel(csh, num(el.getAttribute('data-i'), -1)); return; }
     switch (act) {
       case 'signout': sb.auth.signOut(); break;
@@ -8856,6 +8922,11 @@
     if (t.id === 'lv-rolled' && ui.lvl) {
       var lrc = charById(parseRoute().arg), lrd = lrc ? classOf(normSheet(lrc.sheet)) : null, lrv = num(t.value, 0);
       ui.lvl.rolled = lrd && lrv >= 1 && lrv <= lrd.hd ? lrv : 0; render(); return;
+    }
+    if (t.hasAttribute('data-istolen')) {
+      var sc = currentChar(), sit = sc && sc.sheet.items[num(t.getAttribute('data-istolen'), -1)];
+      if (sit) { if (t.checked) sit.stolen = true; else delete sit.stolen; render(); saveCharSoon(sc); }
+      return;
     }
     if (t.hasAttribute('data-ids')) {
       var dc = currentChar(), dit = dc && dc.sheet.items[num(t.getAttribute('data-ids'), -1)];
