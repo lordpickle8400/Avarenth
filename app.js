@@ -324,7 +324,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadHoldings(), loadShops(), loadCustomSubs(), loadHomebrew(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadHoldings(), loadShops(), loadCustomSubs(), loadHomebrew(), isDM() ? loadSpells() : null, isDM() ? loadRealm() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -2903,6 +2903,11 @@
         '<div class="actions"><button type="button" class="btn' + (d ? '' : ' primary') + '" data-act="q-random">' + (d ? 'Another one' : 'Give me one') + '</button><button type="button" class="btn quiet" data-act="q-manual">' + (ui.qManual ? 'Close' : 'Write my own') + '</button></div>' +
         (d ? questRow({ id: 'draft', title: d.title, details: d.details, giver: d.giver, place: d.place, reward: d.reward, tier: d.tier, status: 'open', visible: true }, false) + '<p class="q-note"><b>Twist (only you see this):</b> ' + esc(d.note) + '</p><div class="actions"><button type="button" class="btn primary" data-act="q-keep">Put it on the board</button></div>' : '') +
         '</section>';
+      var Rq = camp ? realm[camp.id] : null, tq = camp ? travel[camp.id] : null, dq = tq ? num(tq.day, 0) : 0;
+      var fresh = Rq && Rq.news ? Rq.news.map(function (n, i) { return { n: n, i: i }; }).filter(function (x) { return !x.n.petty && x.n.text && num(x.n.day, 0) >= dq - 30 && (TROUBLE[x.n.fid] || x.n.major || x.n.party || QUESTY.test(x.n.text)); }).slice(-6).reverse() : [];
+      if (fresh.length) html += '<section class="group-box"><h2>From the realm</h2><p class="note" style="margin-top:0">This month’s real moves. Turn one into a job; the truth goes in your notes.</p>' + fresh.map(function (x) {
+        return '<div class="tbl-row"><div class="main"><b>' + esc(factionName(camp.id, x.n.fid)) + (x.n.major ? ' <span class="tag">Major</span>' : '') + '</b><span>' + esc(x.n.text) + '</span></div><button type="button" class="btn small" data-act="q-realm" data-i="' + x.i + '">Make it a quest</button></div>';
+      }).join('') + '</section>';
       if (ui.qManual) {
         var f = function (id, label, ph) { return '<div class="field"><label for="qf-' + id + '">' + label + '</label><input type="text" id="qf-' + id + '" maxlength="200"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></div>'; };
         html += '<form class="form group-box" id="q-form" novalidate><h2>Your own quest</h2>' + f('title', 'Title') +
@@ -2960,6 +2965,7 @@
       case 'q-loot': ui.loot = { picks: [], places: [{ key: el.getAttribute('data-lair'), tier: el.getAttribute('data-tier') || 'minor' }], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; lootRoll(); location.hash = '#/loot'; return true;
       case 'q-keep': if (ui.questDraft) saveQuest(ui.questDraft); return true;
       case 'q-manual': ui.qManual = !ui.qManual; render(); return true;
+      case 'q-realm': var qc = activeCamp(), qn = qc && realm[qc.id] && realm[qc.id].news[num(el.getAttribute('data-i'), -1)]; if (qn) { ui.questDraft = realmQuest(qc.id, qn); render(); window.scrollTo(0, 0); } return true;
       case 'q-vis': var q = (quests || []).filter(function (y) { return y.id === id; })[0]; if (q) updateQuest(id, { visible: !q.visible }); return true;
       case 'q-del':
         if (ui.qDel !== id) { ui.qDel = id; render(); return true; }
@@ -4770,7 +4776,7 @@
     if (!c) return cp;
     var st = shopStanding(shop, c), m = SELL_MULT[st.name], r = recogMult(shop, c);
     if (m === null) return null;
-    return niceCp(cp * m * r.sell);
+    return niceCp(cp * m * r.sell * realmPriceMult(shop));
   }
   function offerFor(shop, c, itemName) {
     var it = itemByName(itemName), K = ITEMS.shopKinds[shop.kind] || {};
@@ -4893,6 +4899,8 @@
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
+    var shRm = realmMapOf(shop.campaign_id); if (shRm && !markers[shRm.id] && !renderShop.mk) { renderShop.mk = true; loadMarkers(shRm.id).then(function () { renderShop.mk = false; render(); }); }
+    var shTr = shopTrouble(shop); if (shTr.length) html += '<p class="note shop-news">Trouble nearby (' + esc(uniq(shTr.map(function (n) { return factionName(shop.campaign_id, n.fid); })).join(', ')) + '): prices are up ' + Math.round((realmPriceMult(shop) - 1) * 100) + '% for anyone at the counter.</p>';
     if (ui.shopNews && ui.shopNews[shop.id]) html += '<p class="note shop-news">' + esc(ui.shopNews[shop.id]) + '</p>';
     if (ui.marketNews && (ui.marketNews[shop.id] || []).length) html += ui.marketNews[shop.id].map(function (t) { return '<p class="note shop-news">' + esc(t) + '</p>'; }).join('');
     else if (shop.stock_day != null && !isWanderer(shop)) html += '<p class="note shop-news">Shelves as of day ' + esc(shop.stock_day) + '. Come back after 2 days or more and they’ll have changed.</p>';
@@ -5994,7 +6002,8 @@
   function gateCheck(campId, label, slug, day) {
     var a = slug ? articleBySlug(slug) : articles.filter(function (x) { return x.title === label; })[0];
     var p = a ? placeOf(a.id) : { size: 2, tags: [] }, size = Math.max(0, Math.min(4, num(p.size, 2)));
-    var chance = Math.min(85, GATE_CHANCE[size] + (hasTag(p, 'military') ? 15 : 0) + lawHeat(campId)), roll = 1 + Math.floor(Math.random() * 100);
+    var xy = a ? placeXY(campId, a.slug, a.title) : null, tday = travel[campId] ? num(travel[campId].day, 0) : 0, stir = xy ? Math.min(20, 10 * troubleNear(campId, xy.x, xy.y, tday).length) : 0;
+    var chance = Math.min(85, GATE_CHANCE[size] + (hasTag(p, 'military') ? 15 : 0) + lawHeat(campId) + stir), roll = 1 + Math.floor(Math.random() * 100);
     return { id: cbId(), kind: 'gate', day: day, place: label, chance: chance, roll: roll, searched: roll <= chance, dc: GATE_DC[size], carriers: roll <= chance ? carriersOf(campId) : [] };
   }
   function huntersFor(bounty) {
@@ -6022,8 +6031,9 @@
   function noticesBlock(camp) {
     var t = travel[camp.id], list = ((t && t.notices) || []).slice().reverse();
     var ar = t && t.arrival, gateBtn = ar && !ar.ruin ? '<button type="button" class="btn small" data-act="gate-now" data-camp="' + esc(camp.id) + '">Check the gate at ' + esc(midLabel(ar.label)) + '</button>' : '';
-    if (!list.length && !gateBtn) return '';
-    var html = '<section class="block"><h2 class="sec-title">Behind the screen<small>only you see this</small></h2>';
+    var rn = realmNewsBlock(camp);
+    if (!list.length && !gateBtn && !rn) return '';
+    var html = '<section class="block"><h2 class="sec-title">Behind the screen<small>only you see this</small></h2>' + rn;
     list.forEach(function (n) {
       html += '<div class="group-box notice ' + n.kind + '"><button type="button" class="linkish cb-x notice-x" data-act="notice-x" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '" aria-label="Dismiss">×</button>';
       if (n.kind === 'gate') {
@@ -6074,6 +6084,76 @@
     if (!steps) return;
     var st = standingFor(c, bh), next = Math.min(STANDINGS.length - 1, st.idx + steps);
     if (next > st.idx) setStanding(c.id, bh.id, STANDINGS[next]);
+  }
+  /* ---------- News travels ----------
+     Each piece of realm news starts at the faction's seat on the day it happens and spreads by road at a messenger's pace:
+     big news by rider and bird (40 miles a day), a real move by travellers (25), petty gossip slowly (15) and not far (60 miles).
+     A place only knows what has reached it. Trouble from the shadow factions also stirs things up nearby for three weeks:
+     prices rise and guards search more. */
+  var FACTION_SEAT = { dorn: 'Loreaon', marloo: 'Marloo', ignis: 'Dragonsneck', anvilborn: 'Stonehelm', caspian: 'Crisfey', ashvane: 'Dragonsneck', vornak: 'Straitwatch',
+    orock: 'Goliath', cult: ['Silken', 'Briarholt', 'Hermitsbay'], scales: 'Loreaon', hand: '*', wolves: ['Wreckholm', 'Shieldrock'], church: 'Loreaon', empire: 'Crisfey', coralyn: ['Coralyn', 'Hermitsbay'], thorn: 'Straitwatch' };
+  var NEWS_PACE = { major: 40, move: 25, petty: 15 }, PETTY_REACH = 60, TROUBLE = { cult: 1, wolves: 1, scales: 1, hand: 1, orock: 1 }, TROUBLE_MILES = 60, TROUBLE_DAYS = 21;
+  var QUESTY = /(raid|attack|burn|kill|dead|death|war\b|steal|stole|vanish|missing|took|takes|seize|siege|fight|feud|hang|murder|spy|spies|plot|bandit|pirat|smuggl|ambush|threat|march|blockade|outlaw|duel|quarrel|refuge|sick|plague|monster|beast|lost)/i;
+  var FACTION_LAIR = { cult: 'spidercult', wolves: 'smugglers', hand: 'smugglers', scales: 'cult' };
+  function realmMapOf(campId) { var t = travel[campId], m = t && t.map_id ? mapById(t.map_id) : null; return m && Number(m.miles_across) ? m : null; }
+  function seatMarker(campId, f) {
+    var m = realmMapOf(campId); if (!m) return null;
+    var all = (markers[m.id] || []).filter(function (x) { return x.label && (x.kind === 'stop' || x.kind === 'place' || x.kind === 'ruin' || x.kind === 'note' || x.kind === 'poi' || x.article_slug); });
+    var key = FACTION_SEAT[f.id];
+    if (key === '*') { var tw = townsOn(m.id); return tw.length ? tw[Math.floor(Math.random() * tw.length)] : null; }
+    var keys = [].concat(key || [], f.seat || []);
+    for (var i = 0; i < keys.length; i++) {
+      var k = String(keys[i]).toLowerCase();
+      var hit = all.filter(function (x) { return x.label.toLowerCase() === k; })[0] || all.filter(function (x) { return x.label.toLowerCase().indexOf(k) >= 0; })[0];
+      if (hit) return hit;
+    }
+    return null;
+  }
+  function placeXY(campId, slug, label) {
+    var m = realmMapOf(campId); if (!m) return null;
+    var mk = (markers[m.id] || []).filter(function (x) { return (slug && x.article_slug === slug) || (label && x.label === label); })[0];
+    return mk ? { x: mk.x, y: mk.y, label: mk.label } : null;
+  }
+  function newsArrives(campId, n, x, y) {
+    var m = realmMapOf(campId); if (!m || n.ox == null || x == null) return null;
+    var miles = mapMiles(m, n.ox, n.oy, x, y);
+    if (n.petty && miles > PETTY_REACH) return null;
+    return num(n.day, 0) + Math.ceil(miles / (n.major ? NEWS_PACE.major : n.petty ? NEWS_PACE.petty : NEWS_PACE.move));
+  }
+  // What folk at (x, y) are talking about on this day: the last six weeks of news that has reached them.
+  function newsAt(campId, x, y, day) {
+    var R = realm[campId]; if (!R || !R.news) return [];
+    return R.news.filter(function (n) { return n.rumour && num(n.day, 0) >= day - 42; }).map(function (n) { var a = newsArrives(campId, n, x, y); return a != null && a <= day ? { n: n, arrived: a } : null; })
+      .filter(Boolean).sort(function (a, b) { return b.arrived - a.arrived; }).slice(0, 6);
+  }
+  // Shadow-faction trouble near a place, still fresh.
+  function troubleNear(campId, x, y, day) {
+    var R = realm[campId], m = realmMapOf(campId); if (!R || !R.news || !m || x == null) return [];
+    return R.news.filter(function (n) { return TROUBLE[n.fid] && !n.petty && n.ox != null && day >= num(n.day, 0) && day - num(n.day, 0) <= TROUBLE_DAYS && mapMiles(m, n.ox, n.oy, x, y) <= TROUBLE_MILES; });
+  }
+  function factionName(campId, fid) { var R = realm[campId], f = R && R.factions.filter(function (x) { return x.id === fid; })[0]; return f ? (f.secret ? (f.veil || 'unknown folk') : f.name) : fid; }
+  function shopXY(shop) { var a = shop.place_id ? articleById(shop.place_id) : null; return a ? placeXY(shop.campaign_id, a.slug, a.title) : null; }
+  function shopTrouble(shop) { var xy = shopXY(shop), t = travel[shop.campaign_id]; return xy && t ? troubleNear(shop.campaign_id, xy.x, xy.y, num(t.day, 0)) : []; }
+  function realmPriceMult(shop) { var n = shopTrouble(shop).length; return n ? Math.min(1.2, 1 + 0.1 * n) : 1; }
+  function realmQuest(campId, n) {
+    var tier = n.major ? 'major' : 'big', dk = (readNpcPrompt(n.at || '').district) || 'capital', base = randomQuest(dk, tier), short = base.giver.replace(/ \(.*$/, '').replace(/,.*$/, '');
+    return { title: 'Word from ' + (n.at || 'the realm'), details: (n.rumour || n.text) + ' ' + short + ' wants someone to look into it.', giver: base.giver, place: n.at ? n.at + ', ' + NPCD.districts[dk].label : base.place,
+      reward: base.reward, note: 'What really happened: ' + n.text, district: dk, tier: tier, lair: FACTION_LAIR[n.fid] ? (FACTION_LAIR[n.fid] === 'spidercult' && tier !== 'major' ? 'spider' : FACTION_LAIR[n.fid]) : '' };
+  }
+  function realmNewsBlock(camp) {
+    var R = realm[camp.id], t = travel[camp.id]; if (!R || !t) return '';
+    var html = '', day = num(t.day, 0);
+    if (R.next != null && day >= R.next) html += '<div class="group-box notice"><p class="notice-h"><b>The month has turned.</b> <small>The factions are due to move.</small></p><a class="btn small primary" href="#/realm/' + encodeURIComponent(camp.slug) + '">Move the realm</a></div>';
+    var m = realmMapOf(camp.id), party = m ? (markers[m.id] || []).filter(function (x) { return x.kind === 'party'; })[0] : null;
+    if (party) {
+      var here = t.arrival && !t.arrival.ruin ? midLabel(t.arrival.label) : 'the road', news = newsAt(camp.id, party.x, party.y, day), trouble = troubleNear(camp.id, party.x, party.y, day);
+      if (news.length || trouble.length) {
+        html += '<div class="group-box notice"><p class="notice-h"><b>Talk ' + (here === 'the road' ? 'on the road' : 'in ' + esc(here)) + '</b> <small>news that has reached them</small></p>' +
+          news.map(function (x) { return '<p style="margin:4px 0">“' + esc(x.n.rumour) + '” <small class="note">from ' + esc(x.n.at || 'afar') + ', ' + (day - num(x.n.day, 0)) + ' days old</small></p>'; }).join('') +
+          (trouble.length ? '<p class="note" style="margin:6px 0 0">Trouble nearby (' + esc(uniq(trouble.map(function (n) { return factionName(camp.id, n.fid); })).join(', ')) + '): prices up ' + Math.round((Math.min(1.2, 1 + 0.1 * trouble.length) - 1) * 100) + '% and the guards search more.</p>' : '') + '</div>';
+      }
+    }
+    return html;
   }
   function arrivalBlock(camp, compact) {
     var t = travel[camp.id], ar = t && t.arrival;
@@ -8393,13 +8473,14 @@
   }
   function realmTurn(f) {
     var campId = f.getAttribute('data-camp'), R = clone(realm[campId]), t = travel[campId], day = t ? t.day : 0;
+    if (t && t.map_id && !markers[t.map_id]) { loadMarkers(t.map_id).then(function () { realmTurn(f); }).catch(function (e) { fail(e); }); return; }
     var partyNear = holdingsFor(campId).length > 0;
     R.news = R.news || [];
     R.factions.forEach(function (fa) {
       var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 1), 1, 100);
       var out = realmMonth(R, fa, roll, partyNear);
       if (out.rumour) R.factions.forEach(function (x) { if (!x.secret) return; var v = x.veil || 'people nobody can name'; out.rumour = out.rumour.split('young ' + shortName(x.name) + ' commander').join('new leader among ' + v).split(x.name + '’s').join('their').split(x.name).join(v).split(shortName(x.name)).join(v); out.rumour = out.rumour.charAt(0).toUpperCase() + out.rumour.slice(1); });
-      if (out.text) R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty });
+      if (out.text) { var sm = seatMarker(campId, fa); R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty, ox: sm ? sm.x : null, oy: sm ? sm.y : null, at: sm ? midLabel(sm.label) : '' }); }
     });
     R.news = R.news.slice(-200);
     R.next = day + PAY_EVERY;
