@@ -2621,7 +2621,7 @@
   var LAIRS = {
     spider: { label: 'Spider den', coin: 0.3, items: [['a clutch of giant spider eggs', 40, 0.9, 'contraband in most towns'], ['spools of spider silk', 20, 0.8, 'weavers and rope-makers buy it'], ['a venom gland', 25, 0.5, 'handle with gloves'], ['a cocooned traveller, long dead', 0, 0.6, 'search them: see the purse']], list: 'victims', listChance: 0.8, about: 'Eggs, silk and whatever got caught in the webs.' },
     spidercult: { label: 'Spider cult enclave', coin: 1, magic: 0.25, items: [['a clutch of giant spider eggs', 40, 1, 'contraband in most towns'], ['Idol of Sytha', 50, 0.7], ['Cultist Dagger', 15, 0.8, 'squiggly blade, adds venom damage'], ['Cultist robes', 5, 0.8], ['a ledger of the faithful', 0, 0.6, 'names worth a lot to the right people'], ['Spider venom (vial)', 30, 0.6]], list: 'victims', listChance: 0.6, about: 'Eggs, idols, ritual blades and the names of the faithful.' },
-    bandits: { label: 'Bandit camp', coin: 1.5, items: [['crates of stolen trade goods', 30, 0.8, 'someone will want these back'], ['a cask of good wine', 10, 0.6], ['a rack of scimitars', 25, 0.5], ['stolen horses', 75, 0.4], ['a map with the next ambush marked', 0, 0.5], ['a ransom note, unsent', 0, 0.3]], about: 'Coin, stolen goods and plans.' },
+    bandits: { label: 'Bandit camp', coin: 1.5, items: [['crates of stolen trade goods', 30, 0.8, 'someone will want these back'], ['a cask of good wine', 10, 0.6], ['a rack of scimitars', 25, 0.5], ['stolen horses', 75, 0.4], ['a map with the next ambush marked', 0, 0.5], ['a ransom note, unsent', 0, 0.3], ['Forged papers', 25, 0.15]], about: 'Coin, stolen goods and plans.' },
     goblins: { label: 'Goblin warren', coin: 0.6, items: [['a heap of shiny junk', 2, 0.9], ['stolen chickens', 1, 0.6], ['crude spears', 1, 0.6], ['the boss’s tin crown', 5, 0.5], ['a captive farmer, who would like to go home', 0, 0.3]], about: 'Junk, stolen livestock and a bit of coin.' },
     kobolds: { label: 'Kobold warren', coin: 0.5, items: [['traps, still armed', 0, 0.8, 'careful'], ['mining picks', 2, 0.6], ['a shrine to a dragon, with offerings', 30, 0.5], ['a large cracked eggshell', 10, 0.3, 'whose?']], gems: 0.5, about: 'Traps, tools and dragon-shrine offerings.' },
     orcs: { label: 'Orc war camp', coin: 1, items: [['war trophies', 10, 0.8], ['a war banner', 15, 0.6], ['greataxes', 20, 0.6], ['stolen cattle', 50, 0.4]], about: 'Trophies, weapons and plunder.' },
@@ -2630,7 +2630,7 @@
     dragon: { label: 'Dragon lair', coin: 6, gems: 6, magic: 0.8, items: [['a mountain of mixed coin', 0, 1, 'see the coin'], ['art objects', 250, 0.9, 'statuettes, goblets, crowns'], ['a dead adventurer’s gear', 50, 0.5], ['Draconic Imperium relic', 100, 0.6]], about: 'The hoard.' },
     beast: { label: 'Beast den', coin: 0.3, items: [['gnawed bones', 0, 1], ['a dead hunter’s bow', 25, 0.4], ['a purse among the bones', 0, 0.4, 'see the coin']], about: 'Bones, and what the last victims carried.' },
     mine: { label: 'Abandoned mine', coin: 0.4, gems: 1.5, items: [['raw ore', 5, 0.9, 'by the cartload'], ['miners’ picks', 2, 0.7], ['a forgotten payroll chest', 0, 0.3, 'see the coin']], about: 'Ore, stones and forgotten pay.' },
-    smugglers: { label: 'Smugglers’ cave', coin: 1.2, items: [['barrels of untaxed brandy', 25, 0.8], ['bolts of silk', 40, 0.6], ['a crate of giant spider eggs', 40, 0.3, 'contraband in most towns'], ['a ledger of bribes', 0, 0.6, 'names who’s paid whom'], ['Dornish steel ingots', 100, 0.3, 'smuggled out past the crown’s tax'], ['Unmarked Emberwood timber (cartload)', 30, 0.3], ['Poached Crownmere pearl', 100, 0.25], ['Unstamped silver (bar)', 50, 0.25], ['Forged strait toll writ', 15, 0.3]], about: 'Contraband and who’s on the take.' },
+    smugglers: { label: 'Smugglers’ cave', coin: 1.2, items: [['barrels of untaxed brandy', 25, 0.8], ['bolts of silk', 40, 0.6], ['a crate of giant spider eggs', 40, 0.3, 'contraband in most towns'], ['a ledger of bribes', 0, 0.6, 'names who’s paid whom'], ['Unmarked Dornish steel (ingot)', 80, 0.3, 'no Stonehelm forge mark'], ['Unmarked Emberwood timber (cartload)', 30, 0.3], ['Poached Crownmere pearl', 100, 0.25], ['Unstamped silver (bar)', 50, 0.25], ['Forged strait toll writ', 15, 0.3], ['Counterfeit coins (pouch)', 10, 0.25], ['Forged bank note', 20, 0.25], ['Forged papers', 25, 0.25]], about: 'Contraband and who’s on the take.' },
     manor: { label: 'Noble manor or vault', coin: 3, gems: 2, magic: 0.2, items: [['family silver', 150, 0.8], ['a portrait', 50, 0.5, 'worth more to the family'], ['deeds to land', 0, 0.4], ['fine wine', 30, 0.6], ['Dornish Steel Longsword', 45, 0.3, 'dwarf-forged: +1 damage']], about: 'Silver, jewels and papers.' },
     warehouse: { label: 'Merchant warehouse', coin: 0.5, items: [['crates of trade goods', 50, 0.9], ['spices', 30, 0.6], ['bolts of cloth', 20, 0.7], ['a strongbox', 0, 0.4, 'see the coin']], about: 'Trade goods.' },
     wizard: { label: 'Wizard’s tower', coin: 0.6, magic: 0.6, items: [['a spellbook', 0, 0.6, 'spells to learn from'], ['alchemy supplies', 50, 0.8], ['a jar of something still alive', 10, 0.4], ['strange components', 25, 0.7]], about: 'Books, supplies and magic.' },
@@ -3159,7 +3159,7 @@
   function gearItem(ref) { var r = ref && GEAR ? gearFind(ref.n) : null; return r && r.k === ref.k ? r.it : r ? r.it : null; }
   function itemRef(it) { if (it.ref) return it.ref; var r = gearFind(it.name) || gearFind(dornishBase(it.name)); return r ? { k: r.k, n: r.it.name } : null; }
   // Dornish steel: Stonehelm's dwarf-forged steel. Any weapon +1 damage, any armor or shield +1 AC. Not magic, so it stacks with a magic bonus.
-  function dornishBase(name) { var m = /^dornish[- ]steel\s+(.+)$/i.exec(String(name || '').trim()); return m ? m[1] : ''; }
+  function dornishBase(name) { var m = /^(?:unmarked\s+)?dornish[- ]steel\s+(.+)$/i.exec(String(name || '').trim()); return m ? m[1] : ''; }
   function isDornish(it) { return !!(it && (it.ds || dornishBase(it.name))); }
   // "2 Daggers, Thieves' Tools, 10 days of Rations, and 15 GP" -> items and coins. Packs are opened up.
   function parseGear(text, from) {
@@ -5042,7 +5042,7 @@
   /* Contraband and stolen goods. Contraband is anything the law forbids: the catalog's poisons and kits, any homebrew item
      ticked as contraband, anything logged as contraband on a campaign's Crimes page, and spider eggs. Fences stock all of it and
      buy it; honest shops won't touch contraband or anything marked stolen. */
-  var CONTRABAND_BASE = [['Giant spider eggs', 40]];
+  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120]];
   function contrabandList(campId) {
     var out = [], seen = {};
     function add(n, p) { var k = String(n).toLowerCase().trim(); if (!k || seen[k]) return; seen[k] = 1; out.push({ n: n, p: p }); }
@@ -5056,7 +5056,7 @@
     var k = String(name || '').toLowerCase().replace(/^(a|an|the|some)\s+|clutch of\s+|crate of\s+|vial of\s+/g, '').trim();
     return list.filter(function (x) { var c = x.n.toLowerCase(); return c === k || (c.length > 4 && k.indexOf(c) >= 0) || (k.length > 4 && c.indexOf(k) >= 0); })[0] || null;
   }
-  function isContraband(name, campId) { return !!contrabandMatch(name, contrabandList(campId)); }
+  function isContraband(name, campId) { return /^unmarked\s+dornish[- ]steel/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
   function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
   // Every fence carries every piece of contraband the realm knows about.
   function ensureContraband(shop) {
