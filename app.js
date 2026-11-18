@@ -2249,7 +2249,7 @@
     return CAL_DAYS[dt.wd] + ', the ' + ordinal(dt.d) + ' of ' + mo[0] + ', ' + dt.y + ' AC' + (folk ? ' (' + (dt.d <= 9 ? 'early ' : dt.d <= 19 ? 'mid-' : 'late ') + mo[1] + ')' : '');
   }
   function dayDate(t, day) { return calDate(calAbs(t, day == null ? t.day : day)); }
-  function dayLine(t, day) { var dt = dayDate(t, day), h = calHolidays(dt); return calText(dt, true) + (h.length ? ' · ' + h.join(', ') : ''); }
+  function dayLine(t, day) { var dt = dayDate(t, day), h = calHolidays(dt), se = dt.m ? SEASONS[dt.m] : ''; return calText(dt, true) + (se ? ' · ' + se.charAt(0).toUpperCase() + se.slice(1) : '') + (h.length ? ' · ' + h.join(', ') : ''); }
   function calNotesOn(t, dt) { return calOf(t).notes.filter(function (n) { return n.doy === dt.doy && (n.y == null || n.y === dt.y); }); }
   function saveCalendar(camp, cal) {
     var t = travel[camp.id];
@@ -4733,6 +4733,12 @@
 
   /* ---------- Who's at the counter ---------- */
   function shopStanding(shop, c) {
+    var base = shopStanding0(shop, c), fm = fameAt(shop);
+    if (!fm.n || (ITEMS.shopKinds[shop.kind] || {}).fence) return base;
+    var idx = Math.max(0, Math.min(STANDINGS.length - 1, base.idx + fm.n));
+    return Object.assign({}, base, { idx: idx, name: STANDINGS[idx], why: (base.why || []).concat(['heard of the party (' + (fm.n > 0 ? '+' : '') + fm.n + ')']) });
+  }
+  function shopStanding0(shop, c) {
     var fac = shop.faction_id ? articleById(shop.faction_id) : (ITEMS.shopKinds[shop.kind] || {}).fence ? blackHand() : null;
     if (fac) return Object.assign({ fac: fac }, standingFor(c, fac));
     var st = startStanding(normSheet(c.sheet), { slug: 'townsfolk' });
@@ -4776,7 +4782,7 @@
     if (!c) return cp;
     var st = shopStanding(shop, c), m = SELL_MULT[st.name], r = recogMult(shop, c);
     if (m === null) return null;
-    return niceCp(cp * m * r.sell * realmPriceMult(shop));
+    return niceCp(cp * m * r.sell * realmPriceMult(shop) * (row.k === 'f' ? foodMult(shop.campaign_id) : 1));
   }
   function offerFor(shop, c, itemName) {
     var it = itemByName(itemName), K = ITEMS.shopKinds[shop.kind] || {};
@@ -5296,7 +5302,7 @@
     if (air) return Math.round(air.mi * weatherMul(t, r) * 10) / 10;
     if (boat) return Math.round(boat.mi * weatherMul(t, r) * 10) / 10;
     var base = Number(((r.speeds[t.terrain] || {})[t.mode]) || 0);
-    return Math.round(base * Number(r.paces[t.pace] || 1) * 10) / 10;
+    return Math.round(base * Number(r.paces[t.pace] || 1) * seasonRoadMult(t) * 10) / 10;
   }
   function partySize(t) { return num(t.party_size, 0) || campaignChars(t.campaign_id).length; }
   function foodPerDay(t) { return Math.round(partySize(t) * Number(t.food_per_person || 0) * 10) / 10; }
@@ -6031,7 +6037,7 @@
   function noticesBlock(camp) {
     var t = travel[camp.id], list = ((t && t.notices) || []).slice().reverse();
     var ar = t && t.arrival, gateBtn = ar && !ar.ruin ? '<button type="button" class="btn small" data-act="gate-now" data-camp="' + esc(camp.id) + '">Check the gate at ' + esc(midLabel(ar.label)) + '</button>' : '';
-    var rn = realmNewsBlock(camp);
+    var rn = festivalBlock(camp) + realmNewsBlock(camp) + deedForm(camp);
     if (!list.length && !gateBtn && !rn) return '';
     var html = '<section class="block"><h2 class="sec-title">Behind the screen<small>only you see this</small></h2>' + rn;
     list.forEach(function (n) {
@@ -6150,7 +6156,7 @@
     var R = realm[campId], m = realmMapOf(campId); if (!R || !R.news || !m || x == null) return [];
     return R.news.filter(function (n) { return TROUBLE[n.fid] && !n.petty && n.ox != null && day >= num(n.day, 0) && day - num(n.day, 0) <= TROUBLE_DAYS && mapMiles(m, n.ox, n.oy, x, y) <= TROUBLE_MILES; });
   }
-  function factionName(campId, fid) { var R = realm[campId], f = R && R.factions.filter(function (x) { return x.id === fid; })[0]; return f ? (f.secret ? (f.veil || 'unknown folk') : f.name) : fid; }
+  function factionName(campId, fid) { if (fid === 'party') return 'the party'; var R = realm[campId], f = R && R.factions.filter(function (x) { return x.id === fid; })[0]; return f ? (f.secret ? (f.veil || 'unknown folk') : f.name) : fid; }
   function shopXY(shop) { var a = shop.place_id ? articleById(shop.place_id) : null; return a ? placeXY(shop.campaign_id, a.slug, a.title) : null; }
   function shopTrouble(shop) { var xy = shopXY(shop), t = travel[shop.campaign_id]; return xy && t ? troubleNear(shop.campaign_id, xy.x, xy.y, num(t.day, 0)) : []; }
   function realmPriceMult(shop) { var n = shopTrouble(shop).length; return n ? Math.min(1.2, 1 + 0.1 * n) : 1; }
@@ -6173,6 +6179,87 @@
       }
     }
     return html;
+  }
+  /* ---------- Seasons ----------
+     Spring is the lean time before harvest, summer is sailing season, autumn brings the harvest and the fogs, winter slows the
+     roads and empties the larders. Food prices follow, land travel slows in winter, and the Brinewolves sail most in summer. */
+  var SEASONS = [null, 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter', 'winter', 'winter', 'winter'];
+  var SEASON_NOTE = { spring: 'Spring: the lean months, larders low until harvest.', summer: 'Summer: sailing season, the Brinewolves are out.', autumn: 'Autumn: harvest, and the fog lies thick off the Mournfells.', winter: 'Winter: roads slow and food dear.' };
+  function seasonOf(t, day) { var dt = dayDate(t, day == null ? (t ? t.day : 1) : day); return dt.m ? SEASONS[dt.m] : 'winter'; }
+  function harvestTime(t) { var dt = dayDate(t, t ? t.day : 1); return (dt.m === 7 && dt.d >= 21) || (dt.m === 8 && dt.d <= 14); }
+  function foodMult(campId) {
+    var t = travel[campId]; if (!t) return 1;
+    if (harvestTime(t)) return 0.8;
+    return { spring: 1.1, summer: 1, autumn: 0.9, winter: 1.2 }[seasonOf(t)] || 1;
+  }
+  function seasonRoadMult(t) { return t && seasonOf(t) === 'winter' ? 0.8 : 1; }
+
+  /* ---------- Festivals ----------
+     On a feast day the towns turn out; the Journey says so and offers a travelling merchant for the fair. */
+  var FESTIVAL_TEXT = {
+    'Crowning Day': 'The year turns. Processions in the seats, the king’s health drunk in every tavern, and the first round is often free.',
+    'Firstlight': 'Lamps are lit at dawn and the temples are full. A day for vows and fresh starts.',
+    'Sowing Day': 'Seed is blessed in the fields and the farm villages hold fairs. Matchmaking, dancing, cheap ale.',
+    'Conqueror\'s Day': 'Parades, mock battles and tourneys in the great towns. Knights about, and recruiters with them.',
+    'Landfather\'s Day': 'Families feast and honour their dead. Graves are tended and old debts are settled.',
+    'Harvest Home': 'Harvest fairs everywhere: cheap food, travelling merchants, contests and dancing late into the night.',
+    'The Long Night': 'Fires burn all night and doors stay open. Ghost stories, offerings to Azrul, and nobody travels alone.',
+    'Fools\' Pale': 'The month of misrule. Masks, pranks and mock lords; harder to tell who anyone is.'
+  };
+  function festivalBlock(camp) {
+    var t = travel[camp.id]; if (!t) return '';
+    var day = num(t.day, 1), today = calHolidays(dayDate(t, day)), soon = [];
+    for (var k = 1; k <= 7 && !soon.length; k++) { var h = calHolidays(dayDate(t, day + k)).filter(function (x) { return today.indexOf(x) < 0; }); if (h.length) soon = [h[0], k]; }
+    var html = '<p class="note" style="margin:0 0 6px">' + esc(SEASON_NOTE[seasonOf(t)] || '') + (harvestTime(t) ? ' Harvest is in: food is cheap.' : '') + '</p>', where = t.arrival && !t.arrival.ruin ? midLabel(t.arrival.label) : '';
+    today.forEach(function (h) {
+      html += '<div class="group-box notice fest"><p class="notice-h"><b>' + esc(h) + (where ? ' in ' + esc(where) : '') + '</b> <small>today</small></p><p style="margin:0 0 6px">' + esc(FESTIVAL_TEXT[h] || 'A feast day.') + '</p>' +
+        (where ? meetButton(camp.id, false, 'A travelling merchant at the fair') : '') + '</div>';
+    });
+    if (soon.length) html += '<p class="note" style="margin:4px 0">' + esc(soon[0]) + ' is in ' + soon[1] + (soon[1] === 1 ? ' day' : ' days') + '.</p>';
+    return html;
+  }
+
+  /* ---------- Party deeds ----------
+     Something the party did, logged in one tap, spreads like any other news. Towns that have heard treat them better or worse,
+     and a faction they helped or hurt remembers. */
+  var DEED_SIZE = { petty: { petty: true, steps: 0 }, notable: { steps: 1 }, legendary: { major: true, steps: 2 } };
+  function deedForm(camp) {
+    var R = realm[camp.id], t = travel[camp.id];
+    if (!R) return '';
+    if (!ui.deedOpen) return '<div class="actions"><button type="button" class="btn small" data-act="deed-open">+ Log something the party did</button></div>';
+    var facs = R.factions.filter(function (f) { return !f.tier; });
+    return '<form class="form group-box" id="deed-form" data-camp="' + esc(camp.id) + '" novalidate><h2>Something the party did</h2>' +
+      '<div class="field"><label for="dd-text">What folk will say</label><input class="input" type="text" id="dd-text" maxlength="200" placeholder="Strangers burned out the bandits on the Marloo road."></div>' +
+      '<div class="two"><div class="field"><label for="dd-size">How big</label><select id="dd-size"><option value="petty">Petty: local talk</option><option value="notable" selected>Notable</option><option value="legendary">Legendary</option></select></div>' +
+      '<div class="field"><label for="dd-tone">How it’s taken</label><select id="dd-tone"><option value="good">Heroic</option><option value="bad">Villainous</option><option value="">Just talk</option></select></div></div>' +
+      '<div class="two"><div class="field"><label for="dd-fac">A faction it touched (optional)</label><select id="dd-fac"><option value="">None</option>' + facs.map(function (f) { return '<option value="' + f.id + '">' + esc(f.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label for="dd-dir">Did it</label><select id="dd-dir"><option value="1">help them</option><option value="-1">hurt them</option></select></div></div>' +
+      '<p class="note">It starts where the party is' + (t && t.arrival && !t.arrival.ruin ? ' (' + esc(midLabel(t.arrival.label)) + ')' : '') + ' and spreads from today.</p>' +
+      '<div class="actions"><button type="button" class="btn" data-act="deed-open">Cancel</button><button type="submit" class="btn primary">Spread the word</button></div></form>';
+  }
+  function logDeed(f) {
+    var campId = f.getAttribute('data-camp'), R = clone(realm[campId]), t = travel[campId]; if (!R || !t) return;
+    var v = function (id) { return (document.getElementById(id) || {}).value || ''; }, text = v('dd-text').trim();
+    if (!text) return toast('Say what folk will say.');
+    var size = DEED_SIZE[v('dd-size')] || DEED_SIZE.notable, tone = v('dd-tone'), fid = v('dd-fac'), dir = num(v('dd-dir'), 1);
+    var m = realmMapOf(campId), party = m ? (markers[m.id] || []).filter(function (x) { return x.kind === 'party'; })[0] : null;
+    var near = null; if (party && m) { var bd = Infinity; townsOn(m.id).forEach(function (x) { if (!x.label) return; var d = mapMiles(m, party.x, party.y, x.x, x.y); if (d < bd) { bd = d; near = x; } }); }
+    var at = t.arrival && !t.arrival.ruin ? midLabel(t.arrival.label) : near ? 'near ' + midLabel(near.label) : '';
+    R.news.push({ day: num(t.day, 1), fid: 'party', deed: true, tone: tone, text: text, rumour: text, major: !!size.major, petty: !!size.petty, ox: party ? party.x : null, oy: party ? party.y : null, at: at, touched: fid ? { fid: fid, dir: dir } : null });
+    var fa = fid ? R.factions.filter(function (x) { return x.id === fid; })[0] : null;
+    if (fa && size.steps) fa.party = Math.max(-3, Math.min(3, num(fa.party, 0) + dir * size.steps));
+    ui.deedOpen = false;
+    saveRealm(campId, R, 'The word is out');
+    var art = fa && fa.slug ? articleBySlug(fa.slug) : null;
+    if (art && size.steps) campaignChars(campId).forEach(function (c) { var st = standingFor(c, art), to = Math.max(0, Math.min(STANDINGS.length - 1, st.idx + dir * size.steps)); if (to !== st.idx) setStanding(c.id, art.id, STANDINGS[to]); });
+  }
+  // How the party's name stands where a shop is: heroic deeds that reached it help, villainous ones hurt (up to two steps).
+  function fameAt(shop) {
+    var xy = shopXY(shop), t = travel[shop.campaign_id], R = realm[shop.campaign_id];
+    if (!xy || !t || !R || !R.news) return { n: 0, heard: [] };
+    var day = num(t.day, 0), heard = R.news.filter(function (n) { if (!n.deed || !n.tone || day - num(n.day, 0) > 90) return false; var a = newsArrives(shop.campaign_id, n, xy.x, xy.y); return a != null && a <= day; });
+    var score = heard.reduce(function (s, n) { return s + (n.tone === 'good' ? 1 : -1) * (n.major ? 2 : 1); }, 0);
+    return { n: Math.max(-2, Math.min(2, score)), heard: heard };
   }
   function arrivalBlock(camp, compact) {
     var t = travel[camp.id], ar = t && t.arrival;
@@ -8446,7 +8533,7 @@
     html += '<section class="block"><h2 class="sec-title">The month turns<small>' + (due ? 'Due now' : 'Next on day ' + R.next) + '</small></h2>';
     if (due) {
       html += '<p class="note" style="margin-top:0">Each faction’s d100 is rolled for you; type over any. Most months are quiet: 1–40 nothing, 41–70 petty doings, 71–90 a small move, 91–97 something notable, 98–99 rare, 100 very rare.</p><form id="realm-turn" novalidate data-camp="' + esc(camp.id) + '"><div class="tbl">';
-      var rollRow = function (f) { var pr = preRoll100(camp.id, 'realm' + num(R.next, 0) + f.id), bd = pr ? (f.tier === 'minor' || f.limited ? minorBand(pr) : realmBand(pr)) : ''; return '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.temper) + (bd ? ' · ' + bd : '') + '</span></div><input class="input mini" type="number" min="1" max="100" inputmode="numeric" data-rroll="' + esc(f.id) + '" value="' + pr + '"></div>'; };
+      var rollRow = function (f) { var pr = preRoll100(camp.id, 'realm' + num(R.next, 0) + f.id), sail = f.id === 'wolves' && travel[camp.id] && seasonOf(travel[camp.id]) === 'summer'; if (pr && sail) pr = Math.min(100, pr + 10); var bd = pr ? (f.tier === 'minor' || f.limited ? minorBand(pr) : realmBand(pr)) : ''; return '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.temper) + (bd ? ' · ' + bd : '') + (sail ? ' · +10, sailing season' : '') + '</span></div><input class="input mini" type="number" min="1" max="100" inputmode="numeric" data-rroll="' + esc(f.id) + '" value="' + pr + '"></div>'; };
       R.factions.filter(function (f) { return f.tier !== 'minor'; }).forEach(function (f) { html += rollRow(f); });
       var mins = R.factions.filter(function (f) { return f.tier === 'minor'; });
       if (mins.length) html += '</div><details style="margin-top:6px"><summary class="note">Minor factions (' + mins.length + '): quieter still, 1–70 nothing</summary><div class="tbl">' + mins.map(rollRow).join('') + '</div></details><div>';
@@ -8523,6 +8610,7 @@
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
     if (act === 'backup') { downloadBackup(); return; }
+    if (act === 'deed-open') { ui.deedOpen = !ui.deedOpen; render(); return; }
     if (act === 'gate-now') { var gc = el.getAttribute('data-camp'), gt = travel[gc]; if (gt && gt.arrival) { saveNotices(gc, (gt.notices || []).concat([gateCheck(gc, gt.arrival.label, gt.arrival.slug, num(gt.day, 1))])); render(); } return; }
     if (act === 'notice-x') { var nc = el.getAttribute('data-camp'), nt2 = travel[nc]; saveNotices(nc, ((nt2 && nt2.notices) || []).filter(function (x) { return x.id !== el.getAttribute('data-id'); })); render(); return; }
     if (act === 'gate-log') { gateLog(el.getAttribute('data-camp'), el.getAttribute('data-id'), num(el.getAttribute('data-i'), 0)); return; }
@@ -9213,6 +9301,7 @@
       case 'hb-form': return saveHomebrew(f);
       case 'mon-form': return saveMonster(f);
       case 'standin-form': return addStandIns(activeCamp());
+      case 'deed-form': return logDeed(f);
       case 'cb-form': case 'lt-form': case 'lt-place': case 'lt-line': case 'q-form': return cbqSubmit(f);
       case 'npc-form':
         var fix = readNpcPrompt(document.getElementById('npc-words').value);
