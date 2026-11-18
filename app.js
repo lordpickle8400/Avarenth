@@ -2051,7 +2051,7 @@
       ['weapons', 'armor', 'gear', 'magic'].forEach(function (k) { GEAR[k] = GEAR[k].filter(function (x) { return !x.hb; }); });
       hbApproved('item').forEach(function (h) {
         var d = h.data || {}, base = { name: h.name, w: Math.max(0, parseFloat(d.w) || 0), cost: d.cost || '—', hb: true };
-        if (d.type === 'weapon') GEAR.weapons.push(Object.assign(base, { cat: d.wcat || 'Simple Melee', dmg: d.dmg || '1d6', type: d.dtype || 'Bludgeoning', props: String(d.props || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean), mastery: d.mastery || '', text: d.text || '' }));
+        if (d.type === 'weapon') GEAR.weapons.push(Object.assign(base, { cat: d.wcat || 'Simple Melee', dmg: d.dmg || '1d6', type: d.dtype || 'Bludgeoning', props: String(d.props || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean), mastery: d.mastery || '', extra: d.extra || '', text: d.text || '' }));
         else if (d.type === 'armor' || d.type === 'shield') GEAR.armor.push(Object.assign(base, { cat: d.type === 'shield' ? 'Shield' : d.acat || 'Light', ac: num(d.ac, d.type === 'shield' ? 2 : 11), shield: d.type === 'shield', dex: d.type === 'shield' ? 'none' : d.dex || 'full', str: num(d.str, 0), stealth: !!d.stealth,
           acText: d.type === 'shield' ? '+' + num(d.ac, 2) : num(d.ac, 11) + (d.dex === 'none' ? '' : d.dex === 'max2' ? ' + Dex modifier (max 2)' : ' + Dex modifier'), text: d.text || '' }));
         else if (d.type === 'magic') GEAR.magic.push(Object.assign(base, { kind: d.mkind || 'Wondrous Item', rarity: d.rarity || 'Uncommon', attune: !!d.attune, head: (d.mkind || 'Wondrous Item') + ', ' + (d.rarity || 'Uncommon') + (d.attune ? ' (Requires Attunement)' : '') + ' · Homebrew', text: d.text || '' }));
@@ -2065,7 +2065,7 @@
   function hbSummary(h) {
     var d = h.data || {};
     switch (h.kind) {
-      case 'item': return ({ weapon: (d.wcat || 'Weapon') + ' · ' + (d.dmg || '') + ' ' + (d.dtype || ''), armor: (d.acat || '') + ' armor · AC ' + (d.ac || ''), shield: 'Shield · +' + (d.ac || 2) + ' AC', magic: (d.mkind || 'Magic item') + ' · ' + (d.rarity || ''), gear: 'Gear' })[d.type] || 'Item';
+      case 'item': return ({ weapon: (d.wcat || 'Weapon') + ' · ' + (d.dmg || '') + ' ' + (d.dtype || '') + (d.extra ? ' + ' + d.extra : ''), armor: (d.acat || '') + ' armor · AC ' + (d.ac || ''), shield: 'Shield · +' + (d.ac || 2) + ' AC', magic: (d.mkind || 'Magic item') + ' · ' + (d.rarity || ''), gear: 'Gear' })[d.type] || 'Item';
       case 'subclass': return (d.cls || 'Any class') + ' · ' + (d.features || []).length + ' features';
       case 'class': return 'd' + (d.hd || 8) + ' hit die · ' + (d.caster === 'full' ? 'full caster' : d.caster === 'half' ? 'half caster' : 'martial') + ' · ' + (d.features || []).length + ' features';
       case 'species': return (d.size || 'Medium') + ' · ' + (d.speed || 30) + ' ft · ' + (d.traits || []).length + ' traits';
@@ -2108,7 +2108,7 @@
         '<div class="grid2">' + hbF('cost', 'Cost', d.cost, 'text', ' maxlength="20" placeholder="e.g. 15 GP"') + hbF('w', 'Weight (lb)', d.w, 'number', ' min="0" step="0.25"') + '</div>' +
         '<div class="hb-sub" data-for="weapon"><div class="grid2">' + hbSel('wcat', 'Category', d.wcat || 'Simple Melee', ['Simple Melee', 'Simple Ranged', 'Martial Melee', 'Martial Ranged']) + hbF('dmg', 'Damage dice', d.dmg, 'text', ' maxlength="12" placeholder="1d8"') + '</div><div class="grid2">' +
         hbSel('dtype', 'Damage type', d.dtype || 'Slashing', ['Bludgeoning', 'Piercing', 'Slashing', 'Acid', 'Cold', 'Fire', 'Force', 'Lightning', 'Necrotic', 'Poison', 'Psychic', 'Radiant', 'Thunder']) + hbSel('mastery', 'Mastery', d.mastery || '', [['', 'None']].concat(['Cleave', 'Graze', 'Nick', 'Push', 'Sap', 'Slow', 'Topple', 'Vex'])) + '</div>' +
-        hbF('props', 'Properties (comma separated)', d.props, 'text', ' maxlength="160" placeholder="Finesse, Light, Thrown (Range 20/60)"') + '</div>' +
+        hbF('props', 'Properties (comma separated)', d.props, 'text', ' maxlength="160" placeholder="Finesse, Light, Thrown (Range 20/60)"') + hbF('extra', 'Extra damage on a hit (optional)', d.extra, 'text', ' maxlength="40" placeholder="1d4 Poison"') + '</div>' +
         '<div class="hb-sub" data-for="armor"><div class="grid2">' + hbSel('acat', 'Category', d.acat || 'Light', ['Light', 'Medium', 'Heavy']) + hbSel('dex', 'Adds Dexterity', d.dex || 'full', [['full', 'Full Dex'], ['max2', 'Up to +2'], ['none', 'No Dex']]) + '</div><div class="grid2">' +
         hbF('str', 'Strength needed', d.str, 'number', ' min="0" max="20"') + '<label class="check" style="align-self:end"><input type="checkbox" id="hb-stealth"' + (d.stealth ? ' checked' : '') + '> Disadvantage on Stealth</label></div></div>' +
         '<div class="hb-sub" data-for="armor shield">' + hbF('ac', 'Armor class (base AC, or the shield’s bonus)', d.ac, 'number', ' min="0" max="30"') + '</div>' +
@@ -2155,7 +2155,7 @@
     if (!name) return toast('Give it a name.');
     if (kind === 'item') {
       d = { type: hbVal('type'), cost: hbVal('cost'), w: hbVal('w'), text: hbVal('text') };
-      if (d.type === 'weapon') Object.assign(d, { wcat: hbVal('wcat'), dmg: hbVal('dmg'), dtype: hbVal('dtype'), mastery: hbVal('mastery'), props: hbVal('props') });
+      if (d.type === 'weapon') Object.assign(d, { wcat: hbVal('wcat'), dmg: hbVal('dmg'), dtype: hbVal('dtype'), mastery: hbVal('mastery'), props: hbVal('props'), extra: hbVal('extra') });
       if (d.type === 'armor') Object.assign(d, { acat: hbVal('acat'), dex: hbVal('dex'), str: hbVal('str'), stealth: hbVal('stealth') });
       if (d.type === 'armor' || d.type === 'shield') d.ac = hbVal('ac');
       if (d.type === 'magic') Object.assign(d, { mkind: hbVal('mkind'), rarity: hbVal('rarity'), attune: hbVal('attune') });
@@ -2590,12 +2590,12 @@
   var LAIR_TIERS = { minor: { label: 'Minor', passes: 1, cr: 2, magic: 0 }, big: { label: 'Big', passes: 2, cr: 8, magic: 0.1 }, major: { label: 'Major', passes: 3, cr: 14, magic: 0.25 } };
   var LAIRS = {
     spider: { label: 'Spider den', coin: 0.3, items: [['a clutch of giant spider eggs', 40, 0.9, 'contraband in most towns'], ['spools of spider silk', 20, 0.8, 'weavers and rope-makers buy it'], ['a venom gland', 25, 0.5, 'handle with gloves'], ['a cocooned traveller, long dead', 0, 0.6, 'search them: see the purse']], list: 'victims', listChance: 0.8, about: 'Eggs, silk and whatever got caught in the webs.' },
-    spidercult: { label: 'Spider cult enclave', coin: 1, magic: 0.25, items: [['a clutch of giant spider eggs', 40, 1, 'contraband in most towns'], ['a spider idol of black glass', 150, 0.7], ['venom-dipped ritual daggers', 15, 0.8], ['silk robes', 5, 0.8], ['a ledger of the faithful', 0, 0.6, 'names worth a lot to the right people'], ['a vial of refined venom', 60, 0.5]], list: 'victims', listChance: 0.6, about: 'Eggs, idols, ritual blades and the names of the faithful.' },
+    spidercult: { label: 'Spider cult enclave', coin: 1, magic: 0.25, items: [['a clutch of giant spider eggs', 40, 1, 'contraband in most towns'], ['a spider idol of black glass', 150, 0.7], ['Cultist Dagger', 15, 0.8, 'squiggly blade, adds venom damage'], ['silk robes', 5, 0.8], ['a ledger of the faithful', 0, 0.6, 'names worth a lot to the right people'], ['a vial of refined venom', 60, 0.5]], list: 'victims', listChance: 0.6, about: 'Eggs, idols, ritual blades and the names of the faithful.' },
     bandits: { label: 'Bandit camp', coin: 1.5, items: [['crates of stolen trade goods', 30, 0.8, 'someone will want these back'], ['a cask of good wine', 10, 0.6], ['a rack of scimitars', 25, 0.5], ['stolen horses', 75, 0.4], ['a map with the next ambush marked', 0, 0.5], ['a ransom note, unsent', 0, 0.3]], about: 'Coin, stolen goods and plans.' },
     goblins: { label: 'Goblin warren', coin: 0.6, items: [['a heap of shiny junk', 2, 0.9], ['stolen chickens', 1, 0.6], ['crude spears', 1, 0.6], ['the boss’s tin crown', 5, 0.5], ['a captive farmer, who would like to go home', 0, 0.3]], about: 'Junk, stolen livestock and a bit of coin.' },
     kobolds: { label: 'Kobold warren', coin: 0.5, items: [['traps, still armed', 0, 0.8, 'careful'], ['mining picks', 2, 0.6], ['a shrine to a dragon, with offerings', 30, 0.5], ['a large cracked eggshell', 10, 0.3, 'whose?']], gems: 0.5, about: 'Traps, tools and dragon-shrine offerings.' },
     orcs: { label: 'Orc war camp', coin: 1, items: [['war trophies', 10, 0.8], ['a war banner', 15, 0.6], ['greataxes', 20, 0.6], ['stolen cattle', 50, 0.4]], about: 'Trophies, weapons and plunder.' },
-    cult: { label: 'Cult hideout', coin: 1, magic: 0.2, items: [['ritual daggers', 15, 0.8], ['black candles', 1, 0.9], ['an idol', 100, 0.6], ['robes', 1, 0.8], ['letters from a patron', 0, 0.5, 'someone is paying for this'], ['a list of members', 0, 0.5, 'worth more to the right people']], about: 'Ritual gear, an idol and who’s involved.' },
+    cult: { label: 'Cult hideout', coin: 1, magic: 0.2, items: [['Cultist Dagger', 15, 0.8, 'squiggly blade, adds venom damage'], ['black candles', 1, 0.9], ['an idol', 100, 0.6], ['robes', 1, 0.8], ['letters from a patron', 0, 0.5, 'someone is paying for this'], ['a list of members', 0, 0.5, 'worth more to the right people']], about: 'Ritual gear, an idol and who’s involved.' },
     crypt: { label: 'Crypt or tomb', coin: 0.8, magic: 0.2, items: [['burial jewellery', 50, 0.7], ['an old sword in a dead knight’s hands', 25, 0.4], ['funeral urns', 10, 0.5]], list: 'grave', listChance: 1, about: 'Grave goods and old coin.' },
     dragon: { label: 'Dragon lair', coin: 6, gems: 6, magic: 0.8, items: [['a mountain of mixed coin', 0, 1, 'see the coin'], ['art objects', 250, 0.9, 'statuettes, goblets, crowns'], ['a dead adventurer’s gear', 50, 0.5]], about: 'The hoard.' },
     beast: { label: 'Beast den', coin: 0.3, items: [['gnawed bones', 0, 1], ['a dead hunter’s bow', 25, 0.4], ['a purse among the bones', 0, 0.4, 'see the coin']], about: 'Bones, and what the last victims carried.' },
@@ -3211,7 +3211,7 @@
     var vers = w.props.map(function (p) { var m = /Versatile \(([^)]+)\)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
     return {
       name: it.name + (bonus ? ' +' + bonus : ''), ref: itemRef(it), range: ranged ? rng + ' ft' : (reach ? '10 ft' : '5 ft') + (rng ? ' (' + rng + ')' : ''),
-      hit: signed(abil[ab] + (prof ? pb : 0) + bonus), dmg: w.dmg + (dm ? (dm > 0 ? '+' : '−') + Math.abs(dm) : '') + ' ' + w.type,
+      hit: signed(abil[ab] + (prof ? pb : 0) + bonus), dmg: w.dmg + (dm ? (dm > 0 ? '+' : '−') + Math.abs(dm) : '') + ' ' + w.type + (w.extra ? ' + ' + w.extra : ''),
       notes: w.props.map(function (p) { return p.replace(/\s*\(.*$/, ''); }).concat(w.mastery ? [w.mastery + ' (mastery)'] : []).join(', ') + (vers ? ' · ' + vers + ' two-handed' : '') + (prof ? '' : ' · not proficient'),
       light: w.props.indexOf('Light') >= 0
     };
