@@ -1105,3 +1105,25 @@ body.pk-open { overflow: hidden; }
 .q-card.tier-big { border-left: 3px solid var(--accent); }
 .q-card.tier-major { border-left: 3px solid #b5523b; }
 .q-card.tier-major .q-tier { background: #b5523b; color: #fff; }
+/* DM screen strip and one-tap loot */
+.dm-tabs { margin: 0 0 12px; }
+.cb-round { margin: 0 0 8px; color: var(--muted); }
+.cb-round b { color: var(--text); font-size: 18px; }
+.lt-how { margin: 0 0 10px; }
+.lt-size, .lt-places, .lt-src { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.lt-size .chip, .lt-places .chip, .lt-src .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 12px; border-radius: 19px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 14px var(--ui); cursor: pointer; }
+.lt-size .chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.lt-places .chip:active { background: var(--panel-2); }
+.lt-src .chip.on { border-color: var(--accent); cursor: default; }
+.lt-src .chip button { border: 0; background: none; color: var(--muted); font-size: 18px; padding: 0 0 0 2px; cursor: pointer; }
+.lt-src .linkish { font-size: 13px; }
+.lt-mon-row { display: flex; gap: 6px; margin: 0 0 12px; }
+.lt-mon-row #lt-mon { flex: 1; min-width: 0; }
+.lt-mon-row .lt-n { width: 64px; }
+.lt-rollbar { display: flex; align-items: center; gap: 12px; padding: 10px 0; background: var(--bg); border-bottom: 1px solid var(--line); }
+.lt-item .keep { flex: none; min-width: 64px; min-height: 40px; border-radius: 8px; border: 1px dashed var(--line); background: none; color: var(--muted); font: 600 13px var(--ui); cursor: pointer; }
+.lt-item.kept .keep { border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); }
+.lt-item.kept { background: rgba(216,168,76,.07); }
+.lt-item .main select.input { margin-top: 6px; align-self: flex-start; }
+.lt-coinrow { border-bottom: 0; margin-top: 4px; }
+.lt-coinrow .lt-coins { flex: 1; }

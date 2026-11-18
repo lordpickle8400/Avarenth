@@ -346,7 +346,7 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['monsters', 'Monsters'], ['npcs', 'NPCs'], ['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['screen', 'DM screen'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
   var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['quests', 'Quests'], ['homebrew', 'Homebrew']];
   var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
@@ -366,7 +366,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , combat: 'combat', loot: 'loot', quests: 'quests'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -425,6 +425,7 @@
       case 'homebrew': return renderHomebrew(r.arg);
       case 'monsters': return renderMonsters(r.arg);
       case 'npcs': return renderNpcs();
+      case 'screen': var lastTool = 'combat'; try { lastTool = localStorage.getItem('av-dm-tool') || 'combat'; } catch (e) { } location.replace('#/' + lastTool); return;
       case 'combat': return renderCombat();
       case 'loot': return renderLoot();
       case 'quests': return renderQuests();
@@ -2334,7 +2335,7 @@
   function renderNpcs() {
     if (!isDM()) { location.replace('#/map'); return; }
     var npc = ui.npc, dk = ui.npcDistrict || 'capital', D = NPCD.districts;
-    var html = '<div class="page narrow"><h1 class="page-title">NPC maker</h1><p class="guide">Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more dragonborn and kobolds, the Greywall Holds mostly dwarves.</p>' +
+    var html = '<div class="page narrow">' + dmTabs('npcs') + '<p class="guide">Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more dragonborn and kobolds, the Greywall Holds mostly dwarves.</p>' +
       '<div class="field"><label for="npc-district">District</label><select id="npc-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
       '<p class="note npc-odds">' + Object.keys(D[dk].races).sort(function (a, b) { return D[dk].races[b] - D[dk].races[a]; }).slice(0, 6).map(function (r) { var tot = Object.keys(D[dk].races).reduce(function (t, k) { return t + D[dk].races[k]; }, 0); return esc(r) + ' ' + Math.round(100 * D[dk].races[r] / tot) + '%'; }).join(' · ') + '</p>' +
       '<form class="form" id="npc-form" novalidate><div class="field"><label for="npc-words">Describe them (optional)</label><input type="text" id="npc-words" maxlength="200" value="' + esc((npc && npc.words) || '') + '" placeholder="e.g. grumpy old dwarf smith in Stonehelm"></div>' +
@@ -2431,7 +2432,7 @@
     if (!combat || combat.campaign_id !== camp.id) { loadCombat(camp); $view.innerHTML = '<div class="page"><div class="empty">Setting the table…</div></div>'; return; }
     var st = combat.state, order = cbOrder(st);
     ui.cbOpen = ui.cbOpen || {};
-    var html = '<div class="page"><h1 class="page-title">Combat' + (st.list.length ? '<small>Round ' + st.round + '</small>' : '') + '</h1>' +
+    var html = '<div class="page">' + dmTabs('combat') + (st.list.length ? '<p class="cb-round">Round <b>' + st.round + '</b></p>' : '') +
       (st.list.length ? '' : '<p class="guide">Add the party and the monsters, then type in everyone’s initiative as it’s rolled at the table. The fight saves as you go, so you can close the app mid-battle.</p>') +
       '<form class="form cb-add" id="cb-form" novalidate><div class="cb-add-row"><div class="field"><label for="cb-mon">Monster</label><input type="text" id="cb-mon" list="cb-mons" placeholder="Goblin Warrior, Wolf…" autocomplete="off"></div>' +
       '<div class="field cb-n"><label for="cb-n">How many</label><input type="number" id="cb-n" min="1" max="20" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></div>' +
@@ -2624,6 +2625,7 @@
     for (var m = 0; m < T.passes; m++) if (mch && Math.random() < mch) { var mi = lootMagic(T.cr); if (mi) items.push(mi); }
     return { items: items, coins: lootPurse(T.cr, L.coin) };
   }
+  // Rolls every source. Lines marked Keep stay as they are (like held dice); everything else is rolled fresh.
   function lootRoll() {
     var L = ui.loot, items = [], coins = { cp: 0, sp: 0, gp: 0, pp: 0 };
     var merge = function (r) {
@@ -2636,57 +2638,63 @@
     (L.places || []).forEach(function (pl) { merge(lootPlace(pl.key, pl.tier)); });
     L.picks.forEach(function (p) {
       var m = allMonsters().filter(function (x) { return x.name === p.name; })[0]; if (!m) return;
-      for (var i = 0; i < p.n; i++) {
-        var r = lootFor(m);
-        Object.keys(coins).forEach(function (k) { coins[k] += num(r.coins[k], 0); });
-        r.items.forEach(function (it) {
-          var same = items.filter(function (x) { return x.name === it.name && x.val === it.val; })[0];
-          if (same) same.qty += it.qty; else items.push(Object.assign({ id: cbId(), to: '' }, it));
-        });
-      }
+      for (var i = 0; i < p.n; i++) merge(lootFor(m));
     });
-    L.items = items; L.coins = coins; L.rolled = true; L.split = null;
+    var kept = (L.items || []).filter(function (it) { return it.keep; }), names = kept.map(function (it) { return it.name; });
+    L.items = kept.concat(items.filter(function (it) { return names.indexOf(it.name) < 0; }));
+    if (!L.keepCoins) L.coins = coins;
+    L.rolled = true;
   }
   function lootAddPick(name, n) {
     var m = allMonsters().filter(function (x) { return x.name.toLowerCase() === String(name).trim().toLowerCase(); })[0];
     if (!m) return toast('No monster called “' + name + '” in your appendix.');
     var L = ui.loot, have = L.picks.filter(function (p) { return p.name === m.name; })[0];
     if (have) have.n += n; else L.picks.push({ name: m.name, n: n });
-    render();
+    lootRoll(); render();
+  }
+  function dmTabs(cur) {
+    try { localStorage.setItem('av-dm-tool', cur); } catch (e) { }
+    return '<nav class="subtabs dm-tabs" role="tablist" aria-label="DM screen">' + [['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['npcs', 'NPCs'], ['monsters', 'Monsters']].map(function (t) {
+      return '<a role="tab" href="#/' + t[0] + '" aria-selected="' + (cur === t[0]) + '">' + t[1] + '</a>';
+    }).join('') + '</nav>';
   }
   function renderLoot() {
     if (!isDM()) { location.replace('#/map'); return; }
     var camp = activeCamp();
-    if (!MONS || !GEAR) { loadMonsters(); loadGear(); $view.innerHTML = '<div class="page"><div class="empty">Opening the bestiary…</div></div>'; return; }
-    var L = ui.loot || (ui.loot = { picks: [], places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }); L.places = L.places || [];
-    var party = camp ? campaignChars(camp.id) : [];
-    var html = '<div class="page narrow"><h1 class="page-title">Loot</h1><p class="guide">Pick what the party beat, or the place they’re searching, and roll it here, behind the screen. Loot goes by the kind of creature: a spider gives silk, venom and eggs, not gold; bandits carry purses and their gear; dragons sit on hoards. Places come in three sizes. A homebrew monster can have its own list.</p>' +
-      '<form class="form cb-add" id="lt-form" novalidate><div class="cb-add-row"><div class="field"><label for="lt-mon">Monster</label><input type="text" id="lt-mon" list="lt-mons" placeholder="Giant Spider, Bandit…" autocomplete="off"></div>' +
-      '<div class="field cb-n"><label for="lt-n">How many</label><input type="number" id="lt-n" min="1" max="50" value="1" inputmode="numeric"></div><button type="submit" class="btn">Add</button></div>' +
-      '<datalist id="lt-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>' +
-      '<form class="form cb-add" id="lt-place" novalidate><div class="cb-add-row"><div class="field"><label for="lt-pl">Or a place</label><select id="lt-pl">' + Object.keys(LAIRS).map(function (k) { return '<option value="' + k + '">' + esc(LAIRS[k].label) + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field cb-n"><label for="lt-tier">Size</label><select id="lt-tier">' + Object.keys(LAIR_TIERS).map(function (k) { return '<option value="' + k + '">' + LAIR_TIERS[k].label + '</option>'; }).join('') + '</select></div><button type="submit" class="btn">Add</button></div></form>';
+    if (!MONS || !GEAR) { loadMonsters(); loadGear(); $view.innerHTML = '<div class="page">' + dmTabs('loot') + '<div class="empty">Opening the bestiary…</div></div>'; return; }
+    renderLoot.ensure();
+    var L = ui.loot, size = ui.lootTier || 'minor', party = camp ? campaignChars(camp.id) : [];
+    var html = '<div class="page narrow">' + dmTabs('loot') +
+      '<p class="note lt-how">Tap a place, or add a monster, and it rolls. Tap <b>Keep</b> on what you like and reroll the rest.</p>' +
+      '<div class="lt-size" role="group" aria-label="Size of the place">' + Object.keys(LAIR_TIERS).map(function (k) { return '<button type="button" class="chip" data-act="lt-size" data-t="' + k + '" aria-pressed="' + (size === k) + '">' + LAIR_TIERS[k].label + '</button>'; }).join('') + '</div>' +
+      '<div class="lt-places">' + Object.keys(LAIRS).map(function (k) { return '<button type="button" class="chip" data-act="lt-pl" data-k="' + k + '">' + esc(LAIRS[k].label) + '</button>'; }).join('') + '</div>' +
+      '<form class="lt-mon-row" id="lt-form" novalidate><label class="sr" for="lt-mon">Monster</label><input class="input" type="text" id="lt-mon" list="lt-mons" placeholder="Or a monster: Giant Spider, Bandit…" autocomplete="off">' +
+      '<label class="sr" for="lt-n">How many</label><input class="input lt-n" type="number" id="lt-n" min="1" max="50" value="1" inputmode="numeric"><button type="submit" class="btn">Add</button>' +
+      '<datalist id="lt-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>';
     if (L.picks.length || L.places.length) {
-      html += '<div class="lt-picks">' + L.places.map(function (pl, i) {
-        return '<div class="tbl-row"><div class="main"><b>' + esc(LAIRS[pl.key].label) + ' <span class="tag plain">' + LAIR_TIERS[pl.tier].label + '</span></b><span>' + esc(LAIRS[pl.key].about) + '</span></div><button type="button" class="linkish cb-x" data-act="lt-unplace" data-i="' + i + '" aria-label="Remove">×</button></div>';
+      html += '<div class="lt-src">' + L.places.map(function (pl, i) {
+        return '<span class="chip on">' + esc(LAIRS[pl.key].label) + ' · ' + LAIR_TIERS[pl.tier].label + '<button type="button" data-act="lt-unplace" data-i="' + i + '" aria-label="Remove">×</button></span>';
       }).join('') + L.picks.map(function (p, i) {
-        var m = allMonsters().filter(function (x) { return x.name === p.name; })[0], k = m ? (m.loot ? 'Own list' : lootKind(m)) : '';
-        return '<div class="tbl-row"><div class="main"><b>' + (p.n > 1 ? p.n + ' × ' : '') + esc(p.name) + '</b><span>' + esc(k + (m && !m.loot ? ' · ' + (LOOT_TYPES[k] || {}).about : '')) + '</span></div><button type="button" class="linkish cb-x" data-act="lt-unpick" data-i="' + i + '" aria-label="Remove">×</button></div>';
-      }).join('') + '</div><div class="actions"><button type="button" class="btn primary" data-act="lt-roll">' + (L.rolled ? 'Roll again' : 'Roll the loot') + '</button><button type="button" class="btn quiet" data-act="lt-reset">Start over</button></div>';
+        return '<span class="chip on">' + (p.n > 1 ? p.n + ' × ' : '') + esc(p.name) + '<button type="button" data-act="lt-unpick" data-i="' + i + '" aria-label="Remove">×</button></span>';
+      }).join('') + '<button type="button" class="linkish" data-act="lt-reset">Clear all</button></div>';
     }
     if (L.rolled) {
+      var kept = L.items.filter(function (it) { return it.keep; }).length + (L.keepCoins ? 1 : 0);
       var opts = function (sel) { return '<option value="">Leave it</option>' + party.map(function (ch) { return '<option value="' + ch.id + '"' + (sel === ch.id ? ' selected' : '') + '>' + esc(ch.name) + '</option>'; }).join(''); };
       var coinTot = L.coins.cp + L.coins.sp * 10 + L.coins.gp * 100 + L.coins.pp * 1000;
       var split = L.split || (L.split = party.map(function (ch) { return ch.id; }));
-      html += '<section class="block"><h2 class="sec-title">What they find</h2>' +
+      html += '<div class="lt-rollbar"><button type="button" class="btn primary" data-act="lt-roll">' + (kept ? 'Reroll the rest' : 'Reroll all') + '</button><span class="note">' + (kept ? kept + ' kept' : 'Nothing kept yet') + '</span></div>' +
         (L.items.length ? '<div class="lt-items">' + L.items.map(function (it) {
-          return '<div class="lt-item"><div class="main"><b>' + (it.qty > 1 ? it.qty + ' × ' : '') + esc(it.name) + '</b><span>' + esc([it.val ? 'about ' + it.val + ' gp' + (it.qty > 1 ? ' each' : '') : '', it.note].filter(Boolean).join(' · ')) + '</span></div>' +
-            '<select class="input" data-ltto="' + it.id + '" aria-label="Who takes ' + esc(it.name) + '">' + opts(it.to) + '</select><button type="button" class="linkish cb-x" data-act="lt-drop" data-id="' + it.id + '" aria-label="Remove">×</button></div>';
-        }).join('') + '</div>' : '<div class="empty">No items.</div>') +
+          return '<div class="lt-item' + (it.keep ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keep" data-id="' + it.id + '" aria-pressed="' + !!it.keep + '">' + (it.keep ? 'Kept' : 'Keep') + '</button>' +
+            '<div class="main"><b>' + (it.qty > 1 ? it.qty + ' × ' : '') + esc(it.name) + '</b><span>' + esc([it.val ? 'about ' + it.val + ' gp' + (it.qty > 1 ? ' each' : '') : '', it.note].filter(Boolean).join(' · ')) + '</span>' +
+            '<select class="input" data-ltto="' + it.id + '" aria-label="Who takes ' + esc(it.name) + '">' + opts(it.to) + '</select></div>' +
+            '<button type="button" class="linkish cb-x" data-act="lt-drop" data-id="' + it.id + '" aria-label="Remove">×</button></div>';
+        }).join('') + '</div>' : '<div class="empty">Nothing but dust.</div>') +
+        '<div class="lt-item lt-coinrow' + (L.keepCoins ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keepcoin" aria-pressed="' + !!L.keepCoins + '">' + (L.keepCoins ? 'Kept' : 'Keep') + '</button>' +
+          '<div class="lt-coins">' + ['pp', 'gp', 'sp', 'cp'].map(function (k) { return '<label><span>' + k + '</span><input class="input" type="number" min="0" inputmode="numeric" data-ltcoin="' + k + '" value="' + L.coins[k] + '"></label>'; }).join('') + '</div></div>' +
         '<form class="lt-addline" id="lt-line" novalidate><label class="sr" for="lt-line-n">Add an item</label><input class="input" type="text" id="lt-line-n" placeholder="Add something by hand…" maxlength="80"><button type="submit" class="btn small">Add</button></form>' +
-        '<h3 class="lt-h">Coin</h3><div class="lt-coins">' + ['pp', 'gp', 'sp', 'cp'].map(function (k) { return '<label><span>' + k + '</span><input class="input" type="number" min="0" inputmode="numeric" data-ltcoin="' + k + '" value="' + L.coins[k] + '"></label>'; }).join('') + '</div>' +
-        (coinTot ? '<p class="note">Split evenly between:</p><div class="lt-split">' + party.map(function (ch) { return '<label class="check"><input type="checkbox" data-ltsplit="' + ch.id + '"' + (split.indexOf(ch.id) >= 0 ? ' checked' : '') + '> ' + esc(ch.name) + '</label>'; }).join('') + '</div>' : '') +
-        '<div class="actions"><button type="button" class="btn primary" data-act="lt-give">Hand it out</button></div><p class="note">Items go into the chosen character’s backpack; coin is shared out evenly, any odd copper to the first name.</p></section>';
+        (coinTot && party.length ? '<p class="note" style="margin-bottom:4px">Coin split between:</p><div class="lt-split">' + party.map(function (ch) { return '<label class="check"><input type="checkbox" data-ltsplit="' + ch.id + '"' + (split.indexOf(ch.id) >= 0 ? ' checked' : '') + '> ' + esc(ch.name) + '</label>'; }).join('') + '</div>' : '') +
+        '<div class="actions"><button type="button" class="btn primary" data-act="lt-give">Hand it out</button></div>';
     }
     $view.innerHTML = html + '</div>';
   }
@@ -2854,7 +2862,7 @@
     var dm = isDM() && dmView(), camp = activeCamp();
     if (quests === null) { loadQuests(); $view.innerHTML = '<div class="page"><div class="empty">Reading the board…</div></div>'; return; }
     var list = quests.filter(function (q) { return !camp || q.campaign_id === camp.id; });
-    var html = '<div class="page narrow"><h1 class="page-title">Quests</h1>';
+    var html = '<div class="page narrow">' + (dm ? dmTabs('quests') : '<h1 class="page-title">Quests</h1>');
     if (dm) {
       var dk = ui.qDistrict || ui.npcDistrict || 'capital', D = NPCD.districts, d = ui.questDraft;
       var qt = ui.qTier || 'any';
@@ -2905,15 +2913,20 @@
         var picks = {};
         st.list.filter(function (y) { return y.kind === 'mon'; }).forEach(function (y) { picks[y.mon] = (picks[y.mon] || 0) + 1; });
         ui.loot = { picks: Object.keys(picks).map(function (k) { return { name: k, n: picks[k] }; }), places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false };
+        if (ui.loot.picks.length && MONS) lootRoll();
         location.hash = '#/loot'; return true;
-      case 'lt-unpick': ui.loot.picks.splice(num(el.getAttribute('data-i'), 0), 1); render(); return true;
-      case 'lt-unplace': ui.loot.places.splice(num(el.getAttribute('data-i'), 0), 1); render(); return true;
+      case 'lt-unpick': ui.loot.picks.splice(num(el.getAttribute('data-i'), 0), 1); if (ui.loot.picks.length || ui.loot.places.length) lootRoll(); else ui.loot = null; render(); return true;
+      case 'lt-unplace': ui.loot.places.splice(num(el.getAttribute('data-i'), 0), 1); if (ui.loot.picks.length || ui.loot.places.length) lootRoll(); else ui.loot = null; render(); return true;
       case 'lt-roll': lootRoll(); render(); return true;
+      case 'lt-size': ui.lootTier = el.getAttribute('data-t'); render(); return true;
+      case 'lt-pl': renderLoot.ensure(); ui.loot.places.push({ key: el.getAttribute('data-k'), tier: ui.lootTier || 'minor' }); lootRoll(); render(); return true;
+      case 'lt-keep': ui.loot.items.forEach(function (it) { if (it.id === id) it.keep = !it.keep; }); render(); return true;
+      case 'lt-keepcoin': ui.loot.keepCoins = !ui.loot.keepCoins; render(); return true;
       case 'lt-reset': ui.loot = null; render(); return true;
       case 'lt-drop': ui.loot.items = ui.loot.items.filter(function (it) { return it.id !== id; }); render(); return true;
       case 'lt-give': lootGive(); return true;
       case 'q-random': ui.questDraft = randomQuest(ui.qDistrict || ui.npcDistrict || 'capital', ui.qTier || 'any'); render(); return true;
-      case 'q-loot': ui.loot = { picks: [], places: [{ key: el.getAttribute('data-lair'), tier: el.getAttribute('data-tier') || 'minor' }], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; location.hash = '#/loot'; return true;
+      case 'q-loot': ui.loot = { picks: [], places: [{ key: el.getAttribute('data-lair'), tier: el.getAttribute('data-tier') || 'minor' }], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; lootRoll(); location.hash = '#/loot'; return true;
       case 'q-keep': if (ui.questDraft) saveQuest(ui.questDraft); return true;
       case 'q-manual': ui.qManual = !ui.qManual; render(); return true;
       case 'q-vis': var q = (quests || []).filter(function (y) { return y.id === id; })[0]; if (q) updateQuest(id, { visible: !q.visible }); return true;
@@ -2942,7 +2955,7 @@
       case 'cb-form': if (v('cb-mon')) cbAddMonster(v('cb-mon'), num(v('cb-n'), 1)); return true;
       case 'lt-form': renderLoot.ensure(); if (v('lt-mon')) lootAddPick(v('lt-mon'), Math.max(1, Math.min(50, num(v('lt-n'), 1)))); return true;
       case 'lt-place': renderLoot.ensure(); ui.loot.places.push({ key: v('lt-pl'), tier: v('lt-tier') || 'minor' }); render(); return true;
-      case 'lt-line': if (v('lt-line-n')) { ui.loot.items.push({ id: cbId(), name: v('lt-line-n'), qty: 1, val: 0, note: 'added by hand', to: '' }); render(); } return true;
+      case 'lt-line': if (v('lt-line-n')) { ui.loot.items.push({ id: cbId(), name: v('lt-line-n'), qty: 1, val: 0, note: 'added by hand', to: '', keep: true }); render(); } return true;
       case 'q-form':
         if (!v('qf-title')) { toast('Give it a title.'); return true; }
         saveQuest({ title: v('qf-title'), details: v('qf-details'), giver: v('qf-giver'), place: v('qf-place'), reward: v('qf-reward'), tier: v('qf-tier') || 'minor', note: v('qf-note') }); ui.qManual = false; return true;
@@ -2992,7 +3005,7 @@
     var types = uniq(allMonsters().map(function (m) { return String(m.type || '').split(' (')[0]; })).sort();
     var crs = Object.keys(CR_XP);
     var sel = function (id, label, val, opts, any) { return '<div class="field"><label for="' + id + '">' + label + '</label><select id="' + id + '" data-monf="' + id.replace('mf-', '') + '"><option value="">' + any + '</option>' + opts.map(function (o) { o = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(o[0]) + '"' + (String(val) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; };
-    var html = '<div class="page"><h1 class="page-title">Monsters<small>' + list.length + ' of ' + allMonsters().length + '</small></h1>' +
+    var html = '<div class="page">' + dmTabs('monsters') + '<p class="note" style="margin:8px 0">' + list.length + ' of ' + allMonsters().length + ' monsters</p>' +
       '<p class="guide">Your appendix: every monster and animal from the free SRD 5.2.1, plus your own. Players never see this page.</p>' +
       '<div class="actions" style="margin:0 0 10px"><a class="btn primary" href="#/monsters/new">New monster</a></div>' +
       '<label class="search"><span class="sr">Search monsters</span>' + SEARCH_ICON + '<input id="mon-q" type="search" placeholder="Search by name or type…" value="' + esc(F.q) + '" autocomplete="off"></label>' +
