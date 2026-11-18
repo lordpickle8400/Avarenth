@@ -323,7 +323,7 @@
       travelLog = res[1].data || [];
     });
   }
-  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadHoldings(), loadShops(), loadCustomSubs(), isDM() ? loadSpells() : null]); }
+  function loadAll() { return Promise.all([loadWiki(), loadCharacters(), loadMembers(), loadCrimes(), loadMaps(), loadTravel(), loadReputation(), loadHoldings(), loadShops(), loadCustomSubs(), loadHomebrew(), isDM() ? loadSpells() : null]); }
   function loadMembers() {
     if (!isDM()) return Promise.resolve();
     return sb.from('profiles').select('id, display_name, role, created_at').order('created_at').then(function (r) {
@@ -345,8 +345,8 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['rules', 'Rules'], ['members', 'Players']];
-  var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
+  var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['homebrew', 'Homebrew']];
   var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
     var r = parseRoute();
@@ -354,7 +354,7 @@
     document.body.classList.toggle('atlas-mode', r.name === 'map' || r.name === '');
     if (session && isMember() && !isDM()) {
       $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells' })[r.name] || '';
+      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells', homebrew: 'homebrew' })[r.name] || '';
       $tabs.innerHTML = PLAYER_NAV.map(function (t) { return '<a href="#/' + t[0] + '"' + (psec === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
       $tabs.hidden = false;
       return;
@@ -365,7 +365,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' })[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -421,6 +421,7 @@
       case 'shop-edit': return renderShopEdit(r.arg);
       case 'spell-new': return renderSpellForm('');
       case 'spell-edit': return renderSpellForm(r.arg);
+      case 'homebrew': return renderHomebrew(r.arg);
       default: return renderAtlas('');
     }
   }
@@ -438,6 +439,7 @@
       case 'rules': return renderRules(r.arg);
       case 'spells': return renderSpells();
       case 'spell-new': return renderSpellForm('');
+      case 'homebrew': return renderHomebrew(r.arg);
       case 'account': return renderAccount();
       case 'a': if (articleBySlug(r.arg)) { AT.sel = { t: 'article', slug: r.arg }; } location.replace('#/map'); return;
       default: document.body.classList.add('atlas-mode'); return renderAtlas('');
@@ -1071,7 +1073,7 @@
     return label + (art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron));
   }
   function isFullCaster(cls) { return RULES.magic.fullCasters.indexOf(cls) >= 0; }
-  function casterKind(cls) { return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger' || cls === 'Artificer') ? 'half' : 'martial'; }
+  function casterKind(cls) { var hc = (RULES.classes[cls] || {}).caster; return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger' || cls === 'Artificer' || hc === 'half') ? 'half' : 'martial'; }
   function listCap(cls) { return isFullCaster(cls) ? 5 : 4; }
   function autoMana(cls, level) { var m = RULES.magic.mana[cls]; return m ? m[0] + m[1] * (Math.max(1, num(level, 1)) - 1) : null; }
   function manaMax(s) { var a = autoMana(s.cls, s.level); return (s.mana.override || a === null) ? num(s.mana.max, 0) : a; }
@@ -1369,7 +1371,7 @@
       var sp = RULES.species[b.species], spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<p class="note" style="margin:0 0 8px">' + esc(sp.note) + '</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
         sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>' : '';
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
-        [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.']].map(function (g) {
+        [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.'], ['homebrew', 'Homebrew', 'Made at your table and approved by the DM.']].map(function (g) {
           var keys = Object.keys(RULES.species).filter(function (k) { return (RULES.species[k].group || 'isles') === g[0]; });
           return keys.length ? '<h2 class="sec-title" style="margin-top:14px">' + g[1] + '<small>' + keys.length + '</small></h2>' + (g[2] ? '<p class="note" style="margin:0 0 6px">' + g[2] + '</p>' : '') +
             choiceList(keys.map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.fly ? ' · flies' : sp.swim ? ' · swims' : sp.climb ? ' · climbs' : '') + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species', spDetail) : '';
@@ -1978,13 +1980,209 @@
     return { hit: signed(hit), dmg: dmg ? dmg + (dmgMod ? (dmgMod > 0 ? ' + ' : ' − ') + Math.abs(dmgMod) : '') : '' };
   }
 
+  /* ---------- Homebrew: items, classes, species, backgrounds and feats (spells and subclasses have their own pages) ----------
+     Anyone can submit; the DM reviews. Approved entries join the same lists as the official ones. */
+  var homebrew = [], HB_KEYS = { cls: [], species: [], bg: [] };
+  var HB_KINDS = [['item', 'Items'], ['class', 'Classes'], ['species', 'Species'], ['background', 'Backgrounds'], ['feat', 'Feats']];
+  function loadHomebrew() {
+    return sb.from('homebrew').select('id, kind, name, data, status, dm_note, submitted_by, created_at, updated_at').order('name').then(function (r) {
+      if (r.error) { if (/homebrew/.test(r.error.message || '')) return; throw r.error; }
+      homebrew = r.data || []; applyHomebrew();
+    });
+  }
+  function hbApproved(kind) { return homebrew.filter(function (h) { return h.status === 'approved' && (!kind || h.kind === kind); }); }
+  // Put approved homebrew into the rules, the SRD lists and the gear catalog. Safe to run again: last run's entries come out first.
+  function applyHomebrew() {
+    HB_KEYS.cls.forEach(function (k) { delete RULES.classes[k]; delete RULES.magic.mana[k]; delete RULES.magic.charges[k]; delete RULES.magic.spellAbility[k]; var i = RULES.magic.fullCasters.indexOf(k); if (i >= 0) RULES.magic.fullCasters.splice(i, 1); var j = SPELL_CLASSES.indexOf(k); if (j >= 0) SPELL_CLASSES.splice(j, 1); });
+    HB_KEYS.species.forEach(function (k) { delete RULES.species[k]; });
+    HB_KEYS.bg.forEach(function (k) { delete RULES.backgrounds[k]; if (SRD) delete SRD.backgrounds[k]; });
+    HB_KEYS = { cls: [], species: [], bg: [] };
+    hbApproved('class').forEach(function (h) {
+      var d = h.data || {}, n = h.name;
+      if (RULES.classes[n]) return;
+      RULES.classes[n] = {
+        hd: num(d.hd, 8), primary: d.primary || '', saves: (d.saves || []).slice(0, 2), book: 'Homebrew', hb: true,
+        armor: d.armor || 'None', weapons: d.weapons || 'Simple weapons', tools: d.tools || '',
+        skills: { n: num(d.skillN, 2), from: (d.skillFrom || []).length ? d.skillFrom : SKILLS.map(function (x) { return x[0]; }) },
+        subclassLevel: num(d.subLevel, 3), subclassLabel: d.subLabel || 'Subclass', asi: [4, 8, 12, 16, 19], subclasses: [], about: d.about || '',
+        caster: d.caster || 'martial', features: (d.features || []).map(function (f) { return [num(f[0], 1), f[1], f[2]]; })
+      };
+      RULES.magic.mana[n] = [num(d.manaStart, 15), num(d.manaPer, 7)];
+      RULES.magic.charges[n] = [(d.hm || []).map(function (x) { return num(x, 0); }).filter(Boolean), num(d.rc, 0)];
+      RULES.magic.spellAbility[n] = d.spellAbility || 'int';
+      if (d.caster === 'full') RULES.magic.fullCasters.push(n);
+      if (SPELL_CLASSES.indexOf(n) < 0) SPELL_CLASSES.push(n);
+      HB_KEYS.cls.push(n);
+    });
+    hbApproved('species').forEach(function (h) {
+      var d = h.data || {};
+      if (RULES.species[h.name]) return;
+      RULES.species[h.name] = { size: d.size || 'Medium', speed: num(d.speed, 30), dark: num(d.dark, 0), fly: num(d.fly, 0), swim: num(d.swim, 0), climb: num(d.climb, 0), group: 'homebrew', note: d.note || '', traits: d.traits || [], hb: true };
+      HB_KEYS.species.push(h.name);
+    });
+    hbApproved('background').forEach(function (h) {
+      var d = h.data || {};
+      if (RULES.backgrounds[h.name]) return;
+      RULES.backgrounds[h.name] = (d.skills || []).filter(Boolean);
+      if (SRD) SRD.backgrounds[h.name] = { book: 'Homebrew', abilities: d.abilities || '', feat: d.feat || '', skills: (d.skills || []).join(' and '), tool: d.tool || '', equipment: d.equipment || '', about: d.about || '', feature: d.feature || '', own: true, hb: true };
+      HB_KEYS.bg.push(h.name);
+    });
+    if (SRD) {
+      SRD.feats = SRD.feats.filter(function (f) { return !f.hb; });
+      hbApproved('feat').forEach(function (h) { var d = h.data || {}; SRD.feats.push({ name: h.name, category: d.category || 'General', prereq: d.prereq || '', book: 'Homebrew', text: [['p', d.text || '']], own: true, hb: true }); });
+    }
+    if (GEAR) {
+      ['weapons', 'armor', 'gear', 'magic'].forEach(function (k) { GEAR[k] = GEAR[k].filter(function (x) { return !x.hb; }); });
+      hbApproved('item').forEach(function (h) {
+        var d = h.data || {}, base = { name: h.name, w: Math.max(0, parseFloat(d.w) || 0), cost: d.cost || '—', hb: true };
+        if (d.type === 'weapon') GEAR.weapons.push(Object.assign(base, { cat: d.wcat || 'Simple Melee', dmg: d.dmg || '1d6', type: d.dtype || 'Bludgeoning', props: String(d.props || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean), mastery: d.mastery || '', text: d.text || '' }));
+        else if (d.type === 'armor' || d.type === 'shield') GEAR.armor.push(Object.assign(base, { cat: d.type === 'shield' ? 'Shield' : d.acat || 'Light', ac: num(d.ac, d.type === 'shield' ? 2 : 11), shield: d.type === 'shield', dex: d.type === 'shield' ? 'none' : d.dex || 'full', str: num(d.str, 0), stealth: !!d.stealth,
+          acText: d.type === 'shield' ? '+' + num(d.ac, 2) : num(d.ac, 11) + (d.dex === 'none' ? '' : d.dex === 'max2' ? ' + Dex modifier (max 2)' : ' + Dex modifier'), text: d.text || '' }));
+        else if (d.type === 'magic') GEAR.magic.push(Object.assign(base, { kind: d.mkind || 'Wondrous Item', rarity: d.rarity || 'Uncommon', attune: !!d.attune, head: (d.mkind || 'Wondrous Item') + ', ' + (d.rarity || 'Uncommon') + (d.attune ? ' (Requires Attunement)' : '') + ' · Homebrew', text: d.text || '' }));
+        else GEAR.gear.push(Object.assign(base, { text: d.text || '' }));
+      });
+      indexGear();
+    }
+  }
+
+  function hbStatusTag(h) { return h.status === 'approved' ? '<span class="tag ok" style="font-size:10px">Approved</span>' : h.status === 'returned' ? '<span class="tag warn" style="font-size:10px">Sent back</span>' : '<span class="tag" style="font-size:10px">Waiting for the DM</span>'; }
+  function hbSummary(h) {
+    var d = h.data || {};
+    switch (h.kind) {
+      case 'item': return ({ weapon: (d.wcat || 'Weapon') + ' · ' + (d.dmg || '') + ' ' + (d.dtype || ''), armor: (d.acat || '') + ' armor · AC ' + (d.ac || ''), shield: 'Shield · +' + (d.ac || 2) + ' AC', magic: (d.mkind || 'Magic item') + ' · ' + (d.rarity || ''), gear: 'Gear' })[d.type] || 'Item';
+      case 'class': return 'd' + (d.hd || 8) + ' hit die · ' + (d.caster === 'full' ? 'full caster' : d.caster === 'half' ? 'half caster' : 'martial') + ' · ' + (d.features || []).length + ' features';
+      case 'species': return (d.size || 'Medium') + ' · ' + (d.speed || 30) + ' ft · ' + (d.traits || []).length + ' traits';
+      case 'background': return (d.skills || []).join(', ') + (d.feat ? ' · ' + d.feat : '');
+      case 'feat': return (d.category || 'General') + (d.prereq ? ' · ' + d.prereq : '');
+    }
+    return '';
+  }
+  function renderHomebrew(arg) {
+    var parts = String(arg || '').split(':'), kind = HB_KINDS.some(function (k) { return k[0] === parts[0]; }) ? parts[0] : 'item', edit = parts[1] || '';
+    var dm = isDM(), html = '<div class="page"><h1 class="page-title">Homebrew</h1><p class="guide">Make your own items, classes, species, backgrounds and feats. ' + (dm ? 'Yours go live right away; players’ wait for your review.' : 'Your DM reviews each one before it joins the lists.') + '</p>';
+    html += '<div class="subtabs" role="tablist">' + HB_KINDS.map(function (k) { return '<a role="tab" href="#/homebrew/' + k[0] + '" aria-selected="' + (kind === k[0]) + '">' + k[1] + '</a>'; }).join('') +
+      '<a role="tab" href="#/spells" aria-selected="false">Spells ↗</a>' + (dm ? '<a role="tab" href="#/subclasses" aria-selected="false">Subclasses ↗</a>' : '') + '</div>';
+    if (edit) { html += hbFormHtml(kind, edit === 'new' ? null : homebrew.filter(function (h) { return h.id === edit; })[0]); $view.innerHTML = html + '</div>'; hbSyncItemType(); return; }
+    var list = homebrew.filter(function (h) { return h.kind === kind; });
+    var pending = dm ? list.filter(function (h) { return h.status === 'pending'; }) : [];
+    html += '<div class="actions" style="margin:12px 0"><a class="btn primary" href="#/homebrew/' + kind + ':new">New ' + HB_KINDS.filter(function (k) { return k[0] === kind; })[0][1].replace(/es$/, '').replace(/s$/, '').replace('Specie', 'species').toLowerCase() + '</a></div>';
+    if (pending.length) html += '<section class="block"><h2 class="sec-title">Waiting for you<small>' + pending.length + '</small></h2><div class="tbl">' + pending.map(function (h) { return hbRow(h, true); }).join('') + '</div></section>';
+    var rest = list.filter(function (h) { return pending.indexOf(h) < 0; });
+    html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + (dm ? 'All' : 'Shared and yours') + '<small>' + rest.length + '</small></h2><div class="tbl">' + (rest.length ? rest.map(function (h) { return hbRow(h, false); }).join('') : '<div class="empty">Nothing here yet.</div>') + '</div></section>';
+    $view.innerHTML = html + '</div>';
+  }
+  function hbRow(h, review) {
+    var mine = h.submitted_by === uid(), dm = isDM(), canEdit = dm || (mine && h.status !== 'approved');
+    return '<div class="tbl-row"><div class="main"><b>' + esc(h.name) + ' ' + hbStatusTag(h) + '</b><span>' + esc(hbSummary(h)) + (h.submitted_by && !mine ? ' · by ' + esc(memberName(h.submitted_by)) : '') + '</span>' + (h.dm_note ? '<span>DM: ' + esc(h.dm_note) + '</span>' : '') + '</div>' +
+      (review ? '<label class="sr" for="hbn-' + h.id + '">Note if sending back</label><input type="text" class="input" id="hbn-' + h.id + '" maxlength="300" placeholder="Note if sending back" style="max-width:200px"><button type="button" class="btn small primary" data-act="hb-approve" data-id="' + h.id + '">Approve</button><button type="button" class="btn small" data-act="hb-return" data-id="' + h.id + '">Send back</button>' : '') +
+      (canEdit ? '<a class="btn small quiet" href="#/homebrew/' + h.kind + ':' + h.id + '">Edit</a>' : '') + '</div>';
+  }
+  function hbF(id, label, value, type, extra) { return '<div class="field"><label for="hb-' + id + '">' + label + '</label><input type="' + (type || 'text') + '" id="hb-' + id + '" value="' + esc(value == null ? '' : value) + '"' + (extra || '') + '></div>'; }
+  function hbSel(id, label, value, opts) { return '<div class="field"><label for="hb-' + id + '">' + label + '</label><select id="hb-' + id + '">' + opts.map(function (o) { o = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(o[0]) + '"' + (String(value) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }
+  function hbArea(id, label, value, ph) { return '<div class="field"><label for="hb-' + id + '">' + label + '</label><textarea id="hb-' + id + '" maxlength="8000" placeholder="' + esc(ph || '') + '">' + esc(value || '') + '</textarea></div>'; }
+  function hbChecks(id, label, list, chosen) { return '<fieldset class="field"><legend>' + label + '</legend><div class="chips">' + list.map(function (x) { return '<label class="chip pick"><input type="checkbox" name="hb-' + id + '" value="' + esc(x[0]) + '"' + ((chosen || []).indexOf(x[0]) >= 0 ? ' checked' : '') + '> ' + esc(x[1]) + '</label>'; }).join('') + '</div></fieldset>'; }
+  function hbFormHtml(kind, h) {
+    var d = h ? h.data || {} : {}, name = h ? h.name : '', html = '<form class="form" id="hb-form" data-kind="' + kind + '" data-id="' + (h ? h.id : '') + '" novalidate style="margin-top:14px">';
+    if (h && h.dm_note) html += '<p class="note">DM’s note: ' + esc(h.dm_note) + '</p>';
+    html += hbF('name', 'Name', name, 'text', ' maxlength="80" required');
+    if (kind === 'item') {
+      var t = d.type || 'gear';
+      html += hbSel('type', 'Type', t, [['gear', 'Adventuring gear or tool'], ['weapon', 'Weapon'], ['armor', 'Armor'], ['shield', 'Shield'], ['magic', 'Magic item']]) +
+        '<div class="grid2">' + hbF('cost', 'Cost', d.cost, 'text', ' maxlength="20" placeholder="e.g. 15 GP"') + hbF('w', 'Weight (lb)', d.w, 'number', ' min="0" step="0.25"') + '</div>' +
+        '<div class="hb-sub" data-for="weapon"><div class="grid2">' + hbSel('wcat', 'Category', d.wcat || 'Simple Melee', ['Simple Melee', 'Simple Ranged', 'Martial Melee', 'Martial Ranged']) + hbF('dmg', 'Damage dice', d.dmg, 'text', ' maxlength="12" placeholder="1d8"') + '</div><div class="grid2">' +
+        hbSel('dtype', 'Damage type', d.dtype || 'Slashing', ['Bludgeoning', 'Piercing', 'Slashing', 'Acid', 'Cold', 'Fire', 'Force', 'Lightning', 'Necrotic', 'Poison', 'Psychic', 'Radiant', 'Thunder']) + hbSel('mastery', 'Mastery', d.mastery || '', [['', 'None']].concat(['Cleave', 'Graze', 'Nick', 'Push', 'Sap', 'Slow', 'Topple', 'Vex'])) + '</div>' +
+        hbF('props', 'Properties (comma separated)', d.props, 'text', ' maxlength="160" placeholder="Finesse, Light, Thrown (Range 20/60)"') + '</div>' +
+        '<div class="hb-sub" data-for="armor"><div class="grid2">' + hbSel('acat', 'Category', d.acat || 'Light', ['Light', 'Medium', 'Heavy']) + hbSel('dex', 'Adds Dexterity', d.dex || 'full', [['full', 'Full Dex'], ['max2', 'Up to +2'], ['none', 'No Dex']]) + '</div><div class="grid2">' +
+        hbF('str', 'Strength needed', d.str, 'number', ' min="0" max="20"') + '<label class="check" style="align-self:end"><input type="checkbox" id="hb-stealth"' + (d.stealth ? ' checked' : '') + '> Disadvantage on Stealth</label></div></div>' +
+        '<div class="hb-sub" data-for="armor shield">' + hbF('ac', 'Armor class (base AC, or the shield’s bonus)', d.ac, 'number', ' min="0" max="30"') + '</div>' +
+        '<div class="hb-sub" data-for="magic"><div class="grid2">' + hbSel('mkind', 'Kind', d.mkind || 'Wondrous Item', ['Wondrous Item', 'Armor', 'Weapon', 'Potion', 'Ring', 'Rod', 'Scroll', 'Staff', 'Wand']) + hbSel('rarity', 'Rarity', d.rarity || 'Uncommon', ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Artifact']) + '</div>' +
+        '<label class="check"><input type="checkbox" id="hb-attune"' + (d.attune ? ' checked' : '') + '> Requires attunement</label></div>' +
+        hbArea('text', 'What it does', d.text, 'Describe the item and its rules.');
+    } else if (kind === 'class') {
+      html += hbArea('about', 'About', d.about, 'Who they are, in a sentence or two.') +
+        '<div class="grid2">' + hbSel('hd', 'Hit die', d.hd || 8, [[6, 'd6'], [8, 'd8'], [10, 'd10'], [12, 'd12']]) + hbF('primary', 'Main ability', d.primary, 'text', ' maxlength="60" placeholder="e.g. Strength"') + '</div>' +
+        hbChecks('saves', 'Saving throws (pick two)', ABILITIES.map(function (a) { return [a[0], a[1]]; }), d.saves) +
+        hbF('armor', 'Armor training', d.armor, 'text', ' maxlength="120" placeholder="Light and medium armor, shields"') + hbF('weapons', 'Weapon proficiencies', d.weapons, 'text', ' maxlength="160" placeholder="Simple and martial weapons"') + hbF('tools', 'Tools', d.tools, 'text', ' maxlength="120"') +
+        '<div class="grid2">' + hbF('skillN', 'Skills to pick', d.skillN || 2, 'number', ' min="0" max="6"') + '<span></span></div>' + hbChecks('skillFrom', 'Skills they can pick from (none ticked = any)', SKILLS.map(function (k) { return [k[0], k[0]]; }), d.skillFrom) +
+        '<h2 class="sec-title" style="margin-top:12px">Magic</h2><div class="grid2">' + hbSel('caster', 'Caster type', d.caster || 'martial', [['full', 'Full caster (list to 5th)'], ['half', 'Half caster (list to 4th)'], ['martial', 'Martial (list to 4th)']]) + hbSel('spellAbility', 'Spellcasting ability', d.spellAbility || 'int', ABILITIES.map(function (a) { return [a[0], a[1]]; })) + '</div>' +
+        '<div class="grid2">' + hbF('manaStart', 'Mana at 1st level', d.manaStart != null ? d.manaStart : 15, 'number', ' min="0" max="200"') + hbF('manaPer', 'Mana per level', d.manaPer != null ? d.manaPer : 7, 'number', ' min="0" max="50"') + '</div>' +
+        '<div class="grid2">' + hbF('hm', 'High Magic Charges at levels', (d.hm || []).join(', '), 'text', ' placeholder="e.g. 15, 19"') + hbF('rc', 'Reality Channel at level (0 = never)', d.rc || 0, 'number', ' min="0" max="20"') + '</div>' +
+        '<h2 class="sec-title" style="margin-top:12px">Subclass</h2><div class="grid2">' + hbF('subLabel', 'Subclass is called', d.subLabel || '', 'text', ' maxlength="40" placeholder="e.g. Order"') + hbF('subLevel', 'Chosen at level', d.subLevel || 3, 'number', ' min="1" max="20"') + '</div>' +
+        '<p class="note">Subclasses are added by the DM on the Subclasses page.</p>' +
+        hbArea('features', 'Features, one per line: level | name | what it does', (d.features || []).map(function (f) { return f.join(' | '); }).join('\n'), '1 | Battle Rhythm | Your first attack each turn deals an extra 1d4 damage.');
+    } else if (kind === 'species') {
+      html += hbArea('note', 'About', d.note, '') + '<div class="grid2">' + hbSel('size', 'Size', d.size || 'Medium', ['Small', 'Medium', 'Small or Medium', 'Large']) + hbF('speed', 'Walking speed (ft)', d.speed || 30, 'number', ' min="0" max="60"') + '</div>' +
+        '<div class="grid2">' + hbF('dark', 'Darkvision (ft, 0 = none)', d.dark || 0, 'number', ' min="0" max="300"') + hbF('fly', 'Fly speed (ft)', d.fly || 0, 'number', ' min="0" max="120"') + '</div><div class="grid2">' + hbF('swim', 'Swim speed (ft)', d.swim || 0, 'number', ' min="0" max="120"') + hbF('climb', 'Climb speed (ft)', d.climb || 0, 'number', ' min="0" max="120"') + '</div>' +
+        hbArea('traits', 'Traits, one per line: name | what it does', (d.traits || []).map(function (f) { return f.join(' | '); }).join('\n'), 'Tidal Lungs | You can breathe air and water.');
+    } else if (kind === 'background') {
+      var origins = SRD ? SRD.feats.filter(function (f) { return f.category === 'Origin'; }).map(function (f) { return f.name; }) : [];
+      html += hbArea('about', 'About', d.about, 'The life they led before adventuring.') + hbF('abilities', 'Abilities to raise (three)', d.abilities, 'text', ' maxlength="80" placeholder="Strength, Constitution, Wisdom"') +
+        '<div class="grid2">' + hbSel('skill1', 'Skill', (d.skills || [])[0] || 'Athletics', SKILLS.map(function (k) { return k[0]; })) + hbSel('skill2', 'Skill', (d.skills || [])[1] || 'Survival', SKILLS.map(function (k) { return k[0]; })) + '</div>' +
+        '<div class="grid2">' + hbSel('feat', 'Origin feat', d.feat || '', [['', 'None']].concat(origins)) + hbF('tool', 'Tool', d.tool, 'text', ' maxlength="80"') + '</div>' +
+        hbF('equipment', 'Equipment (Option A; or B)', d.equipment, 'text', ' maxlength="240" placeholder="Shovel, Rope, Traveler’s Clothes, 20 GP; or 50 GP"') + hbF('feature', 'Feature (optional)', d.feature, 'text', ' maxlength="240"');
+    } else if (kind === 'feat') {
+      html += '<div class="grid2">' + hbSel('category', 'Category', d.category || 'General', ['Origin', 'General', 'Fighting Style', 'Epic Boon']) + hbF('prereq', 'Prerequisite', d.prereq, 'text', ' maxlength="80" placeholder="Level 4+"') + '</div>' + hbArea('text', 'What it does', d.text, '');
+    }
+    html += '<div class="actions"><a class="btn" href="#/homebrew/' + kind + '">Cancel</a>' + (h && (isDM() || h.status !== 'approved') ? '<button type="button" class="btn danger" data-act="hb-delete" data-id="' + h.id + '">Delete</button>' : '') + '<button type="submit" class="btn primary">' + (isDM() ? 'Save' : h ? 'Save and resend' : 'Send to the DM') + '</button></div></form>';
+    return html;
+  }
+  function hbVal(id) { var el = document.getElementById('hb-' + id); return el ? (el.type === 'checkbox' ? el.checked : el.value.trim()) : ''; }
+  function hbChecked(id) { return Array.prototype.map.call(document.querySelectorAll('input[name="hb-' + id + '"]:checked'), function (x) { return x.value; }); }
+  function hbLines(t) { return String(t || '').split('\n').map(function (l) { return l.split('|').map(function (x) { return x.trim(); }); }).filter(function (p) { return p[0]; }); }
+  function saveHomebrew(form) {
+    var kind = form.getAttribute('data-kind'), id = form.getAttribute('data-id'), name = hbVal('name'), d = {};
+    if (!name) return toast('Give it a name.');
+    if (kind === 'item') {
+      d = { type: hbVal('type'), cost: hbVal('cost'), w: hbVal('w'), text: hbVal('text') };
+      if (d.type === 'weapon') Object.assign(d, { wcat: hbVal('wcat'), dmg: hbVal('dmg'), dtype: hbVal('dtype'), mastery: hbVal('mastery'), props: hbVal('props') });
+      if (d.type === 'armor') Object.assign(d, { acat: hbVal('acat'), dex: hbVal('dex'), str: hbVal('str'), stealth: hbVal('stealth') });
+      if (d.type === 'armor' || d.type === 'shield') d.ac = hbVal('ac');
+      if (d.type === 'magic') Object.assign(d, { mkind: hbVal('mkind'), rarity: hbVal('rarity'), attune: hbVal('attune') });
+    } else if (kind === 'class') {
+      var saves = hbChecked('saves');
+      if (saves.length !== 2) return toast('Pick two saving throws.');
+      var feats = hbLines(hbVal('features')).map(function (p) { return p.length >= 3 ? [num(p[0], 1), p[1], p.slice(2).join(' | ')] : [1, p[0], p[1] || '']; });
+      d = { about: hbVal('about'), hd: num(hbVal('hd'), 8), primary: hbVal('primary'), saves: saves, armor: hbVal('armor'), weapons: hbVal('weapons'), tools: hbVal('tools'), skillN: num(hbVal('skillN'), 2), skillFrom: hbChecked('skillFrom'),
+        caster: hbVal('caster'), spellAbility: hbVal('spellAbility'), manaStart: num(hbVal('manaStart'), 15), manaPer: num(hbVal('manaPer'), 7), hm: hbVal('hm').split(/[,\s]+/).map(function (x) { return num(x, 0); }).filter(function (x) { return x >= 1 && x <= 20; }),
+        rc: num(hbVal('rc'), 0), subLabel: hbVal('subLabel'), subLevel: num(hbVal('subLevel'), 3), features: feats };
+    } else if (kind === 'species') {
+      d = { note: hbVal('note'), size: hbVal('size'), speed: num(hbVal('speed'), 30), dark: num(hbVal('dark'), 0), fly: num(hbVal('fly'), 0), swim: num(hbVal('swim'), 0), climb: num(hbVal('climb'), 0), traits: hbLines(hbVal('traits')).map(function (p) { return [p[0], p.slice(1).join(' | ')]; }) };
+    } else if (kind === 'background') {
+      if (hbVal('skill1') === hbVal('skill2')) return toast('Pick two different skills.');
+      d = { about: hbVal('about'), abilities: hbVal('abilities'), skills: [hbVal('skill1'), hbVal('skill2')], feat: hbVal('feat'), tool: hbVal('tool'), equipment: hbVal('equipment'), feature: hbVal('feature') };
+    } else if (kind === 'feat') {
+      d = { category: hbVal('category'), prereq: hbVal('prereq'), text: hbVal('text') };
+    }
+    var row = { kind: kind, name: name, data: d, updated_at: new Date().toISOString() };
+    if (isDM()) row.status = 'approved'; else { row.status = 'pending'; row.dm_note = ''; }
+    if (!id) row.submitted_by = uid();
+    var op = id ? sb.from('homebrew').update(row).eq('id', id) : sb.from('homebrew').insert(row);
+    op.then(function (r) {
+      if (r.error) return toast(/duplicate|unique/i.test(r.error.message) ? 'Something with that name already exists.' : 'Could not save: ' + r.error.message);
+      toast(isDM() ? 'Saved.' : 'Sent to the DM.');
+      loadHomebrew().then(function () { location.hash = '#/homebrew/' + kind; });
+    });
+  }
+  function hbSetStatus(id, status, note) {
+    sb.from('homebrew').update({ status: status, dm_note: note || '', updated_at: new Date().toISOString() }).eq('id', id).then(function (r) {
+      if (r.error) return toast('Could not update: ' + r.error.message);
+      loadHomebrew().then(render);
+    });
+  }
+  // Show only the fields for the chosen item type.
+  function hbSyncItemType() {
+    var t = document.getElementById('hb-type');
+    if (!t) return;
+    Array.prototype.forEach.call(document.querySelectorAll('.hb-sub'), function (el) { el.hidden = el.getAttribute('data-for').split(' ').indexOf(t.value) < 0; });
+  }
+
   /* ---------- Gear from the SRD 5.2.1 (gear.json): equipped items, armor class, weapon attacks ---------- */
   var GEAR = null, GEAR_IDX = {};
   function loadGear() {
     if (GEAR) return Promise.resolve(GEAR);
     if (loadGear.p) return loadGear.p;
     loadGear.p = fetch('gear.json').then(function (r) { if (!r.ok) throw new Error('gear'); return r.json(); })
-      .then(function (d) { GEAR = d; indexGear(); render(); return GEAR; })
+      .then(function (d) { GEAR = d; indexGear(); applyHomebrew(); render(); return GEAR; })
       .catch(function () { loadGear.p = null; });
     return loadGear.p;
   }
@@ -4833,6 +5031,7 @@
   function busy() {
     var r = parseRoute();
     if (['edit', 'builder', 'customize', 'campaign-edit', 'map-edit', 'spell-new', 'spell-edit', 'build', 'level-up', 'shop-edit'].indexOf(r.name) >= 0) return true;
+    if (r.name === 'homebrew' && /:/.test(r.arg || '')) return true;
     if (ui.pendingPin || ui.placing || ui.holdEdit) return true;
     var a = document.activeElement;
     return !!(a && $view.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
@@ -4862,6 +5061,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'holdings' }, function () { if (loaded.holdings) liveRefresh(loadHoldings); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estates' }, function () { if (loaded.holdings) liveRefresh(loadHoldings); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'custom_subclasses' }, function () { liveRefresh(loadCustomSubs); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'homebrew' }, function () { liveRefresh(loadHomebrew); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'spells' }, function () { if (spells !== null || isDM()) liveRefresh(loadSpells); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shops' }, function () { if (loaded.shops) liveRefresh(loadShops); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'table_pins' }, function () { liveRefresh(loadTablePinsDM); })
@@ -7385,6 +7585,13 @@
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
+      case 'hb-approve': hbSetStatus(el.getAttribute('data-id'), 'approved', ''); break;
+      case 'hb-return': var hbn = document.getElementById('hbn-' + el.getAttribute('data-id')); hbSetStatus(el.getAttribute('data-id'), 'returned', hbn ? hbn.value.trim().slice(0, 300) : ''); break;
+      case 'hb-delete':
+        var hbid = el.getAttribute('data-id'), hbrow = homebrew.filter(function (x) { return x.id === hbid; })[0];
+        if (ui.pendingDelete !== 'hb' + hbid) { ui.pendingDelete = 'hb' + hbid; el.textContent = 'Tap again to delete'; return; }
+        sb.from('homebrew').delete().eq('id', hbid).then(function (r) { if (r.error) return toast('Could not delete: ' + r.error.message); toast('Deleted.'); loadHomebrew().then(function () { location.hash = '#/homebrew/' + (hbrow ? hbrow.kind : ''); }); });
+        break;
       case 'peek': peekShow(el.getAttribute('data-kind'), el.getAttribute('data-key')); break;
       case 'peek-close': peekClose(); break;
       case 'act-filter': ui.actFilter = el.getAttribute('data-val'); render(); break;
@@ -7698,6 +7905,7 @@
       case 'builder-form': return saveBuilder();
       case 'newchar-form': return createCharacter();
       case 'pc-form': return savePartyForm(f);
+      case 'hb-form': return saveHomebrew(f);
       case 'tpin-form': return saveTablePin(f);
       case 'campaign-form': return saveCampaign(f);
       case 'crime-form': return saveCrime(f);
@@ -8533,6 +8741,7 @@
     }).join('') + '</select></div>';
   }
   document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'hb-type') return hbSyncItemType();
     if (!e.target || e.target.id !== 'ft-pick' || !SRD) return;
     var v = e.target.value.split('|'), o = null;
     if (v[0] === 'Feat') o = srdFeat(v[1]); else if (SRD.options[v[0]]) o = SRD.options[v[0]].filter(function (x) { return x.name === v[1]; })[0];
@@ -8554,6 +8763,7 @@
     });
     var sorted = {}; Object.keys(RULES.backgrounds).sort().forEach(function (k) { sorted[k] = RULES.backgrounds[k]; }); RULES.backgrounds = sorted;
     Object.keys(ex.options || {}).forEach(function (k) { SRD.options[k] = (SRD.options[k] || []).concat(ex.options[k]); });
+    applyHomebrew();
   }
   function loadSrd() {
     if (SRD) return Promise.resolve(SRD);
