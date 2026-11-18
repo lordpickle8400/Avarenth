@@ -1190,7 +1190,7 @@
   }
 
   /* ---------- Character builder ---------- */
-  var BUILD_STEPS = ['Name', 'Class', 'Species', 'Background', 'Abilities', 'Skills', 'Spells', 'Review'];
+  var BUILD_STEPS = ['Name', 'Class', 'Species', 'Background', 'Abilities', 'Skills', 'Spells', 'Equipment', 'Review'];
   function buildSteps(b) {
     var out = BUILD_STEPS.slice(), at = 2;
     if (devotionLabel(b.cls)) { out.splice(at, 0, devotionLabel(b.cls)); at++; }
@@ -1251,6 +1251,31 @@
   }
   function pointsSpent(b) { return ABILITIES.reduce(function (t, a) { return t + (RULES.pointBuyCost[num(b.pb[a[0]], 8)] || 0); }, 0); }
 
+  // Starting equipment: the class's options (A, B, or C) and the background's gear or 50 GP.
+  function buildGearOpts(b) {
+    var bg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
+    return { cls: GEAR ? gearOptions(GEAR.startClass[b.cls]) : [], bg: gearOptions(bg ? bg.equipment : '') };
+  }
+  function buildGearPicks(b) {
+    var o = buildGearOpts(b), pick = function (list, key) { return (list.filter(function (x) { return x.key === key; })[0] || list[0] || { text: '' }).text; };
+    return [pick(o.cls, b.eqC || 'A'), pick(o.bg, b.eqB || 'A')].filter(Boolean);
+  }
+  function buildEquipHtml(b) {
+    if (!GEAR) { loadGear(); return '<div class="empty">Opening the armory…</div>'; }
+    var o = buildGearOpts(b);
+    var card = function (opt, kind, sel) {
+      var g = parseGear(opt.text, ''), on = sel === opt.key;
+      var list = g.items.length ? '<ul class="eq-list">' + g.items.map(function (x) { return '<li>' + (x.qty > 1 ? x.qty + ' × ' : '') + esc(x.name) + (x.from ? ' <span class="note">(' + esc(x.from) + ')</span>' : '') + '</li>'; }).join('') + '</ul>' : '';
+      return '<div class="cl-item' + (on ? ' on' : '') + '"><button type="button" class="cl-row" data-act="bd-eq" data-kind="' + kind + '" data-val="' + opt.key + '" aria-pressed="' + on + '"><span class="cl-badge" aria-hidden="true">' + opt.key + '</span><span class="cl-txt"><b>' + (g.items.length ? 'Option ' + opt.key + ': gear' + (g.gp ? ' and ' + g.gp + ' GP' : '') : 'Option ' + opt.key + ': ' + g.gp + ' GP to spend') + '</b><span>' + esc(shortText(opt.text, 140)) + '</span></span><span class="cl-chev" aria-hidden="true">' + (on ? '✓' : '›') + '</span></button>' +
+        (on && list ? '<div class="cl-detail">' + list + '</div>' : '') + '</div>';
+    };
+    var html = '<p class="guide">Pick your starting gear, or take the gold and buy your own in town. Everything goes into your inventory, with armor and weapons already equipped.</p>';
+    html += '<h3 class="act-h">From your class<small>' + esc(b.cls) + '</small></h3><div class="choice-list">' + (o.cls.length ? o.cls.map(function (x) { return card(x, 'c', b.eqC || 'A'); }).join('') : '<p class="note">No starting gear listed.</p>') + '</div>';
+    html += '<h3 class="act-h" style="margin-top:14px">From your background<small>' + esc(b.bg) + '</small></h3><div class="choice-list">' + (o.bg.length ? o.bg.map(function (x) { return card(x, 'b', b.eqB || 'A'); }).join('') : '<p class="note">No starting gear listed.</p>') + '</div>';
+    var tot = buildGearPicks(b).reduce(function (t, x) { return t + parseGear(x, '').gp; }, 0);
+    html += '<p class="note" style="margin-top:10px">You start with ' + Math.round(tot * 10) / 10 + ' GP.</p>';
+    return html;
+  }
   // The live summary beside the builder: the character filling in as you choose.
   function buildSummaryHtml(b) {
     var cd = RULES.classes[b.cls], sp = RULES.species[b.species] || null, sc = buildScores(b), haveScores = ABILITIES.every(function (a) { return num(sc[a[0]], 0) > 0; });
@@ -1379,6 +1404,8 @@
         }).join('') + '</div>';
     } else if (step === 'Spells') {
       html += buildSpellsHtml(b);
+    } else if (step === 'Equipment') {
+      html += buildEquipHtml(b);
     } else {
       html += buildReviewHtml(b);
     }
@@ -1475,19 +1502,39 @@
     s.spells = b.spells.map(function (n) { var sp = spellByName(n); return { name: n, level: sp ? sp.level : 0, school: sp ? sp.school : '', source: 'Class' }; });
     var ofeat = b.ofeat ? srdFeat(b.ofeat) : null;
     if (ofeat) s.features.push({ name: ofeat.name, text: srdFirst(ofeat.text) + ' (Origin feat.)', feat: ofeat.name });
+    if (GEAR) {
+      var gp = 0;
+      buildGearPicks(b).forEach(function (txt) {
+        var g = parseGear(txt, '');
+        gp += g.gp;
+        g.items.forEach(function (x) {
+          var have = s.items.filter(function (o) { return o.name === x.name; })[0];
+          if (have) have.qty += x.qty; else s.items.push({ name: x.name, qty: x.qty, ref: x.ref || undefined, from: x.from || undefined });
+        });
+      });
+      var armorOn = false, shieldOn = false;
+      s.items.forEach(function (it) {
+        var k = itemKind(it).k, g = gearItem(itemRef(it));
+        if (k === 'weapon') it.eq = true;
+        if (k === 'armor' && g) { if (g.shield && !shieldOn) { it.eq = shieldOn = true; } else if (!g.shield && !armorOn) { it.eq = armorOn = true; } }
+      });
+      s.items.forEach(function (it) { Object.keys(it).forEach(function (k) { if (it[k] === undefined) delete it[k]; }); });
+      s.coins.gp = Math.floor(gp + 1e-6); s.coins.sp = Math.round((gp - Math.floor(gp + 1e-6)) * 10);
+    }
     s.log = [{ level: 1, text: 'Created with the character builder.' }];
     return s;
   }
   function buildReviewHtml(b) {
     var s = buildSheet(b), cd = RULES.classes[b.cls];
-    return '<p class="guide">Here’s ' + esc(b.name) + '. Create the character, then add armor, weapons and gear on the sheet.</p>' +
+    var rab = {}; ABILITIES.forEach(function (a) { rab[a[0]] = mod(s.abilities[a[0]]); });
+    return '<p class="guide">Here’s ' + esc(b.name) + '. Check it over, then create the character.</p>' +
       '<div class="group-box"><h2>' + esc(b.name) + '</h2><p class="who" style="margin:0 0 10px">Level 1 ' + esc(b.species + ' ' + b.cls) + ' · ' + esc(b.bg) + (s.patron ? ' · ' + (s.patron === OATH_ONLY ? 'sworn to their oath' : (devotionLabel(b.cls) === 'Patron' ? 'pact with ' : 'serves ') + esc(s.patron)) : '') + '</p>' +
       (s.oath ? '<blockquote class="oath">' + esc(s.oath) + '</blockquote>' : '') + (s.drawbacks ? '<p class="note" style="margin:0 0 4px">Drawbacks</p><blockquote class="oath">' + esc(s.drawbacks) + '</blockquote>' : '') +
       '<div class="abilities">' + ABILITIES.map(function (a) { return '<div class="ab"><span class="k">' + a[0] + '</span><span class="mod">' + signed(mod(s.abilities[a[0]])) + '</span><span class="score">' + s.abilities[a[0]] + '</span></div>'; }).join('') + '</div>' +
-      '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', s.ac) + vital('Speed', s.speed + ' ft') + '</div>' +
+      '<div class="vitals sum">' + vital('Hit points', s.hp.max) + vital('Mana', s.mana.max) + vital('Armor', acCalc(s, rab).ac) + vital('Speed', s.speed + ' ft') + '</div>' +
       '<div class="tbl" style="margin-top:10px"><div class="tbl-row"><div class="main"><b>Skills</b><span>' + esc(Object.keys(s.skills).sort().join(', ')) + '</span></div></div>' +
       '<div class="tbl-row"><div class="main"><b>Spells</b><span>' + esc(b.spells.join(', ') || 'None yet') + '</span></div></div>' +
-      '<div class="tbl-row"><div class="main"><b>Next</b><span>' + (cd.subclassLevel === 1 ? '' : 'You choose your ' + cd.subclassLabel.toLowerCase() + ' at level ' + cd.subclassLevel + '. ') + 'Add your armor and weapons, and set your armor class if you wear armor.</span></div></div></div></div>';
+      '<div class="tbl-row"><div class="main"><b>Next</b><span>' + (cd.subclassLevel === 1 ? '' : 'You choose your ' + cd.subclassLabel.toLowerCase() + ' at level ' + cd.subclassLevel + '. ') + 'Your gear is in the Inventory tab, already equipped.</span></div></div></div></div>';
   }
 
   /* ---------- Level-up guide ---------- */
@@ -1687,7 +1734,7 @@
         sheetInput('Species', 'species', s.species, '', 'dl-species') + sheetInput('Class', 'cls', s.cls, '', 'dl-classes') +
         sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') +
         (devotionLabel(s.cls) || s.patron ? sheetInput(devotionLabel(s.cls) || 'Deity or patron', 'patron', s.patron, '', 'dl-patrons') : '') +
-        sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class', 'ac', s.ac, 'number') +
+        sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class with no armor', 'ac', s.ac, 'number') +
         sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') + sheetInput('Languages', 'langs', s.langs || '', '') +
         '</div><p class="hint">To gain a level, use the level-up guide. It adds hit points, mana and choices for you. Changing the level here doesn’t.</p>' +
         '<div class="field"><label for="ch-camp">Campaign</label><select id="ch-camp" data-cf="campaign_id">' + campaignOptions(c.campaign_id, true, 'No campaign') + '</select></div><div class="field"><label for="ch-ddb">D&amp;D Beyond link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
@@ -1721,14 +1768,15 @@
     var colA = csSavesHtml(s, abil, pb, can) + csSensesHtml(s, abil, pb, perc, sp0) + csProfsHtml(s, cd, sp0);
     var colB = csSkillsHtml(s, abil, pb, can);
     html += '<div class="cs-body">' + (phone ? '' : '<div class="cs-col cs-a">' + colA + '</div><div class="cs-col cs-b">' + colB + '</div>') + '<div class="cs-col cs-c">';
-    html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class"><span class="k">Armor</span><span class="v">' + num(s.ac, 10) + '</span><span class="k">Class</span></div>' +
+    var acNow = acCalc(s, abil);
+    html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class" title="' + esc(acNow.how) + '"><span class="k">Armor</span><span class="v">' + acNow.ac + '</span><span class="k">Class</span></div>' +
       csStat('Initiative', signed(init), '') + (sa ? csStat('Spell save', String(8 + pb + sa.mod), 'DC') + csStat('Spell attack', signed(pb + sa.mod), sa.key.toUpperCase()) : '') + '</div>';
     html += conditionHtml(s, can, true);
     var tabs = (phone ? ['Abilities', 'Skills'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
     var tabName = { Features: 'Features & Traits', Abilities: 'Saves & Senses' };
     html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
-    html += '<div role="tabpanel" class="cs-panel">' + (ui.sheetTab === 'Abilities' ? colA : ui.sheetTab === 'Skills' ? colB : ui.sheetTab === 'Background' ? csBackgroundHtml(c, s, sp0) : (ui.sheetTab === 'Actions' ? resourcesHtml(s, can) : '') + sheetTab(c, s, edit, can, abil, pb, perc)) + '</div>';
+    html += '<div role="tabpanel" class="cs-panel">' + (ui.sheetTab === 'Abilities' ? colA : ui.sheetTab === 'Skills' ? colB : ui.sheetTab === 'Background' ? csBackgroundHtml(c, s, sp0) : sheetTab(c, s, edit, can, abil, pb, perc)) + '</div>';
     html += '</div></div>';
 
     if (edit) html += '<div class="actions" style="justify-content:flex-end"><button type="button" class="btn danger" data-act="delete-char" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again to delete' : 'Delete character') + '</button></div>';
@@ -1817,7 +1865,7 @@
     return html + '</section>';
   }
   function itemWeight(it) {
-    if (typeof it.w === 'number') return it.w;
+    if (typeof it.w === 'number' || GEAR) return unitWeight(it);
     var k = String(it.name || '').toLowerCase(), cat = (window.AVARENTH_ITEMS || { items: [] }).items.filter(function (x) { return x.name.toLowerCase() === k; })[0];
     return cat && cat.weight ? cat.weight : 0;
   }
@@ -1930,29 +1978,309 @@
     return { hit: signed(hit), dmg: dmg ? dmg + (dmgMod ? (dmgMod > 0 ? ' + ' : ' − ') + Math.abs(dmgMod) : '') : '' };
   }
 
+  /* ---------- Gear from the SRD 5.2.1 (gear.json): equipped items, armor class, weapon attacks ---------- */
+  var GEAR = null, GEAR_IDX = {};
+  function loadGear() {
+    if (GEAR) return Promise.resolve(GEAR);
+    if (loadGear.p) return loadGear.p;
+    loadGear.p = fetch('gear.json').then(function (r) { if (!r.ok) throw new Error('gear'); return r.json(); })
+      .then(function (d) { GEAR = d; indexGear(); render(); return GEAR; })
+      .catch(function () { loadGear.p = null; });
+    return loadGear.p;
+  }
+  function gearKey(n) { return String(n || '').toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim(); }
+  function indexGear() {
+    GEAR_IDX = {};
+    ['magic', 'tools', 'gear', 'armor', 'weapons'].forEach(function (k) {
+      (GEAR[k] || []).forEach(function (it) {
+        var key = gearKey(it.name), rec = { k: k, it: it };
+        GEAR_IDX[key] = rec;
+        var m = /^(.+?), (.+)$/.exec(it.name);   // "Lantern, Hooded" is also "Hooded Lantern"
+        if (m) GEAR_IDX[gearKey(m[2] + ' ' + m[1])] = rec;
+        var f = /^(.+?) \((arcane focus|druidic focus|holy symbol)\)$/i.exec(it.name);
+        if (f) GEAR_IDX[gearKey(f[2] + ' (' + f[1] + ')')] = rec;
+      });
+    });
+    GEAR_IDX[gearKey('Druidic Focus (Quarterstaff)')] = GEAR_IDX[gearKey('Wooden staff (druidic focus)')];
+    GEAR_IDX[gearKey('Arcane Focus (Quarterstaff)')] = GEAR_IDX[gearKey('Staff (arcane focus)')];
+    GEAR_IDX[gearKey('Arcane Focus (crystal)')] = GEAR_IDX[gearKey('Crystal (arcane focus)')];
+    GEAR_IDX[gearKey('Druidic Focus (sprig of mistletoe)')] = GEAR_IDX[gearKey('Sprig of mistletoe (druidic focus)')];
+  }
+  function gearFind(name) {
+    if (!GEAR) return null;
+    var k = gearKey(name), tries = [k, k.replace(/\s*\([^)]*\)$/, '')];
+    tries.slice().forEach(function (t) { tries.push(t.replace(/ies$/, 'y'), t.replace(/(ch|sh|x)es$/, '$1'), t.replace(/s$/, '')); });
+    for (var i = 0; i < tries.length; i++) if (GEAR_IDX[tries[i]]) return GEAR_IDX[tries[i]];
+    return null;
+  }
+  function gearItem(ref) { var r = ref && GEAR ? gearFind(ref.n) : null; return r && r.k === ref.k ? r.it : r ? r.it : null; }
+  function itemRef(it) { if (it.ref) return it.ref; var r = gearFind(it.name); return r ? { k: r.k, n: r.it.name } : null; }
+  // "2 Daggers, Thieves' Tools, 10 days of Rations, and 15 GP" -> items and coins. Packs are opened up.
+  function parseGear(text, from) {
+    var out = { items: [], gp: 0 };
+    String(text || '').replace(/^Choose[^:]*:\s*/i, '').replace(/^\([A-C]\)\s*/, '').split(/,\s*(?:and\s+)?|\s+and\s+/).forEach(function (raw) {
+      var p = raw.trim().replace(/\.$/, '').replace(/\s+(of your choice|chosen for .*)$/i, '').replace(/^(a|an|the)\s+/i, '');
+      if (!p) return;
+      var coin = /^(\d+)\s*(gp|sp|cp)$/i.exec(p);
+      if (coin) { out.gp += num(coin[1], 0) * ({ gp: 1, sp: 0.1, cp: 0.01 })[coin[2].toLowerCase()]; return; }
+      var qty = 1, m = /^(\d+)\s+(?:(?:days?|flasks?|sheets?|pieces?|feet|bundles?) of\s+)?(.+)$/i.exec(p);
+      if (m) { qty = num(m[1], 1); p = m[2]; }
+      var paren = /\((\d+)\s+\w+\)$/.exec(p);
+      if (paren) { qty = num(paren[1], 1); p = p.replace(/\s*\(\d+\s+\w+\)$/, ''); }
+      var f = gearFind(p);
+      if (f && f.k === 'gear' && GEAR.packs[f.it.name]) {
+        GEAR.packs[f.it.name].forEach(function (x) { var sub = parseGear(x, f.it.name); out.items = out.items.concat(sub.items); });
+        return;
+      }
+      var name = f ? f.it.name : p.charAt(0).toUpperCase() + p.slice(1);
+      var have = out.items.filter(function (x) { return x.name === name; })[0];
+      if (have) have.qty += qty;
+      else out.items.push({ name: name, qty: qty, ref: f ? { k: f.k, n: f.it.name } : null, from: from || '' });
+    });
+    return out;
+  }
+  // "Choose A or B: (A) ...; or (B) 75 GP" -> [{key: 'A', text}, {key: 'B', text}]
+  function gearOptions(text) {
+    var t = String(text || ''), out = [], re = /\(([A-C])\)\s*([^;]+)/g, m;
+    while ((m = re.exec(t))) out.push({ key: m[1], text: m[2].replace(/^\s*or\s+/i, '').trim() });
+    if (!out.length && t) t.split(/;\s*or\s+/i).forEach(function (x, i) { out.push({ key: 'AB'[i] || 'C', text: x.trim() }); });
+    return out;
+  }
+  function unitWeight(it) {
+    if (typeof it.w === 'number') return it.w;
+    var g = gearItem(itemRef(it));
+    if (g) return (g.w || 0) / Math.max(1, num(g.qty, 1));
+    var k = String(it.name || '').toLowerCase(), cat = (window.AVARENTH_ITEMS || { items: [] }).items.filter(function (x) { return x.name.toLowerCase() === k; })[0];
+    return cat && cat.weight ? cat.weight : 0;
+  }
+  function itemKind(it) {
+    var r = itemRef(it), g = gearItem(r);
+    if (!g) return { k: 'other', label: it.notes || 'Item' };
+    if (r.k === 'weapons') return { k: 'weapon', label: g.cat + ' weapon · ' + g.dmg + ' ' + g.type };
+    if (r.k === 'armor') return { k: 'armor', label: g.shield ? 'Shield · +2 AC' : g.cat + ' armor · AC ' + g.acText.replace(' modifier', '') };
+    if (r.k === 'magic') return { k: 'magic', label: g.head };
+    if (r.k === 'tools') return { k: 'tool', label: 'Tool' };
+    return { k: 'gear', label: 'Adventuring gear' };
+  }
+  function canEquip(it) { var k = itemKind(it).k; return k === 'weapon' || k === 'armor' || k === 'magic' || !itemRef(it); }
+  // Armor class from what's worn. Without armor or a shield, the sheet's own number stands (unarmored, natural armor...).
+  function acCalc(s, abil) {
+    var armor = null, shield = null, notes = [];
+    s.items.forEach(function (it) {
+      if (!it.eq) return;
+      var r = itemRef(it), g = gearItem(r);
+      if (!g || r.k !== 'armor') return;
+      if (g.shield) { if (!shield) shield = { g: g, it: it }; } else if (!armor) armor = { g: g, it: it };
+    });
+    if (!armor && !shield) return { ac: num(s.ac, 10), how: 'Unarmored', worn: false, notes: notes };
+    var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) : num(s.ac, 10);
+    if (shield) ac += 2 + num(shield.it.bonus, 0);
+    if (armor && armor.g.stealth) notes.push('Disadvantage on Stealth');
+    if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
+    return { ac: ac, how: [armor ? armor.it.name : '', shield ? 'Shield' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
+  }
+  function weaponProf(cd, w) {
+    if (!cd) return false;
+    var t = String(cd.weapons || '').toLowerCase();
+    if (/martial weapons/.test(t) && !/martial weapons (that|with)/.test(t)) return true;
+    if (/simple/.test(t) && /^Simple/.test(w.cat)) return true;
+    if (/martial weapons (that|with)/.test(t) && /^Martial/.test(w.cat)) return w.props.some(function (p) { return /^(Finesse|Light)/.test(p); });
+    return t.indexOf(w.name.toLowerCase().replace(/s$/, '')) >= 0;
+  }
+  function weaponAttack(s, it, abil, pb) {
+    var w = gearItem(itemRef(it));
+    if (!w) return null;
+    var ranged = /Ranged/.test(w.cat), fin = w.props.some(function (p) { return /^Finesse/.test(p); });
+    var ab = ranged ? 'dex' : fin ? (abil.dex > abil.str ? 'dex' : 'str') : 'str';
+    var prof = weaponProf(classOf(s), w), bonus = num(it.bonus, 0), dm = abil[ab] + bonus;
+    var rng = w.props.map(function (p) { var m = /Range (\d+\/\d+)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
+    var reach = w.props.some(function (p) { return /^Reach/.test(p); });
+    var vers = w.props.map(function (p) { var m = /Versatile \(([^)]+)\)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
+    return {
+      name: it.name + (bonus ? ' +' + bonus : ''), ref: itemRef(it), range: ranged ? rng + ' ft' : (reach ? '10 ft' : '5 ft') + (rng ? ' (' + rng + ')' : ''),
+      hit: signed(abil[ab] + (prof ? pb : 0) + bonus), dmg: w.dmg + (dm ? (dm > 0 ? '+' : '−') + Math.abs(dm) : '') + ' ' + w.type,
+      notes: w.props.map(function (p) { return p.replace(/\s*\(.*$/, ''); }).concat(w.mastery ? [w.mastery + ' (mastery)'] : []).join(', ') + (vers ? ' · ' + vers + ' two-handed' : '') + (prof ? '' : ' · not proficient'),
+      light: w.props.indexOf('Light') >= 0
+    };
+  }
+  function attacksPerAction(s) {
+    var L = num(s.level, 1);
+    if (s.cls === 'Fighter') return byLevel(L, [[1, 1], [5, 2], [11, 3], [20, 4]]);
+    return derivedFeatures(s).some(function (f) { return /^Extra Attack/.test(f.name); }) ? 2 : 1;
+  }
+  // What a spell does in a fight, read from its text: attack or save, damage, range, casting time.
+  function spellCombat(sp, pb, sa) {
+    var t = spellText(sp);
+    if (!t || t.src === 'none' || !t.description) return null;
+    var d = t.description, att = /spell attack/i.test(d), sv = /(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throw/.exec(d);
+    var dm = /(\d+d\d+(?:\s*\+\s*\d+)?)\s+(\w+) damage/i.exec(d), heal = /regains? (?:a number of )?hit points? equal to (\d+d\d+)|regains? (\d+d\d+)/i.exec(d);
+    return {
+      time: t.casting_time || '', range: t.range || '', conc: /concentration/i.test(t.duration || ''), dur: t.duration || '',
+      hitdc: !sa ? '—' : att ? signed(pb + sa.mod) : sv ? sv[1].slice(0, 3).toUpperCase() + ' ' + (8 + pb + sa.mod) : '—',
+      effect: dm ? dm[1].replace(/\s+/g, '') + ' ' + dm[2] : heal ? 'Heals ' + (heal[1] || heal[2]) : '', attack: att || !!sv
+    };
+  }
+  function featureKind(text) {
+    var t = String(text || '');
+    if (/\bbonus action\b/i.test(t)) return 'Bonus Action';
+    if (/\breaction\b/i.test(t)) return 'Reaction';
+    if (/\b(as an action|use your action|take the magic action|magic action|as an action,)\b/i.test(t)) return 'Action';
+    return 'Other';
+  }
+  function shortText(t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : t; }
+  function peekBtn(kind, key, label, cls) { return '<button type="button" class="pk-link' + (cls ? ' ' + cls : '') + '" data-act="peek" data-kind="' + kind + '" data-key="' + esc(key) + '">' + label + '</button>'; }
+
+  /* ---------- Actions tab: attacks, then actions, bonus actions, reactions, other, limited use ---------- */
+  var ACT_FILTERS = ['All', 'Attack', 'Action', 'Bonus Action', 'Reaction', 'Other', 'Limited Use'];
+  function actionsTabHtml(c, s, edit, can, abil, pb) {
+    if (!GEAR) loadGear();
+    if (!SPTEXT && s.spells.length) loadSpellText().then(function () { if (parseRoute().name === 'c') render(); });
+    var f = ACT_FILTERS.indexOf(ui.actFilter) >= 0 ? ui.actFilter : 'All', show = function (k) { return f === 'All' || f === k; };
+    var sa = spellAbilityMod(s, abil), feats = derivedFeatures(s).concat(s.features.map(function (x) { return { name: x.name, text: x.text, src: 'Added', added: true }; }));
+    var html = '<div class="chips act-filter" role="group" aria-label="Show">' + ACT_FILTERS.map(function (k) { return '<button type="button" class="chip pick" data-act="act-filter" data-val="' + k + '" aria-pressed="' + (f === k) + '">' + k + '</button>'; }).join('') + '</div>';
+    var weapons = s.items.filter(function (it) { return it.eq && itemKind(it).k === 'weapon'; }).map(function (it) { return weaponAttack(s, it, abil, pb); }).filter(Boolean);
+    var sp = s.spells.map(function (x) { return { sp: x, cb: spellCombat(spellByName(x.name) || x, pb, sa) }; });
+    if (show('Attack')) {
+      html += '<section class="act-sec"><h3 class="act-h">Attacks <small>Attacks per Attack action: ' + attacksPerAction(s) + '</small></h3><div class="act-table" role="table" aria-label="Attacks"><div class="act-th" role="row"><span role="columnheader">Attack</span><span role="columnheader">Range</span><span role="columnheader">Hit / DC</span><span role="columnheader">Damage</span><span role="columnheader">Notes</span></div>';
+      weapons.forEach(function (a) {
+        html += '<div class="act-tr" role="row"><span class="nm">' + peekBtn('item', a.ref.n, esc(a.name)) + '</span><span>' + esc(a.range) + '</span><span class="hit">' + a.hit + '</span><span class="dmg">' + esc(a.dmg) + '</span><span class="nt">' + esc(a.notes) + '</span></div>';
+      });
+      s.attacks.forEach(function (a, i) {
+        var l = attackLine(s, a, abil, pb);
+        html += '<div class="act-tr" role="row"><span class="nm"><b>' + esc(a.name) + '</b></span><span>—</span><span class="hit">' + l.hit + '</span><span class="dmg">' + esc(l.dmg) + '</span><span class="nt">' + esc(a.notes || 'Custom') +
+          (edit ? ' <button type="button" class="linkish" data-act="rm" data-list="attacks" data-i="' + i + '">Remove</button>' : '') + '</span></div>';
+      });
+      var str = abil.str;
+      html += '<div class="act-tr" role="row"><span class="nm">' + peekBtn('action', 'Unarmed Strike', 'Unarmed Strike') + '</span><span>5 ft</span><span class="hit">' + signed(str + pb) + '</span><span class="dmg">' + Math.max(1, 1 + str) + ' Bludgeoning</span><span class="nt">Or grapple or shove</span></div>';
+      sp.filter(function (o) { return o.cb && o.cb.attack && o.cb.effect && !/bonus action|reaction/i.test(o.cb.time); }).forEach(function (o) {
+        html += '<div class="act-tr" role="row"><span class="nm">' + peekBtn('spell', o.sp.name, esc(o.sp.name)) + '</span><span>' + esc(o.cb.range) + '</span><span class="hit">' + esc(o.cb.hitdc) + '</span><span class="dmg">' + esc(o.cb.effect) + '</span><span class="nt">' + (num(o.sp.level, 0) ? spellCost(o.sp) + ' mana' : 'Cantrip') + (o.cb.conc ? ' · Concentration' : '') + '</span></div>';
+      });
+      html += '</div>';
+      if (!weapons.length) html += '<p class="note" style="margin:6px 0 0">Equip weapons on the Inventory tab and they show up here with their bonus to hit and damage.</p>';
+      if (can) html += '<details class="act-custom"><summary>Add a custom attack</summary><form class="inline-form attack-form" id="add-attack" novalidate style="margin-top:8px"><div class="field"><label for="at-name">Attack</label><input type="text" id="at-name" maxlength="60" placeholder="e.g. Bite"></div>' +
+        '<div class="field"><label for="at-ab">Ability</label><select id="at-ab">' + ABILITIES.map(function (a) { return '<option value="' + a[0] + '">' + a[0].toUpperCase() + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="at-dmg">Damage</label><input type="text" id="at-dmg" maxlength="30" placeholder="1d6 piercing"></div>' +
+        '<div class="field"><label for="at-bonus">Magic +</label><input type="number" id="at-bonus" value="0" min="0" max="5" inputmode="numeric"></div>' +
+        '<label class="check"><input type="checkbox" id="at-prof" checked> Proficient</label><button type="submit" class="btn primary">Add</button></form></details>';
+      html += '</section>';
+    }
+    var byKind = { Action: [], 'Bonus Action': [], Reaction: [], Other: [] };
+    feats.forEach(function (x) { byKind[featureKind(x.text)].push(x); });
+    var row = function (x) { return '<div class="act-row">' + peekBtn('feature', x.name, esc(x.name)) + '<span class="src">' + esc(x.src || '') + '</span><p>' + esc(shortText(x.text, 170)) + '</p></div>'; };
+    var spRow = function (o) { return '<div class="act-row">' + peekBtn('spell', o.sp.name, esc(o.sp.name)) + '<span class="src">' + (num(o.sp.level, 0) ? spellCost(o.sp) + ' mana' : 'Cantrip') + ' · ' + esc(o.cb.range) + '</span><p>' + esc(o.cb.effect || o.cb.dur) + '</p></div>'; };
+    if (show('Action')) {
+      html += '<section class="act-sec"><h3 class="act-h">Actions</h3>' + byKind.Action.map(row).join('') +
+        '<div class="act-row"><b>Actions in combat</b><p class="act-std">' + ['Attack', 'Dash', 'Disengage', 'Dodge', 'Grappling', 'Help', 'Hide', 'Influence', 'Magic', 'Ready', 'Search', 'Study', 'Utilize'].map(function (k) { return peekBtn('action', k, k === 'Grappling' ? 'Grapple' : k); }).join(', ') + '</p></div></section>';
+    }
+    if (show('Bonus Action')) {
+      var bon = byKind['Bonus Action'].map(row).concat(sp.filter(function (o) { return o.cb && /bonus action/i.test(o.cb.time); }).map(spRow));
+      var lights = weapons.filter(function (a) { return a.light; });
+      if (lights.length >= 2) bon.unshift('<div class="act-row">' + peekBtn('item', lights[1].ref.n, 'Off-hand attack') + '<span class="src">Light property</span><p>After attacking with a Light weapon, attack with a different Light weapon in your other hand. Add no ability modifier to its damage unless it’s negative.</p></div>');
+      html += '<section class="act-sec"><h3 class="act-h">Bonus Actions</h3>' + (bon.length ? bon.join('') : '<p class="note">Nothing yet.</p>') + '</section>';
+    }
+    if (show('Reaction')) {
+      html += '<section class="act-sec"><h3 class="act-h">Reactions</h3><div class="act-row">' + peekBtn('action', 'Opportunity Attacks', 'Opportunity Attack') + '<p>When a creature you can see leaves your reach, make one melee attack against it.</p></div>' +
+        byKind.Reaction.map(row).join('') + sp.filter(function (o) { return o.cb && /reaction/i.test(o.cb.time); }).map(spRow).join('') + '</section>';
+    }
+    if (show('Other')) html += '<section class="act-sec"><h3 class="act-h">Other</h3>' + (byKind.Other.length ? byKind.Other.map(row).join('') : '<p class="note">Nothing yet.</p>') + '</section>';
+    if (show('Limited Use')) html += '<section class="act-sec"><h3 class="act-h">Limited Use</h3>' + (classResources(s).length ? resourcesHtml(s, can) : '<p class="note">No limited-use features yet.</p>') + '</section>';
+    return html;
+  }
+
+  /* ---------- Inventory tab: equipped gear, the backpack, coins, weight and attunement ---------- */
+  function inventoryTabHtml(c, s, edit, can, abil) {
+    if (!GEAR) loadGear();
+    var html = '', coinKeys = ['cp', 'sp', 'gp'].concat(num(s.coins.pp, 0) ? ['pp'] : []);
+    var carry = carrying(s), over = carry.total > carry.cap, att = s.items.filter(function (it) { return it.att; }).length, ac = acCalc(s, abil);
+    html += '<div class="inv-top"><div class="coins">' + coinKeys.map(function (k) {
+      return '<div class="vital"><label class="k" for="coin-' + k + '">' + esc(coinName(k)) + '</label>' + (can ? '<input type="number" id="coin-' + k + '" data-coin="' + k + '" min="0" value="' + num(s.coins[k], 0) + '" inputmode="numeric">' : '<span class="v">' + num(s.coins[k], 0) + '</span>') + '</div>';
+    }).join('') + '</div><div class="inv-stats"><div class="carry' + (over ? ' over' : '') + '"><div class="pool-top"><span class="k">Weight carried</span><span class="v">' + carry.total + ' <small>/ ' + carry.cap + ' lb</small></span></div>' +
+      '<div class="meter" role="img" aria-label="' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '% of carrying capacity"><i style="width:' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '%"></i></div>' +
+      (over ? '<p class="note" style="margin:4px 0 0">Over capacity: speed drops to 5 feet.</p>' : '') + '</div>' +
+      csStat('Attunement', att + ' / 3', 'items') + csStat('Armor class', String(ac.ac), ac.worn ? 'worn' : 'unarmored') + '</div></div>';
+    var rows = s.items.map(function (it, i) { return { it: it, i: i }; });
+    var head = '<div class="inv-th"><span>Active</span><span>Name</span><span>Weight</span><span>Qty</span><span>Cost</span></div>';
+    var rowHtml = function (o) {
+      var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
+      var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
+      return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') +
+        '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
+        (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
+        (edit ? '<span class="inv-edit"><label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
+        '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
+        '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
+        '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
+    };
+    var eqd = rows.filter(function (o) { return o.it.eq; }), pack = rows.filter(function (o) { return !o.it.eq; });
+    html += '<section class="act-sec"><h3 class="act-h">Equipment <small>' + eqd.length + ' in use</small></h3>' + (eqd.length ? head + eqd.map(rowHtml).join('') : '<p class="note">Nothing equipped. Tick the box beside a weapon, armor or magic item to use it.</p>') + '</section>';
+    html += '<section class="act-sec"><h3 class="act-h">Backpack <small>' + pack.length + ' items</small></h3>' + (pack.length ? head + pack.map(rowHtml).join('') : '<p class="note">Empty.</p>') + '</section>';
+    if (ac.notes.length) html += '<p class="note">' + esc(ac.notes.join(' · ')) + '</p>';
+    if (can) {
+      var names = GEAR ? ['weapons', 'armor', 'gear', 'tools', 'magic'].reduce(function (a, k) { return a.concat(GEAR[k].map(function (x) { return x.name; })); }, []) : [];
+      html += '<datalist id="gear-list">' + names.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
+        '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field grow"><label for="it-name">Add an item</label><input type="text" id="it-name" list="gear-list" maxlength="80" placeholder="Search weapons, armor, gear, magic items…" autocomplete="off"></div>' +
+        '<div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div>' +
+        '<button type="submit" class="btn primary">Add</button></form><p class="note">Pick from the list to get its weight, cost and rules, or type anything for a custom item.</p>';
+    }
+    return html;
+  }
+
+  /* ---------- The side panel: tap a spell, item, feature or action to read it in full ---------- */
+  function peekOpen(title, sub, body) {
+    var d = document.getElementById('peek');
+    if (!d) { d = document.createElement('div'); d.id = 'peek'; document.body.appendChild(d); }
+    d.innerHTML = '<div class="pk-back" data-act="peek-close"></div><aside class="pk" role="dialog" aria-modal="true" aria-labelledby="pk-t"><header><div><h2 id="pk-t">' + esc(title) + '</h2>' + (sub ? '<p>' + esc(sub) + '</p>' : '') + '</div><button type="button" class="btn small quiet" data-act="peek-close" aria-label="Close">✕</button></header><div class="pk-body">' + body + '</div></aside>';
+    d.hidden = false; document.body.classList.add('pk-open');
+    var b = d.querySelector('header button'); if (b) b.focus();
+  }
+  function peekClose() { var d = document.getElementById('peek'); if (d && !d.hidden) { d.hidden = true; d.innerHTML = ''; document.body.classList.remove('pk-open'); } }
+  function peekShow(kind, key) {
+    var c = currentChar(), s = c ? c.sheet : null;
+    if (kind === 'spell') {
+      var sp = spellByName(key) || (s ? s.spells.filter(function (x) { return x.name === key; })[0] : null) || { name: key, level: 0 };
+      if (!SPTEXT) { loadSpellText().then(function () { peekShow(kind, key); }); return peekOpen(key, '', '<p class="note">Opening the tome…</p>'); }
+      var t = spellText(sp) || {};
+      return peekOpen(sp.name, (num(sp.level, 0) ? ordinal(num(sp.level, 0)) + '-level ' : 'Cantrip · ') + (sp.school || '') + (sp.book ? ' · ' + sp.book : ''), spellBodyHtml(sp).replace(/^<div class="srd-body spell-body">/, '<div class="spell-body">'));
+    }
+    if (kind === 'item') {
+      if (!GEAR) { loadGear().then(function () { peekShow(kind, key); }); return peekOpen(key, '', '<p class="note">Opening the pack…</p>'); }
+      var f = gearFind(key);
+      if (!f) return peekOpen(key, 'Item', '<p class="note">No rules for this item. It’s whatever your DM says it is.</p>');
+      var g = f.it, facts = [], body = '';
+      if (f.k === 'weapons') {
+        facts = [['Category', g.cat + ' weapon'], ['Damage', g.dmg + ' ' + g.type], ['Properties', g.props.join(', ') || 'None'], ['Mastery', g.mastery || '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost]];
+        body = g.props.map(function (p) { var k = p.replace(/\s*\(.*$/, ''); return GEAR.props[k] ? '<p><b>' + esc(k) + '.</b> ' + esc(GEAR.props[k]) + '</p>' : ''; }).join('') + (g.mastery && GEAR.mastery[g.mastery] ? '<p><b>' + esc(g.mastery) + ' (mastery).</b> ' + esc(GEAR.mastery[g.mastery]) + '</p>' : '');
+      } else if (f.k === 'armor') {
+        facts = [['Category', g.shield ? 'Shield' : g.cat + ' armor'], ['Armor class', g.acText], ['Strength', g.str || '—'], ['Stealth', g.stealth ? 'Disadvantage' : '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost]];
+      } else if (f.k === 'magic') {
+        facts = [['Type', g.head]];
+        body = spellParas(g.text);
+      } else {
+        facts = [['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost || '—']];
+        body = spellParas(g.text);
+        if (GEAR.packs[g.name]) body += '<p><b>Contains:</b> ' + esc(GEAR.packs[g.name].join(', ')) + '</p>';
+      }
+      return peekOpen(g.name, { weapons: 'Weapon', armor: 'Armor', gear: 'Adventuring gear', tools: 'Tool', magic: 'Magic item' }[f.k], '<dl class="sp-facts">' + facts.map(function (x) { return '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(String(x[1])) + '</dd></div>'; }).join('') + '</dl>' + body + '<p class="note sub-sum">From the free SRD 5.2.1 (CC-BY-4.0).</p>');
+    }
+    if (kind === 'action') {
+      if (!GEAR) { loadGear().then(function () { peekShow(kind, key); }); return peekOpen(key, '', '<p class="note">Opening the rules…</p>'); }
+      return peekOpen(key === 'Grappling' ? 'Grapple' : key, 'Rule', spellParas(GEAR.actions[key] || '') + '<p class="note sub-sum">From the free SRD 5.2.1 (CC-BY-4.0).</p>');
+    }
+    if (kind === 'feature' && s) {
+      var ft = derivedFeatures(s).filter(function (x) { return x.name === key; })[0], own = s.features.filter(function (x) { return x.name === key; })[0];
+      if (ft) return peekOpen(ft.name, ft.src || '', '<div class="prose">' + rich(ft.text) + '</div>' + srdDetails(ft.srd, ft.srdMeta ? 'Full rules, Avarenth mana version' : 'Full rules text', ft.srdMeta) + (ft.summary ? '<p class="note sub-sum">' + esc(SUMMARY_NOTE) + '</p>' : ''));
+      if (own) return peekOpen(own.name, 'Added', '<div class="prose">' + rich(own.text) + '</div>' + (own.feat && srdFeat(own.feat) ? srdDetails(srdFeat(own.feat).text, 'Full rules text', srdFeat(own.feat).meta) : ''));
+    }
+    peekOpen(key, '', '<p class="note">Nothing more to show.</p>');
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') peekClose(); });
+  window.addEventListener('hashchange', peekClose);
+
   function sheetTab(c, s, edit, can, abil, pb, perc) {
     var html = '';
     if (ui.sheetTab === 'Actions') {
-      html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">Attacks</h2><div class="tbl">';
-      if (!s.attacks.length) html += '<div class="empty">No attacks yet. Add your weapons below: the sheet works out your bonus to hit and your damage.</div>';
-      s.attacks.forEach(function (a, i) {
-        var l = attackLine(s, a, abil, pb);
-        html += '<div class="tbl-row"><div class="main"><b>' + esc(a.name) + '</b><span>' + esc([l.dmg, a.notes].filter(Boolean).join(' · ')) + '</span></div><span class="num big">' + l.hit + '</span>' +
-          (can ? '<button type="button" class="btn small quiet" data-act="rm" data-list="attacks" data-i="' + i + '" aria-label="Remove ' + esc(a.name) + '">✕</button>' : '') + '</div>';
-      });
-      var sa = spellAbilityMod(s, abil);
-      if (sa && s.spells.length) html += '<div class="tbl-row"><div class="main"><b>Spell attack</b><span>Uses ' + sa.key.toUpperCase() + ' · save DC ' + (8 + pb + sa.mod) + '</span></div><span class="num big">' + signed(pb + sa.mod) + '</span></div>';
-      html += '</div>';
-      if (can) html += '<form class="inline-form attack-form" id="add-attack" novalidate style="margin-top:12px"><div class="field"><label for="at-name">Weapon or attack</label><input type="text" id="at-name" maxlength="60" placeholder="e.g. Longsword"></div>' +
-        '<div class="field"><label for="at-ab">Ability</label><select id="at-ab">' + ABILITIES.map(function (a) { return '<option value="' + a[0] + '">' + a[0].toUpperCase() + '</option>'; }).join('') + '</select></div>' +
-        '<div class="field"><label for="at-dmg">Damage</label><input type="text" id="at-dmg" maxlength="30" placeholder="1d8 slashing"></div>' +
-        '<div class="field"><label for="at-bonus">Magic +</label><input type="number" id="at-bonus" value="0" min="0" max="5" inputmode="numeric"></div>' +
-        '<label class="check"><input type="checkbox" id="at-prof" checked> Proficient</label><button type="submit" class="btn primary">Add</button></form>' +
-        '<p class="note">Strength for most melee weapons, Dexterity for ranged and finesse weapons.</p>';
-      html += '</section>';
-      var feats = derivedFeatures(s).filter(function (f) { return !f.sub; });
-      if (feats.length) html += '<section class="block"><h2 class="sec-title">Class and species features<small><button type="button" class="linkish" data-act="sheet-tab" data-tab="Features">All features</button></small></h2><div class="tbl">' +
-        feats.slice(0, 6).map(function (f) { return '<div class="tbl-row"><div class="main"><b>' + esc(f.name) + '</b><span>' + esc(f.text) + '</span></div></div>'; }).join('') + '</div></section>';
+      html += actionsTabHtml(c, s, edit, can, abil, pb);
     } else if (ui.sheetTab === 'Spells') {
       html += spellsTabHtml(c, s, edit, can);
     } else if (ui.sheetTab === 'Skills') {
@@ -1968,25 +2296,7 @@
       });
       html += '</div></section>' + (can ? '<p class="note">Tap PROF to cycle: not proficient, proficient, expertise.</p>' : '');
     } else if (ui.sheetTab === 'Inventory') {
-      var coinKeys = ['cp', 'sp', 'gp'].concat(num(s.coins.pp, 0) ? ['pp'] : []);
-      html += '<div class="coins" style="margin-top:12px">' + coinKeys.map(function (k) {
-        return '<div class="vital"><label class="k" for="coin-' + k + '">' + esc(coinName(k)) + '</label>' + (can ? '<input type="number" id="coin-' + k + '" data-coin="' + k + '" min="0" value="' + num(s.coins[k], 0) + '" inputmode="numeric">' : '<span class="v">' + num(s.coins[k], 0) + '</span>') + '</div>';
-      }).join('') + '</div>';
-      var carry = carrying(s), over = carry.total > carry.cap;
-      html += '<div class="carry' + (over ? ' over' : '') + '"><div class="pool-top"><span class="k">Carrying</span><span class="v">' + carry.total + ' <small>/ ' + carry.cap + ' lb</small></span></div>' +
-        '<div class="meter" role="img" aria-label="' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '% of carrying capacity"><i style="width:' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '%"></i></div>' +
-        '<p class="note" style="margin:4px 0 0">' + (over ? 'Over capacity: speed drops to 5 feet until you lighten the load.' : 'Strength × 15' + (carry.powerful ? ', doubled for Powerful Build' : '') + '.') + (carry.coins ? ' Coins weigh ' + carry.coins + ' lb.' : '') + '</p></div>';
-      html += '<div class="tbl" style="margin-top:12px">';
-      if (!s.items.length) html += '<div class="empty">Nothing carried yet.</div>';
-      s.items.forEach(function (it, i) {
-        var iw = itemWeight(it);
-        html += '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b>' + ((it.notes || iw) ? '<span>' + esc([it.notes, iw ? iw + ' lb' + (num(it.qty, 1) > 1 ? ' each' : '') : ''].filter(Boolean).join(' · ')) + '</span>' : '') + '</div>' +
-          (edit ? '<label class="sr" for="iw-' + i + '">Weight in pounds</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (iw || 'lb') + '" min="0" step="0.25" inputmode="decimal">' : '') +
-          (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><span class="num" style="min-width:28px;text-align:center">' + num(it.qty, 1) + '</span><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<span class="num">×' + num(it.qty, 1) + '</span>') +
-          (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button>' : '') + '</div>';
-      });
-      html += '</div>';
-      if (can) html += '<form class="inline-form" id="add-item" novalidate style="margin-top:12px"><div class="field"><label for="it-name">Item</label><input type="text" id="it-name" maxlength="80"></div><div class="field"><label for="it-notes">Notes</label><input type="text" id="it-notes" maxlength="120"></div><div class="field"><label for="it-qty">Qty</label><input type="number" id="it-qty" min="1" value="1" inputmode="numeric"></div><div class="field"><label for="it-w">Lb each</label><input type="number" id="it-w" min="0" step="0.25" inputmode="decimal" placeholder="auto"></div><button type="submit" class="btn primary">Add</button></form>';
+      html += inventoryTabHtml(c, s, edit, can, abil);
     } else if (ui.sheetTab === 'Reputation') {
       html += standingTabHtml(c, s);
     } else if (ui.sheetTab === 'Record') {
@@ -2053,22 +2363,37 @@
   }
 
   function spellsTabHtml(c, s, edit, can) {
-    var cap = listCap(s.cls), top = learnableLevel(s);
-    var html = '<div class="vitals sum" style="margin-top:12px">' + vital('Class list', s.cls ? 'to ' + ordinal(cap) : '—') + vital('Can learn', top ? 'to ' + ordinal(top) : 'cantrips') + vital('Free picks', num(s.picks, 0)) + vital('Known', s.spells.length) + '</div>';
+    var cap = listCap(s.cls), top = learnableLevel(s), abil = {}, pb = profBonus(num(s.level, 1));
+    ABILITIES.forEach(function (a) { abil[a[0]] = mod(s.abilities[a[0]]); });
+    var sa = spellAbilityMod(s, abil);
+    if (!SPTEXT && s.spells.length) loadSpellText().then(function () { if (parseRoute().name === 'c' && ui.sheetTab === 'Spells') render(); });
+    var html = '<div class="sp-head">' + csStat('Modifier', sa ? signed(sa.mod) : '—', sa ? sa.key.toUpperCase() : '') + csStat('Spell attack', sa ? signed(pb + sa.mod) : '—', 'bonus') + csStat('Save DC', sa ? String(8 + pb + sa.mod) : '—', 'spells') +
+      csStat('Mana', num(s.mana.cur, 0) + ' / ' + manaMax(s), 'now') + '</div>' +
+      '<p class="note sp-learn">' + esc((s.cls ? 'Class list to ' + ordinal(cap) + ' · ' : '') + 'can learn to ' + (top ? ordinal(top) : 'cantrips') + ' · ' + num(s.picks, 0) + ' free picks · ' + s.spells.length + ' known') + '</p>';
     var known = s.spells.map(function (sp, i) { return { sp: sp, i: i, lv: sp.level != null && sp.level !== '' ? num(sp.level, 0) : -1 }; }).sort(function (a, b) { return a.lv - b.lv || String(a.sp.name).localeCompare(b.sp.name); });
+    var levels = uniq(known.map(function (o) { return String(o.lv); }));
+    var lf = levels.indexOf(String(ui.spLevel)) >= 0 ? String(ui.spLevel) : 'All';
+    if (levels.length > 1) html += '<div class="chips act-filter" role="group" aria-label="Spell level">' + ['All'].concat(levels).map(function (k) {
+      return '<button type="button" class="chip pick" data-act="sp-level" data-val="' + k + '" aria-pressed="' + (lf === k) + '">' + (k === 'All' ? 'All' : k === '0' ? 'Cantrip' : k === '-1' ? 'Other' : ordinal(num(k, 0))) + '</button>';
+    }).join('') + '</div>';
     if (!known.length) html += '<div class="empty" style="margin-top:12px">No spells yet.' + (can ? ' Tap “Learn a spell” to pick from your class list or tomes you’ve found.' : '') + '</div>';
     var lastLv = null;
-    known.forEach(function (o) {
-      var sp = o.sp, cost = spellCost(sp), lv = o.lv;
-      if (lv !== lastLv) { html += '<h2 class="sec-title" style="margin-top:16px">' + (lv < 0 ? 'Other' : lv === 0 ? 'Cantrips' : ordinal(lv) + ' level') + '</h2>'; lastLv = lv; }
-      var art = articleByTitle(sp.name || '');
-      var nameHtml = art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(sp.name) + '</a>' : esc(sp.name);
-      var needs = lv >= 6 && lv <= 8 ? ' + 1 High Magic Charge' : lv === 9 ? ' + Reality Channel' : '';
+    known.filter(function (o) { return lf === 'All' || String(o.lv) === lf; }).forEach(function (o) {
+      var sp = o.sp, cost = spellCost(sp), lv = o.lv, ref = spellByName(sp.name) || sp, cb = spellCombat(ref, pb, sa) || {};
+      if (lv !== lastLv) {
+        if (lastLv !== null) html += '</div>';
+        html += '<h3 class="act-h sp-lvl">' + (lv < 0 ? 'Other' : lv === 0 ? 'Cantrips' : ordinal(lv) + ' level') + '<small>' + (lv > 0 ? RULES.magic.manaCost[lv] + ' mana' + (lv >= 6 && lv <= 8 ? ' + High Magic Charge' : lv === 9 ? ' + Reality Channel' : '') : lv === 0 ? 'Free' : '') + '</small></h3>' +
+          '<div class="act-table sp-table" role="table"><div class="act-th" role="row"><span></span><span>Name</span><span>Time</span><span>Range</span><span>Hit / DC</span><span>Effect</span></div>';
+        lastLv = lv;
+      }
       var blocked = num(s.mana.cur, 0) < cost || (lv >= 6 && lv <= 8 && hmMax(s.cls, s.level) - num(s.charges.hm, 0) <= 0) || (lv === 9 && rcMax(s.cls, s.level) - num(s.charges.rc, 0) <= 0);
-      html += '<div class="tbl-row sp-row"><div class="main"><b>' + nameHtml + '</b><span>' + (cost ? cost + ' mana' : 'Free') + needs + (sp.school ? ' · ' + esc(sp.school) : '') + (sp.notes ? ' · ' + esc(sp.notes) : '') + '</span></div><span class="src ' + esc(sp.source) + '">' + esc(sp.source) + '</span>' +
-        (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="spells" data-i="' + o.i + '" aria-label="Remove ' + esc(sp.name) + '">Remove</button>'
-          : can ? '<button type="button" class="btn small" data-act="cast" data-i="' + o.i + '"' + (blocked ? ' disabled' : '') + '>Cast</button>' : '') + spellInfoHtml(spellByName(sp.name) || sp) + '</div>';
+      var tags = [cb.conc ? 'C' : '', sp.ritual || (spellByName(sp.name) || {}).ritual ? 'R' : ''].filter(Boolean);
+      html += '<div class="act-tr" role="row"><span class="cast">' + (edit ? '<button type="button" class="btn small danger" data-act="rm" data-list="spells" data-i="' + o.i + '" aria-label="Remove ' + esc(sp.name) + '">✕</button>'
+          : can ? '<button type="button" class="btn small' + (lv > 0 ? ' primary' : '') + '" data-act="cast" data-i="' + o.i + '"' + (blocked ? ' disabled' : '') + '>' + (lv > 0 ? 'Cast' : 'At will') + '</button>' : '') + '</span>' +
+        '<span class="nm">' + peekBtn('spell', sp.name, esc(sp.name)) + tags.map(function (t) { return ' <span class="tag sp-tag" title="' + (t === 'C' ? 'Concentration' : 'Ritual') + '">' + t + '</span>'; }).join('') + '<small>' + esc([sp.school, sp.source].filter(Boolean).join(' · ')) + '</small></span>' +
+        '<span>' + esc(shortText(cb.time || '—', 22)) + '</span><span>' + esc(cb.range || '—') + '</span><span class="hit">' + esc(cb.hitdc || '—') + '</span><span class="dmg">' + esc(cb.effect || shortText(cb.dur || '', 20) || '—') + '</span></div>';
     });
+    if (lastLv !== null) html += '</div>';
     if (can) {
       html += '<div class="actions" style="margin-top:14px"><button type="button" class="btn' + (ui.spellPick ? '' : ' primary') + '" data-act="pick-toggle">' + (ui.spellPick ? 'Close' : 'Learn a spell') + '</button></div>';
       if (ui.spellPick) html += pickerHtml(s);
@@ -7060,6 +7385,26 @@
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
+      case 'peek': peekShow(el.getAttribute('data-kind'), el.getAttribute('data-key')); break;
+      case 'peek-close': peekClose(); break;
+      case 'act-filter': ui.actFilter = el.getAttribute('data-val'); render(); break;
+      case 'sp-level': ui.spLevel = el.getAttribute('data-val'); render(); break;
+      case 'equip':
+        if (!c) return;
+        var eit = c.sheet.items[num(el.getAttribute('data-i'), -1)];
+        if (!eit) return;
+        eit.eq = !eit.eq;
+        if (eit.eq && itemKind(eit).k === 'armor') {
+          var eg = gearItem(itemRef(eit));
+          c.sheet.items.forEach(function (o) { var og = o !== eit && o.eq && itemKind(o).k === 'armor' ? gearItem(itemRef(o)) : null; if (og && eg && og.shield === eg.shield) o.eq = false; });
+        }
+        render(); saveCharSoon(c); break;
+      case 'attune':
+        if (!c) return;
+        var ait = c.sheet.items[num(el.getAttribute('data-i'), -1)];
+        if (!ait) return;
+        if (!ait.att && c.sheet.items.filter(function (o) { return o.att; }).length >= 3) return toast('You can be attuned to three items at most.');
+        ait.att = !ait.att; render(); saveCharSoon(c); break;
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
         if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
@@ -7067,6 +7412,7 @@
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
       case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
+      case 'bd-eq': if (el.getAttribute('data-kind') === 'c') ui.build.eqC = el.getAttribute('data-val'); else ui.build.eqB = el.getAttribute('data-val'); render(); break;
       case 'bd-patron':
         ui.build.patron = el.getAttribute('data-val');
         if (ui.build.sub && !subclassOptions(ui.build.cls, ui.build.patron).some(function (o) { return o.name === ui.build.sub; })) ui.build.sub = '';
@@ -7304,6 +7650,12 @@
       var lrc = charById(parseRoute().arg), lrd = lrc ? classOf(normSheet(lrc.sheet)) : null, lrv = num(t.value, 0);
       ui.lvl.rolled = lrd && lrv >= 1 && lrv <= lrd.hd ? lrv : 0; render(); return;
     }
+    if (t.hasAttribute('data-ibonus')) {
+      var bc = currentChar(), bi = bc && bc.sheet.items[num(t.getAttribute('data-ibonus'), -1)];
+      if (!bi) return;
+      bi.bonus = Math.max(0, Math.min(5, num(t.value, 0))); if (!bi.bonus) delete bi.bonus;
+      saveCharSoon(bc); return;
+    }
     if (t.hasAttribute('data-iw')) {
       var wc = currentChar(), wi = wc && wc.sheet.items[num(t.getAttribute('data-iw'), -1)];
       if (!wi) return;
@@ -7404,7 +7756,9 @@
         var iname = document.getElementById('it-name').value.trim();
         if (!iname) return toast('Name the item first.');
         var iwv = document.getElementById('it-w') ? document.getElementById('it-w').value : '';
-        var newItem = { name: iname, notes: document.getElementById('it-notes').value.trim(), qty: Math.max(1, num(document.getElementById('it-qty').value, 1)) };
+        var ifound = gearFind(iname);
+        var newItem = { name: ifound ? ifound.it.name : iname, notes: document.getElementById('it-notes').value.trim(), qty: Math.max(1, num(document.getElementById('it-qty').value, 1)) };
+        if (ifound) newItem.ref = { k: ifound.k, n: ifound.it.name };
         if (iwv !== '' && !isNaN(parseFloat(iwv))) newItem.w = Math.max(0, parseFloat(iwv));
         c.sheet.items.push(newItem);
         render(); saveCharSoon(c); var n2 = document.getElementById('it-name'); if (n2) n2.focus(); return;
@@ -8718,7 +9072,7 @@
     if (!s) { stopLive(); TABLE = false; document.body.classList.remove('table-mode'); clearInterval(startTable.poll); if (tableChannel) { sb.removeChannel(tableChannel); tableChannel = null; } $view.innerHTML = ''; profile = null; articles = []; secrets = {}; characters = []; members = []; spells = null; loaded = { wiki: false, chars: false, members: false }; render(); return; }
     if (prev === s.user.id && booted) return;
     booted = loadProfile()
-      .then(function () { render(); if (isTable()) loadSrd(); if (isMember()) return loadAll().then(function () { startLive(); loadSrd(); if (isDM()) { startLink(); loadCities().then(render); } else return loadTable().then(render); }); })
+      .then(function () { render(); if (isTable()) loadSrd(); if (isMember()) return loadAll().then(function () { startLive(); loadSrd(); loadGear(); if (isDM()) { startLink(); loadCities().then(render); } else return loadTable().then(render); }); })
       .then(render)
       .catch(function (e) { fail(e, 'Could not reach the archive. If the app sat unused for a week, the DM may need to resume it in Supabase.'); render(); });
   }

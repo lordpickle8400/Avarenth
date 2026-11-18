@@ -38,6 +38,7 @@ github.com/downfallx/dnd-5e-srd-markdown and arranged into structured blocks for
 spell-slot rule for Avarenth's mana (from the wiki's Mana Guide), keeping the 2024 text alongside.
 
 `extras.json` (built by `tools/extras/build.py`) adds own-words feats, backgrounds, Artificer infusions and Blood Hunter curses.
+`gear.json` (built by `tools/srd_items.py`) is the SRD 5.2.1 equipment, magic items, starting gear and combat actions.
 `spells-srd.json` holds every spell in the same SRD 5.2.1 (CC-BY-4.0), pulled out by `tools/spells_srd.py`, with
 spell slots rewritten as mana. `spell-notes.json` and `subclass-notes.json` are short summaries written in our own
 words for the spells and subclasses from the other books (`tools/spell-notes/`, `tools/subclass-notes/`); they are
