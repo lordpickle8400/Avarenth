@@ -6109,6 +6109,18 @@
     }
     return null;
   }
+  // Where a piece of news actually starts: a place the event names, if it names one; otherwise somewhere in the faction's own
+  // country (a town near its seat, closer for small factions); only as a last resort the seat itself.
+  function eventOrigin(campId, f, text) {
+    var m = realmMapOf(campId); if (!m) return null;
+    var named = (markers[m.id] || []).filter(function (x) { return x.label && x.kind !== 'party' && x.label.length > 3; })
+      .sort(function (a, b) { return b.label.length - a.label.length; });
+    var low = String(text || '').toLowerCase();
+    for (var i = 0; i < named.length; i++) if (low.indexOf(midLabel(named[i].label).toLowerCase()) >= 0 || low.indexOf(named[i].label.toLowerCase()) >= 0) return named[i];
+    var seat = seatMarker(campId, f); if (!seat) return null;
+    var reach = f.tier === 'minor' ? 25 : 80, near = townsOn(m.id).filter(function (x) { return x.label && mapMiles(m, seat.x, seat.y, x.x, x.y) <= reach; });
+    return near.length ? near[Math.floor(Math.random() * near.length)] : seat;
+  }
   function placeXY(campId, slug, label) {
     var m = realmMapOf(campId); if (!m) return null;
     var mk = (markers[m.id] || []).filter(function (x) { return (slug && x.article_slug === slug) || (label && x.label === label); })[0];
@@ -8480,7 +8492,7 @@
       var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 1), 1, 100);
       var out = realmMonth(R, fa, roll, partyNear);
       if (out.rumour) R.factions.forEach(function (x) { if (!x.secret) return; var v = x.veil || 'people nobody can name'; out.rumour = out.rumour.split('young ' + shortName(x.name) + ' commander').join('new leader among ' + v).split(x.name + '’s').join('their').split(x.name).join(v).split(shortName(x.name)).join(v); out.rumour = out.rumour.charAt(0).toUpperCase() + out.rumour.slice(1); });
-      if (out.text) { var sm = seatMarker(campId, fa); R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty, ox: sm ? sm.x : null, oy: sm ? sm.y : null, at: sm ? midLabel(sm.label) : '' }); }
+      if (out.text) { var sm = eventOrigin(campId, fa, out.text); R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty, ox: sm ? sm.x : null, oy: sm ? sm.y : null, at: sm ? midLabel(sm.label) : '' }); }
     });
     R.news = R.news.slice(-200);
     R.next = day + PAY_EVERY;
