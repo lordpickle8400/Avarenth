@@ -4932,6 +4932,8 @@
       html += '</section>';
     }
 
+    if (COMMISSION_SHOPS[shop.kind]) html += commissionHtml(shop, c, place);
+
     // Ledger
     var led = shop.ledger || [];
     if (led.length) html += '<section class="block"><h2 class="sec-title">Recent sales<small>' + led.length + '</small></h2><div class="tbl">' + led.slice(0, 12).map(function (l) {
@@ -4987,7 +4989,7 @@
     });
   }
   function saveShop(shop, msg) {
-    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day }).eq('id', shop.id).then(function (r) {
+    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], orders: shop.orders || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day }).eq('id', shop.id).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save the shop.');
       if (msg) toast(msg);
     });
@@ -5001,6 +5003,58 @@
       if (i >= 0) places[i] = row; else places.push(row);
       render();
     });
+  }
+  /* Commissions: a smith or armorer makes a piece to order, in plain or Dornish steel. Paid up front, ready on a set day.
+     Dornish steel is only forged at Stonehelm, so outside a forge town the order is sent for and takes two weeks longer. */
+  var COMMISSION_SHOPS = { 'Blacksmith': ['sw', 'mw'], 'Armorer': ['la', 'ma', 'ha', 'sh'] };
+  function commissionDays(price, dornish, forge) { var d = price < 20 ? 3 : price < 100 ? 7 : price < 500 ? 14 : 30; if (dornish) d = Math.round(d * 1.5) + (forge ? 0 : 14); return d; }
+  function commissionHtml(shop, c, place) {
+    var kinds = COMMISSION_SHOPS[shop.kind], p = shop.place_id ? placeOf(shop.place_id) : { tags: [] }, forge = hasTag(p, 'forge'), day = gameDay(shop);
+    var base = ITEMS.items.filter(function (it) { return kinds.indexOf(it.kind) >= 0 && it.tags.indexOf('metal') >= 0 && it.tags.indexOf('dornish') < 0; });
+    var pick = ui.commItem && base.some(function (it) { return it.name === ui.commItem; }) ? ui.commItem : base[0] && base[0].name, ds = ui.commDs !== false;
+    var it = base.filter(function (x) { return x.name === pick; })[0], price = it ? it.price * (ds ? 3 : 1) : 0, days = it ? commissionDays(price, ds, forge) : 0;
+    var orders = shop.orders || [];
+    var html = '<section class="block"><h2 class="sec-title">Commissions<small>made to order</small></h2>';
+    if (c && !ui.shopEdit) {
+      html += '<div class="comm-row"><label class="sr" for="comm-item">Piece</label><select class="input" id="comm-item">' + base.map(function (x) { return '<option' + (x.name === pick ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
+        '<label class="check"><input type="checkbox" id="comm-ds"' + (ds ? ' checked' : '') + '> Dornish steel</label></div>' +
+        '<p class="note" style="margin:6px 0">' + money(Math.round(price * 100)) + ', ready in ' + days + ' days' + (day != null ? ' (day ' + (day + days) + ')' : '') + (ds && !forge ? '. Sent for from Stonehelm, so it takes longer.' : '.') + '</p>' +
+        '<button type="button" class="btn primary" data-act="comm-order" data-shop="' + esc(shop.id) + '">Order it for ' + esc(c.name) + '</button>';
+    } else if (!ui.shopEdit) html += '<p class="note">Pick who’s at the counter to order a piece.</p>';
+    if (orders.length) html += '<div class="tbl" style="margin-top:10px">' + orders.map(function (o, i) {
+      var ready = day == null || day >= o.ready;
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.name) + '</b><span>For ' + esc(o.who) + ' · paid ' + money(o.cp) + ' · ' + (ready ? 'ready to collect' : 'ready on day ' + o.ready) + '</span></div>' +
+        (ready ? '<button type="button" class="btn small primary" data-act="comm-collect" data-shop="' + esc(shop.id) + '" data-i="' + i + '">Hand over</button>' : '<button type="button" class="btn small quiet" data-act="comm-cancel" data-shop="' + esc(shop.id) + '" data-i="' + i + '">' + (ui.commCancel === o.id ? 'Tap again: refund' : 'Cancel') + '</button>') + '</div>';
+    }).join('') + '</div>';
+    return html + '</section>';
+  }
+  function commissionOrder(shop) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]); if (!c) return;
+    var p = shop.place_id ? placeOf(shop.place_id) : { tags: [] }, ds = ui.commDs !== false, name = ui.commItem || (document.getElementById('comm-item') || {}).value;
+    var it = itemByName(name); if (!it) return;
+    var cp = Math.round(it.price * (ds ? 3 : 1) * 100), s = c.sheet = normSheet(c.sheet), day = gameDay(shop) || 0;
+    if (walletCp(s) < cp) return toast(c.name + ' can’t afford it: ' + money(cp) + '.');
+    setWallet(s, walletCp(s) - cp);
+    var gf = gearFind(it.name), full = (ds ? 'Dornish Steel ' : '') + (gf ? gf.it.name : it.name);
+    (shop.orders = shop.orders || []).push({ id: Math.random().toString(36).slice(2, 9), name: full, base: it.name, ds: ds, who: c.name, cid: c.id, cp: cp, ready: day + commissionDays(it.price * (ds ? 3 : 1), ds, hasTag(p, 'forge')) });
+    ledgerAdd(shop, { who: c.name, what: 'Commission: ' + full, qty: 1, cp: cp, dir: 'sold' });
+    saveCharSoon(c); saveShop(shop, 'Ordered. ' + c.name + ' paid ' + money(cp) + '.'); render();
+  }
+  function commissionCollect(shop, i) {
+    var o = (shop.orders || [])[i]; if (!o) return;
+    var c = charById(o.cid); if (!c) return toast('Can’t find ' + o.who + '.');
+    var s = c.sheet = normSheet(c.sheet), g = gearFind(o.base), row = { name: o.name, qty: 1 };
+    if (g) row.ref = { k: g.k, n: g.it.name };
+    if (o.ds) row.ds = true;
+    s.items.push(row); shop.orders.splice(i, 1);
+    saveCharSoon(c); saveShop(shop, o.name + ' handed to ' + c.name + '.'); render();
+  }
+  function commissionCancel(shop, i) {
+    var o = (shop.orders || [])[i]; if (!o) return;
+    if (ui.commCancel !== o.id) { ui.commCancel = o.id; render(); return; }
+    ui.commCancel = null;
+    var c = charById(o.cid); if (c) { c.sheet = normSheet(c.sheet); setWallet(c.sheet, walletCp(c.sheet) + o.cp); saveCharSoon(c); }
+    shop.orders.splice(i, 1); saveShop(shop, 'Order cancelled and refunded.'); render();
   }
   function ledgerAdd(shop, entry) {
     shop.ledger = [Object.assign({ at: new Date().toISOString() }, entry)].concat(shop.ledger || []).slice(0, 60);
@@ -8182,6 +8236,7 @@
     var act = el.getAttribute('data-act');
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
+    if (/^comm-/.test(act)) { var csh = shopById(el.getAttribute('data-shop')); if (!csh) return; if (act === 'comm-order') commissionOrder(csh); else if (act === 'comm-collect') commissionCollect(csh, num(el.getAttribute('data-i'), -1)); else if (act === 'comm-cancel') commissionCancel(csh, num(el.getAttribute('data-i'), -1)); return; }
     switch (act) {
       case 'signout': sb.auth.signOut(); break;
       case 'recheck': loadProfile().then(function () { if (isMember()) return loadAll().then(startLive); }).then(render).catch(function (err) { fail(err); }); break;
@@ -9705,6 +9760,8 @@
   }
   document.addEventListener('change', function (e) {
     if (cbqChange(e.target)) return;
+    if (e.target && e.target.id === 'comm-item') { ui.commItem = e.target.value; return render(); }
+    if (e.target && e.target.id === 'comm-ds') { ui.commDs = e.target.checked; return render(); }
     if (e.target && e.target.id === 'hb-type') return hbSyncItemType();
     if (e.target && e.target.id === 'npc-district') { ui.npcDistrict = e.target.value; ui.npcFix = null; return render(); }
     if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-monf')) { (ui.monF = ui.monF || {})[e.target.getAttribute('data-monf')] = e.target.value; return render(); }

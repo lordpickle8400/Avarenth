@@ -1127,3 +1127,5 @@ body.pk-open { overflow: hidden; }
 .lt-item .main select.input { margin-top: 6px; align-self: flex-start; }
 .lt-coinrow { border-bottom: 0; margin-top: 4px; }
 .lt-coinrow .lt-coins { flex: 1; }
+.comm-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.comm-row select.input { width: auto; flex: 1 1 180px; }
