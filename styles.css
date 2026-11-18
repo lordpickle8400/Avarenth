@@ -1051,3 +1051,53 @@ body.pk-open { overflow: hidden; }
 
 .si-more { margin: 4px 0 12px; }
 .si-more summary { cursor: pointer; color: var(--muted, #aaa); font-size: 14px; padding: 6px 0; }
+
+/* Combat tracker, loot and quests */
+.cb-add-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+.cb-add-row .field { flex: 1 1 180px; margin: 0; }
+.cb-add-row .cb-n { flex: 0 0 90px; }
+.cb-add-row .btn { margin-bottom: 2px; }
+.cb-bar { margin: 12px 0; flex-wrap: wrap; }
+.cb-list { display: flex; flex-direction: column; gap: 8px; }
+.cb-row { border: 1px solid var(--line, #333); border-radius: 10px; padding: 10px 12px; background: var(--panel); }
+.cb-row.cur { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cb-row.down { opacity: .5; }
+.cb-row.down .cb-name b { text-decoration: line-through; }
+.cb-main { display: flex; align-items: center; gap: 10px; }
+.cb-init input { width: 58px; text-align: center; font-size: 18px; font-weight: 700; padding: 6px 4px; }
+.cb-name { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.cb-name small { color: var(--muted, #999); font-size: 12px; }
+.cb-x { font-size: 22px; line-height: 1; padding: 4px 8px; color: var(--muted, #999); }
+.cb-hp { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.cb-hp small { color: var(--muted, #999); }
+.cb-hp input { width: 70px; padding: 6px; }
+.cb-hpbar { flex: 1 1 80px; max-width: 160px; height: 6px; background: rgba(255,255,255,.08); border-radius: 3px; overflow: hidden; }
+.cb-hpbar i { display: block; height: 100%; background: #6aa86a; }
+.cb-conds { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.cb-conds select { width: auto; padding: 4px 8px; font-size: 13px; }
+.cb-cond { cursor: pointer; border: 0; }
+.cb-sb { margin-top: 8px; }
+.cb-sb summary { cursor: pointer; color: var(--muted, #aaa); font-size: 13px; }
+.lt-picks, .lt-items { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+.lt-item { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line, #333); padding: 6px 0; }
+.lt-item .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.lt-item .main span { color: var(--muted, #999); font-size: 13px; }
+.lt-item select { width: auto; max-width: 140px; }
+.lt-addline { display: flex; gap: 8px; margin: 8px 0 14px; }
+.lt-addline input { flex: 1; }
+.lt-h { margin: 14px 0 6px; font-size: 15px; }
+.lt-coins { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.lt-coins label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; text-transform: uppercase; color: var(--muted, #999); }
+.lt-split { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.q-gen { margin-bottom: 16px; }
+.q-card { border: 1px solid var(--line, #333); border-radius: 10px; padding: 12px 14px; margin: 10px 0; background: var(--panel); }
+.q-card.closed { opacity: .65; }
+.q-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-top h3 { margin: 0; font-size: 17px; flex: 1; }
+.q-card p { margin: 6px 0 0; }
+.q-meta { color: var(--muted, #999); font-size: 13px; }
+.q-note { font-size: 13px; color: var(--accent); }
+.q-ctl { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+.q-ctl select { width: auto; }
+.lt-coins input { width: 100%; min-width: 0; }
+.cb-conds select.input, .lt-item select.input, .q-ctl select.input { width: auto; min-height: 36px; padding: 4px 8px; }
