@@ -1129,3 +1129,9 @@ body.pk-open { overflow: hidden; }
 .lt-coinrow .lt-coins { flex: 1; }
 .comm-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .comm-row select.input { width: auto; flex: 1 1 180px; }
+.notice { position: relative; margin: 8px 0; }
+.notice .notice-x { position: absolute; top: 4px; right: 4px; }
+.notice-h { margin: 0 0 4px; padding-right: 28px; }
+.notice-h small { color: var(--muted); }
+.notice.hunters { border-left: 3px solid #b5523b; }
+.notice.gate { border-left: 3px solid var(--accent); }

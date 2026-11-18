@@ -293,7 +293,7 @@
     });
   }
   function loadCrimes() {
-    return sb.from('crimes').select('id, campaign_id, character_id, kind, title, location, severity, status, bounty, quantity, notes, dm_only, created_at').order('created_at').then(function (r) {
+    return sb.from('crimes').select('id, campaign_id, character_id, kind, title, location, severity, status, bounty, quantity, notes, dm_only, wanted_day, created_at').order('created_at').then(function (r) {
       if (r.error) throw r.error;
       crimes = r.data || [];
     });
@@ -315,7 +315,7 @@
   }
   function loadTravel() {
     return Promise.all([
-      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival, calendar'),
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival, calendar, notices'),
       sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, paid, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -2460,6 +2460,7 @@
     if (!camp) { $view.innerHTML = '<div class="page"><div class="empty">Start a campaign first.</div></div>'; return; }
     if (!MONS) { loadMonsters(); $view.innerHTML = '<div class="page"><div class="empty">Opening the bestiary…</div></div>'; return; }
     if (!combat || combat.campaign_id !== camp.id) { loadCombat(camp); $view.innerHTML = '<div class="page"><div class="empty">Setting the table…</div></div>'; return; }
+    if (ui.pendingFight) { var pf = ui.pendingFight; ui.pendingFight = null; pf.forEach(function (g) { cbAddMonster(g.name, g.n); }); return; }
     var st = combat.state, order = cbOrder(st);
     ui.cbOpen = ui.cbOpen || {};
     var html = '<div class="page">' + dmTabs('combat') + (st.list.length ? '<p class="cb-round">Round <b>' + st.round + '</b></p>' : '') +
@@ -3637,11 +3638,18 @@
   var CRIME_STATUS = ['Unknown', 'Suspected', 'Wanted', 'Cleared'];
 
   // Totals for a set of entries. Cleared entries no longer count.
+  // A bounty left unpaid grows: a tenth more each week someone is Wanted for it, up to three times what it started at.
+  function bountyNow(c) {
+    var b = num(c.bounty, 0), t = travel[c.campaign_id];
+    if (!b || c.status !== 'Wanted' || c.wanted_day == null || !t) return b;
+    var weeks = Math.max(0, Math.floor((num(t.day, 0) - num(c.wanted_day, 0)) / 7));
+    return Math.round(b * Math.min(3, 1 + 0.1 * weeks));
+  }
   function crimeSummary(list) {
     var active = list.filter(function (c) { return c.status !== 'Cleared'; });
     var bounty = 0, wanted = 0, suspected = 0, worst = -1;
     active.forEach(function (c) {
-      bounty += num(c.bounty, 0);
+      bounty += bountyNow(c);
       if (c.status === 'Wanted') wanted++;
       if (c.status === 'Suspected') suspected++;
       worst = Math.max(worst, SEVERITIES.indexOf(c.severity));
@@ -3665,7 +3673,7 @@
     var who = c.character_id ? charName(c.character_id) : 'Whole party';
     var meta = [who, c.location, c.kind === 'contraband' ? 'Qty ' + num(c.quantity, 1) : '', c.notes].filter(Boolean).map(esc).join(' · ');
     var html = '<div class="tbl-row" style="flex-wrap:wrap"><div class="main" style="min-width:160px"><b>' + esc(c.title) + (c.dm_only ? ' <span class="tag" style="font-size:10px">DM only</span>' : '') + '</b><span>' + meta + '</span></div>' +
-      '<span class="pill-row" style="align-items:center">' + sevTag(c.severity) + crimeStatusTag(c.status) + (num(c.bounty, 0) ? '<span class="num">' + num(c.bounty, 0) + ' gp</span>' : '') + '</span>';
+      '<span class="pill-row" style="align-items:center">' + sevTag(c.severity) + crimeStatusTag(c.status) + (num(c.bounty, 0) ? '<span class="num">' + bountyNow(c) + ' gp' + (bountyNow(c) > num(c.bounty, 0) ? ' <small title="Started at ' + num(c.bounty, 0) + ' gp">(up from ' + num(c.bounty, 0) + ')</small>' : '') + '</span>' : '') + '</span>';
     if (dm) {
       html += '<span class="pill-row" style="width:100%;padding-top:4px"><label class="sr" for="cs-' + c.id + '">Status</label><select class="input" id="cs-' + c.id + '" data-crime-status="' + esc(c.id) + '" style="width:auto;min-height:38px;font-size:14px;padding:4px 8px">' +
         CRIME_STATUS.map(function (s) { return '<option' + (s === c.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>' +
@@ -3743,6 +3751,7 @@
       notes: document.getElementById('cr-notes').value.trim(),
       dm_only: document.getElementById('cr-dm').checked
     };
+    if (row.status === 'Wanted' && travel[row.campaign_id]) row.wanted_day = num(travel[row.campaign_id].day, 1);
     sb.from('crimes').insert(row).then(function (r) {
       if (r.error) return fail(r.error, 'Could not add that entry.');
       loadCrimes().then(function () { toast('Added to the record'); render(); });
@@ -4718,7 +4727,7 @@
 
   /* ---------- Who's at the counter ---------- */
   function shopStanding(shop, c) {
-    var fac = shop.faction_id ? articleById(shop.faction_id) : null;
+    var fac = shop.faction_id ? articleById(shop.faction_id) : (ITEMS.shopKinds[shop.kind] || {}).fence ? blackHand() : null;
     if (fac) return Object.assign({ fac: fac }, standingFor(c, fac));
     var st = startStanding(normSheet(c.sheet), { slug: 'townsfolk' });
     return { fac: null, name: STANDINGS[st.pts + 2], idx: st.pts + 2, why: st.why, shift: 0, start: STANDINGS[st.pts + 2] };
@@ -4900,7 +4909,10 @@
       html += '<p class="counter-line"><b>' + money(walletCp(s)) + '</b> in their purse · ' + standingTag(st.name) + ' ' + (st.fac ? 'with ' + esc(st.fac.title) : 'with the townsfolk') +
         (SELL_MULT[st.name] === null ? ' · <b>won’t deal with them</b>' : SELL_MULT[st.name] !== 1 ? ' · prices ×' + SELL_MULT[st.name] : '') + '</p>';
       if (st.why.length) html += '<p class="note" style="margin:0">' + esc(standingWhy(st)) + '</p>';
-      if (K.fence) html += '<p class="note" style="margin:6px 0 0">A fence doesn’t care who you are.</p>';
+      if (K.fence) {
+        var fs = num(s.fenceSold, 0), nextStep = FENCE_STEPS.filter(function (x) { return x > fs; })[0];
+        html += '<p class="note" style="margin:6px 0 0">A fence doesn’t care who you are' + (handsFence(shop) ? ', but the Black Hand keeps count: ' + (fs ? money(fs) : 'nothing') + ' sold to its fences so far' + (nextStep ? '; at ' + money(nextStep) + ' the Hand takes more notice.' : '.') : '.') + '</p>';
+      }
       else {
         var nt = notoriety(shop, c), key = shopKey(shop, c);
         if (nt && !(ui.recog || {})[key]) autoRecog(shop, c, nt);
@@ -5157,6 +5169,8 @@
     var inp = document.getElementById('bo-' + i), cp = toCp(inp ? inp.value : 0);
     if (!cp) return toast('Name a price first.');
     setWallet(s, walletCp(s) + cp);
+    var fenceBefore = num(s.fenceSold, 0);
+    if (handsFence(shop)) s.fenceSold = fenceBefore + cp;
     it.qty = num(it.qty, 1) - 1;
     if (it.qty <= 0) s.items.splice(i, 1);
     // It goes on the shelf at about list price.
@@ -5167,6 +5181,7 @@
     ledgerAdd(shop, { who: c.name, what: it.name, qty: 1, cp: cp, dir: 'bought' });
     saveCharSoon(c);
     saveShop(shop, 'Paid ' + c.name + ' ' + money(cp));
+    if (handsFence(shop)) fenceNotice(shop, c, fenceBefore, s.fenceSold);
     render();
   }
   // The check runs on its own when a wanted face walks in: they roll a d20 to slip past, against a target set by their worst crime.
@@ -5573,6 +5588,7 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
     html += arrivalBlock(camp);
+    if (dm) html += noticesBlock(camp);
     if (dm) html += watchBlock(camp);
     var gridOn = j.map && grids[j.map.id];
     var boat = boatOf(t), air = airOf(t);
@@ -5935,6 +5951,10 @@
       if (need > 0) entry.text += used < need ? ' Ran out of food (short ' + (Math.round((need - used) * 10) / 10) + ').' : ' Ate ' + used + ' food, ' + (Math.round((have - used) * 10) / 10) + ' left.';
       var patch = { day: day + 1, food: Math.round((have - used) * 10) / 10 };
       if (moving) patch.arrival = arrival;
+      var fresh = [];
+      if (arrival && !arrival.ruin) fresh.push(gateCheck(campId, arrival.label, arrival.slug, day + 1));
+      var hunt = hunterCheck(campId, day + 1); if (hunt) fresh.push(hunt);
+      if (fresh.length) patch.notices = (t.notices || []).concat(fresh).slice(-20);
       var paid = [];
       (opt.tolls || []).forEach(function (tl) { (tl.shares || []).forEach(function (sh) { paid.push(sh); }); });
       if (paid.length) entry.paid = paid;
@@ -5957,6 +5977,104 @@
   }
 
   // What the party knows about the town they just stopped in. The DM also gets the shops to pick from.
+  /* ---------- Behind the screen: gate searches and bounty hunters ----------
+     Both are rolled by the app (the DM's rolls); what the players then do is rolled at the table. */
+  var GATE_CHANCE = [5, 10, 20, 30, 40], GATE_DC = [10, 11, 12, 14, 16];
+  function carriersOf(campId) {
+    return campaignChars(campId).map(function (ch) {
+      var s = normSheet(ch.sheet), list = s.items.filter(function (it) { return num(it.qty, 1) > 0 && (isContraband(it.name, campId) || isStolen(it)); })
+        .map(function (it) { return { n: it.name, q: num(it.qty, 1), stolen: isStolen(it) && !isContraband(it.name, campId) }; });
+      return list.length ? { cid: ch.id, name: ch.name, items: list } : null;
+    }).filter(Boolean);
+  }
+  function lawHeat(campId) {
+    var mine = crimes.filter(function (c) { return c.campaign_id === campId && c.status !== 'Cleared'; });
+    return mine.some(function (c) { return c.status === 'Wanted'; }) ? 25 : mine.some(function (c) { return c.status === 'Suspected'; }) ? 10 : 0;
+  }
+  function gateCheck(campId, label, slug, day) {
+    var a = slug ? articleBySlug(slug) : articles.filter(function (x) { return x.title === label; })[0];
+    var p = a ? placeOf(a.id) : { size: 2, tags: [] }, size = Math.max(0, Math.min(4, num(p.size, 2)));
+    var chance = Math.min(85, GATE_CHANCE[size] + (hasTag(p, 'military') ? 15 : 0) + lawHeat(campId)), roll = 1 + Math.floor(Math.random() * 100);
+    return { id: cbId(), kind: 'gate', day: day, place: label, chance: chance, roll: roll, searched: roll <= chance, dc: GATE_DC[size], carriers: roll <= chance ? carriersOf(campId) : [] };
+  }
+  function huntersFor(bounty) {
+    if (bounty < 100) return [{ name: 'Tough', n: 2 }];
+    if (bounty < 300) return [{ name: 'Tough', n: 3 }, { name: 'Scout', n: 1 }];
+    if (bounty < 800) return [{ name: 'Tough Boss', n: 1 }, { name: 'Tough', n: 3 }, { name: 'Scout', n: 1 }];
+    if (bounty < 2000) return [{ name: 'Warrior Veteran', n: 2 }, { name: 'Tough', n: 4 }, { name: 'Spy', n: 1 }];
+    return [{ name: 'Gladiator', n: 1 }, { name: 'Assassin', n: 1 }, { name: 'Warrior Veteran', n: 2 }];
+  }
+  function hunterCheck(campId, day) {
+    var wanted = crimes.filter(function (c) { return c.campaign_id === campId && c.status === 'Wanted'; });
+    if (!wanted.length) return null;
+    var total = wanted.reduce(function (t, c) { return t + bountyNow(c); }, 0);
+    if (total <= 0) return null;
+    var chance = Math.min(40, 5 + Math.floor(total / 25)), roll = 1 + Math.floor(Math.random() * 100);
+    if (roll > chance) return null;
+    var who = uniq(wanted.map(function (c) { return c.character_id ? charName(c.character_id) : 'the whole party'; }));
+    return { id: cbId(), kind: 'hunters', day: day, chance: chance, roll: roll, bounty: total, after: who, group: huntersFor(total) };
+  }
+  function saveNotices(campId, list) {
+    var t = travel[campId]; if (!t) return;
+    t.notices = list.slice(-20);
+    sb.from('travel_state').update({ notices: t.notices }).eq('campaign_id', campId).then(function (r) { if (r.error) fail(r.error, 'Could not save that.'); });
+  }
+  function noticesBlock(camp) {
+    var t = travel[camp.id], list = ((t && t.notices) || []).slice().reverse();
+    var ar = t && t.arrival, gateBtn = ar && !ar.ruin ? '<button type="button" class="btn small" data-act="gate-now" data-camp="' + esc(camp.id) + '">Check the gate at ' + esc(midLabel(ar.label)) + '</button>' : '';
+    if (!list.length && !gateBtn) return '';
+    var html = '<section class="block"><h2 class="sec-title">Behind the screen<small>only you see this</small></h2>';
+    list.forEach(function (n) {
+      html += '<div class="group-box notice ' + n.kind + '"><button type="button" class="linkish cb-x notice-x" data-act="notice-x" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '" aria-label="Dismiss">×</button>';
+      if (n.kind === 'gate') {
+        html += '<p class="notice-h"><b>' + (n.searched ? 'Guards search packs at ' : 'Through the gate at ') + esc(midLabel(n.place)) + '</b> <small>Day ' + n.day + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>';
+        if (!n.searched) html += '<p class="note" style="margin:0">Nobody stopped them.</p>';
+        else if (!n.carriers.length) html += '<p class="note" style="margin:0">The guards find nothing worth their time.</p>';
+        else {
+          html += '<p class="note" style="margin:0 0 6px">Anyone carrying can try to hide it: Sleight of Hand or Deception at the table, DC ' + n.dc + '.</p>';
+          n.carriers.forEach(function (cr, i) {
+            html += '<div class="tbl-row"><div class="main"><b>' + esc(cr.name) + '</b><span>' + esc(cr.items.map(function (x) { return (x.q > 1 ? x.q + ' × ' : '') + x.n + (x.stolen ? ' (stolen)' : ''); }).join(', ')) + '</span></div>' +
+              (cr.logged ? '<span class="tag plain">Logged</span>' : '<button type="button" class="btn small" data-act="gate-log" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '" data-i="' + i + '">Caught: log it</button>') + '</div>';
+          });
+        }
+      } else if (n.kind === 'hunters') {
+        html += '<p class="notice-h"><b>Bounty hunters catch up</b> <small>Day ' + n.day + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>' +
+          '<p style="margin:0 0 6px">After ' + esc(n.after.join(', ')) + ', for ' + n.bounty.toLocaleString() + ' gp: ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) + '.</p>' +
+          '<button type="button" class="btn small primary" data-act="hunt-fight" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '">Set up the fight</button>';
+      }
+      html += '</div>';
+    });
+    if (gateBtn) html += '<div class="actions">' + gateBtn + '</div>';
+    return html + '</section>';
+  }
+  function gateLog(campId, nid, i) {
+    var t = travel[campId], n = ((t && t.notices) || []).filter(function (x) { return x.id === nid; })[0], cr = n && n.carriers[i];
+    if (!cr) return;
+    var rows = cr.items.filter(function (x) { return !x.stolen; }).map(function (x) {
+      return { campaign_id: campId, character_id: cr.cid, kind: 'contraband', title: x.n, location: midLabel(n.place), severity: 'Minor', status: 'Suspected', bounty: 0, quantity: x.q, notes: 'Found at the gate, day ' + n.day, dm_only: false };
+    });
+    cr.items.filter(function (x) { return x.stolen; }).forEach(function (x) {
+      rows.push({ campaign_id: campId, character_id: cr.cid, kind: 'crime', title: 'Receiving stolen goods (' + x.n + ')', location: midLabel(n.place), severity: 'Minor', status: 'Suspected', bounty: 0, quantity: 1, notes: 'Found at the gate, day ' + n.day, dm_only: false });
+    });
+    sb.from('crimes').insert(rows).then(function (r) {
+      if (r.error) return fail(r.error, 'Could not log it.');
+      cr.logged = true; saveNotices(campId, t.notices);
+      loadCrimes().then(function () { toast('On ' + cr.name + '’s record.'); render(); });
+    });
+  }
+
+  /* ---------- The Black Hand's fences ----------
+     Fences answer to the Black Hand unless the DM ties a shop to another faction. Sell them enough and the Hand takes notice. */
+  var FENCE_STEPS = [5000, 25000, 100000];   // copper sold: 50 gp, 250 gp, 1,000 gp
+  function blackHand() { return articleBySlug('the-black-hand'); }
+  function handsFence(shop) { var bh = blackHand(); return !!(bh && (ITEMS.shopKinds[shop.kind] || {}).fence && (!shop.faction_id || shop.faction_id === bh.id)); }
+  function fenceNotice(shop, c, before, after) {
+    var bh = blackHand(); if (!bh) return;
+    var steps = FENCE_STEPS.filter(function (x) { return before < x && after >= x; }).length;
+    if (!steps) return;
+    var st = standingFor(c, bh), next = Math.min(STANDINGS.length - 1, st.idx + steps);
+    if (next > st.idx) setStanding(c.id, bh.id, STANDINGS[next]);
+  }
   function arrivalBlock(camp, compact) {
     var t = travel[camp.id], ar = t && t.arrival;
     if (!ar) return '';
@@ -8305,6 +8423,10 @@
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
     if (act === 'backup') { downloadBackup(); return; }
+    if (act === 'gate-now') { var gc = el.getAttribute('data-camp'), gt = travel[gc]; if (gt && gt.arrival) { saveNotices(gc, (gt.notices || []).concat([gateCheck(gc, gt.arrival.label, gt.arrival.slug, num(gt.day, 1))])); render(); } return; }
+    if (act === 'notice-x') { var nc = el.getAttribute('data-camp'), nt2 = travel[nc]; saveNotices(nc, ((nt2 && nt2.notices) || []).filter(function (x) { return x.id !== el.getAttribute('data-id'); })); render(); return; }
+    if (act === 'gate-log') { gateLog(el.getAttribute('data-camp'), el.getAttribute('data-id'), num(el.getAttribute('data-i'), 0)); return; }
+    if (act === 'hunt-fight') { var hc = el.getAttribute('data-camp'), hn = ((travel[hc] || {}).notices || []).filter(function (x) { return x.id === el.getAttribute('data-id'); })[0]; if (hn) { ui.pendingFight = hn.group; location.hash = '#/combat'; } return; }
     if (/^comm-/.test(act)) { var csh = shopById(el.getAttribute('data-shop')); if (!csh) return; if (act === 'comm-order') commissionOrder(csh); else if (act === 'comm-collect') commissionCollect(csh, num(el.getAttribute('data-i'), -1)); else if (act === 'comm-cancel') commissionCancel(csh, num(el.getAttribute('data-i'), -1)); return; }
     switch (act) {
       case 'signout': sb.auth.signOut(); break;
@@ -8949,7 +9071,11 @@
       saveCharSoon(wc); return;
     }
     if (t.hasAttribute('data-spell-rarity')) return setSpellRarity(t.getAttribute('data-spell-rarity'), t.value);
-    if (t.hasAttribute('data-crime-status')) return updateCrime(t.getAttribute('data-crime-status'), { status: t.value });
+    if (t.hasAttribute('data-crime-status')) {
+      var cst = { status: t.value }, ccr = crimes.filter(function (x) { return x.id === t.getAttribute('data-crime-status'); })[0], ctv = ccr && travel[ccr.campaign_id];
+      if (t.value === 'Wanted' && ccr && ccr.status !== 'Wanted') cst.wanted_day = ctv ? num(ctv.day, 1) : null;
+      return updateCrime(t.getAttribute('data-crime-status'), cst);
+    }
     if (t.hasAttribute('data-travel') || t.hasAttribute('data-travel-text')) {
       var tcamp = campaignBySlug(parseRoute().arg);
       if (!tcamp) return;
