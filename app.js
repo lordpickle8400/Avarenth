@@ -5302,7 +5302,7 @@
       'a copper kettle', 1, 'an enamelled jewellery box', 12, 'a carved wooden tray', 0.5, 'a painted serving dish', 2],
     statues: ['a little stone statue of a saint', 8, 'a brass figurine of a horse', 6, 'a soapstone carving of a bear', 4, 'a wooden statuette of a sailor', 3, 'a bronze statuette of a dancer', 20,
       'a small marble hand', 12, 'a carved ivory bird', 25],
-    hides: ['a rabbit pelt', 0.1, 'a fox pelt', 0.5, 'a wolf pelt', 2, 'a deer hide', 1, 'a goat hide', 0.5, 'a cow hide', 1, 'a bear pelt', 10, 'a snow fox pelt', 3, 'a sabre-cat pelt', 20,
+    hides: ['a rabbit pelt', 0.1, 'a fox pelt', 0.5, 'a wolf pelt', 2, 'a deer hide', 1, 'a goat hide', 0.5, 'a cow hide', 1, 'a bear pelt', 10, 'a snow fox pelt', 3, 'a sabre-tooth cat pelt', 20,
       'tanned leather (a hide’s worth)', 2, 'leather strips (bundle)', 0.2, 'a sealskin', 3],
     parts: ['deer antlers', 1, 'goat horns', 0.3, 'boar tusks', 1, 'bear claws', 2, 'wolf teeth (a pouch)', 0.5, 'a ram’s skull', 0.5, 'fish scales (a jar)', 0.1, 'a hawk feather', 0.1,
       'bone meal (a sack)', 0.2, 'a horse skull', 0.3, 'a snake skin', 0.5, 'a crab shell', 0.1, 'sabre-tooth cat fangs', 5, 'a mammoth tusk', 50, 'troll fat (a jar)', 4, 'a giant’s tooth', 15],
