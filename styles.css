@@ -1384,3 +1384,10 @@ body:has(.m-sheet) { overflow: hidden; }
 .shop-ask-btn { margin: 0 0 14px; }
 .shop-ask { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
 .shop-ask p { margin: 0 0 6px; font-size: 16px; line-height: 1.5; }
+/* Shop: the fun shelves fold away */
+.eye { margin-top: 18px; padding: 4px 12px 8px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+.eye .kind-h { color: var(--accent-ink); }
+.browse { margin-top: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; }
+.browse > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-height: 48px; padding: 12px 0; font-family: var(--ui); font-size: 15px; font-weight: 700; cursor: pointer; }
+.browse > summary .note { font-weight: 400; font-size: 13px; }
+.browse[open] { padding-bottom: 8px; }

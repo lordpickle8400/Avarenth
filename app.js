@@ -5755,9 +5755,10 @@
     if (coming) html += '<p class="note" style="margin:0 0 8px">' + coming + (coming === 1 ? ' second-hand piece is' : ' second-hand pieces are') + ' on the way here. Shoppers can’t see ' + (coming === 1 ? 'it' : 'them') + ' yet.</p>';
     if (!stock.length) html += '<div class="empty">Empty shelves. Tap “Stock it” to fill them for a ' + esc(place ? SIZES[num(placeOf(place.id).size, 2)].toLowerCase() : 'town') + '.</div>';
     var blocked = c ? recogMult(shop, c).blocked : false;
-    KIND_ORDER.forEach(function (k) {
-      if (!groups[k]) return;
-      html += '<h3 class="kind-h">' + esc(KIND_LABEL[k]) + '</h3><div class="tbl">' + groups[k].sort(function (a, b) { return a.row.n.localeCompare(b.row.n); }).map(function (g) {
+    // The fun shelves fold away under "Browse the shelves" so the useful gear stays easy to find. Specialist shops keep theirs open: it's what they sell.
+    var special = !!(ITEMS.shopKinds[shop.kind] || {}).special || !!((ITEMS.trades || {})[shop.trade] || {}).special;
+    var FUN = special ? [] : ['mm', 'bk', 'co', 'an', 'cu', 'j'], funHtml = '', funRows = [];
+    var rowHtml = function (g) {
         var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
         var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';
         if (ui.shopEdit) return '<div class="tbl-row stock-row"><div class="main"><b>' + esc(row.n) + '</b></div>' +
@@ -5769,8 +5770,21 @@
         return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
           (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
-      }).join('') + '</div>';
+    };
+    var byName = function (a, b) { return a.row.n.localeCompare(b.row.n); };
+    KIND_ORDER.forEach(function (k) {
+      if (!groups[k]) return;
+      var part = '<h3 class="kind-h">' + esc(KIND_LABEL[k]) + '</h3><div class="tbl">' + groups[k].sort(byName).map(rowHtml).join('') + '</div>';
+      if (FUN.indexOf(k) >= 0 && !ui.shopEdit) { funHtml += part; funRows = funRows.concat(groups[k]); } else html += part;
     });
+    if (funRows.length) {
+      // Three things to describe as they walk in. Picked the same way until the shelves change, so it doesn't jump about.
+      var seed = 0, key = shop.id + ':' + (shop.stock_day || '') + ':' + funRows.length; for (var si = 0; si < key.length; si++) seed = (seed * 31 + key.charCodeAt(si)) >>> 0;
+      var odd = funRows.filter(function (g) { return g.row.k !== 'j' && !/eggs \(|a tin of|a jar of crickets|a hen\b/.test(g.row.n); }), pool = (odd.length >= 3 ? odd : funRows).slice(), eye = [];
+      while (eye.length < 3 && pool.length) { seed = (seed * 1103515245 + 12345) >>> 0; eye.push(pool.splice(seed % pool.length, 1)[0]); }
+      html += '<div class="eye"><h3 class="kind-h">What catches your eye</h3><div class="tbl">' + eye.map(rowHtml).join('') + '</div></div>';
+      html += '<details class="browse"' + (ui.browseOpen && ui.browseOpen[shop.id] ? ' open' : '') + ' data-browse="' + esc(shop.id) + '"><summary>Browse the shelves <span class="note">' + funRows.length + ' odds, ends and oddities</span></summary>' + funHtml + '</details>';
+    }
     html += backRoomHtml(shop, c, s, backRows, qty);
     if (ui.shopEdit) html += '<datalist id="dl-items">' + ITEMS.items.map(function (i) { return '<option value="' + esc(i.name) + '">'; }).join('') + '</datalist>' +
       '<form class="inline-form" id="shop-add" novalidate data-id="' + esc(shop.id) + '" style="margin-top:10px"><div class="field"><label for="sa-name">Add an item</label><input type="text" id="sa-name" list="dl-items" maxlength="80" placeholder="From the list, or anything"></div>' +
@@ -11283,6 +11297,7 @@
     if (d && d.classList && d.classList.contains('spell-more') && d.open) fillSpellMore(d);
     if (d && d.classList && d.classList.contains('cs-cond')) ui.condOpen = d.open;
     if (d && d.classList && d.classList.contains('st-plain')) ui.stPlain = d.open;
+    if (d && d.hasAttribute && d.hasAttribute('data-browse')) { ui.browseOpen = ui.browseOpen || {}; ui.browseOpen[d.getAttribute('data-browse')] = d.open; }
   }, true);
 
   // Our own short summaries of the subclasses in the paid books (not the book text).
