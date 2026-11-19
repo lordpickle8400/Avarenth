@@ -4874,8 +4874,10 @@
       ['a set of shelves', 3, 'Bookseller,General store'], ['a sea chest', 5, 'Shipwright & chandler'], ['Cart', 15, 'Stables']] },
     'Woodcarver’s tools': { rent: 0, make: [['a carved bowl and spoons', 0.2, 'General store'], ['Quarterstaff', 0.2, 'General store'], ['Arrows (20)', 1, 'Bowyer & fletcher'], ['a carved figure', 1, 'General store'], ['Arcane focus: wand', 10, 'Magic shop'],
       ['Druidic focus: yew wand', 10, 'Herbalist'], ['a carved shrine panel', 15, 'Temple'], ['Shortbow', 25, 'Bowyer & fletcher'], ['Longbow', 50, 'Bowyer & fletcher']] },
-    'Jeweler’s tools': { rent: 0, note: 'Finished silver and gold is the Crown’s trade, so these are brass, copper and stones. Silver or gold work only sells to a licensed jeweller or a fence.', make: [['a copper ring', 1, 'General store'], ['a brass brooch', 2, 'Tailor & outfitter'],
-      ['Holy symbol: amulet', 5, 'Temple'], ['Signet ring', 5, 'Tailor & outfitter'], ['a polished-stone pendant', 5, 'Tailor & outfitter'], ['a cut gem set in copper', 25, 'Magic shop,Fence']] },
+    'Jeweler’s tools': { rent: 0, note: 'Working silver and gold needs a royal licence: finished silver and gold is the Crown’s trade.', make: [['a copper ring', 1, 'General store'], ['a brass brooch', 2, 'Tailor & outfitter'],
+      ['Holy symbol: amulet', 5, 'Temple'], ['Signet ring', 5, 'Tailor & outfitter'], ['a polished-stone pendant', 5, 'Tailor & outfitter'], ['a cut gem set in copper', 25, 'Magic shop,Fence'],
+      ['a silver ring', 10, 'Tailor & outfitter', 'lic'], ['a silver chain', 15, 'Tailor & outfitter', 'lic'], ['a silver holy symbol', 20, 'Temple', 'lic'], ['a silver brooch', 20, 'Tailor & outfitter', 'lic'],
+      ['a gold ring', 50, 'Tailor & outfitter', 'lic'], ['a gold signet ring', 75, 'Tailor & outfitter', 'lic'], ['a gold chain', 100, 'Tailor & outfitter', 'lic'], ['a gem pendant set in gold', 250, 'Magic shop', 'lic']] },
     'Potter’s tools': { need: 'a kiln', rent: 0.3, make: [['Jug or pitcher', 0.02, 'Tavern & inn'], ['a clay pot', 0.02, 'General store'], ['a storage crock', 0.1, 'Alchemist,General store'], ['a set of plates', 0.2, 'Tavern & inn'], ['roof tiles (a hundred)', 1, 'General store'],
       ['a glazed vase', 2, "Artist's studio"], ['a temple offering bowl', 3, 'Temple']] },
     'Mason’s tools': { need: 'a stone yard', rent: 0.2, make: [['a stone trough', 2, 'Stables'], ['a carved headstone', 5, 'Temple'], ['a millstone', 10, 'General store'], ['a carved mantelpiece', 10, 'Tavern & inn'], ['a carved statue', 25, "Artist's studio,Temple"]] },
@@ -4906,7 +4908,7 @@
   function craftFameName(n) { return n >= 15 ? 'Famous' : n >= 8 ? 'Sought after' : n >= 3 ? 'Known' : n ? 'Noticed' : ''; }
   function craftWants(kind) {
     var out = [];
-    Object.keys(CRAFTS).forEach(function (t) { CRAFTS[t].make.forEach(function (m) { if (m[2].split(',').indexOf(kind) >= 0) out.push({ tool: t, n: m[0], v: m[1] }); }); });
+    Object.keys(CRAFTS).forEach(function (t) { CRAFTS[t].make.forEach(function (m) { if (!m[3] && m[2].split(',').indexOf(kind) >= 0) out.push({ tool: t, n: m[0], v: m[1] }); }); });
     return out;
   }
   // What a shop would order this tenday, if anything. Same answer all tenday.
@@ -4959,19 +4961,21 @@
       if (where === 'road' && C.need) where = 'rent';
       html += '<section class="block"><h2 class="sec-title">Start something</h2><form class="form" id="craft-form" novalidate>' +
         '<div class="two"><div class="field"><label for="cf-tool">With</label><select id="cf-tool">' + all.map(function (x) { return '<option value="' + esc(x) + '"' + (x === t ? ' selected' : '') + '>' + esc(x) + (tools.indexOf(x) >= 0 ? ' ✓' : '') + '</option>'; }).join('') + '</select></div>' +
-        '<div class="field"><label for="cf-item">Make</label><select id="cf-item">' + C.make.map(function (m, i) { return '<option value="' + i + '"' + (String(i) === pick ? ' selected' : '') + '>' + esc(craftItemName(m[0])) + ' (' + money(toCp(m[1])) + ')</option>'; }).join('') + '<option value="own"' + (pick === 'own' ? ' selected' : '') + '>Something else…</option></select></div></div>';
+        '<div class="field"><label for="cf-item">Make</label><select id="cf-item">' + C.make.map(function (m, i) { return '<option value="' + i + '"' + (String(i) === pick ? ' selected' : '') + (m[3] && !k.licence ? ' disabled' : '') + '>' + esc(craftItemName(m[0])) + ' (' + money(toCp(m[1])) + ')' + (m[3] && !k.licence ? ' — royal licence' : '') + '</option>'; }).join('') + '<option value="own"' + (pick === 'own' ? ' selected' : '') + '>Something else…</option></select></div></div>';
       if (pick === 'own') html += '<div class="two"><div class="field"><label for="cf-name">What is it</label><input type="text" id="cf-name" maxlength="80" placeholder="A glass hummingbird"></div><div class="field"><label for="cf-val">Worth (gp each)</label><input type="number" id="cf-val" min="0.01" step="0.01" inputmode="decimal" placeholder="Ask your DM"></div></div>';
       html += '<div class="two"><div class="field"><label for="cf-qty">How many</label><input type="number" id="cf-qty" min="1" value="' + Math.max(1, num(ui.cfQty, 1)) + '" inputmode="numeric"></div>' +
         '<div class="field"><label for="cf-where">Where</label><select id="cf-where">' + [['rent', 'Rent ' + (C.need || 'a workshop') + (C.rent ? ' (' + money(toCp(C.rent)) + ' a day)' : '')], ['own', 'Own workshop or holding'], ['road', 'On the road, with my tools']].map(function (o) {
           return '<option value="' + o[0] + '"' + (o[0] === where ? ' selected' : '') + (o[0] === 'road' && C.need ? ' disabled' : '') + '>' + esc(o[1]) + (o[0] === 'road' && C.need ? ' (needs ' + esc(C.need) + ')' : '') + '</option>';
         }).join('') + '</select></div></div>';
       if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); html += '<p class="note" style="margin:0 0 8px">Materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
-      if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + '</p>';
+      if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + ' ' + (k.licence ? esc(c.name) + ' holds one.' : esc(c.name) + ' doesn’t have one.') + '</p>';
       if (tools.indexOf(t) < 0) html += '<p class="note" style="margin:0 0 8px">' + esc(c.name) + ' isn’t trained with ' + esc(t) + ' yet. You can still try, without your proficiency bonus, or tick it below if they are.</p>';
       html += '<div class="actions"><button type="submit" class="btn primary">Buy the materials and start</button></div></form></section>';
     }
     // Trained tools and how well known their work is.
     html += '<section class="block"><h2 class="sec-title">Trained with</h2>' + (tools.length ? '<p style="margin:0">' + tools.map(esc).join(', ') + '</p>' : '<p class="note" style="margin:0">No artisan’s tools yet.</p>');
+    if (k.licence || tools.indexOf('Jeweler’s tools') >= 0 || dmView()) html += '<p class="note" style="margin:6px 0 0">' + (k.licence ? '♛ Holds a royal licence to work silver and gold.' : 'No royal licence for silver and gold.') +
+      (dmView() ? ' <button type="button" class="linkish" data-act="craft-licence">' + (k.licence ? 'Take it away' : 'Grant one') + '</button>' : '') + '</p>';
     if (can) html += '<details class="craft-tools"' + (ui.craftToolsOpen ? ' open' : '') + '><summary class="note">Add or remove tools</summary><div class="chips">' + Object.keys(CRAFTS).map(function (x) {
       return '<button type="button" class="chip pick" data-act="craft-tool" data-tool="' + esc(x) + '" aria-pressed="' + (k.tools.indexOf(x) >= 0) + '">' + esc(x) + '</button>';
     }).join('') + '</div><p class="note">Tools from your class and background count already.</p></details>';
@@ -4986,7 +4990,7 @@
     if (!C) return;
     var pick = (document.getElementById('cf-item') || {}).value, qty = Math.max(1, num((document.getElementById('cf-qty') || {}).value, 1)), where = (document.getElementById('cf-where') || {}).value || 'road', n, v;
     if (pick === 'own') { n = ((document.getElementById('cf-name') || {}).value || '').trim(); v = fnum((document.getElementById('cf-val') || {}).value, 0); if (!n) return toast('Say what you’re making.'); if (!(v > 0)) return toast('Put in what one is worth.'); }
-    else { var m = C.make[num(pick, 0)]; n = m[0]; v = m[1]; }
+    else { var m = C.make[num(pick, 0)]; n = m[0]; v = m[1]; if (m[3] && !k.licence) return toast('Silver and gold work needs a royal licence.'); }
     if (where === 'road' && C.need) return toast('That needs ' + C.need + '.');
     var cost = toCp(v * qty / 2), have = walletCp(s);
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
@@ -10289,6 +10293,7 @@
       case 'craft-finish': if (c) craftFinish(c, num(el.getAttribute('data-i'), -1)); break;
       case 'craft-drop': if (c) { var cdi = num(el.getAttribute('data-i'), -1); if (ui.pendingDelete !== 'craft:' + cdi) { ui.pendingDelete = 'craft:' + cdi; render(); return; } ui.pendingDelete = null; craftOf(c.sheet).jobs.splice(cdi, 1); render(); saveCharSoon(c); } break;
       case 'craft-tool': if (c) { var ctl = craftOf(c.sheet).tools, ctn = el.getAttribute('data-tool'), cti = ctl.indexOf(ctn); if (cti >= 0) ctl.splice(cti, 1); else ctl.push(ctn); ui.craftToolsOpen = true; render(); saveCharSoon(c); } break;
+      case 'craft-licence': if (c && dmView()) { var clk = craftOf(c.sheet); clk.licence = !clk.licence; toast(clk.licence ? c.name + ' now holds a royal licence.' : 'Licence taken away.'); render(); saveCharSoon(c); } break;
       case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
