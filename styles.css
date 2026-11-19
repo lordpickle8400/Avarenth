@@ -1394,3 +1394,12 @@ body:has(.m-sheet) { overflow: hidden; }
 .shop-now { margin: 0 0 14px; padding: 10px 14px; border-left: 2px solid var(--accent); background: var(--soft); }
 .shop-now .eyebrow { margin: 0 0 4px; font-size: 11px; }
 .shop-now p:not(.eyebrow) { margin: 4px 0; font-style: italic; font-size: 16px; }
+
+/* Workshop */
+.craft-job .meter { margin-top: 8px; }
+.craft-job .actions.tight { margin: 8px 0 0; }
+.craft-roll { margin-top: 8px; align-items: flex-end; }
+.craft-roll .field { flex: 1 1 140px; }
+.craft-tools { margin-top: 8px; }
+.craft-tools .chips { margin-top: 6px; }
+.shop-orders select.input { max-width: 9rem; }

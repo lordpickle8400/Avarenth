@@ -1980,7 +1980,7 @@
     html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class" title="' + esc(acNow.how) + '"><span class="k">Armor</span><span class="v">' + acNow.ac + '</span><span class="k">Class</span></div>' +
       csStat('Initiative', signed(init), '') + (sa ? csStat('Spell save', String(8 + pb + sa.mod), 'DC') + csStat('Spell attack', signed(pb + sa.mod), sa.key.toUpperCase()) : '') + '</div>';
     html += conditionHtml(s, can, true);
-    var tabs = (phone ? ['Abilities', 'Skills', 'Profs'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
+    var tabs = (phone ? ['Abilities', 'Skills', 'Profs'] : []).concat(['Actions', 'Spells', 'Inventory', 'Workshop', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
     var tabName = { Features: 'Features & Traits', Abilities: 'Abilities & Saves' };
     html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
@@ -2004,11 +2004,12 @@
     Profs: '<circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/>',
     Background: '<path d="M4 20V6l8-3 8 3v14M9 20v-6h6v6"/>',
     Reputation: '<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>',
+    Workshop: '<path d="M4 10h12l4-3M4 10v3h6l1 4h-4v3h10v-3h-4l1-4h3l1-3"/>',
     Record: '<path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"/>',
     Notes: '<path d="M5 19l1-4L16 5l3 3L9 18zM14 7l3 3"/>'
   };
   var M_NAME = { Abilities: 'Stats & Saves', Actions: 'Combat', Inventory: 'Pack', Spells: 'Magic', Features: 'Traits', Profs: 'Training', Background: 'Story', Reputation: 'Standing', Notes: 'Journal' };
-  var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
+  var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Workshop', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
   function mIcon(k) { return '<svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true">' + (M_ICON[k] || '') + '</svg>'; }
   function csPhone(c, s, full, o) {
     function cut(a, b) { var i = full.indexOf(a), j = b ? full.indexOf(b, i + 1) : -1; return i < 0 ? '' : full.slice(i, j < 0 ? undefined : j); }
@@ -3805,7 +3806,7 @@
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
       return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
-        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (it.made ? ' <span class="tag plain" style="font-size:10px" title="Made by ' + esc(it.made.by || '') + '">' + esc(CRAFT_Q[num(it.made.q, 1)][0]) + ', own make</span>' : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
         '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
         (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
@@ -3901,6 +3902,8 @@
       html += inventoryTabHtml(c, s, edit, can, abil);
     } else if (ui.sheetTab === 'Reputation') {
       html += standingTabHtml(c, s);
+    } else if (ui.sheetTab === 'Workshop') {
+      html += workshopTabHtml(c, s, can);
     } else if (ui.sheetTab === 'Record') {
       var camp = c.campaign_id ? campaignById(c.campaign_id) : null;
       if (!camp) {
@@ -4854,6 +4857,199 @@
     return out.length ? '<div class="cb-badges">' + out.join('') + '</div>' : '';
   }
   function standingMeter(idx) { return '<span class="st-meter" aria-hidden="true">' + STANDINGS.map(function (x, i) { return '<i class="' + (i === idx ? 'on st-' + x.toLowerCase() : i < idx ? 'past' : '') + '"></i>'; }).join('') + '</span>'; }
+  /* ---------- Workshop: characters make things with their tools, to keep, to sell, or to order ----------
+     Built on the 2024 crafting rules: materials cost half the item's value, and it takes about a day's work for every 10 gp of value.
+     The player rolls their own tool check when it's done; the total sets how well it turned out. */
+  var CRAFTS = {
+    'Glassblower’s tools': { need: 'a glass furnace', rent: 0.5, make: [['Vial', 1, 'Alchemist,Magic shop,Herbalist'], ['Glass bottle', 2, 'Alchemist,General store,Tavern & inn'], ['a string of glass beads', 1, 'General store,Tailor & outfitter'],
+      ['a glass goblet', 3, 'Tavern & inn'], ['a glass lamp chimney', 1, 'General store'], ['a glass net float', 0.5, 'Shipwright & chandler'], ['a set of window panes', 5, 'General store,Temple'], ['an art-glass vase', 15, "Artist's studio"],
+      ['a lens', 10, 'Tinker & toolmaker'], ['a pair of spectacles', 20, 'Tinker & toolmaker,Bookseller'], ['Hourglass', 25, 'Tinker & toolmaker,Magic shop'], ['Arcane focus: crystal', 10, 'Magic shop'], ['Arcane focus: orb', 20, 'Magic shop'],
+      ['a pair of glass eyes for a clockwork companion', 15, 'Clockworks'], ['a stained-glass panel', 50, 'Temple'], ['Magnifying glass', 100, 'Tinker & toolmaker,Bookseller'], ['a stained-glass window', 300, 'Temple']] },
+    'Smith’s tools': { need: 'a forge', rent: 0.5, make: [['a set of horseshoes', 0.5, 'Stables'], ['Iron spikes (10)', 1, 'General store'], ['Hammer', 1, 'General store'], ['Spear', 1, 'Blacksmith'], ['Iron pot', 2, 'General store,Tavern & inn'],
+      ['Crowbar', 2, 'General store'], ['Shovel', 2, 'General store'], ['Dagger', 2, 'Blacksmith'], ['Chain (10 feet)', 5, 'Shipwright & chandler,General store'], ['Hunting trap', 5, 'General store'], ['Mace', 5, 'Blacksmith'],
+      ['Shortsword', 10, 'Blacksmith'], ['Battleaxe', 10, 'Blacksmith'], ['Shield', 10, 'Armorer'], ['Longsword', 15, 'Blacksmith'], ['Warhammer', 15, 'Blacksmith'], ['Chain shirt', 50, 'Armorer'], ['Chain mail', 75, 'Armorer']] },
+    'Leatherworker’s tools': { rent: 0, make: [['Waterskin', 0.2, 'General store'], ['Pouch', 0.5, 'General store,Tailor & outfitter'], ['Quiver', 1, 'Bowyer & fletcher'], ['Backpack', 2, 'General store,Tailor & outfitter'], ['Bit and bridle', 2, 'Stables'],
+      ['Saddlebags', 4, 'Stables'], ['Leather armor', 10, 'Armorer'], ['Riding saddle', 10, 'Stables'], ['Studded leather armor', 45, 'Armorer']] },
+    'Carpenter’s tools': { rent: 0, make: [['a stool', 0.2, 'Tavern & inn'], ['Barrel', 2, 'Tavern & inn,Shipwright & chandler,General store'], ['a cart wheel', 2, 'Stables'], ['a table', 2, 'Tavern & inn'], ['Chest', 5, 'General store'],
+      ['a set of shelves', 3, 'Bookseller,General store'], ['a sea chest', 5, 'Shipwright & chandler'], ['Cart', 15, 'Stables']] },
+    'Woodcarver’s tools': { rent: 0, make: [['a carved bowl and spoons', 0.2, 'General store'], ['Quarterstaff', 0.2, 'General store'], ['Arrows (20)', 1, 'Bowyer & fletcher'], ['a carved figure', 1, 'General store'], ['Arcane focus: wand', 10, 'Magic shop'],
+      ['Druidic focus: yew wand', 10, 'Herbalist'], ['a carved shrine panel', 15, 'Temple'], ['Shortbow', 25, 'Bowyer & fletcher'], ['Longbow', 50, 'Bowyer & fletcher']] },
+    'Jeweler’s tools': { rent: 0, note: 'Finished silver and gold is the Crown’s trade, so these are brass, copper and stones. Silver or gold work only sells to a licensed jeweller or a fence.', make: [['a copper ring', 1, 'General store'], ['a brass brooch', 2, 'Tailor & outfitter'],
+      ['Holy symbol: amulet', 5, 'Temple'], ['Signet ring', 5, 'Tailor & outfitter'], ['a polished-stone pendant', 5, 'Tailor & outfitter'], ['a cut gem set in copper', 25, 'Magic shop,Fence']] },
+    'Potter’s tools': { need: 'a kiln', rent: 0.3, make: [['Jug or pitcher', 0.02, 'Tavern & inn'], ['a clay pot', 0.02, 'General store'], ['a storage crock', 0.1, 'Alchemist,General store'], ['a set of plates', 0.2, 'Tavern & inn'], ['roof tiles (a hundred)', 1, 'General store'],
+      ['a glazed vase', 2, "Artist's studio"], ['a temple offering bowl', 3, 'Temple']] },
+    'Mason’s tools': { need: 'a stone yard', rent: 0.2, make: [['a stone trough', 2, 'Stables'], ['a carved headstone', 5, 'Temple'], ['a millstone', 10, 'General store'], ['a carved mantelpiece', 10, 'Tavern & inn'], ['a carved statue', 25, "Artist's studio,Temple"]] },
+    'Weaver’s tools': { rent: 0, make: [['Sack', 0.01, 'General store'], ['Blanket', 0.5, 'General store'], ['Common clothes', 0.5, 'Tailor & outfitter'], ['Hempen rope (50 feet)', 1, 'Shipwright & chandler,General store'], ['Robes', 1, 'Temple'],
+      ['a bolt of cloth', 1, 'Tailor & outfitter'], ['Fine clothes', 15, 'Tailor & outfitter'], ['a tapestry', 25, "Artist's studio,Temple"]] },
+    'Cobbler’s tools': { rent: 0, make: [['a pair of slippers', 0.5, 'Tailor & outfitter'], ['a pair of boots', 1, 'Tailor & outfitter,General store'], ['a pair of riding boots', 3, 'Stables,Tailor & outfitter'], ['a pair of fine shoes', 5, 'Tailor & outfitter']] },
+    'Brewer’s supplies': { need: 'a brewhouse', rent: 0.3, make: [['a cask of ale', 2, 'Tavern & inn'], ['a cask of cider', 2, 'Tavern & inn'], ['a cask of stout', 3, 'Tavern & inn'], ['a cask of mead', 5, 'Tavern & inn']] },
+    'Alchemist’s supplies': { rent: 0, make: [['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple']] },
+    'Herbalism kit': { rent: 0, make: [['dried herbs (a bundle)', 0.1, 'Alchemist,Herbalist'], ['a healing salve', 1, 'Temple,Herbalist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'], ['Potion of healing', 50, 'Alchemist,Temple,Herbalist']] },
+    'Tinker’s tools': { rent: 0, make: [['Bell', 1, 'General store,Temple'], ['Ball bearings (1,000)', 1, 'Tinker & toolmaker'], ['Hooded lantern', 5, 'General store'], ['a set of clockwork gears', 5, 'Clockworks'], ['Bullseye lantern', 10, 'General store'], ['Lock', 10, 'General store,Tinker & toolmaker']] },
+    'Calligrapher’s supplies': { rent: 0, make: [['a letter written fair', 0.1, 'General store'], ['a copied scroll', 2, 'Bookseller,Temple'], ['a fine charter', 10, 'Bookseller'], ['Book', 25, 'Bookseller,Magic shop']] },
+    'Cartographer’s tools': { rent: 0, make: [['a local map', 2, 'General store,Bookseller'], ['a sea chart', 10, 'Shipwright & chandler'], ['a map of the realm', 25, 'Bookseller']] },
+    'Painter’s supplies': { rent: 0, make: [['a painted sign', 2, 'Tavern & inn,General store'], ['a painted icon', 5, 'Temple'], ['a landscape', 10, "Artist's studio"], ['a portrait', 20, "Artist's studio"]] }
+  };
+  var CRAFT_Q = [['Rough', 0.5], ['Sound', 1], ['Good', 1.25], ['Fine', 1.5], ['Masterwork', 2]];
+  function craftQ(total) { total = num(total, 0); return total >= 25 ? 4 : total >= 20 ? 3 : total >= 15 ? 2 : total >= 10 ? 1 : 0; }
+  function craftOf(s) { var k = s.craft && typeof s.craft === 'object' ? s.craft : (s.craft = {}); ['tools', 'jobs', 'offers', 'log'].forEach(function (x) { if (!Array.isArray(k[x])) k[x] = []; }); if (!k.fame || typeof k.fame !== 'object') k.fame = {}; return k; }
+  function craftKey(t) { return String(t).replace(/['’]/g, '’'); }
+  // Tools the character is trained with: from their class and background, plus any they tick here.
+  function craftTools(s) {
+    var cd = classOf(s), bg = SRD && s.background ? SRD.backgrounds[s.background] : null, txt = [(cd && cd.tools) || '', (bg && bg.tool) || ''].join(' ').toLowerCase().replace(/['’]/g, '');
+    var mine = craftOf(s).tools;
+    return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
+  }
+  function craftDays(v, q) { return Math.max(1, Math.ceil(v * q / 10)); }
+  function craftFame(s, placeId) { return num(craftOf(s).fame[placeId], 0); }
+  function craftFameMult(s, placeId) { return 1 + Math.min(0.3, craftFame(s, placeId) * 0.03); }
+  function craftFameName(n) { return n >= 15 ? 'Famous' : n >= 8 ? 'Sought after' : n >= 3 ? 'Known' : n ? 'Noticed' : ''; }
+  function craftWants(kind) {
+    var out = [];
+    Object.keys(CRAFTS).forEach(function (t) { CRAFTS[t].make.forEach(function (m) { if (m[2].split(',').indexOf(kind) >= 0) out.push({ tool: t, n: m[0], v: m[1] }); }); });
+    return out;
+  }
+  // What a shop would order this tenday, if anything. Same answer all tenday.
+  function shopOrders(shop) {
+    var want = craftWants(shop.kind), day = gameDay(shop) || 1, per = Math.floor((day - 1) / 10), out = [];
+    if (!want.length || isWanderer(shop)) return out;
+    for (var n = 0; n < 2; n++) {
+      var h = 0, k = shop.id + ':' + per + ':' + n; for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+      if (h % 100 >= (n ? 20 : 45)) continue;
+      var w = want[(h >>> 7) % want.length], target = 15 + (h >>> 13) % 120, qty = Math.max(1, Math.min(30, Math.round(target / w.v)));
+      if (out.some(function (x) { return x.n === w.n; })) continue;
+      if (w.v >= 50) qty = 1;
+      out.push({ key: k, tool: w.tool, n: w.n, v: w.v, qty: qty, pay: Math.round(w.v * qty * 1.3 * 100) / 100, due: per * 10 + 1 + 20 });
+    }
+    return out;
+  }
+  function craftItemName(n) { return n.charAt(0).toUpperCase() + n.slice(1); }
+
+  function workshopTabHtml(c, s, can) {
+    var k = craftOf(s), tools = craftTools(s), html = '<div style="margin-top:12px">';
+    html += helpNote('workshop', 'Make things with your tools, to keep or to sell. Materials cost half the item’s value. Work goes at about a day for every 10 gp of value, and you log the days as you spend them. When it’s done, roll your tool check and put in the total: the better the roll, the more it’s worth. Shops sometimes order work through your DM.');
+    // Orders from shops, sent by the DM.
+    if (k.offers.length) html += '<section class="block"><h2 class="sec-title">Work offered<small>' + k.offers.length + '</small></h2><div class="tbl">' + k.offers.map(function (o, i) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>For ' + esc(o.shop) + (o.place ? ' in ' + esc(o.place) : '') + ' · pays ' + money(toCp(o.pay)) + (o.due ? ' · wanted by ' + esc(campDate(c.campaign_id, o.due)) : '') + ' · ' + craftDays(o.v, o.qty) + ' days’ work, ' + money(toCp(o.v * o.qty / 2)) + ' in materials</span></div>' +
+        (can ? '<button type="button" class="btn small primary" data-act="craft-take" data-i="' + i + '"' + (tools.indexOf(o.tool) < 0 ? ' disabled title="Needs ' + esc(o.tool) + '"' : '') + '>Take it</button><button type="button" class="btn small quiet" data-act="craft-pass" data-i="' + i + '">Pass</button>' : '') + '</div>';
+    }).join('') + '</div></section>';
+    // Work in hand.
+    html += '<section class="block"><h2 class="sec-title">On the bench<small>' + k.jobs.length + '</small></h2>';
+    if (!k.jobs.length) html += '<div class="empty">Nothing being made.</div>';
+    else html += '<div class="stack">' + k.jobs.map(function (j, i) {
+      var pct = Math.min(100, Math.round(100 * j.done / j.days)), ready = j.done >= j.days;
+      var h = '<div class="group-box craft-job"><p style="margin:0"><b>' + esc(j.qty > 1 ? j.qty + ' × ' + j.n : craftItemName(j.n)) + '</b> <span class="note">' + esc(j.tool) + (j.com ? ' · for ' + esc(j.com.shop) : '') + '</span></p>' +
+        '<div class="meter" role="img" aria-label="' + pct + '% done"><i style="width:' + pct + '%"></i></div>' +
+        '<p class="note" style="margin:4px 0 0">' + j.done + ' of ' + j.days + ' days' + (j.where === 'rent' ? ' · renting ' + esc(CRAFTS[j.tool] ? CRAFTS[j.tool].need || 'a workshop' : 'a workshop') + ' at ' + money(toCp(j.rent)) + ' a day' : j.where === 'own' ? ' · own workshop' : ' · on the road') +
+        (j.com && j.com.due ? ' · wanted by ' + esc(campDate(c.campaign_id, j.com.due)) : '') + '</p>';
+      if (can) {
+        if (!ready) h += '<div class="actions tight"><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="1">+1 day</button><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="5">+5 days</button>' +
+          '<button type="button" class="btn small quiet" data-act="craft-drop" data-i="' + i + '">' + (ui.pendingDelete === 'craft:' + i ? 'Tap again: materials are lost' : 'Give up') + '</button></div>';
+        else h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">Your ' + esc(j.tool.replace(/s$/, '').replace(/’s (tool|supplie|kit)$/, '').toLowerCase()) + ' check total</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
+          '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork</p>';
+      }
+      return h + '</div>';
+    }).join('') + '</div>';
+    html += '</section>';
+    // Start something.
+    if (can) {
+      var all = Object.keys(CRAFTS), t = ui.cfTool && CRAFTS[ui.cfTool] ? ui.cfTool : tools[0] || all[0], C = CRAFTS[t], pick = ui.cfItem == null ? '0' : String(ui.cfItem);
+      if (pick !== 'own' && !C.make[num(pick, 0)]) pick = '0';
+      var where = ui.cfWhere || (C.need ? 'rent' : 'road');
+      if (where === 'road' && C.need) where = 'rent';
+      html += '<section class="block"><h2 class="sec-title">Start something</h2><form class="form" id="craft-form" novalidate>' +
+        '<div class="two"><div class="field"><label for="cf-tool">With</label><select id="cf-tool">' + all.map(function (x) { return '<option value="' + esc(x) + '"' + (x === t ? ' selected' : '') + '>' + esc(x) + (tools.indexOf(x) >= 0 ? ' ✓' : '') + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="cf-item">Make</label><select id="cf-item">' + C.make.map(function (m, i) { return '<option value="' + i + '"' + (String(i) === pick ? ' selected' : '') + '>' + esc(craftItemName(m[0])) + ' (' + money(toCp(m[1])) + ')</option>'; }).join('') + '<option value="own"' + (pick === 'own' ? ' selected' : '') + '>Something else…</option></select></div></div>';
+      if (pick === 'own') html += '<div class="two"><div class="field"><label for="cf-name">What is it</label><input type="text" id="cf-name" maxlength="80" placeholder="A glass hummingbird"></div><div class="field"><label for="cf-val">Worth (gp each)</label><input type="number" id="cf-val" min="0.01" step="0.01" inputmode="decimal" placeholder="Ask your DM"></div></div>';
+      html += '<div class="two"><div class="field"><label for="cf-qty">How many</label><input type="number" id="cf-qty" min="1" value="' + Math.max(1, num(ui.cfQty, 1)) + '" inputmode="numeric"></div>' +
+        '<div class="field"><label for="cf-where">Where</label><select id="cf-where">' + [['rent', 'Rent ' + (C.need || 'a workshop') + (C.rent ? ' (' + money(toCp(C.rent)) + ' a day)' : '')], ['own', 'Own workshop or holding'], ['road', 'On the road, with my tools']].map(function (o) {
+          return '<option value="' + o[0] + '"' + (o[0] === where ? ' selected' : '') + (o[0] === 'road' && C.need ? ' disabled' : '') + '>' + esc(o[1]) + (o[0] === 'road' && C.need ? ' (needs ' + esc(C.need) + ')' : '') + '</option>';
+        }).join('') + '</select></div></div>';
+      if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); html += '<p class="note" style="margin:0 0 8px">Materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
+      if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + '</p>';
+      if (tools.indexOf(t) < 0) html += '<p class="note" style="margin:0 0 8px">' + esc(c.name) + ' isn’t trained with ' + esc(t) + ' yet. You can still try, without your proficiency bonus, or tick it below if they are.</p>';
+      html += '<div class="actions"><button type="submit" class="btn primary">Buy the materials and start</button></div></form></section>';
+    }
+    // Trained tools and how well known their work is.
+    html += '<section class="block"><h2 class="sec-title">Trained with</h2>' + (tools.length ? '<p style="margin:0">' + tools.map(esc).join(', ') + '</p>' : '<p class="note" style="margin:0">No artisan’s tools yet.</p>');
+    if (can) html += '<details class="craft-tools"' + (ui.craftToolsOpen ? ' open' : '') + '><summary class="note">Add or remove tools</summary><div class="chips">' + Object.keys(CRAFTS).map(function (x) {
+      return '<button type="button" class="chip pick" data-act="craft-tool" data-tool="' + esc(x) + '" aria-pressed="' + (k.tools.indexOf(x) >= 0) + '">' + esc(x) + '</button>';
+    }).join('') + '</div><p class="note">Tools from your class and background count already.</p></details>';
+    html += '</section>';
+    var fame = Object.keys(k.fame).filter(function (p) { return k.fame[p] > 0; });
+    if (fame.length) html += '<section class="block"><h2 class="sec-title">Name for their work</h2><div class="tbl">' + fame.map(function (p) { var a = articleById(p), n = k.fame[p]; return '<div class="tbl-row"><div class="main"><b>' + esc(a ? a.title : (k.famePlace || {})[p] || 'Somewhere') + '</b><span>' + esc(craftFameName(n)) + ' · shops there pay ' + Math.round((craftFameMult(s, p) - 1) * 100) + '% more for their work</span></div></div>'; }).join('') + '</div></section>';
+    if (k.log.length) html += '<section class="block"><h2 class="sec-title">Made so far</h2><div class="tbl">' + k.log.slice(0, 12).map(function (l) { return '<div class="tbl-row"><div class="main"><b>' + esc(l.t) + '</b><span>' + esc(l.d || '') + '</span></div></div>'; }).join('') + '</div></section>';
+    return html + '</div>';
+  }
+  function craftStart(c) {
+    var s = c.sheet = normSheet(c.sheet), k = craftOf(s), t = (document.getElementById('cf-tool') || {}).value, C = CRAFTS[t];
+    if (!C) return;
+    var pick = (document.getElementById('cf-item') || {}).value, qty = Math.max(1, num((document.getElementById('cf-qty') || {}).value, 1)), where = (document.getElementById('cf-where') || {}).value || 'road', n, v;
+    if (pick === 'own') { n = ((document.getElementById('cf-name') || {}).value || '').trim(); v = fnum((document.getElementById('cf-val') || {}).value, 0); if (!n) return toast('Say what you’re making.'); if (!(v > 0)) return toast('Put in what one is worth.'); }
+    else { var m = C.make[num(pick, 0)]; n = m[0]; v = m[1]; }
+    if (where === 'road' && C.need) return toast('That needs ' + C.need + '.');
+    var cost = toCp(v * qty / 2), have = walletCp(s);
+    if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
+    setWallet(s, have - cost);
+    k.jobs.push({ tool: t, n: n, v: v, qty: qty, days: craftDays(v, qty), done: 0, where: where, rent: where === 'rent' ? C.rent || 0 : 0 });
+    ui.cfQty = 1; ui.cfItem = null;
+    toast('Materials bought for ' + money(cost) + '. Work has started.'); render(); saveCharSoon(c);
+  }
+  function craftDay(c, i, n) {
+    var s = c.sheet = normSheet(c.sheet), j = craftOf(s).jobs[i]; if (!j) return;
+    n = Math.min(n, j.days - j.done);
+    var rent = toCp(j.rent * n), have = walletCp(s);
+    if (rent && have < rent) return toast('Not enough for the rent: ' + money(rent) + ' for ' + n + ' day' + (n === 1 ? '' : 's') + '.');
+    if (rent) setWallet(s, have - rent);
+    j.done += n; render(); saveCharSoon(c);
+  }
+  function craftFinish(c, i) {
+    var s = c.sheet = normSheet(c.sheet), k = craftOf(s), j = k.jobs[i]; if (!j) return;
+    var inp = document.getElementById('cr-roll-' + i), roll = inp ? num(inp.value, 0) : 0;
+    if (!roll) return toast('Put in your check total first.');
+    var q = craftQ(roll), Q = CRAFT_Q[q], today = c.campaign_id && travel[c.campaign_id] ? num(travel[c.campaign_id].day, 0) : 0, what = (j.qty > 1 ? j.qty + ' × ' : '') + j.n;
+    if (j.com) {
+      var late = j.com.due && today > j.com.due, pay = toCp(j.com.pay * (q === 0 ? 0.5 : q >= 3 ? 1.1 : 1) * (late ? 0.5 : 1));
+      setWallet(s, walletCp(s) + pay);
+      if (j.com.place_id) { k.fame[j.com.place_id] = craftFame(s, j.com.place_id) + (q === 0 ? 0 : q >= 2 ? 2 : 1); k.famePlace = k.famePlace || {}; k.famePlace[j.com.place_id] = j.com.place || ''; }
+      k.log.unshift({ t: craftItemName(what), d: Q[0] + ', delivered to ' + j.com.shop + ' for ' + money(pay) + (late ? ' (late, half pay)' : q === 0 ? ' (rough work, half pay)' : '') });
+      toast(Q[0] + ' work. ' + j.com.shop + ' paid ' + money(pay) + '.');
+    } else {
+      var same = s.items.filter(function (it) { return it.made && it.name === craftItemName(j.n) && it.made.q === q; })[0];
+      if (same) same.qty = num(same.qty, 1) + j.qty;
+      else s.items.push({ name: craftItemName(j.n), notes: Q[0] + ', made by ' + c.name, qty: j.qty, made: { by: c.name, q: q, v: j.v, tool: j.tool } });
+      k.log.unshift({ t: craftItemName(what), d: Q[0] + ' · kept' });
+      toast(Q[0] + ' work. It’s in ' + c.name + '’s pack.');
+    }
+    k.log = k.log.slice(0, 40);
+    k.jobs.splice(i, 1); render(); saveCharSoon(c);
+  }
+  function craftTake(c, i) {
+    var s = c.sheet = normSheet(c.sheet), k = craftOf(s), o = k.offers[i]; if (!o) return;
+    var cost = toCp(o.v * o.qty / 2), have = walletCp(s), C = CRAFTS[o.tool] || {};
+    if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
+    setWallet(s, have - cost);
+    k.jobs.push({ tool: o.tool, n: o.n, v: o.v, qty: o.qty, days: craftDays(o.v, o.qty), done: 0, where: C.need ? 'rent' : 'road', rent: C.need ? C.rent || 0 : 0, com: { key: o.key, shop: o.shop, place: o.place, place_id: o.place_id, pay: o.pay, due: o.due } });
+    k.offers.splice(i, 1); toast('Taken on. Materials cost ' + money(cost) + '.'); render(); saveCharSoon(c);
+  }
+  // DM, on a shop page: what this shop would order, and who to offer it to.
+  function shopOrdersHtml(shop, place) {
+    var list = shopOrders(shop); if (!list.length) return '';
+    var chars = shop.campaign_id ? campaignChars(shop.campaign_id) : characters;
+    return '<section class="block shop-orders"><h2 class="sec-title">Wants made<small>this tenday</small></h2><div class="tbl">' + list.map(function (o, i) {
+      var can = chars.filter(function (x) { return craftTools(normSheet(x.sheet)).indexOf(o.tool) >= 0; }), sent = chars.filter(function (x) { var k = normSheet(x.sheet).craft; return k && ((k.offers || []).concat(k.jobs || []).some(function (y) { return y.key === o.key || (y.com && y.com.key === o.key); })); });
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>Pays ' + money(toCp(o.pay)) + ' · ' + esc(o.tool) + ' · wanted by ' + esc(campDate(shop.campaign_id, o.due)) + (sent.length ? ' · offered to ' + esc(sent.map(function (x) { return x.name; }).join(', ')) : '') + '</span></div>' +
+        (can.length ? '<label class="sr" for="so-' + i + '">Offer to</label><select class="input" id="so-' + i + '">' + can.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.name) + '</option>'; }).join('') + '</select><button type="button" class="btn small" data-act="craft-offer" data-id="' + esc(shop.id) + '" data-i="' + i + '">Offer</button>' : '<span class="note">Nobody in the party has ' + esc(o.tool.toLowerCase()) + '</span>') + '</div>';
+    }).join('') + '</div></section>';
+  }
+  function craftOffer(shop, i) {
+    var o = shopOrders(shop)[i], sel = document.getElementById('so-' + i), c = sel ? charById(sel.value) : null;
+    if (!o || !c) return;
+    var s = c.sheet = normSheet(c.sheet), k = craftOf(s), place = shop.place_id ? articleById(shop.place_id) : null;
+    if (k.offers.some(function (x) { return x.key === o.key; }) || k.jobs.some(function (x) { return x.com && x.com.key === o.key; })) return toast('Already offered to ' + c.name + '.');
+    k.offers.push(Object.assign({}, o, { shop: shop.name, place: place ? place.title : '', place_id: shop.place_id || '' }));
+    toast('Offered to ' + c.name + '. It shows on their Workshop tab.'); render(); saveCharSoon(c);
+  }
   function standingTabHtml(c, s) {
     var facs = factionsFor(c.campaign_id || null), dm = dmView(), law = charLaw(c), hot = charHot(c, s);
     var rows = facs.map(function (a) { return { a: a, st: standingFor(c, a) }; });
@@ -5370,9 +5566,9 @@
     var size = shop.place_id ? num((placeOf(shop.place_id) || {}).size, 2) : 1;
     var ch = { 'Magic shop': 40, 'Tinker & toolmaker': 35, Bookseller: 25, Alchemist: 20, "Artist's studio": 15, Fence: 8 }[shop.kind] || (size >= 3 ? 6 : size >= 2 ? 3 : 1);
     if (h % 100 >= ch) return '';
-    var comp = shop.kind === 'Magic shop' || size >= 3 ? (h >> 8) % 3 !== 0 : (h >> 8) % 3 === 0, list = comp ? KEEPER_CLOCK.companion : KEEPER_CLOCK.labourer;
+    var comp = shop.kind === 'Magic shop' || size >= 3 ? (h >>> 8) % 3 !== 0 : (h >>> 8) % 3 === 0, list = comp ? KEEPER_CLOCK.companion : KEEPER_CLOCK.labourer;
     if (!/Magic shop|Bookseller/.test(shop.kind)) list = list.filter(function (l) { return l.indexOf('scrolls') < 0; });
-    return list[(h >> 12) % list.length];
+    return list[(h >>> 12) % list.length];
   }
   function quirkOf(shop) { return shop && shop.quirk ? QUIRKS.filter(function (q) { return q[0] === shop.quirk; })[0] || null : null; }
   // The flavour rows a fresh stocking adds. Sizes: bigger towns, more of everything.
@@ -5632,7 +5828,15 @@
     if (m === null) return null;
     return niceCp(cp * m * r.sell * realmPriceMult(shop) * (row.k === 'f' ? foodMult(shop.campaign_id) : 1));
   }
-  function offerFor(shop, c, itemName) {
+  function offerFor(shop, c, itemName, own) {
+    if (own && own.made) {
+      var st0 = shopStanding(shop, c), m0 = BUY_MULT[st0.name], r0 = recogMult(shop, c);
+      if (m0 === null) return null;
+      var wants = craftWants(shop.kind).some(function (w) { return craftItemName(w.n) === own.name; });
+      // New work fetches more than second-hand: half again, more if it's good, more where they know the maker, a little more if it's what the shop deals in.
+      var mm = Math.min(1.25, m0 * 1.5 * CRAFT_Q[num(own.made.q, 1)][1] * craftFameMult(normSheet(c.sheet), shop.place_id) * (wants ? 1.1 : 1));
+      return niceCp(toCp(own.made.v) * mm * r0.buy);
+    }
     var it = itemByName(itemName), K = ITEMS.shopKinds[shop.kind] || {};
     var row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === String(itemName).toLowerCase(); })[0];
     var cb = contrabandMatch(itemName, contrabandList(shop.campaign_id));
@@ -5854,7 +6058,7 @@
           '<label class="sr" for="sq-' + g.i + '">How many</label><input type="number" class="input mini" id="sq-' + g.i + '" data-shop-row="' + g.i + '" data-sfield="q" data-id="' + esc(shop.id) + '" value="' + (row.q === null || row.q === undefined ? '' : row.q) + '" placeholder="∞" min="0" inputmode="numeric">' +
           '<button type="button" class="btn small quiet" data-act="shop-rm" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-label="Remove ' + esc(row.n) + '">✕</button></div>';
         var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
-        var used = row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
+        var used = row.made ? ' · new, ' + esc(row.made.toLowerCase()) + ' work by ' + esc(row.by) : row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
         return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
           (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
@@ -5887,8 +6091,8 @@
       else html += '<div class="tbl">' + inv.map(function (it) {
         var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : '';
         if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
-        var off = offerFor(shop, c, it.name);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
+        var off = offerFor(shop, c, it.name, it);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
           '<button type="button" class="btn small" data-act="shop-buy" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Buy 1</button></div>';
       }).join('') + '</div>';
@@ -5896,6 +6100,7 @@
     }
 
     if (COMMISSION_SHOPS[shop.kind]) html += commissionHtml(shop, c, place);
+    if (!ui.shopEdit) html += shopOrdersHtml(shop, place);
 
     // Ledger
     var led = shop.ledger || [];
@@ -6127,7 +6332,7 @@
       if (mine) mine.qty = num(mine.qty, 1) + q; else s.items.push({ name: row.n, notes: '', qty: q });
     }
     if (limited) row.q = num(row.q, 0) - q;
-    if (row.used && num(row.q, 0) <= 0) shop.stock.splice(i, 1);
+    if ((row.used || row.made) && num(row.q, 0) <= 0) shop.stock.splice(i, 1);
     c.sheet = s;
     ledgerAdd(shop, { who: c.name, what: row.n, qty: q, cp: cost, dir: 'sold' });
     saveCharSoon(c);
@@ -6151,7 +6356,7 @@
     // It goes on the shelf at about list price.
     var cat = itemByName(it.name), row = (shop.stock || []).filter(function (x) { return x.n.toLowerCase() === it.name.toLowerCase(); })[0];
     if (row) { if (row.q !== null && row.q !== undefined) row.q = num(row.q, 0) + 1; }
-    else (shop.stock = shop.stock || []).push({ n: it.name, k: cat ? cat.kind : 'z', p: cat ? cat.price : Math.round(cp * 2) / 100, q: 1, used: true, by: c.name, seen: gameDay(shop) });
+    else (shop.stock = shop.stock || []).push(it.made ? { n: it.name, k: cat ? cat.kind : 'z', p: Math.round(fnum(it.made.v, 0) * CRAFT_Q[num(it.made.q, 1)][1] * 100) / 100, q: 1, by: c.name, made: CRAFT_Q[num(it.made.q, 1)][0], seen: gameDay(shop) } : { n: it.name, k: cat ? cat.kind : 'z', p: cat ? cat.price : Math.round(cp * 2) / 100, q: 1, used: true, by: c.name, seen: gameDay(shop) });
     c.sheet = s;
     ledgerAdd(shop, { who: c.name, what: it.name, qty: 1, cp: cp, dir: 'bought' });
     saveCharSoon(c);
@@ -10078,6 +10283,13 @@
         else if (dk === 'nat20') { c.sheet.hp.cur = 1; c.sheet.death = { s: 0, f: 0 }; toast('Natural 20! Back up with 1 hit point.'); }
         render(); saveCharSoon(c); break;
       case 'res': if (c) useResource(c, el.getAttribute('data-key'), num(el.getAttribute('data-dir'), -1)); break;
+      case 'craft-take': if (c) craftTake(c, num(el.getAttribute('data-i'), -1)); break;
+      case 'craft-pass': if (c) { craftOf(c.sheet).offers.splice(num(el.getAttribute('data-i'), -1), 1); render(); saveCharSoon(c); } break;
+      case 'craft-day': if (c) craftDay(c, num(el.getAttribute('data-i'), -1), num(el.getAttribute('data-n'), 1)); break;
+      case 'craft-finish': if (c) craftFinish(c, num(el.getAttribute('data-i'), -1)); break;
+      case 'craft-drop': if (c) { var cdi = num(el.getAttribute('data-i'), -1); if (ui.pendingDelete !== 'craft:' + cdi) { ui.pendingDelete = 'craft:' + cdi; render(); return; } ui.pendingDelete = null; craftOf(c.sheet).jobs.splice(cdi, 1); render(); saveCharSoon(c); } break;
+      case 'craft-tool': if (c) { var ctl = craftOf(c.sheet).tools, ctn = el.getAttribute('data-tool'), cti = ctl.indexOf(ctn); if (cti >= 0) ctl.splice(cti, 1); else ctl.push(ctn); ui.craftToolsOpen = true; render(); saveCharSoon(c); } break;
+      case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
       case 'cal-move':
@@ -10496,6 +10708,7 @@
         if (!sn) return toast('Name the spell first.');
         c.sheet.spells.push({ name: sn, source: document.getElementById('sp-src').value, cost: Math.max(0, num(document.getElementById('sp-cost').value, 0)), notes: '' });
         render(); saveCharSoon(c); var n1 = document.getElementById('sp-name'); if (n1) n1.focus(); return;
+      case 'craft-form': if (c) craftStart(c); return;
       case 'add-debt':
         if (!c) return;
         var dw = document.getElementById('db-what').value.trim(), dm2 = document.getElementById('db-mark').value.trim();
@@ -11295,6 +11508,10 @@
   document.addEventListener('change', function (e) {
     if (cbqChange(e.target)) return;
     if (e.target && e.target.id === 'clock-pick') { ui.clockPick = num(e.target.value, 0); return render(); }
+    if (e.target && e.target.id === 'cf-tool') { ui.cfTool = e.target.value; ui.cfItem = null; ui.cfWhere = null; return render(); }
+    if (e.target && e.target.id === 'cf-item') { ui.cfItem = e.target.value; return render(); }
+    if (e.target && e.target.id === 'cf-where') { ui.cfWhere = e.target.value; return render(); }
+    if (e.target && e.target.id === 'cf-qty') { ui.cfQty = Math.max(1, num(e.target.value, 1)); return setTimeout(render, 0); }
     if (e.target && e.target.id === 'comm-item') { ui.commItem = e.target.value; return render(); }
     if (e.target && e.target.id === 'comm-ds') { ui.commDs = e.target.checked; return render(); }
     if (e.target && e.target.id === 'hb-type') return hbSyncItemType();
