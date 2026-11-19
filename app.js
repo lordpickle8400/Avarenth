@@ -4943,9 +4943,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'hp', 'cw', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'hc', 'hp', 'cw', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
-  KIND_LABEL.hp = 'Clockwork servants'; KIND_LABEL.cw = 'Clockwork parts'; KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
+  KIND_LABEL.hp = 'Clockwork labourers'; KIND_LABEL.hc = 'Clockwork companions'; KIND_LABEL.cw = 'Clockwork parts'; KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -5308,21 +5308,24 @@
       'a child’s bow (blunt arrows)', 0.5, 'a ball of rags', 0.01],
     jars: ['a moth in a jar', 0.01, 'a butterfly in a jar', 0.01, 'a bee in a jar', 0.01, 'a dragonfly in a jar', 0.02, 'a beetle in a jar', 0.01, 'a glowing bug in a jar', 0.05],
   };
-  // Clockwork: an eclectic novelty for the rich, dwarves, gnomes, tinkerers and the odd wizard (scroll-fetching), not for farmers.
-  // One small general servant you can buy, in a few shapes; everything bigger is built to order.
-  var SERVANT_SHAPES = ['man-shaped', 'hound-shaped', 'beetle-shaped', 'owl-shaped', 'monkey-shaped', 'cat-shaped'];
-  var SERVANT_PRICE = 500;
-  function servantRow(pm) { return { n: 'a clockwork servant, ' + rpick(SERVANT_SHAPES) + ' (fetches, carries, sweeps, lights fires and lamps)', k: 'hp', p: niceCp(SERVANT_PRICE * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: 1 }; }
+  // Clockwork comes in four tiers. An eclectic novelty and a symbol: for the rich, dwarves, gnomes, tinkerers and wizards, not farmers.
+  //   Labourers: little clocky guys with no style, for menial jobs.     Companions: beast forms with real craftsmanship; can do a labourer's jobs too.
+  //   Warriors: human-sized, built to any look; menial work isn't what they're for.     Great clockwork: golems, dragons, griffins, beasts.
+  // Labourers and companions can be bought; warriors and great clockwork are only built to order.
+  var COMPANION_SHAPES = ['hound', 'cat', 'monkey', 'owl', 'fox', 'raven'];
+  function labourerRow(pm) { return { n: 'a clockwork labourer (fetches, carries, sweeps, lights fires and lamps)', k: 'hp', p: niceCp(300 * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: 1 }; }
+  function companionRow(pm) { return { n: 'a clockwork ' + rpick(COMPANION_SHAPES) + ', finely made (a companion; does a labourer’s work too)', k: 'hc', p: niceCp(1200 * 100 * pm * (0.9 + Math.random() * 0.25)) / 100, q: 1 }; }
   // Made to order only: [what, gp, days, note]
-  var CLOCK_COMMISSIONS = [['A clockwork hauler, ox-shaped, for carts and heavy loads', 1500, 60, ''], ['A clockwork miner, beetle-shaped, that digs and hauls ore', 2500, 90, 'mostly ordered by dwarves'],
-    ['A clockwork lifter for docks and building sites', 2000, 75, ''], ['A clockwork steed', 3000, 90, ''], ['A clockwork war hound', 4000, 120, 'few are made now; the keeper will want to know why'],
-    ['A clockwork warrior', 8000, 180, 'few are made now; the keeper will want to know why'], ['A clockwork dreadnought', 50000, 730, 'only built for a crown or a clan, and it takes years']];
+  var CLOCK_COMMISSIONS = [['A clockwork companion in the form you choose', 1500, 30, ''], ['A clockwork warrior, built to your design', 8000, 180, 'few are made now; the keeper will want to know why'],
+    ['A great clockwork golem for hauling, lifting and mining', 12000, 300, 'mostly ordered by dwarves'], ['A great clockwork beast (bear, boar, great cat, your pick)', 20000, 365, ''],
+    ['A great clockwork griffin', 25000, 365, ''], ['A great clockwork dreadnought', 50000, 730, 'only built for a crown or a clan'], ['A great clockwork dragon', 75000, 1095, 'only built for a crown or a clan, and it takes years']];
   var CLOCK_SUPPLIES = ['a spare winding key', 0.2, 'a tin of clock oil', 0.3, 'a bag of springs and cogs', 0.2];
-  var CLOCK_JOBS = ['Wind and oil any clockwork', 0.1, 'Mend a clockwork servant', 5];
-  var CLOCK_NOW = ['A hound-shaped servant pads past with a roll of plans in its jaws and drops it on the keeper’s bench.', 'Something big ticks slowly in the back workshop. Through the door you can see an iron shoulder the size of a cart.',
-    'A beetle-shaped servant is carrying lit candles along the shelves, one at a time.', 'The keeper is fitting a new spring into a servant. It stands patiently with its chest open.',
-    'Every ticking thing in the shop goes quiet at once for a moment, then starts again.', 'A half-built hauler, shaped like an ox, stands in the yard with no head yet.',
-    'Two servants are carrying a crate between them, very carefully and very slowly.', 'An owl-shaped servant sits on a high shelf, sorting scrolls by colour.'];
+  var CLOCK_JOBS = ['Wind and oil any clockwork', 0.1, 'Mend a clockwork labourer or companion', 5];
+  var CLOCK_NOW = ['A clockwork hound pads past with a roll of plans in its jaws and drops it on the keeper’s bench.', 'Something huge ticks slowly in the back workshop. Through the door you can see an iron shoulder the size of a cart.',
+    'A little clockwork labourer is carrying lit candles along the shelves, one at a time.', 'The keeper is fitting a new spring into a labourer. It stands patiently with its chest open.',
+    'Every ticking thing in the shop goes quiet at once for a moment, then starts again.', 'A half-built golem stands in the yard with no head yet.',
+    'Two little labourers are carrying a crate between them, very carefully and very slowly.', 'A clockwork owl sits on a high shelf, sorting scrolls by colour.',
+    'A clockwork monkey is polishing the shop window from the outside, hanging by one hand.'];
   var SKY_KIND = { tableware: 'va', statues: 'va', hides: 'hd', parts: 'hd', materials: 'mt', children: 'j', jars: 'j' };
   var SKY_IN = {
     'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1]],
@@ -5359,7 +5362,7 @@
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
     rows = rows.concat(everydayRows(shop.kind, size, pm), skyRows(shop.kind, size, pm));
     // A clockwork servant turns up now and then at a big-town tinker or magic shop (wizards like them for fetching scrolls).
-    if ((shop.kind === 'Tinker & toolmaker' || shop.kind === 'Magic shop') && size >= 3 && Math.random() < 0.4) rows.push(servantRow(pm));
+    if ((shop.kind === 'Tinker & toolmaker' || shop.kind === 'Magic shop') && size >= 3 && Math.random() < 0.4) rows.push(labourerRow(pm));
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
     if (q && Math.random() < 0.5) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); });
     (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
@@ -5444,7 +5447,7 @@
     'Group portrait of the party (a week)', 150, 'Marble bust (a month)', 400, 'Life-size statue (a season)', 2500];
   var SPECIAL = {
     clockwork: function (shop, size, pm) {
-      var out = []; for (var i = 0, n = rint(3, 5); i < n; i++) out.push(servantRow(pm));
+      var out = [], i, n; for (i = 0, n = rint(2, 4); i < n; i++) out.push(labourerRow(pm)); for (i = 0, n = rint(1, 2); i < n; i++) out.push(companionRow(pm));
       return out
         .concat(pairs(CLOCK_SUPPLIES).map(function (c) { return { n: c[0], k: 'cw', p: c[1], q: rint(4, 12) }; }), pairs(CLOCK_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
     },
@@ -5459,7 +5462,7 @@
   };
   // Some shops have a thing you only learn by asking.
   var SHOP_ASK = {
-    clockwork: ['Ask who buys these', 'The keeper shrugs. “Farmers? Never. Lords who want to be seen with one, dwarves, tinkerers like me. And wizards, for fetching scrolls.” A servant on the shelf behind them turns its head, as if it heard its name.'],
+    clockwork: ['Ask who buys these', 'The keeper shrugs. “Farmers? Never. Lords who want to be seen with one, dwarves, tinkerers like me. And wizards, for fetching scrolls.” A clockwork owl on the shelf behind them turns its head, as if it heard its name.'],
     cheese: ['Ask what the cheese is made from', 'He goes very still. Then, without a word, he points at a board nailed behind the counter, face to the wall. He turns it round. In big angry letters: “ANY MILK. ANY BEAST. NEVER PEOPLE. STOP ASKING.” He turns it back and goes on cutting cheese.'],
     bugs: ['Ask why the bugs are so expensive', 'He pulls a little card from his waistcoat, already written: “Every bug is unique. So is every customer. Only one of you is rare.” Then he puts the card away and waits.'],
     art: ['Ask if they’d paint you', 'They step back, squint, and frame your face with their thumbs. “Yes. Your left side. Never the right.” They are already reaching for charcoal.']
@@ -5814,7 +5817,7 @@
     // The fun shelves fold away under "Browse the shelves" so the useful gear stays easy to find. Specialist shops keep theirs open: it's what they sell.
     var special = !!(ITEMS.shopKinds[shop.kind] || {}).special || !!((ITEMS.trades || {})[shop.trade] || {}).special;
     // The Skyrim effect: everything that makes a shop feel lived in folds here.
-    var FUN = special ? [] : ['hp', 'mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
+    var FUN = special ? [] : ['hc', 'hp', 'mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
     var rowHtml = function (g) {
         var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
         var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';
@@ -6027,7 +6030,7 @@
   // Big clockwork and warriors are only built to order now.
   function clockCommissionHtml(shop, c) {
     var day = gameDay(shop), orders = shop.orders || [], pick = Math.max(0, Math.min(CLOCK_COMMISSIONS.length - 1, num(ui.clockPick, 0))), it = CLOCK_COMMISSIONS[pick];
-    var html = '<section class="block"><h2 class="sec-title">Built to order<small>haulers, miners, warriors and bigger</small></h2>';
+    var html = '<section class="block"><h2 class="sec-title">Built to order<small>companions, warriors and great clockwork</small></h2>';
     if (c && !ui.shopEdit) {
       html += '<div class="comm-row"><label class="sr" for="clock-pick">What to build</label><select class="input" id="clock-pick">' + CLOCK_COMMISSIONS.map(function (x, i) { return '<option value="' + i + '"' + (i === pick ? ' selected' : '') + '>' + esc(x[0]) + '</option>'; }).join('') + '</select></div>' +
         '<p class="note" style="margin:6px 0">' + money(it[1] * 100) + ', ready in ' + it[2] + ' days' + (day != null ? ' (' + esc(campDate(shop.campaign_id, day + it[2])) + ')' : '') + (it[3] ? '. ' + esc(it[3].charAt(0).toUpperCase() + it[3].slice(1)) + '.' : '.') + '</p>' +
