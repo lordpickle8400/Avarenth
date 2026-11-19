@@ -1007,6 +1007,7 @@
       html += '<span class="note">Players never receive this section.</span></section>';
     }
     html += articleShopsHtml(a);
+    if (dmView()) html += articleGameHtml(a);
     html += '</div></div></div>';
     $view.innerHTML = html;
   }
@@ -2966,13 +2967,13 @@
     // The party's name
     var deeds = R ? (R.news || []).filter(function (n) { return n.deed && num(n.day, 0) >= today - 90; }) : [];
     if (deeds.length) html += sec('The party’s name', deeds.slice(-6).reverse().map(function (n) {
-      return '<div class="tbl-row"><div class="main"><b>“' + esc(n.text) + '”</b><span>' + (n.tone === 'good' ? 'Heroic' : n.tone === 'bad' ? 'Villainous' : 'Talk') + (n.major ? ', legendary' : n.petty ? ', petty' : '') + ' · ' + esc(n.at || '') + ' · day ' + n.day + '</span></div></div>';
+      return '<div class="tbl-row"><div class="main"><b>“' + esc(n.text) + '”</b><span>' + (n.tone === 'good' ? 'Heroic' : n.tone === 'bad' ? 'Villainous' : 'Talk') + (n.major ? ', legendary' : n.petty ? ', petty' : '') + ' · ' + esc(n.at || '') + ' · ' + esc(dateShort(t, n.day)) + '</span></div></div>';
     }).join(''));
     // Behind the screen
     var ns = (t.notices || []).filter(function (n) { return since(n.day); });
     if (ns.length) html += sec('Behind the screen', ns.map(function (n) {
       return '<div class="tbl-row"><div class="main"><b>' + (n.kind === 'hunters' ? 'Bounty hunters caught up' : n.searched ? 'Searched at ' + esc(midLabel(n.place)) : 'Through the gate at ' + esc(midLabel(n.place))) + '</b><span>' + esc(dateShort(t, n.day)) +
-        (n.kind === 'hunters' ? ' · ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) : n.carriers && n.carriers.length ? ' · carrying: ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) : '') + '</span></div></div>';
+        (n.kind === 'hunters' ? ' · ' + esc(hunterText(n)) : n.carriers && n.carriers.length ? ' · carrying: ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) : '') + '</span></div></div>';
     }).join('') + '<p class="note"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Open the Journey</a> to act on these.</p>', ns.length);
     // The law
     var wanted = crimes.filter(function (c) { return c.campaign_id === camp.id && c.status === 'Wanted'; });
@@ -3003,7 +3004,7 @@
       var news = R ? (R.news || []).filter(function (n) { return num(n.day, 0) === d; }) : [], ns = (t.notices || []).filter(function (n) { return num(n.day, 0) === d; });
       var real = news.filter(function (n) { return !n.petty || n.deed; }), petty = news.length - real.length, hol = calHolidays(dayDate(t, d));
       var lines = real.map(function (n) { return '<li>' + (n.deed ? '<b>The party:</b> “' + esc(n.text) + '”' : '<b>' + esc(factionName(camp.id, n.fid)) + ':</b> ' + esc(n.text)) + (n.at ? ' <small class="note">' + esc(n.at) + '</small>' : '') + '</li>'; })
-        .concat(ns.map(function (n) { return '<li>' + (n.kind === 'hunters' ? '<b>Bounty hunters caught up:</b> ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) : '<b>' + (n.searched ? 'Searched' : 'Waved through') + ' at ' + esc(midLabel(n.place)) + '</b>' + (n.carriers && n.carriers.length ? ': ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) + ' carrying' : '')) + '</li>'; }));
+        .concat(ns.map(function (n) { return '<li>' + (n.kind === 'hunters' ? '<b>Bounty hunters caught up:</b> ' + esc(hunterText(n)) : '<b>' + (n.searched ? 'Searched' : 'Waved through') + ' at ' + esc(midLabel(n.place)) + '</b>' + (n.carriers && n.carriers.length ? ': ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) + ' carrying' : '')) + '</li>'; }));
       if (petty) lines.push('<li class="note">' + petty + ' bits of petty gossip</li>');
       if (!lines.length && !hol.length) continue;
       any = true;
@@ -3049,20 +3050,78 @@
       var split = L.split || (L.split = party.map(function (ch) { return ch.id; }));
       html += '<div class="lt-rollbar"><button type="button" class="btn primary" data-act="lt-roll">' + (kept ? 'Reroll the rest' : 'Reroll all') + '</button><span class="note">' + (kept ? kept + ' kept' : 'Nothing kept yet') + '</span></div>' +
         (L.items.length ? '<div class="lt-items">' + L.items.map(function (it) {
+          var real = gearFind(it.name), src = real ? (real.it.hb ? '<span class="tag lt-src-hb">Homebrew</span>' : '<span class="tag lt-src-dd">D&amp;D</span>') : '';
+          if (ui.ltEdit === it.id) return '<form class="lt-item lt-edit" id="lt-editf" data-ltedit="' + it.id + '" novalidate><div class="main"><label class="sr" for="lte-n">Item</label><input class="input" id="lte-n" list="lt-gear" value="' + esc(it.name) + '" placeholder="Any D&D or homebrew item, or type your own">' +
+            '<div class="lte-row"><label>Qty<input class="input" id="lte-q" type="number" min="1" inputmode="numeric" value="' + it.qty + '"></label><label>Worth (gp each)<input class="input" id="lte-v" type="number" min="0" inputmode="decimal" value="' + (it.val || 0) + '"></label></div>' +
+            '<div class="actions tight"><button type="submit" class="btn small primary">Save</button><button type="button" class="btn small quiet" data-act="lt-editx">Cancel</button></div></div></form>';
           return '<div class="lt-item' + (it.keep ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keep" data-id="' + it.id + '" aria-pressed="' + !!it.keep + '">' + (it.keep ? 'Kept' : 'Keep') + '</button>' +
-            '<div class="main"><b>' + (it.qty > 1 ? it.qty + ' × ' : '') + esc(it.name) + '</b><span>' + esc([it.val ? 'about ' + it.val + ' gp' + (it.qty > 1 ? ' each' : '') : '', it.note].filter(Boolean).join(' · ')) + '</span>' +
-            '<select class="input" data-ltto="' + it.id + '" aria-label="Who takes ' + esc(it.name) + '">' + opts(it.to) + '</select></div>' +
+            '<div class="main"><b>' + (it.qty > 1 ? it.qty + ' × ' : '') + esc(it.name) + src + '</b><span>' + esc([it.val ? 'about ' + it.val + ' gp' + (it.qty > 1 ? ' each' : '') : '', it.note].filter(Boolean).join(' · ')) + '</span>' +
+            '<div class="lt-line-acts"><select class="input" data-ltto="' + it.id + '" aria-label="Who takes ' + esc(it.name) + '">' + opts(it.to) + '</select>' +
+            '<button type="button" class="btn small quiet" data-act="lt-one" data-id="' + it.id + '" title="Reroll just this">↻</button><button type="button" class="btn small quiet" data-act="lt-edit" data-id="' + it.id + '">Change</button></div></div>' +
             '<button type="button" class="linkish cb-x" data-act="lt-drop" data-id="' + it.id + '" aria-label="Remove">×</button></div>';
         }).join('') + '</div>' : '<div class="empty">Nothing but dust.</div>') +
         '<div class="lt-item lt-coinrow' + (L.keepCoins ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keepcoin" aria-pressed="' + !!L.keepCoins + '">' + (L.keepCoins ? 'Kept' : 'Keep') + '</button>' +
           '<div class="lt-coins">' + ['pp', 'gp', 'sp', 'cp'].map(function (k) { return '<label><span>' + k + '</span><input class="input" type="number" min="0" inputmode="numeric" data-ltcoin="' + k + '" value="' + L.coins[k] + '"></label>'; }).join('') + '</div></div>' +
-        '<form class="lt-addline" id="lt-line" novalidate><label class="sr" for="lt-line-n">Add an item</label><input class="input" type="text" id="lt-line-n" placeholder="Add something by hand…" maxlength="80"><button type="submit" class="btn small">Add</button></form>' +
+        '<form class="lt-addline" id="lt-line" novalidate><label class="sr" for="lt-line-n">Add an item</label><input class="input" type="text" id="lt-line-n" list="lt-gear" placeholder="Add any D&D or homebrew item…" maxlength="80"><button type="submit" class="btn small">Add</button></form>' +
+        '<div class="lt-magic"><span class="note">Add a random magic item:</span>' + LT_RARITY.map(function (r) { return '<button type="button" class="chip" data-act="lt-magic" data-r="' + r + '">' + r + '</button>'; }).join('') +
+        '<label class="check lt-hbonly"><input type="checkbox" id="lt-hbonly"' + (ui.ltHbOnly ? ' checked' : '') + '> Homebrew only</label></div>' +
+        '<datalist id="lt-gear">' + lootGearNames().map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
         (coinTot && party.length ? '<p class="note" style="margin-bottom:4px">Coin split between:</p><div class="lt-split">' + party.map(function (ch) { return '<label class="check"><input type="checkbox" data-ltsplit="' + ch.id + '"' + (split.indexOf(ch.id) >= 0 ? ' checked' : '') + '> ' + esc(ch.name) + '</label>'; }).join('') + '</div>' : '') +
         '<div class="actions"><button type="button" class="btn primary" data-act="lt-give">Hand it out</button></div>';
     }
     $view.innerHTML = html + '</div>';
   }
   renderLoot.ensure = function () { ui.loot = ui.loot || { picks: [], places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; ui.loot.places = ui.loot.places || []; };
+  // Loot lines can be any real item: the D&D catalog plus approved homebrew.
+  var LT_RARITY = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
+  var LT_RARITY_GP = { Common: 100, Uncommon: 400, Rare: 4000, 'Very Rare': 40000, Legendary: 100000 };
+  function lootGearNames() {
+    if (!GEAR) return [];
+    if (lootGearNames.c && lootGearNames.g === GEAR && lootGearNames.n === GEAR.magic.length + GEAR.gear.length) return lootGearNames.c;
+    var out = []; ['weapons', 'armor', 'gear', 'tools', 'magic'].forEach(function (k) { (GEAR[k] || []).forEach(function (it) { out.push(it.name); }); });
+    lootGearNames.g = GEAR; lootGearNames.n = GEAR.magic.length + GEAR.gear.length;
+    return (lootGearNames.c = uniq(out).sort());
+  }
+  function costToGp(cost) {
+    var m = /([\d,.]+)\s*(cp|sp|ep|gp|pp)/i.exec(String(cost || '')); if (!m) return 0;
+    var n = parseFloat(m[1].replace(/,/g, '')), u = m[2].toLowerCase();
+    return Math.round(n * { cp: 0.01, sp: 0.1, ep: 0.5, gp: 1, pp: 10 }[u] * 100) / 100;
+  }
+  // A line for a named thing: if it's a real item, it carries that item's worth and kind.
+  function lootLine(name, qty) {
+    var f = gearFind(name);
+    if (!f) return { name: name, qty: qty || 1, val: 0, note: 'added by hand' };
+    var it = f.it, magic = f.k === 'magic';
+    return { name: it.name, qty: qty || 1, val: magic ? LT_RARITY_GP[it.rarity] || 0 : costToGp(it.cost), note: magic ? it.rarity + ' magic item' + (it.attune ? ', needs attunement' : '') : it.cat || (f.k === 'tools' ? 'tool' : f.k === 'gear' ? 'gear' : '') };
+  }
+  function lootMagicOf(rarity, hbOnly) {
+    if (!GEAR) return null;
+    var pool = GEAR.magic.filter(function (x) { return x.rarity === rarity && (!hbOnly || x.hb); });
+    return pool.length ? lootLine(rpick(pool).name, 1) : null;
+  }
+  // Reroll one line on its own: magic stays the same rarity; anything else becomes another real item of about the same worth.
+  function lootReplace(it) {
+    var f = gearFind(it.name), keep = { id: it.id, to: it.to, keep: false };
+    if (f && f.k === 'magic') { var mg = lootMagicOf(f.it.rarity, !!f.it.hb && ui.ltHbOnly); return mg ? Object.assign(keep, mg) : it; }
+    var magicNote = /^(Common|Uncommon|Rare|Very Rare|Legendary) magic item/.exec(it.note || '');
+    if (magicNote) { var m2 = lootMagicOf(magicNote[1], ui.ltHbOnly); return m2 ? Object.assign(keep, m2) : it; }
+    if (!GEAR) return it;
+    var v = num(it.val, 0), lo = v ? v / 3 : 0, hi = v ? v * 3 : 15, pool = [];
+    ['weapons', 'armor', 'gear', 'tools'].forEach(function (k) { (GEAR[k] || []).forEach(function (x) { var g = costToGp(x.cost); if (g > 0 && g >= lo && g <= hi && x.name !== it.name) pool.push(x.name); }); });
+    if (!pool.length) return it;
+    return Object.assign(keep, lootLine(rpick(pool), it.qty));
+  }
+  function lootEditSave(f) {
+    var id = f.getAttribute('data-ltedit'), name = (document.getElementById('lte-n').value || '').trim(), q = Math.max(1, num(document.getElementById('lte-q').value, 1)), val = Math.max(0, num(document.getElementById('lte-v').value, 0));
+    if (!name) return toast('Give it a name.');
+    ui.loot.items = ui.loot.items.map(function (it) {
+      if (it.id !== id) return it;
+      var changed = gearKey(name) !== gearKey(it.name), line = changed ? lootLine(name, q) : { name: it.name, qty: q, val: val, note: it.note };
+      if (changed && !gearFind(name)) line.val = val;
+      return Object.assign({}, it, line, { keep: true });
+    });
+    ui.ltEdit = null; render();
+  }
   function lootGive() {
     var L = ui.loot, touched = {}, camp = activeCamp();
     L.items.forEach(function (it) {
@@ -3202,6 +3261,35 @@
       note: rpick(tier === 'minor' ? QUEST_TWISTS : QUEST_BIG_TWISTS), district: dk, tier: tier, lair: q[2] || '' };
   }
 
+  // Feast-day jobs: small, local, and only around while the festival is on. {g} is who's asking, {p} is where.
+  var FEST_QUESTS = {
+    all: [['The prize pig', 'The prize pig was stolen the night before the judging. {g} wants it back before the crowd notices.'],
+      ['Lost in the crowd', '{g}’s youngest wandered off in the crowds at {p}. Find them before dark.'],
+      ['The rigged contest', '{g} is sure the strongman contest is rigged. Prove it, or beat the cheat fair and square.'],
+      ['Light fingers', 'Purses are vanishing all over the fair. {g} wants the pickpockets caught.'],
+      ['Short of hands', '{g} needs strong backs to put up the stalls and the dancing floor before morning.']],
+    'Crowning Day': [['Watered ale', 'Someone is watering the free ale before the king’s toast. {g} wants them found first.']],
+    'Firstlight': [['The dawn lamp', 'The temple’s dawn lamp in {p} went missing the night before Firstlight. {g} wants it back before sunrise.']],
+    'Sowing Day': [['The matchmaker’s mix-up', 'Two families each think their child is promised to the same sweetheart. {g} wants it sorted before the dance.']],
+    'Conqueror\'s Day': [['A knight short', 'A tourney knight broke his arm. {g} needs a stand-in for the mock battle, and quietly.'], ['The recruiter', 'A recruiter at {p} is signing up boys too young to fight. {g} wants it stopped.']],
+    'Landfather\'s Day': [['The opened grave', 'A family grave near {p} was dug up overnight. {g} wants to know who did it, and why.']],
+    'Harvest Home': [['Stuck in the ditch', 'The last harvest cart is stuck on the road outside {p}. {g} pays in pie and coin.'], ['Who ate the pie', 'The prize pie vanished from the judging table. {g} is very serious about this.']],
+    'The Long Night': [['The fire that went out', 'The night-fire in {p} went out, and folk call it bad luck. {g} wants to know who put it out.'], ['Walk with me', '{g} must reach the next village tonight and won’t go alone.']],
+    'Fools\' Pale': [['The mock lord', 'This year’s mock lord in {p} has taken the joke too far. {g} wants him unseated before someone gets hurt.'], ['Behind the mask', 'Someone in a fool’s mask has been picking fights all week. {g} wants to know who’s under it.']]
+  };
+  var FEST_PAY = ['free food and drink for the rest of the fair', 'a prize ribbon and 5 gp', '10 gp from the fair purse', 'the best seats at the contest', 'a favour from the fair-master', '15 gp and a round for the house'];
+  function festivalsNear(t) {
+    if (!t) return [];
+    var day = num(t.day, 1), out = [];
+    for (var k = 0; k <= 7; k++) calHolidays(dayDate(t, day + k)).forEach(function (h) { if (!out.some(function (x) { return x.name === h; })) out.push({ name: h, inDays: k }); });
+    return out;
+  }
+  function festQuest(dk, name) {
+    var base = randomQuest(dk, 'minor'), short = base.giver.replace(/,.*$/, ''), town = base.place.replace(/,.*$/, '');
+    var q = rpick((FEST_QUESTS[name] || []).concat(FEST_QUESTS.all));
+    var fill = function (x) { return String(x).replace(/\{g\}/g, short).replace(/\{p\}/g, town || 'town'); };
+    return Object.assign(base, { title: fill(q[0]), details: fill(q[1]) + ' (' + name + ')', reward: rpick(FEST_PAY), lair: '' });
+  }
   function saveQuest(q) {
     var camp = activeCamp(); if (!camp) return;
     sb.from('quests').insert({ campaign_id: camp.id, title: q.title, details: q.details, giver: q.giver, place: q.place, reward: q.reward, tier: q.tier || 'minor', lair: q.lair || '', status: 'open', visible: false }).select('id').single().then(function (r) {
@@ -3237,6 +3325,10 @@
         (d ? questRow({ id: 'draft', title: d.title, details: d.details, giver: d.giver, place: d.place, reward: d.reward, tier: d.tier, status: 'open', visible: true }, false) + '<p class="q-note"><b>Twist (only you see this):</b> ' + esc(d.note) + '</p><div class="actions"><button type="button" class="btn primary" data-act="q-keep">Put it on the board</button></div>' : '') +
         '</section>';
       var Rq = camp ? realm[camp.id] : null, tq = camp ? travel[camp.id] : null, dq = tq ? num(tq.day, 0) : 0;
+      var fz = festivalsNear(tq);
+      if (fz.length) html += '<section class="group-box fest-q"><h2>Festival jobs</h2><p class="note" style="margin-top:0">Small jobs that only turn up around a feast day.</p><div class="actions">' + fz.map(function (f) {
+        return '<button type="button" class="btn small" data-act="q-fest" data-f="' + esc(f.name) + '">' + esc(f.name) + (f.inDays ? ' (in ' + f.inDays + (f.inDays === 1 ? ' day' : ' days') + ')' : ' (today)') + '</button>';
+      }).join('') + '</div></section>';
       var fresh = Rq && Rq.news ? Rq.news.map(function (n, i) { return { n: n, i: i }; }).filter(function (x) { return !x.n.petty && x.n.text && num(x.n.day, 0) >= dq - 30 && (TROUBLE[x.n.fid] || x.n.major || x.n.party || QUESTY.test(x.n.text)); }).slice(-6).reverse() : [];
       if (fresh.length) html += '<section class="group-box"><h2>From the realm</h2><p class="note" style="margin-top:0">This month’s real moves. Turn one into a job; the truth goes in your notes.</p>' + fresh.map(function (x) {
         return '<div class="tbl-row"><div class="main"><b>' + esc(factionName(camp.id, x.n.fid)) + (x.n.major ? ' <span class="tag">Major</span>' : '') + '</b><span>' + esc(x.n.text) + '</span></div><button type="button" class="btn small" data-act="q-realm" data-i="' + x.i + '">Make it a quest</button></div>';
@@ -3292,8 +3384,13 @@
       case 'lt-keep': ui.loot.items.forEach(function (it) { if (it.id === id) it.keep = !it.keep; }); render(); return true;
       case 'lt-keepcoin': ui.loot.keepCoins = !ui.loot.keepCoins; render(); return true;
       case 'lt-reset': ui.loot = null; render(); return true;
+      case 'lt-edit': ui.ltEdit = id; render(); var le = document.getElementById('lte-n'); if (le) le.focus(); return true;
+      case 'lt-editx': ui.ltEdit = null; render(); return true;
+      case 'lt-one': ui.loot.items = ui.loot.items.map(function (it) { return it.id === id ? lootReplace(it) : it; }); render(); return true;
+      case 'lt-magic': var mg = lootMagicOf(el.getAttribute('data-r'), ui.ltHbOnly); if (!mg) { toast(ui.ltHbOnly ? 'No homebrew magic items of that rarity yet.' : 'None of that rarity.'); return true; } ui.loot.items.push(Object.assign({ id: cbId(), to: '', keep: true }, mg)); render(); return true;
       case 'lt-drop': ui.loot.items = ui.loot.items.filter(function (it) { return it.id !== id; }); render(); return true;
       case 'lt-give': lootGive(); return true;
+      case 'q-fest': ui.questDraft = festQuest(ui.qDistrict || ui.npcDistrict || 'capital', el.getAttribute('data-f')); render(); window.scrollTo(0, 0); return true;
       case 'q-random': ui.questDraft = randomQuest(ui.qDistrict || ui.npcDistrict || 'capital', ui.qTier || 'any'); render(); return true;
       case 'q-loot': ui.loot = { picks: [], places: [{ key: el.getAttribute('data-lair'), tier: el.getAttribute('data-tier') || 'minor' }], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; lootRoll(); location.hash = '#/loot'; return true;
       case 'q-keep': if (ui.questDraft) saveQuest(ui.questDraft); return true;
@@ -3311,6 +3408,7 @@
     var st = combat && combat.state, x;
     if (t.hasAttribute('data-cbinit')) { x = st.list.filter(function (y) { return y.id === t.getAttribute('data-cbinit'); })[0]; if (x) x.init = t.value === '' ? '' : num(t.value, 0); saveCombat(); setTimeout(render, 0); return true; }
     if (t.hasAttribute('data-cbcond')) { x = st.list.filter(function (y) { return y.id === t.getAttribute('data-cbcond'); })[0]; if (x && t.value) (x.conds = x.conds || []).push(t.value); saveCombat(); render(); return true; }
+    if (t.id === 'lt-hbonly') { ui.ltHbOnly = t.checked; return true; }
     if (t.hasAttribute('data-ltto')) { ui.loot.items.forEach(function (it) { if (it.id === t.getAttribute('data-ltto')) it.to = t.value; }); return true; }
     if (t.hasAttribute('data-ltcoin')) { ui.loot.coins[t.getAttribute('data-ltcoin')] = Math.max(0, num(t.value, 0)); setTimeout(render, 0); return true; }
     if (t.hasAttribute('data-ltsplit')) { var sid = t.getAttribute('data-ltsplit'), sp = ui.loot.split || []; ui.loot.split = t.checked ? uniq(sp.concat([sid])) : sp.filter(function (y) { return y !== sid; }); return true; }
@@ -3325,7 +3423,7 @@
       case 'cb-form': if (v('cb-mon')) cbAddMonster(v('cb-mon'), num(v('cb-n'), 1)); return true;
       case 'lt-form': renderLoot.ensure(); if (v('lt-mon')) lootAddPick(v('lt-mon'), Math.max(1, Math.min(50, num(v('lt-n'), 1)))); return true;
       case 'lt-place': renderLoot.ensure(); ui.loot.places.push({ key: v('lt-pl'), tier: v('lt-tier') || 'minor' }); render(); return true;
-      case 'lt-line': if (v('lt-line-n')) { ui.loot.items.push({ id: cbId(), name: v('lt-line-n'), qty: 1, val: 0, note: 'added by hand', to: '', keep: true }); render(); } return true;
+      case 'lt-line': if (v('lt-line-n')) { ui.loot.items.push(Object.assign({ id: cbId(), to: '', keep: true }, lootLine(v('lt-line-n'), 1))); render(); } return true;
       case 'q-form':
         if (!v('qf-title')) { toast('Give it a title.'); return true; }
         saveQuest({ title: v('qf-title'), details: v('qf-details'), giver: v('qf-giver'), place: v('qf-place'), reward: v('qf-reward'), tier: v('qf-tier') || 'minor', note: v('qf-note') }); ui.qManual = false; return true;
@@ -4638,7 +4736,7 @@
   var reputation = [];
 
   function loadReputation() {
-    return sb.from('reputation').select('character_id, faction_id, shift, note').then(function (r) {
+    return sb.from('reputation').select('character_id, faction_id, shift, note, points').then(function (r) {
       if (r.error) throw r.error;
       reputation = r.data || [];
     });
@@ -4711,10 +4809,11 @@
     var c = charById(charId), fac = articleById(factionId), idx = STANDINGS.indexOf(standing);
     if (!c || !fac || idx < 0) return;
     var shift = idx - 2 - startStanding(normSheet(c.sheet), fac).pts;
-    sb.from('reputation').upsert({ character_id: charId, faction_id: factionId, shift: shift, updated_at: new Date().toISOString() }).then(function (r) {
+    var up = { character_id: charId, faction_id: factionId, shift: shift, updated_at: new Date().toISOString() }; if (fac.slug === 'common-folk') up.points = shift * FOLK_STEP;
+    sb.from('reputation').upsert(up).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save that standing.');
       var row = repRow(charId, factionId);
-      if (row) row.shift = shift; else reputation.push({ character_id: charId, faction_id: factionId, shift: shift, note: '' });
+      if (row) { row.shift = shift; if (fac.slug === 'common-folk') row.points = shift * FOLK_STEP; } else reputation.push({ character_id: charId, faction_id: factionId, shift: shift, points: fac.slug === 'common-folk' ? shift * FOLK_STEP : 0, note: '' });
       toast(c.name + ' is now ' + standing + ' with ' + fac.title);
       render();
     });
@@ -4755,7 +4854,13 @@
       return '<div class="tbl-row st-row"><div class="main"><b><a class="link" href="#/a/' + encodeURIComponent(r.a.slug) + '">' + esc(r.a.title) + '</a></b>' + standingMeter(r.st.idx) + '<span>' + esc(STANDING_MEANS[r.st.name]) + ' ' + esc(standingWhy(r.st)) + '.</span></div>' +
         (dm ? standingSelect(c, r.a, r.st) : standingTag(r.st.name)) + '</div>';
     };
-    // Factions that feel something come first; the plain Neutral ones fold away.
+    // The Common Folk sit on top, with how far the next deed has to go. Then factions that feel something; the plain Neutral ones fold away.
+    var folk = folkFaction(), folkRow = folk ? rows.filter(function (r) { return r.a.id === folk.id; })[0] : null;
+    if (folkRow) {
+      rows = rows.filter(function (r) { return r !== folkRow; });
+      var fp = folkProgress(c);
+      html += '<div class="tbl folk-row">' + rowHtml(folkRow).replace('</span></div>', '</span><span class="folk-next">' + (fp.points === 0 ? 'Deeds the word gets out about move this.' : fp.toward + ' of ' + FOLK_STEP + ' toward ' + (fp.dir > 0 ? 'better' : 'worse') + ' from deeds so far') + '</span></div>') + '</div>';
+    }
     var felt = rows.filter(function (r) { return r.st.idx !== 2; }), plain = rows.filter(function (r) { return r.st.idx === 2; });
     html += (felt.length ? '<div class="tbl">' + felt.map(rowHtml).join('') + '</div>' : '<p class="note">Nobody feels strongly about you yet.</p>') +
       (plain.length ? '<details class="st-plain"' + (ui.stPlain ? ' open' : '') + '><summary>Neutral with ' + plain.length + ' more</summary><div class="tbl">' + plain.map(rowHtml).join('') + '</div></details>' : '') + '</section>';
@@ -5029,9 +5134,11 @@
     var day = gameDay(shop);
     ui.shopNews = ui.shopNews || {};
     delete ui.shopNews[shop.id];
+    if (day != null && (shop.stock || []).length && festStock(shop, day)) saveShop(shop);
     if (!(shop.stock || []).length) {
       shop.stock = stockFor(shop); shop.stocked_at = new Date().toISOString(); shop.stock_day = day;
       if ((ITEMS.shopKinds[shop.kind] || {}).fence) ensureContraband(shop);
+      if (day != null) festStock(shop, day);
       ui.shopNews[shop.id] = 'Stocked for the first time' + (day != null ? ' (' + campDate(shop.campaign_id, day) + ')' : '') + '.';
       saveShop(shop); return;
     }
@@ -5191,6 +5298,36 @@
       '<div class="actions"><button type="button" class="btn small" data-act="new-shop" data-place="' + esc(a.id) + '" data-campaign="' + esc(campId || a.campaign_id || '') + '">+ Shop in ' + esc(a.title) + '</button></div></section>';
   }
   // Shown on a settlement's article, to the DM only.
+  // DM only: what the game knows about this page's subject. Where the party is, the talk, wanted posters and quests for a place;
+  // where each character stands for a faction; the jobs a person has posted.
+  function articleGameHtml(a) {
+    if (quests == null && isDM()) { loadQuests().then(function () { if (parseRoute().name === 'a') render(); }).catch(function () {}); }
+    var title = String(a.title || ''), low = title.toLowerCase(), out = [];
+    var mentions = function (txt) { txt = String(txt || '').toLowerCase(); return low.length > 2 && txt.indexOf(low) >= 0; };
+    var camps = campaigns.filter(function (c) { return !a.campaign_id || c.id === a.campaign_id; });
+    camps.forEach(function (camp) {
+      var t = travel[camp.id], bits = '';
+      var isPlace = a.template === 'Settlement' || a.template === 'Location' || !!placeXY(camp.id, a.slug, a.title);
+      if (isPlace) {
+        if (t && t.arrival && t.arrival.slug === a.slug) bits += '<p class="game-here"><b>The party is here</b>, since ' + esc(dateShort(t, t.arrival.day)) + '.</p>';
+        bits += rumoursHere(camp.id, a.slug, a.title, 5);
+        var posters = crimes.filter(function (x) { return x.campaign_id === camp.id && (x.status === 'Wanted' || x.status === 'Suspected') && mentions(x.location); });
+        if (posters.length) bits += '<div class="game-list"><p class="rumours-h">Wanted posters</p>' + posters.map(function (x) {
+          return '<p>' + esc(x.character_id ? charName(x.character_id) : 'The whole party') + ': ' + esc(x.title) + ' <small>' + esc(x.status) + (bountyNow(x) ? ', ' + gp(bountyNow(x)) : '') + '</small></p>';
+        }).join('') + '<a class="link note" href="#/crimes/' + encodeURIComponent(camp.slug) + '">Open the crimes tracker</a></div>';
+      }
+      var qs = (quests || []).filter(function (q) { return q.campaign_id === camp.id && q.status !== 'done' && q.status !== 'failed' && (isPlace ? mentions(q.place) : mentions(q.giver)); });
+      if (qs.length) bits += '<div class="game-list"><p class="rumours-h">' + (isPlace ? 'Jobs posted here' : 'Jobs they’ve offered') + '</p>' + qs.map(function (q) {
+        return '<p><a class="link" href="#/quests">' + esc(q.title) + '</a> <small>' + esc([q.tier ? q.tier.charAt(0).toUpperCase() + q.tier.slice(1) : '', q.giver && isPlace ? q.giver : '', q.reward].filter(Boolean).join(' · ')) + '</small></p>';
+      }).join('') + '</div>';
+      if (a.template === 'Organization') {
+        var cs = campaignChars(camp.id);
+        if (cs.length) bits += '<div class="game-list"><p class="rumours-h">How the party stands</p><div class="tbl">' + cs.map(function (c) { var st = standingFor(c, a); return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/c/' + encodeURIComponent(c.id) + '">' + esc(c.name) + '</a></b>' + standingMeter(st.idx) + '</div>' + standingSelect(c, a, st) + '</div>'; }).join('') + '</div></div>';
+      }
+      if (bits) out.push((camps.length > 1 ? '<p class="eyebrow">' + esc(camp.name) + '</p>' : '') + bits);
+    });
+    return out.length ? '<section class="game-box"><h2>In play <span class="tag secret">DM only</span></h2>' + out.join('') + '</section>' : '';
+  }
   function articleShopsHtml(a) {
     if (!dmView() || a.template !== 'Settlement' || !loaded.shops) return '';
     return '<section class="secret shops-secret"><h2>SHOPS (DM)</h2>' + placeSettings(a) + shopRows(shopsAt(a.id)) +
@@ -5336,7 +5473,7 @@
           '<button type="button" class="btn small quiet" data-act="shop-rm" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-label="Remove ' + esc(row.n) + '">✕</button></div>';
         var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
         var used = row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
-        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
+        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
           (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
       }).join('') + '</div>';
@@ -5462,6 +5599,32 @@
   function isContraband(name, campId) { return /^(unmarked\s+dornish[- ]steel|forged\b|counterfeit\b|fake\b)/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
   function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
   // Every fence carries every piece of contraband the realm knows about.
+  // Feast days put fair goods on the shelves of the shops that would sell them. They go again when the day is over.
+  var FEST_GOODS = {
+    all: [['Honey cakes', 0.05, ['General store', 'Tavern & inn']], ['Festival ribbons', 0.02, ['General store', 'Tailor & outfitter']], ['Cask of fair ale', 2, ['Tavern & inn']], ['Paper lantern', 0.1, ['General store']]],
+    'Crowning Day': [['Crowning Day toasting cup', 0.1, ['General store', 'Tavern & inn']]],
+    'Firstlight': [['Dawn candles (bundle)', 0.1, ['Temple', 'General store']]],
+    'Sowing Day': [['Blessed seed (sack)', 1, ['Temple', 'General store']], ['Matchmaker’s posy', 0.05, ['General store']]],
+    'Conqueror\'s Day': [['Tourney favour', 0.05, ['Tailor & outfitter', 'General store']], ['Toy wooden sword', 0.05, ['General store', 'Tinker & toolmaker']]],
+    'Landfather\'s Day': [['Grave lantern', 0.2, ['Temple', 'General store']], ['Remembrance bread', 0.02, ['Tavern & inn', 'General store']]],
+    'Harvest Home': [['Harvest pie', 0.1, ['Tavern & inn']], ['Corn doll', 0.02, ['General store']], ['Cider (jug)', 0.1, ['Tavern & inn']]],
+    'The Long Night': [['Night-long candle', 0.2, ['Temple', 'General store']], ['Offering bowl', 0.1, ['Temple']]],
+    'Fools\' Pale': [['Carnival mask', 0.5, ['Tailor & outfitter', 'General store']], ['Jester’s bells', 0.1, ['Tailor & outfitter', 'Tinker & toolmaker']]]
+  };
+  function festStock(shop, day) {
+    var t = travel[shop.campaign_id]; if (!t) return false;
+    var today = calHolidays(dayDate(t, day)), changed = false, p = shop.place_id ? placeOf(shop.place_id) : { price_mod: 1 };
+    var before = (shop.stock || []).length;
+    shop.stock = (shop.stock || []).filter(function (r) { return !r.fest || today.indexOf(r.fest) >= 0; });
+    if (shop.stock.length !== before) changed = true;
+    today.forEach(function (h) {
+      (FEST_GOODS.all.concat(FEST_GOODS[h] || [])).forEach(function (g) {
+        if (g[2].indexOf(shop.kind) < 0 || shop.stock.some(function (r) { return r.n === g[0]; })) return;
+        shop.stock.push({ n: g[0], k: 'x', p: niceCp(g[1] * 100 * fnum(p.price_mod, 1)) / 100, q: rint(4, 12), fest: h }); changed = true;
+      });
+    });
+    return changed;
+  }
   function ensureContraband(shop) {
     var have = {}, added = 0, p = shop.place_id ? placeOf(shop.place_id) : { price_mod: 1 };
     (shop.stock || []).forEach(function (r) { have[r.n.toLowerCase()] = 1; });
@@ -6452,12 +6615,20 @@
     var chance = Math.min(85, GATE_CHANCE[size] + (hasTag(p, 'military') ? 15 : 0) + lawHeat(campId) + stir), roll = 1 + Math.floor(Math.random() * 100);
     return { id: cbId(), kind: 'gate', day: day, place: label, chance: chance, roll: roll, searched: roll <= chance, dc: GATE_DC[size], carriers: roll <= chance ? carriersOf(campId) : [] };
   }
-  function huntersFor(bounty) {
-    if (bounty < 100) return [{ name: 'Tough', n: 2 }];
-    if (bounty < 300) return [{ name: 'Tough', n: 3 }, { name: 'Scout', n: 1 }];
-    if (bounty < 800) return [{ name: 'Tough Boss', n: 1 }, { name: 'Tough', n: 3 }, { name: 'Scout', n: 1 }];
-    if (bounty < 2000) return [{ name: 'Warrior Veteran', n: 2 }, { name: 'Tough', n: 4 }, { name: 'Spy', n: 1 }];
-    return [{ name: 'Gladiator', n: 1 }, { name: 'Assassin', n: 1 }, { name: 'Warrior Veteran', n: 2 }];
+  // How many hunters come: the bigger the bounty and the tougher the party, the more and the better. You build the fight.
+  function huntersFor(bounty, campId) {
+    var cs = campId ? campaignChars(campId) : [], size = Math.max(1, cs.length || 4);
+    var avg = cs.length ? cs.reduce(function (t, c) { return t + num(normSheet(c.sheet).level, 1); }, 0) / cs.length : 3;
+    var tier = bounty < 100 ? 0 : bounty < 300 ? 1 : bounty < 800 ? 2 : bounty < 2000 ? 3 : 4;
+    var n = Math.max(2, Math.round(size * [0.75, 1, 1.25, 1.5, 2][tier]));
+    var cr = Math.max(0.5, Math.round(avg * [0.25, 0.35, 0.45, 0.55, 0.7][tier] * 2) / 2);
+    return { count: n, cr: cr, lead: tier >= 2, party: size, lvl: Math.round(avg) };
+  }
+  function crText(cr) { return cr === 0.5 ? '1/2' : cr === 0.25 ? '1/4' : String(cr % 1 ? cr.toFixed(1) : cr); }
+  function hunterText(n) {
+    if (Array.isArray(n.group)) return n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ');
+    var h = n.group || {};
+    return h.count + ' hunters, about CR ' + crText(h.cr) + ' each' + (h.lead ? ', one of them a leader a step tougher' : '') + ' (party of ' + h.party + ', level ' + h.lvl + ', ' + gp(n.bounty) + ' on their heads)';
   }
   function hunterCheck(campId, day) {
     var wanted = crimes.filter(function (c) { return c.campaign_id === campId && c.status === 'Wanted'; });
@@ -6467,7 +6638,7 @@
     var chance = Math.min(40, 5 + Math.floor(total / 25)), roll = 1 + Math.floor(Math.random() * 100);
     if (roll > chance) return null;
     var who = uniq(wanted.map(function (c) { return c.character_id ? charName(c.character_id) : 'the whole party'; }));
-    return { id: cbId(), kind: 'hunters', day: day, chance: chance, roll: roll, bounty: total, after: who, group: huntersFor(total) };
+    return { id: cbId(), kind: 'hunters', day: day, chance: chance, roll: roll, bounty: total, after: who, group: huntersFor(total, campId) };
   }
   function saveNotices(campId, list) {
     var t = travel[campId]; if (!t) return;
@@ -6495,8 +6666,8 @@
         }
       } else if (n.kind === 'hunters') {
         html += '<p class="notice-h"><b>Bounty hunters catch up</b> <small>' + esc(dateShort(t, n.day)) + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>' +
-          '<p style="margin:0 0 6px">After ' + esc(n.after.join(', ')) + ', for ' + n.bounty.toLocaleString() + ' gp: ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) + '.</p>' +
-          '<button type="button" class="btn small primary" data-act="hunt-fight" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '">Set up the fight</button>';
+          '<p style="margin:0 0 6px">After ' + esc(n.after.join(', ')) + ': <b>' + esc(hunterText(n)) + '</b>.</p>' +
+          (Array.isArray(n.group) ? '<button type="button" class="btn small primary" data-act="hunt-fight" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '">Set up the fight</button>' : '<p class="note" style="margin:0">You pick who they are.</p>');
       }
       html += '</div>';
     });
@@ -6629,6 +6800,15 @@
     return { title: 'Word from ' + (n.at || 'the realm'), details: (n.rumour || n.text) + ' ' + short + ' wants someone to look into it.', giver: base.giver, place: n.at ? n.at + ', ' + NPCD.districts[dk].label : base.place,
       reward: base.reward, note: 'What really happened: ' + n.text, district: dk, tier: tier, lair: FACTION_LAIR[n.fid] ? (FACTION_LAIR[n.fid] === 'spidercult' && tier !== 'major' ? 'spider' : FACTION_LAIR[n.fid]) : '' };
   }
+  // DM only: the talk that has reached a place by today, for you to drop into conversation.
+  function rumoursHere(campId, slug, label, max) {
+    var t = travel[campId], xy = placeXY(campId, slug, label); if (!t || !xy || !realm[campId]) return '';
+    var day = num(t.day, 0), news = newsAt(campId, xy.x, xy.y, day).slice(0, max || 6);
+    if (!news.length) return '';
+    return '<div class="rumours"><p class="rumours-h">Talk here <span class="tag secret">DM only</span></p>' + news.map(function (x) {
+      return '<p class="rumour">“' + esc(x.n.rumour) + '” <small>from ' + esc(x.n.at || 'afar') + ', ' + (day - num(x.n.day, 0)) + ' days old' + (x.n.deed ? ', about the party' : '') + '</small></p>';
+    }).join('') + '</div>';
+  }
   function realmNewsBlock(camp) {
     var R = realm[camp.id], t = travel[camp.id]; if (!R || !t) return '';
     var html = '', day = num(t.day, 0);
@@ -6717,6 +6897,30 @@
     saveRealm(campId, R, 'The word is out');
     var art = fa && fa.slug ? articleBySlug(fa.slug) : null;
     if (art && size.steps) campaignChars(campId).forEach(function (c) { var st = standingFor(c, art), to = Math.max(0, Math.min(STANDINGS.length - 1, st.idx + dir * size.steps)); if (to !== st.idx) setStanding(c.id, art.id, STANDINGS[to]); });
+    folkDeed(campId, tone, size);
+  }
+  // The Common Folk have no leaders; every deed the word gets out about nudges how ordinary people see the party.
+  // Petty deeds count 1, notable 2, legendary 5; every 4 points is one step up or down.
+  var FOLK_STEP = 4;
+  function folkFaction() { return articleBySlug('common-folk'); }
+  function folkDeed(campId, tone, size) {
+    var fac = folkFaction(); if (!fac || !tone) return;
+    var pts = (tone === 'good' ? 1 : -1) * (size.major ? 5 : size.petty ? 1 : 2), now = new Date().toISOString(), moved = [];
+    campaignChars(campId).forEach(function (c) {
+      var row = repRow(c.id, fac.id), start = startStanding(normSheet(c.sheet), fac).pts;
+      var p0 = row ? num(row.points, 0) : 0, lo = (-2 - start) * FOLK_STEP, hi = (3 - start) * FOLK_STEP + FOLK_STEP - 1;
+      var p1 = Math.max(lo, Math.min(hi, p0 + pts)), shift = Math.trunc(p1 / FOLK_STEP), before = standingFor(c, fac).name;
+      if (row) { row.points = p1; row.shift = shift; } else reputation.push({ character_id: c.id, faction_id: fac.id, shift: shift, points: p1, note: '' });
+      var after = standingFor(c, fac).name; if (after !== before) moved.push(c.name + ': ' + after);
+      sb.from('reputation').upsert({ character_id: c.id, faction_id: fac.id, shift: shift, points: p1, updated_at: now }).then(function (r) { if (r.error) fail(r.error, 'Could not update the Common Folk.'); });
+    });
+    if (moved.length) toast('Common Folk: ' + moved.join(', '));
+  }
+  // How close a character is to the next step with the Common Folk (for the meter).
+  function folkProgress(c) {
+    var fac = folkFaction(), row = fac ? repRow(c.id, fac.id) : null, p = row ? num(row.points, 0) : 0;
+    var into = ((p % FOLK_STEP) + FOLK_STEP) % FOLK_STEP;
+    return { points: p, toward: p >= 0 ? into : FOLK_STEP - into, dir: p >= 0 ? 1 : -1 };
   }
   // How the party's name stands where a shop is: heroic deeds that reached it help, villainous ones hurt (up to two steps).
   function fameAt(shop) {
@@ -6740,6 +6944,7 @@
     var html = '<section class="block arrival"><h2 class="sec-title">You’ve arrived at ' + esc(ar.label) + '<small>' + esc(dateShort(t, ar.day)) + '</small></h2><div class="group-box">' +
       (known ? (a.summary ? '<p style="margin:0 0 6px">' + inline(a.summary) + '</p>' : '') + (facts.length ? '<p class="arr-facts">' + facts.join('') + '</p>' : '') + '<div class="actions" style="margin:6px 0 0"><a class="btn small" href="#/a/' + encodeURIComponent(a.slug) + '">Read about ' + esc(a.title) + '</a></div>'
         : '<p class="note" style="margin:0">' + (dm ? 'No wiki page for ' + esc(ar.label) + ' yet.' : 'Nothing written about this place yet.') + '</p>');
+    if (dm) html += rumoursHere(camp.id, ar.slug, ar.label, 3);
     if (dm && !compact) {
       if (a) html += '<p class="note" style="margin:8px 0 0">' + (a.hidden ? 'Players can’t see this page.' : 'Players can see this page now.') + ' <button type="button" class="btn small quiet" data-act="arr-hide" data-id="' + esc(a.id) + '">' + (a.hidden ? 'Show it to them' : 'Hide it again') + '</button></p>';
       if (a && loaded.shops) {
@@ -7471,6 +7676,39 @@
       return loadHoldings();
     }).then(function () { toast(gp(amt) + ' delivered to ' + sp.dest + (note !== 'arrived safe' ? ': ' + note : '')); render(); })
       .catch(function (err) { fail(err, 'Could not deliver that.'); });
+  }
+  // The world reaches the holdings: raids and trouble nearby, the season, and the fairs in the month just gone.
+  function holdPlaceXY(campId, name) {
+    if (!name) return null; var m = realmMapOf(campId); if (!m) return null;
+    var low = String(name).toLowerCase().trim(), list = markers[m.id] || [];
+    var mk = list.filter(function (x) { return x.label && x.label.toLowerCase() === low; })[0] || list.filter(function (x) { return x.label && midLabel(x.label).toLowerCase() === low; })[0] ||
+      list.filter(function (x) { return x.label && x.label.toLowerCase().indexOf(low) >= 0; })[0];
+    return mk ? { x: mk.x, y: mk.y } : null;
+  }
+  function holdWorld(h, d, from, to) {
+    var campId = h.campaign_id, t = travel[campId], R = realm[campId], m = realmMapOf(campId), mult = 1, lines = [];
+    if (!t) return { mult: 1, lines: [] };
+    var land = !!HOLD_LAND[h.kind], trade = h.kind === 'caravan' || h.kind === 'ship';
+    // Trouble near the holding (or the trade port) during the month.
+    var xy = holdPlaceXY(campId, land ? d.at : d.port || d.at);
+    if (xy && R && R.news && m) {
+      var hits = R.news.filter(function (n) { return TROUBLE[n.fid] && !n.petty && n.ox != null && num(n.day, 0) > from && num(n.day, 0) <= to && mapMiles(m, n.ox, n.oy, xy.x, xy.y) <= TROUBLE_MILES; });
+      if (hits.length) {
+        var cut = Math.min(0.3, 0.1 * hits.length); mult *= 1 - cut;
+        lines.push('Trouble nearby (' + uniq(hits.map(function (n) { return factionName(campId, n.fid); })).join(', ') + '): ' + Math.round(cut * 100) + '% less came in.');
+      }
+    }
+    // The season.
+    var se = seasonOf(t, to);
+    if (land) {
+      var harvest = false; for (var dd = from + 1; dd <= to && !harvest; dd++) { var dt = dayDate(t, dd); if ((dt.m === 7 && dt.d >= 21) || (dt.m === 8 && dt.d <= 14)) harvest = true; }
+      if (harvest) { mult *= 1.15; lines.push('The harvest came in: 15% more.'); }
+      else if (se === 'winter') { mult *= 0.9; lines.push('A lean winter month: 10% less.'); }
+    } else if (trade && se === 'winter') { mult *= 0.9; lines.push(h.kind === 'ship' ? 'Winter seas: fewer sailings, 10% less.' : 'Winter roads: slow going, 10% less.'); }
+    // Fairs and feast days bring buyers.
+    var fests = []; for (var fd = from + 1; fd <= to; fd++) calHolidays(dayDate(t, fd)).forEach(function (x) { if (fests.indexOf(x) < 0) fests.push(x); });
+    if (fests.length && (land || trade)) { var up = Math.min(0.1, 0.05 * fests.length); mult *= 1 + up; lines.push(fests.join(' and ') + ' brought buyers: ' + Math.round(up * 100) + '% more.'); }
+    return { mult: Math.round(mult * 1000) / 1000, lines: lines };
   }
   function estateOf(campId) { return estates[campId] || { campaign_id: campId, treasury: 0, payday: null, ledger: [] }; }
   function paydayDue(campId) {
@@ -8262,6 +8500,7 @@
           }
         } else if (hasPeople(h)) rep.push('A quiet month.');
         if (hasPeople(h) && d.levy) inc *= Math.max(0.1, 1 - 2 * num(d.levy.n, 0) / Math.max(1, num(d.pop, POP_DEF[h.kind])));
+        if (inc > 0) { var hw = holdWorld(h, d, periodStart, day); if (hw.mult !== 1) { inc *= hw.mult; } hw.lines.forEach(function (x) { rep.push(x); }); }
         inc = Math.round(inc); cof = Math.round(cof);
         if (inc) rep.push('Brought in ' + gp(inc) + '.');
       }
@@ -8278,6 +8517,7 @@
       }
       else if (rolls[h.id]) {
         var tr = tradeRoll(h, rolls[h.id]); inc = Math.round(baseIncome({ kind: h.kind, campaign_id: h.campaign_id, data: d }) * tr.mul);
+        if (inc > 0) { var tw = holdWorld(h, d, periodStart, day); inc = Math.round(inc * tw.mult); tw.lines.forEach(function (x) { rep.push(x); }); }
         rep.push(tr.mul === 0 ? (h.kind === 'caravan' ? 'Ambushed on the road. Nothing made this month.' : 'Disaster at sea. Nothing made this month.') + ' (d20 ' + rolls[h.id] + ')' + hullHit(h, d, bossFx(h).reckless ? 0.5 : 0.25) : tr.label + ': made ' + gp(inc) + ' (d20 ' + rolls[h.id] + ').');
       }
       var levyN = hasPeople(h) && d.levy ? num(d.levy.n, 0) : 0;
@@ -9783,6 +10023,7 @@
       case 'standin-form': return addStandIns(activeCamp());
       case 'deed-form': return logDeed(f);
       case 'cb-form': case 'lt-form': case 'lt-place': case 'lt-line': case 'q-form': return cbqSubmit(f);
+      case 'lt-editf': return lootEditSave(f);
       case 'npc-form':
         var fix = readNpcPrompt(document.getElementById('npc-words').value);
         if (fix.district) ui.npcDistrict = fix.district;

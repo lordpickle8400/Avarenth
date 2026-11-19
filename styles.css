@@ -1348,3 +1348,30 @@ body:has(.m-sheet) { overflow: hidden; }
   .st-sum .v { font-size: 15px !important; }
   .st-sum .k { font-size: 9.5px; }
 }
+
+/* DM-only game info on wiki pages and arrivals */
+.game-box { margin: 28px 0 0; padding: 14px 16px; border: 1px solid var(--secret-line); border-radius: var(--radius); background: color-mix(in srgb, var(--secret-bg) 55%, var(--panel)); font-family: var(--ui); }
+.game-box h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-family: var(--display); font-size: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--secret); }
+.game-here { margin: 0 0 8px; font-size: 15px; }
+.rumours, .game-list { margin: 10px 0 0; }
+.rumours-h { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rumour, .game-list > p { margin: 4px 0; font-size: 14px; line-height: 1.45; }
+.rumour small, .game-list small { color: var(--muted); }
+.game-list .tbl { margin-top: 4px; }
+/* Loot lines as real items */
+.lt-item .main b .tag { margin-left: 6px; vertical-align: 2px; font-size: 9.5px; padding: 1px 6px; }
+.lt-src-dd { color: var(--muted); }
+.lt-src-hb { color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
+.lt-line-acts { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.lt-line-acts select { flex: 1; min-width: 0; }
+.lt-line-acts .btn { flex: none; }
+.lt-edit { display: block; }
+.lt-edit .main { display: flex; flex-direction: column; gap: 8px; }
+.lte-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lte-row label { display: flex; flex-direction: column; gap: 4px; font-family: var(--ui); font-size: 12px; color: var(--muted); }
+.lt-magic { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0; }
+.lt-magic .note { width: 100%; margin: 0; }
+.lt-hbonly { margin-left: 4px; font-size: 13px; }
+.fest-tag { margin-left: 6px; font-size: 9.5px; padding: 1px 6px; vertical-align: 2px; color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
+.folk-row { margin-bottom: 10px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 6px; padding: 0 10px; }
+.folk-next { display: block; margin-top: 4px; font-size: 12px; color: var(--accent-ink); }
