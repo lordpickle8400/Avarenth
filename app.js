@@ -315,7 +315,7 @@
   }
   function loadTravel() {
     return Promise.all([
-      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival, calendar, notices'),
+      sb.from('travel_state').select('campaign_id, day, map_id, dest_x, dest_y, dest_label, mode, pace, terrain, rules, food, party_size, food_per_person, weather, arrival, calendar, notices, session'),
       sb.from('travel_log').select('id, campaign_id, day, text, miles, map_id, from_x, from_y, to_x, to_y, food_used, paid, created_at').order('created_at', { ascending: false }).limit(500)
     ]).then(function (res) {
       res.forEach(function (r) { if (r.error) throw r.error; });
@@ -366,7 +366,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -425,7 +425,8 @@
       case 'homebrew': return renderHomebrew(r.arg);
       case 'monsters': return renderMonsters(r.arg);
       case 'npcs': return renderNpcs();
-      case 'screen': var lastTool = 'combat'; try { lastTool = localStorage.getItem('av-dm-tool') || 'combat'; } catch (e) { } location.replace('#/' + lastTool); return;
+      case 'screen': var lastTool = 'recap'; try { lastTool = localStorage.getItem('av-dm-tool') || 'recap'; } catch (e) { } location.replace('#/' + lastTool); return;
+      case 'recap': return renderRecap();
       case 'combat': return renderCombat();
       case 'loot': return renderLoot();
       case 'quests': return renderQuests();
@@ -2683,9 +2684,72 @@
     if (have) have.n += n; else L.picks.push({ name: m.name, n: n });
     lootRoll(); render();
   }
+  /* ---------- Since last time ----------
+     One page to read before a session: everything that moved since the session was last marked. */
+  function renderRecap() {
+    if (!isDM()) { location.replace('#/map'); return; }
+    var camp = activeCamp(), t = camp ? travel[camp.id] : null;
+    if (!camp || !t) { $view.innerHTML = '<div class="page narrow">' + dmTabs('recap') + '<div class="empty">Start a campaign and its journey first.</div></div>'; return; }
+    if (!loaded.shops && !renderRecap.sp) { renderRecap.sp = true; loadShops().then(function () { renderRecap.sp = false; render(); }); }
+    var R = realm[camp.id], ses = t.session || {}, today = num(t.day, 1), from = ses.day != null ? num(ses.day, today) : Math.max(1, today - 7), gap = today - from;
+    var since = function (d) { return num(d, 0) > from || (num(d, 0) === from && gap === 0); };
+    var html = '<div class="page narrow">' + dmTabs('recap') +
+      '<section class="group-box recap-head"><p style="margin:0"><b>' + esc(dayLine(t, today)) + '</b></p><p class="note" style="margin:4px 0 0">' +
+      (ses.day != null ? (gap ? gap + (gap === 1 ? ' day' : ' days') + ' since the last session (day ' + from + ').' : 'No days have passed since the session was marked.') : 'No session marked yet; showing the last week.') + ' ' + esc(SEASON_NOTE[seasonOf(t)] || '') + '</p>' +
+      '<div class="actions"><button type="button" class="btn primary" data-act="recap-mark" data-camp="' + esc(camp.id) + '">Start today’s session</button></div><p class="note" style="margin:0">Marks today, so next time this page shows what happened after it.</p></section>';
+    var sec = function (title, body, n) { return body ? '<section class="block"><h2 class="sec-title">' + title + (n != null ? '<small>' + n + '</small>' : '') + '</h2>' + body + '</section>' : ''; };
+    // The world
+    var world = '';
+    if (R) {
+      if (R.next != null && today >= R.next) world += '<div class="group-box notice"><p class="notice-h"><b>The month has turned.</b></p><a class="btn small primary" href="#/realm/' + encodeURIComponent(camp.slug) + '">Move the realm</a></div>';
+      var news = (R.news || []).filter(function (n) { return since(n.day) && !n.deed; }), real = news.filter(function (n) { return !n.petty; }), petty = news.length - real.length;
+      world += real.slice(-12).reverse().map(function (n) {
+        return '<div class="tbl-row"><div class="main"><b>' + esc(factionName(camp.id, n.fid)) + (n.major ? ' <span class="tag">Major</span>' : '') + '</b><span>' + esc(n.text) + (n.at ? ' · ' + esc(n.at) : '') + ' · day ' + n.day + '</span></div></div>';
+      }).join('') + (petty ? '<p class="note">And ' + petty + ' bits of petty gossip.</p>' : '');
+      if (!real.length && !petty && !(R.next != null && today >= R.next)) world += '<p class="note">Quiet. No faction has moved since.</p>';
+    } else world = '<p class="note">The realm isn’t set up yet. <a href="#/realm/' + encodeURIComponent(camp.slug) + '">Set it up</a> and the factions start moving on their own.</p>';
+    html += sec('The realm', world);
+    // The party's name
+    var deeds = R ? (R.news || []).filter(function (n) { return n.deed && num(n.day, 0) >= today - 90; }) : [];
+    if (deeds.length) html += sec('The party’s name', deeds.slice(-6).reverse().map(function (n) {
+      return '<div class="tbl-row"><div class="main"><b>“' + esc(n.text) + '”</b><span>' + (n.tone === 'good' ? 'Heroic' : n.tone === 'bad' ? 'Villainous' : 'Talk') + (n.major ? ', legendary' : n.petty ? ', petty' : '') + ' · ' + esc(n.at || '') + ' · day ' + n.day + '</span></div></div>';
+    }).join(''));
+    // Behind the screen
+    var ns = (t.notices || []).filter(function (n) { return since(n.day); });
+    if (ns.length) html += sec('Behind the screen', ns.map(function (n) {
+      return '<div class="tbl-row"><div class="main"><b>' + (n.kind === 'hunters' ? 'Bounty hunters caught up' : n.searched ? 'Searched at ' + esc(midLabel(n.place)) : 'Through the gate at ' + esc(midLabel(n.place))) + '</b><span>Day ' + n.day +
+        (n.kind === 'hunters' ? ' · ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) : n.carriers && n.carriers.length ? ' · carrying: ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) : '') + '</span></div></div>';
+    }).join('') + '<p class="note"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Open the Journey</a> to act on these.</p>', ns.length);
+    // The law
+    var wanted = crimes.filter(function (c) { return c.campaign_id === camp.id && c.status === 'Wanted'; });
+    if (wanted.length) {
+      var tot = wanted.reduce(function (s, c) { return s + bountyNow(c); }, 0);
+      html += sec('The law', wanted.map(function (c) {
+        var b = bountyNow(c);
+        return '<div class="tbl-row"><div class="main"><b>' + esc(c.character_id ? charName(c.character_id) : 'The whole party') + ': ' + esc(c.title) + '</b><span>' + b + ' gp' + (b > num(c.bounty, 0) ? ' (up from ' + num(c.bounty, 0) + ')' : '') + (c.location ? ' · ' + esc(c.location) : '') + '</span></div></div>';
+      }).join('') + '<p class="note">' + tot.toLocaleString() + ' gp on their heads in all: about a ' + Math.min(40, 5 + Math.floor(tot / 25)) + '% chance a day that hunters catch up.</p>', wanted.length);
+    }
+    // Coming up
+    var soon = [];
+    for (var k = 0; k <= 14; k++) calHolidays(dayDate(t, today + k)).forEach(function (h) { if (!soon.some(function (x) { return x[0] === h; })) soon.push([h, k]); });
+    var ready = [];
+    shops.filter(function (s) { return s.campaign_id === camp.id && (s.orders || []).length; }).forEach(function (s) { s.orders.forEach(function (o) { if (num(o.ready, 0) <= today + 7) ready.push([s, o]); }); });
+    var qs = quests ? quests.filter(function (q) { return q.campaign_id === camp.id && q.status === 'open'; }) : null;
+    var up = soon.map(function (x) { return '<div class="tbl-row"><div class="main"><b>' + esc(x[0]) + '</b><span>' + (x[1] ? 'in ' + x[1] + (x[1] === 1 ? ' day' : ' days') : 'today') + '</span></div></div>'; }).join('') +
+      ready.map(function (x) { return '<div class="tbl-row"><div class="main"><b>' + esc(x[1].name) + ' for ' + esc(x[1].who) + '</b><span>' + esc(x[0].name) + ' · ' + (num(x[1].ready, 0) <= today ? 'ready to collect' : 'ready on day ' + x[1].ready) + '</span></div><a class="btn small" href="#/shop/' + esc(x[0].id) + '">Shop</a></div>'; }).join('') +
+      (qs ? '<p class="note">' + qs.length + ' open quests (' + qs.filter(function (q) { return q.visible; }).length + ' shown to players). <a href="#/quests">Quest board</a></p>' : '');
+    if (quests === null) loadQuests();
+    html += sec('Coming up', up);
+    $view.innerHTML = html + '</div>';
+  }
+  function markSession(campId) {
+    var t = travel[campId]; if (!t) return;
+    t.session = { day: num(t.day, 1), at: new Date().toISOString() };
+    sb.from('travel_state').update({ session: t.session }).eq('campaign_id', campId).then(function (r) { if (r.error) return fail(r.error, 'Could not mark the session.'); toast('Session marked: day ' + t.session.day + '.'); render(); });
+  }
   function dmTabs(cur) {
     try { localStorage.setItem('av-dm-tool', cur); } catch (e) { }
-    return '<nav class="subtabs dm-tabs" role="tablist" aria-label="DM screen">' + [['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['npcs', 'NPCs'], ['monsters', 'Monsters']].map(function (t) {
+    return '<nav class="subtabs dm-tabs" role="tablist" aria-label="DM screen">' + [['recap', 'Since last time'], ['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['npcs', 'NPCs'], ['monsters', 'Monsters']].map(function (t) {
       return '<a role="tab" href="#/' + t[0] + '" aria-selected="' + (cur === t[0]) + '">' + t[1] + '</a>';
     }).join('') + '</nav>';
   }
@@ -6122,7 +6186,13 @@
     var named = (markers[m.id] || []).filter(function (x) { return x.label && x.kind !== 'party' && x.label.length > 3; })
       .sort(function (a, b) { return b.label.length - a.label.length; });
     var low = String(text || '').toLowerCase();
-    for (var i = 0; i < named.length; i++) if (low.indexOf(midLabel(named[i].label).toLowerCase()) >= 0 || low.indexOf(named[i].label.toLowerCase()) >= 0) return witness(m, named[i]);
+    // The first place the text names is where it happened ("between Highvale and Ironhearth" starts at Highvale).
+    var best = null, bi = Infinity;
+    named.forEach(function (x) {
+      var i = low.indexOf(midLabel(x.label).toLowerCase()); if (i < 0) i = low.indexOf(x.label.toLowerCase());
+      if (i >= 0 && i < bi) { bi = i; best = x; }
+    });
+    if (best) return witness(m, best);
     var seat = seatMarker(campId, f); if (!seat) return null;
     var reach = f.tier === 'minor' ? 25 : 80, near = townsOn(m.id).filter(function (x) { return x.label && mapMiles(m, seat.x, seat.y, x.x, x.y) <= reach; });
     return near.length ? near[Math.floor(Math.random() * near.length)] : witness(m, seat);
@@ -6246,6 +6316,7 @@
     var near = null; if (party && m) { var bd = Infinity; townsOn(m.id).forEach(function (x) { if (!x.label) return; var d = mapMiles(m, party.x, party.y, x.x, x.y); if (d < bd) { bd = d; near = x; } }); }
     var at = t.arrival && !t.arrival.ruin ? midLabel(t.arrival.label) : near ? 'near ' + midLabel(near.label) : '';
     R.news.push({ day: num(t.day, 1), fid: 'party', deed: true, tone: tone, text: text, rumour: text, major: !!size.major, petty: !!size.petty, ox: party ? party.x : null, oy: party ? party.y : null, at: at, touched: fid ? { fid: fid, dir: dir } : null });
+    R.news = R.news.slice(-200);
     var fa = fid ? R.factions.filter(function (x) { return x.id === fid; })[0] : null;
     if (fa && size.steps) fa.party = Math.max(-3, Math.min(3, num(fa.party, 0) + dir * size.steps));
     ui.deedOpen = false;
@@ -8610,6 +8681,7 @@
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
     if (act === 'backup') { downloadBackup(); return; }
+    if (act === 'recap-mark') { markSession(el.getAttribute('data-camp')); return; }
     if (act === 'deed-open') { ui.deedOpen = !ui.deedOpen; render(); return; }
     if (act === 'gate-now') { var gc = el.getAttribute('data-camp'), gt = travel[gc]; if (gt && gt.arrival) { saveNotices(gc, (gt.notices || []).concat([gateCheck(gc, gt.arrival.label, gt.arrival.slug, num(gt.day, 1))])); render(); } return; }
     if (act === 'notice-x') { var nc = el.getAttribute('data-camp'), nt2 = travel[nc]; saveNotices(nc, ((nt2 && nt2.notices) || []).filter(function (x) { return x.id !== el.getAttribute('data-id'); })); render(); return; }

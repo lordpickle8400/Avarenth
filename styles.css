@@ -1136,3 +1136,4 @@ body.pk-open { overflow: hidden; }
 .notice.hunters { border-left: 3px solid #b5523b; }
 .notice.gate { border-left: 3px solid var(--accent); }
 .notice.fest { border-left: 3px solid #6aa86a; }
+.recap-head { margin-bottom: 8px; }
