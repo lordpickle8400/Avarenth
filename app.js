@@ -5250,23 +5250,23 @@
       'a bread bin that keeps bread fresh for a month', 12, 'a butter crock that stays cold', 15, 'a salt cellar that refills once a day', 20, 'a kitchen knife that never needs sharpening', 12,
       'an egg timer that shouts when the egg is done', 4, 'a cutlery drawer that sorts itself', 10, 'a mug that keeps a drink hot, or cold, as you like', 8, 'a tankard that can’t be spilled', 6,
       'a plate that cleans itself after the meal', 3, 'a pepper mill that grinds when you shake it', 5, 'a ladle that never drips', 2, 'an apron that shrugs off stains', 4],
-    desk: ['an inkwell that can’t be spilled', 5, 'an inkwell that never dries out', 12, 'a quill that writes what you say (slowly, and spells badly)', 60, 'chalk that writes in any colour you name', 2,
-      'a bookmark that finds your page', 2, 'a little light that hovers over your book', 15, 'a candle that lights when you snap your fingers', 4, 'a candle that burns a month without melting', 10,
+    desk: ['an inkwell that can’t be spilled', 5, 'an inkwell that never dries out', 12, 'a quill that writes down what you say', 60, 'chalk that writes in any colour you name', 2,
+      'a bookmark that finds your page', 2, 'a little light that hovers over your book', 15, 'a candle that lights when you snap your fingers', 4, 'a candle that never melts down', 10,
       'a letter opener that only opens letters addressed to you', 6, 'paper that folds into a bird and flies to an address in the same town (per sheet)', 3, 'sealing wax that turns red if the letter was opened', 2,
       'a book that turns to the page you name', 25, 'an eraser that lifts ink as well as pencil', 3, 'spectacles that make small print bigger', 20],
     home: ['a lint brush that pulls fluff from across the room', 3, 'a needle that finishes any straight seam you start', 8, 'a thimble no needle can get through', 2, 'a wash tub that stirs the laundry itself', 25,
       'socks that are always dry', 5, 'a cloak that brushes off its own mud', 20, 'shoes that clean themselves overnight', 15, 'a hat that tips itself to passers-by', 4, 'buttons that do themselves up', 6,
-      'a scarf that’s always just warm enough', 12, 'a broom that sweeps one room on its own, then stops', 50, 'a feather duster that does the high shelves itself', 20, 'a doormat that shakes off its own dirt', 8,
+      'a scarf that’s always just warm enough', 12, 'a broom that sweeps on its own', 50, 'a feather duster that does the high shelves itself', 20, 'a doormat that shakes off its own dirt', 8,
       'a door chime that says who’s outside', 15, 'a pillow that’s always cool', 7, 'a blanket that warms to you', 10, 'a mirror that tells you when there’s something in your teeth', 10,
-      'a comb that untangles anything', 4, 'a toothbrush that brushes on its own (you still have to open up)', 3, 'a music box that plays any song you hum to it', 30,
+      'a comb that untangles anything', 4, 'a toothbrush that brushes on its own', 3, 'a music box that plays any song you hum to it', 30,
       'a lamp that turns itself down when you fall asleep', 12, 'a cradle that rocks itself', 25, 'a dinner bell that rings itself when food’s ready', 5, 'a window that cleans its own glass', 18],
-    travel: ['a compass that points home (wherever you last slept three nights)', 25, 'a purse that hums when someone else touches it', 10, 'a rope that ties or unties its knot on a word', 30,
+    travel: ['a compass that points home', 25, 'a purse that hums when someone else touches it', 10, 'a rope that ties or unties its knot on a word', 30,
       'a saddle blanket that keeps a horse cool', 8, 'a horseshoe that never wears down', 5, 'a fishing float that rings a bell when something bites', 3, 'a bucket that can’t leak', 4,
       'a waterskin that keeps water cold', 6, 'tent pegs that drive themselves in (set of 6)', 2, 'a map that rolls itself up', 3, 'a lock that remembers the last face that tried it', 25,
       'a lantern that never blows out in wind', 10, 'boots that don’t squeak', 6, 'a bedroll that rolls itself up', 8, 'a stone that glows when held (cold light)', 5],
-    games: ['a chess set whose pieces walk to the square you call', 40, 'a pair of linked chessboards for games between towns', 150, 'a harp that plays itself (badly at first)', 60,
+    games: ['a chess set whose pieces walk to the square you call', 40, 'a pair of linked chessboards for games between towns', 150, 'a harp that plays itself', 60,
       'a deck of cards that shuffles itself', 5, 'a toy dragon that flaps and squeaks', 3, 'a ball that comes back when thrown', 4, 'a kite that flies with no wind', 10,
-      'a spinning top that never falls over', 2, 'a puppet that dances on its own for a minute', 8, 'a bubble pipe that blows bubbles shaped like animals', 2, 'a drum that keeps the beat for you', 15],
+      'a spinning top that never falls over', 2, 'a puppet that dances on its own', 8, 'a bubble pipe that blows bubbles shaped like animals', 2, 'a drum that keeps the beat for you', 15],
     holy: ['prayer beads that count themselves', 3, 'a candle that won’t go out in wind or rain', 6, 'incense that smells like whatever you miss', 4, 'a bell whose ring carries a mile and no further', 12]
   };
   var EVERYDAY_IN = {
@@ -5285,16 +5285,12 @@
   // Fantasy pets for the odd shops, next to the ordinary ones.
   var FANTASY_PETS = ['a tressym kitten (a cat with wings)', 120, 'a blink dog pup', 400, 'a tiny mimic the size of a shoebox (friendly, mostly)', 60, 'a flying squirrel that glides between rooftops', 6,
     'a moss-backed tortoise with a garden on its shell', 15, 'a will-o’-wisp in a lantern (it hates this)', 90, 'a rat that can count to ten', 5, 'a cat that only appears when it wants to', 45];
-  // What a tavern kitchen in a fantasy world cooks.
-  var FANTASY_FOOD = ['wyvern jerky (a strip)', 0.2, 'owlbear sausage', 0.3, 'giant crab legs, steamed', 0.5, 'roc egg omelette (feeds twenty)', 8, 'dragon pepper stew (very hot)', 0.3,
-    'pixie honey cakes (you might giggle)', 0.2, 'troll-bone broth', 0.1, 'griffon-egg custard', 1, 'kraken calamari', 0.6, 'cockatrice drumsticks', 0.4];
   function everydayRows(shopKind, size, pm) {
     var rows = [], add = function (pair, k, q) { rows.push({ n: pair[0], k: k, p: niceCp(pair[1] * 100 * pm * (0.85 + Math.random() * 0.3)) / 100, q: q == null ? rint(1, 2) : q }); };
     (EVERYDAY_IN[shopKind] || []).forEach(function (g) { pickPairs(EVERYDAY[g[0]], rint(g[1], g[2] + (size >= 3 ? 1 : 0))).forEach(function (p) { add(p, 'mm'); }); });
     if (shopKind === 'Stables') pickPairs(EGGS.mount, rint(1, 2) + (size >= 3 ? 1 : 0)).forEach(function (p) { add(p, 'an', 1); });
     if (shopKind === 'General store') pickPairs(EGGS.farm, rint(0, 2)).forEach(function (p) { add(p, 'an', rint(1, 4)); });
     if (shopKind === 'Magic shop') { pickPairs(EGGS.odd, rint(0, 2)).forEach(function (p) { add(p, 'an', 1); }); if (Math.random() < 0.4) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); }); }
-    if (shopKind === 'Tavern & inn') pickPairs(FANTASY_FOOD, rint(1, 3)).forEach(function (p) { add(p, 'f', null); rows[rows.length - 1].q = null; });
     return rows;
   }
 
