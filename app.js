@@ -3656,12 +3656,14 @@
       if (!g || r.k !== 'armor') return;
       if (g.shield) { if (!shield) shield = { g: g, it: it }; } else if (!armor) armor = { g: g, it: it };
     });
-    if (!armor && !shield) return { ac: num(s.ac, 10), how: 'Unarmored', worn: false, notes: notes };
+    // Warforged: armour plates are part of the body, +1 AC always.
+    var wf = /^warforged$/i.test(String(s.species || '').trim()) ? 1 : 0;
+    if (!armor && !shield) return { ac: num(s.ac, 10) + wf, how: 'Unarmored' + (wf ? ' + Integrated Protection' : ''), worn: false, notes: notes };
     var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) : num(s.ac, 10);
     if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0);
     if (armor && armor.g.stealth) notes.push('Disadvantage on Stealth');
     if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
-    return { ac: ac, how: [armor ? armor.it.name : '', shield ? 'Shield' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
+    return { ac: ac + wf, how: [armor ? armor.it.name : '', shield ? 'Shield' : '', wf ? 'Integrated Protection' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
   }
   function weaponProf(cd, w) {
     if (!cd) return false;
