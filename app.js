@@ -6187,7 +6187,7 @@
     var m = realmMapOf(campId); if (!m) return null;
     var all = (markers[m.id] || []).filter(function (x) { return x.label && (x.kind === 'stop' || x.kind === 'place' || x.kind === 'ruin' || x.kind === 'note' || x.kind === 'poi' || x.article_slug); });
     var key = FACTION_SEAT[f.id];
-    if (key === '*') { var tw = townsOn(m.id); return tw.length ? tw[Math.floor(Math.random() * tw.length)] : null; }
+    if (key === '*') { var tw = townsOn(m.id).filter(function (x) { return x.article_slug !== 'the-city-state-of-coralyn'; }); return tw.length ? tw[Math.floor(Math.random() * tw.length)] : null; }
     var keys = [].concat(key || [], f.seat || []);
     for (var i = 0; i < keys.length; i++) {
       var k = String(keys[i]).toLowerCase();
@@ -6221,6 +6221,23 @@
     townsOn(m.id).forEach(function (t) { if (!t.label) return; var d = mapMiles(m, mk.x, mk.y, t.x, t.y); if (d < bd) { bd = d; best = t; } });
     return best || mk;
   }
+  /* The Brinewolves have no seat anyone knows. A raid is heard of where it hit (or where they last hit, if the tale names no
+     place); their plans and dealings are told to the DM only and never spread. */
+  var RAID_WORDS = /(raid|hit|score|took|takes|taken|seize|sack|burn|plunder|attack|board|sink|sank|cog|convoy|harbour|village|ransom|loot|exposed|hanged|caught)/i;
+  function wolvesOrigin(campId, R, text) {
+    var m = realmMapOf(campId); if (!m) return null;
+    var low = String(text || '').toLowerCase(), best = null, bi = Infinity;
+    (markers[m.id] || []).forEach(function (x) { if (!x.label || x.kind === 'party' || x.label.length <= 3) return; var i = low.indexOf(midLabel(x.label).toLowerCase()); if (i < 0) i = low.indexOf(x.label.toLowerCase()); if (i >= 0 && i < bi) { bi = i; best = x; } });
+    if (best) { best = witness(m, best); R.lastHit = R.lastHit || {}; R.lastHit.wolves = { x: best.x, y: best.y, label: best.label }; return best; }
+    if (!RAID_WORDS.test(text)) return null;   // plans and dealings: nobody hears
+    if (R.lastHit && R.lastHit.wolves && Math.random() < 0.5) return R.lastHit.wolves;
+    // A raid with no place in the tale: some port town takes the hit, and that's where word starts.
+    var ports = townsOn(m.id).filter(function (x) { var a = x.article_slug ? articleBySlug(x.article_slug) : null; return a && hasTag(placeOf(a.id), 'port') && x.article_slug !== 'the-city-state-of-coralyn'; });
+    if (!ports.length) return R.lastHit && R.lastHit.wolves || null;
+    var hit = ports[Math.floor(Math.random() * ports.length)];
+    R.lastHit = R.lastHit || {}; R.lastHit.wolves = { x: hit.x, y: hit.y, label: hit.label };
+    return hit;
+  }
   function placeXY(campId, slug, label) {
     var m = realmMapOf(campId); if (!m) return null;
     var mk = (markers[m.id] || []).filter(function (x) { return (slug && x.article_slug === slug) || (label && x.label === label); })[0];
@@ -6230,6 +6247,7 @@
     var m = realmMapOf(campId); if (!m || n.ox == null || x == null) return null;
     var miles = mapMiles(m, n.ox, n.oy, x, y);
     if (n.petty && miles > PETTY_REACH) return null;
+    if (n.far && miles > 15) return null;   // Coralyn keeps to itself: only its big news crosses the water
     return num(n.day, 0) + Math.ceil(miles / (n.major ? NEWS_PACE.major : n.petty ? NEWS_PACE.petty : NEWS_PACE.move));
   }
   // What folk at (x, y) are talking about on this day: the last six weeks of news that has reached them.
@@ -8674,7 +8692,7 @@
       var el = f.querySelector('[data-rroll="' + fa.id + '"]'), roll = clamp(num(el ? el.value : 0, 1), 1, 100);
       var out = realmMonth(R, fa, roll, partyNear);
       if (out.rumour) R.factions.forEach(function (x) { if (!x.secret) return; var v = x.veil || 'people nobody can name'; out.rumour = out.rumour.split('young ' + shortName(x.name) + ' commander').join('new leader among ' + v).split(x.name + '’s').join('their').split(x.name).join(v).split(shortName(x.name)).join(v); out.rumour = out.rumour.charAt(0).toUpperCase() + out.rumour.slice(1); });
-      if (out.text) { var sm = eventOrigin(campId, fa, out.text); R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty, ox: sm ? sm.x : null, oy: sm ? sm.y : null, at: sm ? midLabel(sm.label) : '' }); }
+      if (out.text) { var sm = fa.id === 'wolves' ? wolvesOrigin(campId, R, out.text) : fa.id === 'coralyn' ? seatMarker(campId, fa) : eventOrigin(campId, fa, out.text); R.news.push({ day: day, fid: fa.id, roll: roll, text: out.text, rumour: out.rumour, party: out.party, major: out.major, petty: out.petty, ox: sm ? sm.x : null, oy: sm ? sm.y : null, at: sm ? midLabel(sm.label) : '', far: fa.id === 'coralyn' && !out.major }); }
     });
     R.news = R.news.slice(-200);
     R.next = day + PAY_EVERY;
@@ -9518,7 +9536,7 @@
     layers: (function () { try { return Object.assign({ towns: true, labels: true, ruins: true, tolls: true, party: true, shops: true, marks: true, grid: false, tpins: true }, JSON.parse(readLocal('avarenth-layers') || '{}')); } catch (e) { return { towns: true, labels: true, ruins: true, tolls: true, party: true, shops: true, marks: true, grid: false }; } })(),
     q: '', qi: 0
   };
-  var ENTER_AT = 5;           // zoom (times the fitted size) at which a city opens
+  var ENTER_AT = 6.5;         // zoom (times the fitted size) at which a city opens
   var EXIT_AT = 0.72;         // zoom out below this on a city map to go back to the isles
 
   function loadCities() {
@@ -9791,7 +9809,7 @@
       if (r < 0.95) { el.hidden = false; el.innerHTML = 'Zoom out more to go back to the isles'; } else el.hidden = true;
       return;
     }
-    var mk = r >= 2.4 ? nearestCity((s.w - cov.right) / 2, (s.h - cov.bottom) / 2, Math.min(s.w, s.h) * 0.3) : null;
+    var mk = r >= 3.5 ? nearestCity((s.w - cov.right) / 2, (s.h - cov.bottom) / 2, Math.min(s.w, s.h) * 0.3) : null;
     if (!mk) { el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = '<button type="button" class="at-btn" data-at="enter" data-slug="' + esc(mk.article_slug) + '">Open the ' + esc(CITIES[mk.article_slug].name) + ' map</button><span>or keep zooming</span>';
