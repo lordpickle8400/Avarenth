@@ -80,18 +80,17 @@
     // Temple services
     'Healing (Cure Wounds)|s|10|0|holy', 'Lesser Restoration|s|40|1|holy', 'Remove Curse|s|90|2|holy', 'Greater Restoration|s|450|3|holy', 'Raise Dead|s|1250|4|holy',
     // Oddities: what a wandering merchant picks up on the road. Only wandering merchants carry these.
-    'Fire newt egg|z|25|0|odd', 'Bottled whisper|z|5|0|odd', 'A single left boot|z|0.5|0|odd', 'Jar of very angry bees|z|2|0|odd',
+    'Fire newt egg|z|25|0|odd', 'Bottled whisper|z|5|0|odd', 'Jar of very angry bees|z|2|0|odd',
     'Map to a place that may not exist|z|10|0|odd', 'Seashell that hums at night|z|3|0|odd', 'Petrified troll toe|z|8|0|odd',
     'Spoon that is always cold|z|1|0|odd', 'Music box that plays backwards|z|15|0|odd', 'Mimic tooth|z|12|0|odd', 'Owlbear feather|z|6|0|odd',
     'Glass eye (it blinks)|z|20|0|odd', 'Lucky rabbit\'s foot (one toe missing)|z|2|0|odd', 'Ship in a bottle (the crew moves)|z|40|0|odd',
-    'Dragon scale (probably)|z|50|0|odd', 'Smoked basilisk jerky|z|4|0|odd', 'Candle that burns cold|z|3|0|odd',
-    'Compass that points to the nearest cheese|z|7|0|odd', 'Pickled kraken sucker|z|5|0|odd', 'Folding ten-foot pole|z|15|0|odd',
-    'Stuffed jackalope|z|9|0|odd', 'A rock (he swears it\'s special)|z|1|0|odd', 'Bag of assorted teeth|z|2|0|odd',
+    'Dragon scale (probably)|z|50|0|odd', 'Candle that burns cold|z|3|0|odd',
+    'Compass that points to the nearest cheese|z|7|0|odd', 'Folding ten-foot pole|z|15|0|odd',
+    'Stuffed jackalope|z|9|0|odd', 'Bag of assorted teeth|z|2|0|odd',
     'Creepy doll (probably not cursed)|z|3|0|odd', 'Glowing mushroom|z|2|0|odd', 'Hat with a feather that changes color|z|12|0|odd',
-    'Bottle of mermaid tears (salt water)|z|6|0|odd', 'Bone wind chime|z|3|0|odd', 'Gnomish pocket clock (runs sideways)|z|25|0|odd',
-    'Half a treasure map|z|5|0|odd', 'Locked box, no key|z|10|0|odd', 'Frog that croaks at liars|z|30|0|odd', 'Self-stirring spoon|z|18|0|odd',
-    'Unlabeled potion (who knows)|z|15|0|odd', 'Book of truly terrible poetry|z|1|0|odd', 'Pet rock, named Gerald|z|0.5|0|odd',
-    'Monkey\'s paw (three fingers bent)|z|50|0|odd', 'Snow globe of a city that isn\'t there|z|8|0|odd', 'Coin of a fallen empire|z|5|0|odd',
+    'Bone wind chime|z|3|0|odd', 'Gnomish pocket clock (runs sideways)|z|25|0|odd',
+    'Frog that croaks at liars|z|30|0|odd', 'Self-stirring spoon|z|18|0|odd',
+    'Unlabeled potion (who knows)|z|15|0|odd', 'Book of truly terrible poetry|z|1|0|odd', 'Monkey\'s paw (three fingers bent)|z|50|0|odd', 'Snow globe of a city that isn\'t there|z|8|0|odd', 'Coin of a fallen empire|z|5|0|odd',
     'Kobold firework|z|2|0|odd', 'Wyvern stinger (empty)|z|15|0|odd', 'Ball of string with no end|z|6|0|odd', 'Mummified hand (waves sometimes)|z|20|0|odd',
     'Jar of fog from a haunted moor|z|8|0|odd', 'Spider silk from the Silken Woods|z|12|0|odd', 'Troglodyte musk (do not open)|z|1|0|odd'
   ];
@@ -128,7 +127,8 @@
     'Bookseller': { kinds: [], special: 'books', about: 'Books, sets of books to collect, and shelves to keep them on.' },
     'Trophy hall': { kinds: [], special: 'trophies', about: 'Monster trophies, mounted heads, old coins and cases to show them off.' },
     'Cheesemaker': { kinds: [], special: 'cheese', about: 'Cheese from any milk you can name.' },
-    'Artist\'s studio': { kinds: [], special: 'art', about: 'Paintings, sculptures and portraits to order.' }
+    'Artist\'s studio': { kinds: [], special: 'art', about: 'Paintings, sculptures and portraits to order.' },
+    'Clockworks': { kinds: [], special: 'clockwork', about: 'Clockwork things that each do one job, plus winding, mending and building to order.' }
   };
 
   // What a place's tags do to its shops.
@@ -151,7 +151,7 @@
   var TRADES = {
     'Bug dealer': { special: 'bugs', unique: true, about: 'Insects, each one rare, each one priced like it.' },
     'Curio dealer': { odd: [5, 9], about: 'Oddities, curiosities and whatever caught his eye on the road.' },
-    'Tome seller': { extra: ['Book', 'Spellbook (blank)', 'Ink (1 ounce bottle)', 'Ink pen', 'Paper (one sheet)', 'Parchment (one sheet)', 'Map or scroll case', 'Sealing wax', 'Calligrapher\'s supplies', 'Book of truly terrible poetry', 'Map to a place that may not exist', 'Half a treasure map'], odd: [0, 2], about: 'Books, paper, ink and the odd strange map.' },
+    'Tome seller': { extra: ['Book', 'Spellbook (blank)', 'Ink (1 ounce bottle)', 'Ink pen', 'Paper (one sheet)', 'Parchment (one sheet)', 'Map or scroll case', 'Sealing wax', 'Calligrapher\'s supplies', 'Book of truly terrible poetry', 'Map to a place that may not exist'], odd: [0, 2], about: 'Books, paper, ink and the odd strange map.' },
     'Wandering blacksmith': { base: 'Blacksmith', odd: [0, 1], about: 'A forge on wheels: blades, tools and repairs.' },
     'Roving armorer': { base: 'Armorer', odd: [0, 1], about: 'Armor and shields, a little worn from the road.' },
     'Traveling alchemist': { base: 'Alchemist', odd: [1, 2], about: 'Potions, acids and things that bubble.' },
@@ -163,7 +163,7 @@
     'Cloth merchant': { base: 'Tailor & outfitter', odd: [0, 2], about: 'Clothes, cloaks, packs and tents.' },
     'Cook with a cart': { extra: ['Rations (1 day)', 'Bread (loaf)', 'Cheese (hunk)', 'Meat (chunk)', 'Ale (gallon)', 'Common wine (pitcher)', 'Fine wine (bottle)', 'Smoked basilisk jerky', 'Iron pot', 'Mess kit', 'Cook\'s utensils'], odd: [0, 1], about: 'Hot food, cold drink and road supplies.' },
     'Shady dealer': { base: 'Fence', odd: [1, 3], about: 'Doesn\'t ask where you got it. Doesn\'t say where he did.' },
-    'Map seller': { extra: ['Map or scroll case', 'Cartographer\'s tools', 'Navigator\'s tools', 'Map to a place that may not exist', 'Half a treasure map', 'Spyglass', 'Parchment (one sheet)', 'Ink (1 ounce bottle)'], odd: [1, 3], about: 'Maps of everywhere, some of them accurate.' },
+    'Map seller': { extra: ['Map or scroll case', 'Cartographer\'s tools', 'Navigator\'s tools', 'Map to a place that may not exist', 'Spyglass', 'Parchment (one sheet)', 'Ink (1 ounce bottle)'], odd: [1, 3], about: 'Maps of everywhere, some of them accurate.' },
     'Instrument seller': { extra: ['Bagpipes', 'Drum', 'Dulcimer', 'Flute', 'Lute', 'Lyre', 'Horn', 'Pan flute', 'Shawm', 'Viol', 'Music box that plays backwards'], odd: [0, 2], about: 'Instruments, strings and songs for sale.' },
     'Trinket mage': { base: 'Magic shop', odd: [1, 3], about: 'Foci, components and small magic.' },
     'Gambler': { extra: ['Dice set', 'Playing card set', 'Dragonchess set', 'Lucky rabbit\'s foot (one toe missing)', 'Coin of a fallen empire', 'Fine wine (bottle)'], odd: [1, 3], about: 'Games of chance, and things won at them.' }

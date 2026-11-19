@@ -4941,9 +4941,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'cw', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
-  KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
+  KIND_LABEL.cw = 'Clockwork'; KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -5165,42 +5165,37 @@
      Every shop gets a handful of things nobody needs, a few things somebody will, and sometimes a live animal or an egg.
      About one shop in four has a keeper with a quirk, which shows in what's on the shelves. Each entry is [name, price in gp]. */
   var ODDS = {
-    'General store': ['a single fork', 0.01, 'a wooden spoon', 0.01, 'a chipped clay plate', 0.02, 'a pewter tankard', 0.2, 'a tin cup', 0.02, 'a left boot (no right one)', 0.1,
-      'a bundle of clothes pegs', 0.01, 'a cracked hand mirror', 0.5, 'a sack of mixed buttons', 0.05, 'a broom', 0.1, 'a butter churn', 1, 'a washboard', 0.2,
-      'candle stubs (bag of 10)', 0.02, 'a rag doll with one button eye', 0.05, 'a wooden horse on wheels', 0.1, 'a jar of pickled eggs', 0.1, 'a salt cellar shaped like a hen', 0.2,
-      'an iron key that opens nothing anyone knows of', 0.05, 'a bucket with a small leak', 0.02, 'knitting needles', 0.05, 'a sheep bell', 0.1, 'a deck of cards missing one', 0.2,
-      'a painted rock', 0.01, 'a shoe horn', 0.05, 'a ladle', 0.05, 'a mousetrap', 0.05, 'a chamber pot', 0.1, 'a bunch of dried lavender', 0.02, 'a bag of marbles', 0.05,
+    'General store': ['a fork', 0.01, 'a wooden spoon', 0.01, 'a clay plate', 0.02, 'a pewter tankard', 0.2, 'a tin cup', 0.02, 'a bundle of clothes pegs', 0.01, 'a hand mirror', 0.5, 'a sack of mixed buttons', 0.05, 'a broom', 0.1, 'a butter churn', 1, 'a washboard', 0.2,
+      'candles (bag of 10)', 0.1, 'a rag doll', 0.05, 'a wooden horse on wheels', 0.1, 'a jar of pickled eggs', 0.1, 'a salt cellar shaped like a hen', 0.2,
+      'a bucket', 0.02, 'knitting needles', 0.05, 'a sheep bell', 0.1, 'a deck of cards', 0.2,
+      'a shoe horn', 0.05, 'a ladle', 0.05, 'a mousetrap', 0.05, 'a chamber pot', 0.1, 'a bunch of dried lavender', 0.02, 'a bag of marbles', 0.05,
       'a nutmeg grater', 0.1, 'a fly swatter', 0.01, 'a cheese wheel (small)', 0.5, 'a kettle', 0.5, 'a birdhouse', 0.2, 'a jar of honey', 0.2, 'a ball of string', 0.01],
     Blacksmith: ['a horseshoe', 0.1, 'a lucky horseshoe (he swears it is)', 0.5, 'a bag of nails', 0.05, 'an iron hinge', 0.1, 'a pot hook', 0.05, 'a fire poker', 0.2, 'tongs', 0.3,
-      'a cowbell', 0.2, 'a door knocker shaped like a lion', 1, 'a bent sword, sold as scrap', 0.5, 'a ploughshare', 2, 'an iron skillet', 0.5, 'a boot scraper', 0.2, 'a gate latch', 0.1,
-      'a weathervane shaped like a rooster', 2, 'a branding iron with someone else’s mark', 0.5, 'a nail puller', 0.3, 'a candle holder, hand-hammered', 0.3],
-    Armorer: ['a single gauntlet', 1, 'a red helmet plume', 0.5, 'polishing rags', 0.01, 'a bag of buckles', 0.1, 'a dented helm, for display', 1, 'a shield strap', 0.2, 'an arming cap', 0.2,
-      'a tourney favour, slightly singed', 0.05, 'a suit of armour for a child, never worn', 15, 'a mail coif with one ring missing', 1],
-    'Bowyer & fletcher': ['bowstring wax', 0.05, 'a bundle of goose feathers', 0.02, 'an arrowhead necklace', 0.2, 'a straw practice target', 0.5, 'a broken bow, for kindling', 0.01,
-      'a quiver patch', 0.05, 'a hunting horn', 1, 'a bird call', 0.1, 'a hand-carved decoy duck', 0.5],
+      'a cowbell', 0.2, 'a door knocker shaped like a lion', 1, 'a ploughshare', 2, 'an iron skillet', 0.5, 'a boot scraper', 0.2, 'a gate latch', 0.1,
+      'a weathervane shaped like a rooster', 2, 'a branding iron', 0.5, 'a nail puller', 0.3, 'a candle holder, hand-hammered', 0.3],
+    Armorer: ['a red helmet plume', 0.5, 'polishing rags', 0.01, 'a bag of buckles', 0.1, 'a polished display helm', 1, 'a shield strap', 0.2, 'an arming cap', 0.2,
+      'a tourney favour', 0.05, 'a suit of armour for a child, never worn', 15, 'a mail coif', 1],
+    'Bowyer & fletcher': ['bowstring wax', 0.05, 'a bundle of goose feathers', 0.02, 'an arrowhead necklace', 0.2, 'a straw practice target', 0.5, 'a quiver patch', 0.05, 'a hunting horn', 1, 'a bird call', 0.1, 'a hand-carved decoy duck', 0.5],
     Alchemist: ['empty vials (box of 6)', 0.5, 'a jar of leeches', 0.5, 'a dried frog', 0.05, 'smelling salts', 0.2, 'a bottle of something blue, unlabelled', 1, 'hair tonic (smells of onions)', 0.5,
-      'tooth powder', 0.05, 'love tonic (does nothing)', 2, 'a snail in a jar', 0.05, 'pickled sheep’s eyes', 0.2, 'a bezoar', 5, 'a mandrake root (it screams, he says)', 3,
-      'a tincture for gout', 0.5, 'a cure for baldness (it isn’t)', 1, 'a jar of fireflies', 0.2, 'a lump of sulphur', 0.1, 'ink that changes colour as it dries', 1],
-    'Tailor & outfitter': ['a single glove', 0.05, 'a thimble', 0.02, 'a pin cushion shaped like a hedgehog', 0.1, 'ribbon by the yard', 0.02, 'a moth-eaten cloak', 0.2, 'a powdered wig', 2,
+      'tooth powder', 0.05, 'a snail in a jar', 0.05, 'pickled sheep’s eyes', 0.2, 'a bezoar', 5, 'a mandrake root (it screams, he says)', 3,
+      'a tincture for gout', 0.5, 'a jar of fireflies', 0.2, 'a lump of sulphur', 0.1, 'ink that changes colour as it dries', 1],
+    'Tailor & outfitter': ['a pair of gloves', 0.05, 'a thimble', 0.02, 'a pin cushion shaped like a hedgehog', 0.1, 'ribbon by the yard', 0.02, 'a wool cloak', 0.2, 'a powdered wig', 2,
       'a false moustache', 0.1, 'knitted socks', 0.1, 'a scarf, very long', 0.3, 'a hat with an enormous feather', 1, 'a baby’s bonnet', 0.1, 'a wedding dress, never collected', 15,
       'a jester’s hat', 0.5, 'a bag of offcuts', 0.02, 'a measuring tape', 0.05],
     Stables: ['a horse brush', 0.1, 'a hoof pick', 0.05, 'a bag of carrots', 0.02, 'a nosebag', 0.1, 'sugar lumps', 0.05, 'a saddle blanket with someone’s initials', 0.5,
-      'jingle bells for a harness', 0.2, 'a hat made for a pony', 0.5, 'a horse’s tooth', 0.01, 'a riding crop', 0.2],
-    'Shipwright & chandler': ['a ship in a bottle', 2, 'a torn fishing net', 0.1, 'cork floats', 0.02, 'a small anchor crusted with barnacles', 1, 'a single oar', 0.3, 'a spyglass with a cracked lens', 5,
-      'a bucket of tar', 0.2, 'sea shells', 0.01, 'a worn figurehead of a sea maiden', 10, 'a dried pufferfish', 0.2, 'a sailor’s knot board', 0.5, 'a message in a bottle (unread)', 0.5,
+      'jingle bells for a harness', 0.2, 'a hat made for a pony', 0.5, 'a riding crop', 0.2],
+    'Shipwright & chandler': ['a ship in a bottle', 2, 'a fishing net', 0.1, 'cork floats', 0.02, 'a small anchor crusted with barnacles', 1, 'a pair of oars', 0.6, 'a bucket of tar', 0.2, 'sea shells', 0.01, 'a carved figurehead of a sea maiden', 10, 'a dried pufferfish', 0.2, 'a sailor’s knot board', 0.5, 'a message in a bottle (unread)', 0.5,
       'a parrot perch', 0.2, 'a sea chart with a monster drawn on it', 2],
-    'Tavern & inn': ['a tankard with someone’s name scratched in', 0.2, 'a dice cup', 0.05, 'a jar of pickled onions', 0.1, 'yesterday’s bread', 0.01, 'a tin whistle', 0.1,
-      'a bottle of cooking sherry', 0.2, 'a clay pipe', 0.02, 'a dartboard', 0.5, 'the old house cat’s collar', 0.01, 'a lost-and-found umbrella', 0.2, 'a song sheet of rude ballads', 0.05,
-      'a single sock found under a bed', 0.01, 'a bowl of nuts of unknown age', 0.01],
+    'Tavern & inn': ['a tankard with someone’s name scratched in', 0.2, 'a dice cup', 0.05, 'a jar of pickled onions', 0.1, 'a tin whistle', 0.1,
+      'a bottle of cooking sherry', 0.2, 'a clay pipe', 0.02, 'a dartboard', 0.5, 'an umbrella', 0.2, 'a song sheet of rude ballads', 0.05,
+      ],
     Temple: ['prayer beads', 0.1, 'a votive figurine', 0.2, 'incense cones', 0.05, 'a pilgrim’s badge', 0.1, 'a saint’s finger bone (probably a chicken’s)', 1, 'an offering bowl', 0.1,
       'a hymn book with notes in the margins', 0.5, 'a candle in a glass', 0.05, 'a small bell', 0.2, 'a blessed pebble', 0.01],
-    'Magic shop': ['a crystal ball (it’s glass)', 2, 'a stuffed owl', 3, 'a star chart, out of date', 1, 'a moth-eaten wizard’s hat', 0.5, 'fortune-telling cards', 1, 'a chunk of fallen star', 5,
-      'a quill that’s always slightly damp', 0.5, 'a jar of eye of newt (actual newt eyes)', 0.5, 'a spellbook with every page blank', 2, 'a wand that’s just a nice stick', 0.5, 'a skull with a candle in it', 1],
-    'Tinker & toolmaker': ['a clockwork mouse that winds down', 2, 'a bag of springs', 0.1, 'a bag of gear wheels', 0.2, 'a music box that plays one sad tune', 3, 'a broken pocket watch', 1,
-      'a tin soldier', 0.1, 'a jack-in-the-box', 0.5, 'a whirligig', 0.2, 'a mechanical bird that doesn’t sing', 5, 'a lock with no key', 0.5, 'a ring of keys with no locks', 0.2,
-      'a self-stirring spoon (needs winding)', 2, 'an automatic nose-picker (prototype)', 1],
-    Fence: ['a signet ring, owner unknown', 3, 'a portrait with the face cut out', 1, 'mismatched silver spoons', 1, 'a ledger with pages torn out', 0.1, 'a single earring', 1,
-      'a fine hat, slightly singed', 0.5, 'a dog collar with a noble crest', 2, 'a box of other people’s letters', 0.5, 'a wooden leg', 0.5, 'a lock of someone’s hair in a locket', 2]
+    'Magic shop': ['a glass gazing ball', 2, 'a stuffed owl', 3, 'a star chart', 1, 'a wizard’s hat', 0.5, 'fortune-telling cards', 1, 'a chunk of fallen star', 5,
+      'a jar of eye of newt (actual newt eyes)', 0.5, 'a blank spellbook', 2, 'a skull with a candle in it', 1],
+    'Tinker & toolmaker': ['a bag of springs', 0.1, 'a bag of gear wheels', 0.2, 'a music box that plays one sad tune', 3, 'a pocket watch', 15,
+      'a tin soldier', 0.1, 'a jack-in-the-box', 0.5, 'a whirligig', 0.2, ],
+    Fence: ['a signet ring, owner unknown', 3, 'mismatched silver spoons', 1, 'a fine feathered hat', 0.5, 'a dog collar with a noble crest', 2, 'a box of other people’s letters', 0.5, 'a wooden leg', 0.5, 'a lock of someone’s hair in a locket', 2]
   };
   // Things that are actually handy, for anyone who asks.
   var HANDY = ['a hand-drawn map of the area', 1, 'a whetstone', 0.01, 'bug-bite salve', 0.2, 'a fishing line and hooks', 0.1, 'a traveller’s blanket', 0.5, 'dry socks', 0.05,
@@ -5218,8 +5213,7 @@
   };
   // Curios: the shelf of strange things in odd shops, big towns and back alleys.
   var CURIOS = ['a jar of somebody’s teeth', 0.5, 'a shrunken head', 5, 'a mummified cat', 3, 'a stuffed two-headed calf', 10, 'a portrait whose eyes seem to follow you', 8,
-    'a giant’s toenail', 4, 'a dragon scale (probably)', 15, 'a “unicorn horn” (a narwhal tusk)', 20, 'love letters, a bundle, not yours', 0.5, 'a bottle labelled “lightning” (empty)', 1,
-    'a treasure map (almost certainly fake)', 2, 'a doll the keeper swears is cursed', 3, 'a fossilised fish', 2, 'a gnome’s beard (he says he paid for it)', 1,
+    'a giant’s toenail', 4, 'a dragon scale (probably)', 15, 'a “unicorn horn” (a narwhal tusk)', 20, 'love letters, a bundle, not yours', 0.5, 'a doll the keeper swears is cursed', 3, 'a fossilised fish', 2, 'a gnome’s beard (he says he paid for it)', 1,
     'a box the keeper says must never be opened', 5, 'a cheese older than the keeper', 1, 'a stuffed rabbit with antlers', 6, 'a crown from a kingdom nobody remembers', 12,
     'a goblin-skull lantern', 3, 'a ship’s bell from a wreck', 8, 'a glass eye', 0.5, 'a petrified egg', 4, 'a bag of “wishing stones”', 0.5, 'a mermaid (sewn from a fish and a monkey)', 10];
   // Keeper quirks. [id, what you notice, extra stock].
@@ -5229,18 +5223,17 @@
     ['hats', 'Every sale comes with a free hat, whether you want one or not.', ['a tall hat', 1, 'a hat with bells', 0.5, 'a fur hat', 2, 'a hat shaped like a fish', 1]],
     ['stuffed', 'Stuffed animals on every shelf, posed doing chores.', ['a stuffed squirrel holding a broom', 2, 'a stuffed badger playing cards', 4, 'a stuffed weasel in a little apron', 3]],
     ['eggs', 'Eggs of every kind, and some of no known kind.', ['a speckled blue egg', 0.5, 'a very large egg', 2, 'a black egg', 3, 'an egg that rattles', 1]],
-    ['ones', 'Only sells things one at a time: one boot, one glove, one earring.', ['one boot', 0.1, 'one earring', 0.5, 'one glove', 0.05, 'one sock', 0.01, 'one candlestick', 0.2]],
     ['tiny', 'Everything is tiny: tiny chairs, tiny books, tiny swords for no one.', ['a tiny chair', 0.2, 'a tiny book (readable, with a lens)', 2, 'a tiny sword', 0.5, 'a tiny teapot', 0.3]],
-    ['haunted', 'Swears the shop is haunted and charges extra for “ghost-touched” goods.', ['a ghost-touched teacup', 2, 'a ghost-touched mirror', 5, 'a jar of ectoplasm (wallpaper paste)', 1]],
+    ['haunted', 'Swears the shop is haunted and charges extra for “ghost-touched” goods.', ['a ghost-touched teacup', 2, 'a ghost-touched mirror', 5, ]],
     ['haggle', 'Haggles over everything, even good morning.', ['a sign that reads “PRICES NEGOTIABLE”', 0.1, 'a mystery box', 1]],
     ['fortune', 'Reads a palm with every sale. The readings are oddly specific.', ['a fortune in a walnut shell', 0.1, 'a lucky charm', 0.5, 'a reading-hand made of wax', 1]],
     ['fish', 'Everything smells faintly of fish. Even the soap.', ['fish-scented soap', 0.05, 'a smoked eel', 0.2, 'a fish-skin purse', 0.5]],
     ['birds', 'Birds in cages floor to ceiling. The noise never stops.', ['a canary', 1, 'a finch pair', 1, 'a mynah bird that mimics the keeper', 15, 'a pigeon trained to come home', 5]],
     ['dusty', 'Nothing’s been dusted in years. Real finds hide under it.', ['an old sword in a fine scabbard', 25, 'a box of old coins (not legal tender)', 2, 'a forgotten painting', 15]],
     ['cheese', 'Cheese. Somehow there is cheese on every shelf, whatever the shop sells.', ['a blue cheese that moves a little', 1, 'a goat’s cheese in ash', 0.5, 'a cheese the size of a cartwheel', 20]],
-    ['music', 'The keeper plays the fiddle badly and won’t stop.', ['a fiddle, slightly out of tune', 5, 'a drum', 2, 'a song the keeper wrote, on paper', 0.1]],
+    ['music', 'The keeper plays the fiddle badly and won’t stop.', ['a fiddle', 5, 'a drum', 2, 'a song the keeper wrote, on paper', 0.1]],
     ['inventor', 'The keeper is “improving” things. Some of them work.', ['a lantern that folds flat', 3, 'boots with springs in the heels', 8, 'a hat with a built-in umbrella', 2]],
-    ['twins', 'Run by twins who disagree on every price.', ['a pair of matching mugs', 0.2, 'a half-price receipt from the other twin', 0.01]],
+    ['twins', 'Run by twins who disagree on every price.', ['a pair of matching mugs', 0.2, ]],
     ['gossip', 'The keeper knows everyone’s business and gives it away free with every purchase.', ['a gossip broadsheet', 0.01, 'a jar of “truth sweets”', 0.2]]
   ];
   /* ---------- Everyday magic: small charmed things that make chores easier. Nothing here wins a fight. ---------- */
@@ -5306,20 +5299,36 @@
       'tanned leather (a hide’s worth)', 2, 'leather strips (bundle)', 0.2, 'a sealskin', 3],
     parts: ['deer antlers', 1, 'goat horns', 0.3, 'boar tusks', 1, 'bear claws', 2, 'wolf teeth (a pouch)', 0.5, 'a ram’s skull', 0.5, 'fish scales (a jar)', 0.1, 'a hawk feather', 0.1,
       'bone meal (a sack)', 0.2, 'a horse skull', 0.3, 'a snake skin', 0.5, 'a crab shell', 0.1, 'sabre-tooth cat fangs', 5, 'a mammoth tusk', 50, 'troll fat (a jar)', 4, 'a giant’s tooth', 15],
-    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'silver ore (a sack)', 5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a gold ingot', 50,
+    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a gold ingot', 50,
       'a sack of coal', 0.2, 'a bag of nails', 0.05, 'iron hinges (pair)', 0.2, 'a lock and hasp', 0.5, 'a pane of glass', 1, 'a bundle of straw', 0.02, 'a lump of clay', 0.02,
       'a block of quarried stone', 0.1, 'sawn planks (a bundle)', 0.5, 'a bundle of firewood', 0.05, 'a coil of wire', 0.2, 'a jar of glue', 0.1, 'a bolt of linen', 1],
     children: ['a wooden sword', 0.05, 'a rag doll', 0.05, 'a toy horse', 0.1, 'a hobby horse', 0.2, 'a child’s tunic', 0.2, 'a child’s dress', 0.3, 'a spinning top', 0.02, 'a set of wooden blocks', 0.1,
       'a child’s bow (blunt arrows)', 0.5, 'a ball of rags', 0.01],
     jars: ['a moth in a jar', 0.01, 'a butterfly in a jar', 0.01, 'a bee in a jar', 0.01, 'a dragonfly in a jar', 0.02, 'a beetle in a jar', 0.01, 'a glowing bug in a jar', 0.05],
-    ruined: ['a water-damaged book (unreadable)', 0.01, 'a book with half its pages missing', 0.05, 'a bloodied rag', 0, 'a broken lute', 0.2, 'a torn flag', 0.1, 'an empty wine bottle', 0.01, 'a ruined map', 0.01]
   };
-  var SKY_KIND = { tableware: 'va', statues: 'va', hides: 'hd', parts: 'hd', materials: 'mt', children: 'j', jars: 'j', ruined: 'j' };
+  // Clockwork: wind it up and it does its one job, every time.
+  var CLOCKWORK = ['a clockwork mouse that scurries in circles', 2, 'a clockwork songbird that sings three tunes', 15, 'a clockwork beetle that polishes boots', 12,
+    'a clockwork frog that hops on the hour', 6, 'a clockwork owl that turns its head to follow you', 20, 'a clockwork crab that carries small things across a table', 10,
+    'a clockwork butler arm that pours tea', 45, 'a clockwork cat that purrs when stroked', 25, 'a pair of clockwork knights that duel each other', 18, 'a clockwork band of four tiny frogs', 60,
+    'a clockwork dragon that puffs steam', 40, 'a clockwork fan that spins on its own', 8, 'a clockwork alarm clock that marches across the floor', 14, 'a clockwork spider that dusts the corners', 16,
+    'a clockwork turtle that carries a candle', 9, 'a clockwork fish that swims round a bowl', 11, 'a clockwork spoon that stirs your pot', 4, 'a clockwork nose-picker (it works, sadly)', 2,
+    'a clockwork dog that fetches slippers', 35, 'a clockwork snail that draws chalk spirals', 5, 'a pocket watch with a little dancing figure', 15, 'a clockwork bird that carries notes across a room', 22,
+    'a clockwork rocking horse that gallops in place', 30, 'a clockwork rooster that crows at dawn', 12, 'a wind-up dancing figure', 3, 'a clockwork monkey that claps cymbals', 5,
+    'a clockwork bee that buzzes from flower to flower', 6, 'a clockwork squirrel that cracks nuts', 9, 'a clockwork card dealer', 28, 'a clockwork hand that waves from the window', 4,
+    'a clockwork boot-shiner', 10, 'a clockwork page-turner for reading in bed', 8];
+  var CLOCK_SUPPLIES = ['a spare winding key', 0.2, 'a tin of clock oil', 0.3, 'a bag of springs and cogs', 0.2];
+  var CLOCK_JOBS = ['Wind and oil any clockwork', 0.1, 'Mend a clockwork toy', 1, 'Build a clockwork to order (a week)', 50];
+  var CLOCK_NOW = ['A brass owl on the top shelf swivels its head to watch you come in.', 'Three clockwork mice race each other along the counter and fall off the end. The keeper catches them without looking.',
+    'A tin knight marches to the edge of a table, turns smartly, and marches back.', 'Somewhere behind the counter, forty clocks strike the hour at slightly different times.',
+    'A clockwork frog band is halfway through a jig. The drummer frog is a beat behind.', 'A little brass dog trots up and drops a slipper at your feet.',
+    'A clockwork spider is dusting the ceiling corners in neat spirals.', 'A clockwork rooster crows, though it is nowhere near dawn. The keeper sighs and adjusts it.',
+    'Every ticking thing in the shop goes quiet at once for a moment, then starts again.', 'A clockwork butler arm pours you a cup of tea you didn’t ask for.'];
+  var SKY_KIND = { tableware: 'va', statues: 'va', hides: 'hd', parts: 'hd', materials: 'mt', children: 'j', jars: 'j' };
   var SKY_IN = {
-    'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1], ['ruined', 0, 1]],
+    'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1]],
     Blacksmith: [['materials', 3, 5], ['parts', 0, 1]], Armorer: [['materials', 1, 3], ['hides', 1, 2]], 'Bowyer & fletcher': [['hides', 1, 3], ['parts', 1, 2]],
     Alchemist: [['parts', 2, 4], ['jars', 1, 2]], 'Tailor & outfitter': [['hides', 1, 3], ['children', 0, 2], ['materials', 0, 1]], Stables: [['hides', 0, 2], ['materials', 0, 1], ['parts', 0, 1]],
-    'Tavern & inn': [['tableware', 1, 2], ['ruined', 0, 1]], Temple: [['statues', 0, 2], ['tableware', 0, 1]], Fence: [['tableware', 1, 3], ['statues', 0, 2], ['materials', 0, 1]],
+    'Tavern & inn': [['tableware', 1, 2]], Temple: [['statues', 0, 2], ['tableware', 0, 1]], Fence: [['tableware', 1, 3], ['statues', 0, 2], ['materials', 0, 1]],
     'Tinker & toolmaker': [['materials', 1, 3], ['children', 0, 1]], 'Shipwright & chandler': [['materials', 1, 2], ['hides', 0, 1]], 'Magic shop': [['jars', 0, 1], ['parts', 1, 2], ['statues', 0, 1]]
   };
   function skyRows(shopKind, size, pm) {
@@ -5349,6 +5358,9 @@
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
     rows = rows.concat(everydayRows(shop.kind, size, pm), skyRows(shop.kind, size, pm));
+    var cw = { 'Tinker & toolmaker': [2, 4], 'General store': [0, 1], 'Magic shop': [0, 2] }[shop.kind];
+    if (q && q[0] === 'inventor') cw = [2, 3];
+    if (cw) pickPairs(CLOCKWORK, rint(cw[0], cw[1] + (size >= 3 ? 1 : 0))).forEach(function (p) { add(p, 'cw', 1); });
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
     if (q && Math.random() < 0.5) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); });
     (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
@@ -5416,10 +5428,9 @@
 
   /* ---------- Specialist shops with nothing from the ordinary catalog ---------- */
   var BUGS = ['an ordinary beetle (he insists it isn’t)', 2, 'a ladybird with seven spots, not six', 5, 'a moth whose wings look like a face', 12, 'a jar of fireflies, mating season', 4,
-    'a stag beetle, retired champion fighter', 30, 'a cockroach from a royal kitchen', 15, 'a cricket that chirps in tune', 20, 'a dung beetle and its ball', 8, 'the ball, without the beetle', 1,
-    'a praying mantis, very devout', 35, 'a pinned butterfly the size of a hand', 25, 'a bee that only stings people it dislikes', 14, 'a centipede, all legs accounted for', 7,
+    'a stag beetle, retired champion fighter', 30, 'a cockroach from a royal kitchen', 15, 'a cricket that chirps in tune', 20, 'a dung beetle and its ball', 8, 'a praying mantis, very devout', 35, 'a pinned butterfly the size of a hand', 25, 'a bee that only stings people it dislikes', 14, 'a centipede, all legs accounted for', 7,
     'a spider (“not a bug, I know, I have a licence”)', 5, 'a pill bug that rolls up on command', 3, 'a caterpillar (will become something, he promises)', 10, 'a water strider in a teacup', 6,
-    'a glowworm, slightly dim', 2, 'an ant from a very famous colony', 9, 'a weevil found in a king’s biscuit', 11, 'a beetle that shines like a jewel', 50, 'a jar of fleas (trained)', 18,
+    'a glowworm', 2, 'an ant from a very famous colony', 9, 'a weevil found in a king’s biscuit', 11, 'a beetle that shines like a jewel', 50, 'a jar of fleas (trained)', 18,
     'a mosquito in amber, very old', 60, 'an assassin bug (retired)', 16, 'a grasshopper that once won a jumping contest', 8];
   var CHEESES = ['cow’s cheese, aged a year', 0.5, 'goat’s cheese in ash', 0.6, 'sheep’s cheese, crumbly', 0.6, 'buffalo cheese, soft', 1, 'yak cheese, smoked', 2, 'mare’s milk cheese, sour', 2,
     'camel cheese', 4, 'reindeer cheese', 3, 'donkey cheese (better than you’d think)', 2, 'pig’s cheese (don’t knock it)', 3, 'moose cheese, enormous wheel', 5, 'rothé cheese, very strong', 2,
@@ -5433,6 +5444,10 @@
   var ART_JOBS = ['Sketch while you wait', 1, 'Paint a crest on a shield', 5, 'Miniature portrait in a locket (2 days)', 25, 'Portrait sitting (ready in 3 days)', 50,
     'Group portrait of the party (a week)', 150, 'Marble bust (a month)', 400, 'Life-size statue (a season)', 2500];
   var SPECIAL = {
+    clockwork: function (shop, size, pm) {
+      return pickPairs(CLOCKWORK, rint(12, 18)).map(function (c) { return { n: c[0], k: 'cw', p: niceCp(c[1] * 100 * pm * (0.9 + Math.random() * 0.3)) / 100, q: rint(1, 2) }; })
+        .concat(pairs(CLOCK_SUPPLIES).map(function (c) { return { n: c[0], k: 'cw', p: c[1], q: rint(4, 12) }; }), pairs(CLOCK_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
+    },
     books: function (shop, size, pm) { var rows = collectRows('books', rint(8, 12) + size * 2, pm); return rows.concat(collectRows('display', 1, pm)); },
     trophies: function (shop, size, pm) { return collectRows('trophy', rint(5, 8) + size, pm).concat(collectRows('display', rint(2, 3), pm), collectRows('coin', rint(1, 2), pm)); },
     bugs: function (shop, size, pm) { return pickPairs(BUGS, rint(8, 12)).map(function (b) { return { n: b[0], k: 'bg', p: niceCp(b[1] * 100 * (0.9 + Math.random() * 0.4)) / 100, q: 1 }; }).concat([{ n: 'amber with a bug inside', k: 'bg', p: 8, q: 1 }]); },
@@ -5444,6 +5459,7 @@
   };
   // Some shops have a thing you only learn by asking.
   var SHOP_ASK = {
+    clockwork: ['Ask what it’s all for', 'The keeper looks honestly puzzled. “For? They’re for winding up.” A clockwork frog hops off the counter as if to agree.'],
     cheese: ['Ask what the cheese is made from', 'He goes very still. Then, without a word, he points at a board nailed behind the counter, face to the wall. He turns it round. In big angry letters: “ANY MILK. ANY BEAST. NEVER PEOPLE. STOP ASKING.” He turns it back and goes on cutting cheese.'],
     bugs: ['Ask why the bugs are so expensive', 'He pulls a little card from his waistcoat, already written: “Every bug is unique. So is every customer. Only one of you is rare.” Then he puts the card away and waits.'],
     art: ['Ask if they’d paint you', 'They step back, squint, and frame your face with their thumbs. “Yes. Your left side. Never the right.” They are already reaching for charcoal.']
@@ -5737,6 +5753,7 @@
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
+    if ((ITEMS.shopKinds[shop.kind] || {}).special === 'clockwork') { var cwi = Math.floor(Date.now() / 60000), cnow = [CLOCK_NOW[cwi % CLOCK_NOW.length], CLOCK_NOW[(cwi * 7 + 3) % CLOCK_NOW.length]]; html += '<div class="shop-now"><p class="eyebrow">Right now</p>' + uniq(cnow).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>'; }
     var askKey = (ITEMS.shopKinds[shop.kind] || {}).special || ((ITEMS.trades || {})[shop.trade] || {}).special, ask = askKey && SHOP_ASK[askKey];
     if (ask) html += (ui.shopAsk && ui.shopAsk[shop.id]) ? '<div class="shop-ask open"><p>' + esc(ask[1]) + '</p><button type="button" class="linkish note" data-act="shop-ask" data-id="' + esc(shop.id) + '">Put it away</button></div>'
       : '<button type="button" class="btn small quiet shop-ask-btn" data-act="shop-ask" data-id="' + esc(shop.id) + '">' + esc(ask[0]) + '</button>';
@@ -5797,7 +5814,7 @@
     // The fun shelves fold away under "Browse the shelves" so the useful gear stays easy to find. Specialist shops keep theirs open: it's what they sell.
     var special = !!(ITEMS.shopKinds[shop.kind] || {}).special || !!((ITEMS.trades || {})[shop.trade] || {}).special;
     // The Skyrim effect: everything that makes a shop feel lived in folds here.
-    var FUN = special ? [] : ['mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
+    var FUN = special ? [] : ['cw', 'mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
     var rowHtml = function (g) {
         var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
         var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';

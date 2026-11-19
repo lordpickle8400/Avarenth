@@ -1391,3 +1391,6 @@ body:has(.m-sheet) { overflow: hidden; }
 .browse > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-height: 48px; padding: 12px 0; font-family: var(--ui); font-size: 15px; font-weight: 700; cursor: pointer; }
 .browse > summary .note { font-weight: 400; font-size: 13px; }
 .browse[open] { padding-bottom: 8px; }
+.shop-now { margin: 0 0 14px; padding: 10px 14px; border-left: 2px solid var(--accent); background: var(--soft); }
+.shop-now .eyebrow { margin: 0 0 4px; font-size: 11px; }
+.shop-now p:not(.eyebrow) { margin: 4px 0; font-style: italic; font-size: 16px; }
