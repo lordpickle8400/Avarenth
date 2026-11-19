@@ -1979,49 +1979,84 @@
     html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class" title="' + esc(acNow.how) + '"><span class="k">Armor</span><span class="v">' + acNow.ac + '</span><span class="k">Class</span></div>' +
       csStat('Initiative', signed(init), '') + (sa ? csStat('Spell save', String(8 + pb + sa.mod), 'DC') + csStat('Spell attack', signed(pb + sa.mod), sa.key.toUpperCase()) : '') + '</div>';
     html += conditionHtml(s, can, true);
-    var tabs = (phone ? ['Abilities', 'Skills'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
+    var tabs = (phone ? ['Abilities', 'Skills', 'Profs'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
     var tabName = { Features: 'Features & Traits', Abilities: 'Abilities & Saves' };
     html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
     html += '<div role="tabpanel" class="cs-panel">' + (ui.sheetTab === 'Abilities' ? colA : ui.sheetTab === 'Skills' ? colB : ui.sheetTab === 'Background' ? csBackgroundHtml(c, s, sp0) : sheetTab(c, s, edit, can, abil, pb, perc)) + '</div>';
     html += '</div></div>';
-    if (mob) html = html.slice(0, mark0) + csPhone(c, s, html.slice(mark0), { can: can, abil: abil, pb: pb, init: init, perc: perc, sa: sa, mMax: mMax, hpPct: hpPct, mpPct: mpPct, acNow: acNow, colA: colA, colB: colB, sp0: sp0, tabs: tabs, tabName: tabName });
+    if (mob) { var pre = html.slice(0, mark0), nsm = pre.match(/<div class="next-steps">[\s\S]*?<\/ul><\/div>/); ui.mNext = nsm ? nsm[0] : ''; if (nsm) pre = pre.replace(nsm[0], ''); html = pre + csPhone(c, s, html.slice(mark0), { can: can, abil: abil, pb: pb, init: init, perc: perc, sa: sa, mMax: mMax, hpPct: hpPct, mpPct: mpPct, acNow: acNow, colA: colA, colB: colB, sp0: sp0, tabs: tabs, tabName: tabName }); }
 
     if (edit) html += '<div class="actions" style="justify-content:flex-end"><button type="button" class="btn danger" data-act="delete-char" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again to delete' : 'Delete character') + '</button></div>';
     html += '</div>';
     $view.innerHTML = html;
     var barEl = document.querySelector('header.bar'); if (barEl) document.documentElement.style.setProperty('--bar-h', barEl.offsetHeight + 'px');
   }
-  // Phone sheet, laid out like the D&D Beyond app: a vitals strip that stays put, one section at a time, and a section switcher along the bottom.
+  // Phone sheet, laid out like the D&D Beyond app: a stat card up top, then one section at a time under a header that stays put; the menu button lists every section.
+  var M_ICON = {
+    Abilities: '<path d="M12 3l7 4v6c0 4-3 7-7 8-4-1-7-4-7-8V7z"/>',
+    Skills: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
+    Actions: '<path d="M5 19L19 5M14 5h5v5M5 14l5 5"/>',
+    Inventory: '<path d="M4 8h16v12H4zM8 8V5h8v3M4 13h16"/>',
+    Spells: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>',
+    Features: '<circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16v.5"/>',
+    Profs: '<circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/>',
+    Background: '<path d="M4 20V6l8-3 8 3v14M9 20v-6h6v6"/>',
+    Reputation: '<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>',
+    Record: '<path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"/>',
+    Notes: '<path d="M5 19l1-4L16 5l3 3L9 18zM14 7l3 3"/>'
+  };
+  var M_NAME = { Abilities: 'Abilities, Saves, Senses', Features: 'Features & Traits', Profs: 'Proficiencies & Training' };
+  var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
+  function mIcon(k) { return '<svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true">' + (M_ICON[k] || '') + '</svg>'; }
   function csPhone(c, s, full, o) {
     function cut(a, b) { var i = full.indexOf(a), j = b ? full.indexOf(b, i + 1) : -1; return i < 0 ? '' : full.slice(i, j < 0 ? undefined : j); }
     var ab = cut('<div class="cs-abils">', '<div class="cs-mini">'), mini = cut('<div class="cs-mini">', '<section class="cs-box cs-hp"'),
       hp = cut('<section class="cs-box cs-hp"', '<section class="cs-box cs-mp"'), mp = cut('<section class="cs-box cs-mp"', '<div class="cs-body">');
     mp = mp.replace(/<\/div>\s*$/, '');
-    var cur = num(s.hp.cur, 0), max = num(s.hp.max, 0), tmp = num(s.hp.temp, 0), low = o.hpPct <= 25 ? ' low' : o.hpPct <= 50 ? ' mid' : '';
-    var h = '<div class="m-vitals" role="group" aria-label="Quick stats">' +
-      '<div class="mv mv-ac" title="' + esc(o.acNow.how) + '"><span class="k">AC</span><span class="v">' + o.acNow.ac + '</span></div>' +
-      '<div class="mv"><span class="k">Init</span><span class="v">' + signed(o.init) + '</span></div>' +
-      '<button type="button" class="mv mv-hp' + low + '" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Hit points' + (tmp ? ' <i>+' + tmp + ' temp</i>' : '') + '</span><span class="v">' + cur + '<small>/' + max + '</small></span><span class="mv-bar"><i style="width:' + o.hpPct + '%"></i></span></button>' +
-      (o.mMax > 0 ? '<button type="button" class="mv mv-mp" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Mana</span><span class="v">' + num(s.mana.cur, 0) + '<small>/' + o.mMax + '</small></span><span class="mv-bar"><i style="width:' + o.mpPct + '%"></i></span></button>' : '') +
-      '</div>';
+    var can = o.can, cd = classOf(s), cur = num(s.hp.cur, 0), max = num(s.hp.max, 0), tmp = num(s.hp.temp, 0), low = o.hpPct <= 25 ? ' low' : o.hpPct <= 50 ? ' mid' : '';
+    var conds = s.conditions.filter(function (x) { return CONDITIONS.indexOf(x) >= 0; }).length + (s.exhaustion ? 1 : 0);
+    var who = [s.species, s.cls].filter(Boolean).join(' ');
+    // Name line, like the app's title bar.
+    var h = '<div class="m-head"><div class="m-id"><h1>' + esc(c.name) + '</h1><p>' + esc((who || 'No class yet') + ' ' + num(s.level, 1)) + (s.subclass ? ' · ' + esc(s.subclass) : '') + '</p></div>' +
+      (can && cd && num(s.level, 1) < 20 ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') + '</div>';
+    // The stat card: armor, initiative, inspiration, hit points; then rest, edit, mana and conditions.
+    h += '<div class="m-card"><div class="m-row1">' +
+      '<div class="mc mc-ac" title="' + esc(o.acNow.how) + '"><span class="k">Armor</span><b>' + o.acNow.ac + '</b><span class="k">Class</span></div>' +
+      '<div class="mc mc-init"><b>' + signed(o.init) + '</b><span class="k">Initiative</span></div>' +
+      (can ? '<button type="button" class="mc mc-insp" data-act="inspiration" aria-pressed="' + !!s.inspiration + '"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic<br>inspiration</span></button>'
+        : '<div class="mc mc-insp"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic<br>inspiration</span></div>') +
+      '<button type="button" class="mc mc-hp' + low + '" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Hit points</span><b>' + cur + '<small>/' + max + '</small></b>' + (tmp ? '<span class="mc-tmp">+' + tmp + ' temp</span>' : '<span class="mc-bar"><i style="width:' + o.hpPct + '%"></i></span>') + '</button></div>' +
+      '<div class="m-row2">' +
+      (can ? '<button type="button" class="mc2" data-act="m-rest" aria-expanded="' + !!ui.mRest + '" aria-label="Rest"><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 20l7-14 7 14M12 6v14M9 20l3-5 3 5"/></svg><span>Rest</span></button>' +
+        '<button type="button" class="mc2" data-act="sheet-edit" aria-label="Edit sheet"><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Edit</span></button>' : '') +
+      (o.mMax > 0 ? '<button type="button" class="mc2 mc2-mp" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Mana</span><b>' + num(s.mana.cur, 0) + '<small>/' + o.mMax + '</small></b></button>' : '') +
+      '<button type="button" class="mc2 mc2-cond' + (conds ? ' on' : '') + '" data-act="m-cond" aria-expanded="' + !!ui.mCond + '"><span>Conditions' + (conds ? ' · ' + conds : '') + '</span></button>' +
+      '</div></div>';
+    if (ui.mRest && can) h += '<div class="m-drawer m-rest"><p class="note" style="margin:0">Which rest?</p><div class="actions tight"><button type="button" class="btn small" data-act="short-rest">Short rest</button><button type="button" class="btn small" data-act="long-rest">Long rest</button><button type="button" class="btn small quiet" data-act="m-rest">Cancel</button></div></div>';
     if (ui.mHp) h += '<div class="m-drawer">' + hp + (o.mMax > 0 || (s.mana && s.mana.override) ? mp : '') + '<button type="button" class="btn small m-done" data-act="m-hp">Done</button></div>';
-    var tabs = o.tabs, t = ui.sheetTab, i = tabs.indexOf(t), name = function (k) { return o.tabName[k] || k; };
+    if (ui.mCond) { var co = ui.condOpen; ui.condOpen = true; h += '<div class="m-drawer m-cond">' + conditionHtml(s, can, true) + '<button type="button" class="btn small m-done" data-act="m-cond">Done</button></div>'; ui.condOpen = co; }
+    h += ui.mNext || '';
+    // One section at a time.
+    var tabs = M_ORDER.filter(function (k) { return k !== 'Spells' || o.sa || (s.spells || []).length || o.mMax > 0; }), t = ui.sheetTab;
+    if (tabs.indexOf(t) < 0) t = ui.sheetTab = 'Actions';
+    var name = function (k) { return M_NAME[k] || k; };
+    var spellStats = o.sa ? '<div class="m-trio">' + csStat('Modifier', signed(o.sa.mod), o.sa.key.toUpperCase()) + csStat('Spell attack', signed(o.pb + o.sa.mod), '') + csStat('Save DC', String(8 + o.pb + o.sa.mod), '') + '</div>' : '';
     var body;
-    if (t === 'Abilities') {
-      body = ab + mini + (o.sa ? '<div class="cs-combat m-spellstats">' + csStat('Spell save', String(8 + o.pb + o.sa.mod), 'DC') + csStat('Spell attack', signed(o.pb + o.sa.mod), o.sa.key.toUpperCase()) + '</div>' : '') + conditionHtml(s, o.can, true) + o.colA;
-    } else if (t === 'Skills') body = o.colB;
+    if (t === 'Abilities') body = ab + mini + csSavesHtml(s, o.abil, o.pb, can) + csSensesHtml(s, o.abil, o.pb, o.perc, o.sp0);
+    else if (t === 'Skills') body = o.colB;
+    else if (t === 'Profs') body = '<div class="m-trio m-one">' + csStat('Proficiency bonus', signed(o.pb), '') + '</div>' + csProfsHtml(s, cd, o.sp0);
     else if (t === 'Background') body = csBackgroundHtml(c, s, o.sp0);
-    else body = (t === 'Spells' && o.sa ? '<div class="cs-combat m-spellstats">' + csStat('Spell save', String(8 + o.pb + o.sa.mod), 'DC') + csStat('Spell attack', signed(o.pb + o.sa.mod), o.sa.key.toUpperCase()) + '</div>' : '') +
-      (t === 'Actions' ? conditionHtml(s, o.can, true) : '') + sheetTab(c, s, false, o.can, o.abil, o.pb, o.perc);
-    h += '<section class="m-panel" aria-label="' + esc(name(t)) + '"><h2 class="m-sec">' + esc(name(t)) + '</h2>' + body + '</section>';
-    h += '<nav class="m-nav" aria-label="Sheet sections">' +
-      '<button type="button" class="m-arrow" data-act="sheet-tab" data-tab="' + tabs[(i - 1 + tabs.length) % tabs.length] + '" aria-label="Previous: ' + esc(name(tabs[(i - 1 + tabs.length) % tabs.length])) + '">‹</button>' +
-      '<button type="button" class="m-pick" data-act="m-secs" aria-expanded="' + !!ui.mSecs + '"><span>' + esc(name(t)) + '</span><small>' + (i + 1) + ' of ' + tabs.length + '</small></button>' +
-      '<button type="button" class="m-arrow" data-act="sheet-tab" data-tab="' + tabs[(i + 1) % tabs.length] + '" aria-label="Next: ' + esc(name(tabs[(i + 1) % tabs.length])) + '">›</button></nav>';
-    if (ui.mSecs) h += '<div class="m-secs" role="menu">' + tabs.map(function (k) { return '<button type="button" role="menuitem" data-act="sheet-tab" data-tab="' + k + '"' + (k === t ? ' aria-current="true"' : '') + '>' + esc(name(k)) + '</button>'; }).join('') + '</div>';
+    else body = sheetTab(c, s, false, can, o.abil, o.pb, o.perc);
+    h += '<i class="m-anchor"></i><div class="m-secbar"><span class="m-sname">' + mIcon(t) + esc(name(t)) + '</span><button type="button" class="m-menu" data-act="m-secs" aria-expanded="' + !!ui.mSecs + '" aria-label="All sections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div>';
+    h += '<section class="m-panel" data-tabs="' + tabs.join(',') + '" aria-label="' + esc(name(t)) + '">' + body + '</section>';
+    if (ui.mSecs) h += '<div class="m-secs" role="dialog" aria-modal="true" aria-label="Sections"><div class="m-secs-top"><button type="button" class="m-x" data-act="m-secs" aria-label="Close">✕</button></div><div class="m-secs-list">' +
+      tabs.map(function (k) { return '<button type="button" data-act="sheet-tab" data-tab="' + k + '"' + (k === t ? ' aria-current="true"' : '') + '>' + mIcon(k) + esc(name(k)) + '</button>'; }).join('') + '</div></div>';
     return h;
   }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ui.mSecs) { ui.mSecs = false; render(); } });
+  // After changing section, bring its header to the top if you'd scrolled past it.
+  function mSecTop() { var a = document.querySelector('.m-anchor'), bh = (document.querySelector('header.bar') || {}).offsetHeight || 0; if (!a) return; var y = a.getBoundingClientRect().top + scrollY - bh; if (scrollY > y) window.scrollTo(0, y); }
   // Swipe left or right on a phone sheet to change section.
   (function () {
     var sx = null, sy = 0;
@@ -2029,7 +2064,8 @@
     document.addEventListener('touchend', function (e) {
       if (sx == null) return; var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
       if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
-      var b = document.querySelector('.m-nav .m-arrow:' + (dx < 0 ? 'last-child' : 'first-child')); if (b) b.click();
+      var p = document.querySelector('.m-panel'); if (!p) return; var list = (p.getAttribute('data-tabs') || '').split(','), i = list.indexOf(ui.sheetTab); if (i < 0) return;
+      ui.sheetTab = list[(i + (dx < 0 ? 1 : -1) + list.length) % list.length]; render(); mSecTop();
     }, { passive: true });
   })();
   /* ---------- Character sheet pieces (laid out like the familiar online sheets) ---------- */
@@ -2037,7 +2073,7 @@
   (function () {
     if (!window.matchMedia) return;
     var mq = window.matchMedia('(max-width: 899px)');
-    var on = function () { if (parseRoute().name === 'c') { if (!mq.matches && (ui.sheetTab === 'Abilities' || ui.sheetTab === 'Skills')) ui.sheetTab = 'Actions'; render(); } };
+    var on = function () { if (parseRoute().name === 'c') { if (!mq.matches && (ui.sheetTab === 'Abilities' || ui.sheetTab === 'Skills' || ui.sheetTab === 'Profs')) ui.sheetTab = 'Actions'; render(); } };
     if (mq.addEventListener) mq.addEventListener('change', on); else if (mq.addListener) mq.addListener(on);
   })();
   function initials(n) { return String(n || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') || '?'; }
@@ -9289,8 +9325,10 @@
       case 'newchar': ui.newChar = true; renderCharacters(); var f = document.getElementById('nc-name'); if (f) f.focus(); break;
       case 'newchar-cancel': ui.newChar = false; renderCharacters(); break;
       case 'sheet-edit': ui.sheetEdit = !ui.sheetEdit; ui.pendingDelete = null; render(); break;
-      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); ui.mSecs = false; render(); if (el.closest('.m-nav, .m-secs')) { var mvEl = document.querySelector('.m-vitals'), bh = (document.querySelector('header.bar') || {}).offsetHeight || 0; if (mvEl) window.scrollTo(0, Math.max(0, mvEl.getBoundingClientRect().top + scrollY - bh - 10)); } break;
-      case 'm-hp': ui.mHp = !ui.mHp; ui.mSecs = false; render(); break;
+      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); var fromMenu = !!el.closest('.m-secs'); ui.mSecs = false; render(); if (fromMenu) mSecTop(); break;
+      case 'm-hp': ui.mHp = !ui.mHp; ui.mSecs = false; ui.mCond = false; ui.mRest = false; render(); break;
+      case 'm-cond': ui.mCond = !ui.mCond; ui.mHp = false; ui.mRest = false; render(); break;
+      case 'm-rest': ui.mRest = !ui.mRest; ui.mHp = false; ui.mCond = false; render(); break;
       case 'm-secs': ui.mSecs = !ui.mSecs; render(); break;
       case 'hp': case 'mp':
         if (!c) return;
