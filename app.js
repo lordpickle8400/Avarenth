@@ -2610,11 +2610,26 @@
     var race = fix.race || rweighted(dist.races), sex = fix.sex || (Math.random() < 0.5 ? 'm' : 'f');
     var N = NPCD.names[race] || NPCD.names.Human, first = rpick(sex === 'f' ? N[1] : N[0]), last = rpick(N[2]);
     var age = fix.age || rpick(['young', 'adult', 'adult', 'adult', 'middle-aged', 'middle-aged', 'old']);
+    var job = fix.job || rpick(dist.jobs);
     return {
-      district: dk, race: race, sex: sex, age: age, name: (first + (last ? ' ' + last : '')).trim(), job: fix.job || rpick(dist.jobs),
+      district: dk, race: race, sex: sex, age: age, name: (first + (last ? ' ' + last : '')).trim(), job: job, clock: npcClock(job, race),
       look: rpick(NPCD.look.build) + ', with ' + rpick(NPCD.look.feature) + '; smells of ' + rpick(NPCD.look.smell),
       trait: rpick(NPCD.traits), voice: rpick(NPCD.voices), want: rpick(NPCD.wants), secret: rpick(NPCD.secrets), words: fix.words || ''
     };
+  }
+  // Who owns clockwork: wizards and tinkerers most, then lords and the rich, dwarves and gnomes a little more than most. Never knights or soldiers.
+  var CLOCK_OWNED = { labourer: ['a little clockwork labourer that does their fetching and carrying', 'a clockwork labourer that lights their fires and lamps'],
+    companion: ['a clockwork hound that goes everywhere with them', 'a clockwork cat that sleeps wherever they sit', 'a clockwork owl that fetches their scrolls', 'a clockwork monkey that carries their things', 'a clockwork raven that perches on their shoulder', 'a clockwork fox that trots at their heel'] };
+  function npcClock(job, race) {
+    var j = String(job || '').toLowerCase(), ch;
+    if (/knight|man-at-arms|guard|soldier|warden|sergeant|mercenar|sellsword/.test(j)) return '';
+    if (/wizard|mage|sorcer|alchemist|scholar|astrolog|sage|tinker|clock|artificer|magist/.test(j)) ch = 0.35;
+    else if (/lord|lady|baron|noble|courtier|steward|count/.test(j)) ch = 0.25;
+    else if (/merchant|guild|banker|jewel|goldsmith/.test(j)) ch = 0.1;
+    else ch = 0.02;
+    if (race === 'Gnome' || race === 'Dwarf') ch += 0.08;
+    if (Math.random() >= ch) return '';
+    return rpick(Math.random() < 0.6 ? CLOCK_OWNED.companion : CLOCK_OWNED.labourer);
   }
   function renderNpcs() {
     if (!isDM()) { location.replace('#/map'); return; }
@@ -2629,7 +2644,7 @@
         '<button type="button" class="btn small" data-act="npc-reroll" data-part="name">New name</button></div>' +
         [['look', 'Looks'], ['trait', 'Manner'], ['voice', 'Voice'], ['want', 'Wants'], ['secret', 'Secret']].map(function (p) {
           return '<div class="npc-row"><span class="k">' + p[1] + '</span><span class="v">' + esc(npc[p[0]]) + '</span><button type="button" class="linkish" data-act="npc-reroll" data-part="' + p[0] + '" aria-label="New ' + p[1].toLowerCase() + '">↻</button></div>';
-        }).join('') + (npc.words ? '<div class="npc-row"><span class="k">You said</span><span class="v">' + esc(npc.words) + '</span></div>' : '') +
+        }).join('') + (npc.clock ? '<div class="npc-row"><span class="k">Clockwork</span><span class="v">Owns ' + esc(npc.clock) + '</span></div>' : '') + (npc.words ? '<div class="npc-row"><span class="k">You said</span><span class="v">' + esc(npc.words) + '</span></div>' : '') +
         '<div class="actions"><button type="button" class="btn primary" data-act="npc-save">Save to the wiki</button><button type="button" class="btn" data-act="npc-again">Another like this</button></div>' +
         '<p class="note">Saved NPCs start hidden from the table: the party only sees them once you mark them met.</p></section>';
     }
@@ -2639,7 +2654,7 @@
     var camp = activeCamp(), base = slugify(npc.name), slug = base, n = 2;
     while (articleBySlug(slug)) slug = base + '-' + (n++);
     var row = { title: npc.name, slug: slug, template: 'Character', summary: (npc.age === 'adult' ? '' : npc.age.charAt(0).toUpperCase() + npc.age.slice(1) + ' ') + npc.race + ' ' + npc.job + '.', hidden: false, table_state: 'unknown', campaign_id: camp ? camp.id : null,
-      fields: { Species: npc.race, Age: npc.age, Home: NPCD.districts[npc.district] ? NPCD.districts[npc.district].label : '', Status: 'Alive' },
+      fields: Object.assign({ Species: npc.race, Age: npc.age, Home: NPCD.districts[npc.district] ? NPCD.districts[npc.district].label : '', Status: 'Alive' }, npc.clock ? { Clockwork: 'Owns ' + npc.clock } : {}),
       sections: [{ h: 'Appearance', b: npc.look.charAt(0).toUpperCase() + npc.look.slice(1) + '.' }, { h: 'Personality', b: 'Comes across as ' + npc.trait + '. ' + npc.voice.charAt(0).toUpperCase() + npc.voice.slice(1) + '. Wants ' + npc.want + '.' + (npc.words ? '\n\nFirst described as: ' + npc.words : '') }] };
     sb.from('articles').insert(row).select('id, slug').single().then(function (r) {
       if (r.error) throw r.error;
@@ -3253,7 +3268,7 @@
     else {
       var t = rpick(QUEST_GIVERS[tier]), title = t[f ? 1 : 0];
       if (title === 'CROWN') { who = 'The Crown, by royal summons'; short = 'The Crown'; }
-      else { short = title + ' ' + npc.name.split(' ')[0]; who = title + ' ' + npc.name + ' (' + npc.race + ')'; }
+      else { short = title + ' ' + npc.name.split(' ')[0]; who = title + ' ' + npc.name + ' (' + npc.race + ')'; if (/^(Baron|Baroness|Lord|Lady|Count|Countess|Duke|Duchess|Guildmaster|Guildmistress|Spymaster)$/.test(title) && Math.random() < 0.2) who += ', with ' + rpick(CLOCK_OWNED.companion).replace(/ that .*$/, '') + ' at their side'; }
     }
     var towns = (QUEST_TOWNS[dk] || []).filter(function (x) { return articleByTitle(x); }), town = towns.length ? rpick(towns) : '';
     var fill = function (x) { return String(x).replace(/\{g\}/g, short).replace(/\{p\}/g, town || 'town'); };
@@ -5347,6 +5362,18 @@
 
   function pairs(list) { var out = []; for (var i = 0; i < list.length; i += 2) out.push([list[i], list[i + 1]]); return out; }
   function pickPairs(list, n) { var all = pairs(list), out = []; while (out.length < n && all.length) out.push(all.splice(Math.floor(Math.random() * all.length), 1)[0]); return out; }
+  var KEEPER_CLOCK = { labourer: ['The keeper’s own little clockwork labourer sweeps the floor between customers. It isn’t for sale.', 'A clockwork labourer belonging to the keeper stacks crates in the back. Not for sale.', 'The keeper’s clockwork labourer goes round lighting the lamps.'],
+    companion: ['A clockwork cat belonging to the keeper sleeps on the counter. It is very much not for sale.', 'The keeper’s clockwork hound lies by the door and lifts its head at every customer.', 'A clockwork owl, the keeper’s own, watches from a perch above the till.', 'A clockwork monkey fetches things off the high shelves for the keeper.', 'A clockwork raven fetches scrolls for the keeper from the top shelves.'] };
+  function keeperClock(shop) {
+    if (!shop || !shop.id || shop.kind === 'Clockworks') return '';
+    var h = 0, k = String(shop.id); for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+    var size = shop.place_id ? num((placeOf(shop.place_id) || {}).size, 2) : 1;
+    var ch = { 'Magic shop': 40, 'Tinker & toolmaker': 35, Bookseller: 25, Alchemist: 20, "Artist's studio": 15, Fence: 8 }[shop.kind] || (size >= 3 ? 6 : size >= 2 ? 3 : 1);
+    if (h % 100 >= ch) return '';
+    var comp = shop.kind === 'Magic shop' || size >= 3 ? (h >> 8) % 3 !== 0 : (h >> 8) % 3 === 0, list = comp ? KEEPER_CLOCK.companion : KEEPER_CLOCK.labourer;
+    if (!/Magic shop|Bookseller/.test(shop.kind)) list = list.filter(function (l) { return l.indexOf('scrolls') < 0; });
+    return list[(h >> 12) % list.length];
+  }
   function quirkOf(shop) { return shop && shop.quirk ? QUIRKS.filter(function (q) { return q[0] === shop.quirk; })[0] || null : null; }
   // The flavour rows a fresh stocking adds. Sizes: bigger towns, more of everything.
   function oddsStock(shop, size, priceMod) {
@@ -5755,6 +5782,7 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs">' + (camp ? '<a href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a>' : '') + (place ? ' › <a href="#/a/' + encodeURIComponent(place.slug) + '">' + esc(place.title) + '</a>' : '') + '</p><h1>' + esc(shop.name) + '</h1>' +
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
+    var own = keeperClock(shop); if (own) html += '<p class="shop-quirk own-clock"><span aria-hidden="true">⚙</span> ' + esc(own) + '</p>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
     if ((ITEMS.shopKinds[shop.kind] || {}).special === 'clockwork') { var cwi = Math.floor(Date.now() / 60000), cnow = [CLOCK_NOW[cwi % CLOCK_NOW.length], CLOCK_NOW[(cwi * 7 + 3) % CLOCK_NOW.length]]; html += '<div class="shop-now"><p class="eyebrow">Right now</p>' + uniq(cnow).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>'; }
     var askKey = (ITEMS.shopKinds[shop.kind] || {}).special || ((ITEMS.trades || {})[shop.trade] || {}).special, ask = askKey && SHOP_ASK[askKey];
