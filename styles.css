@@ -1137,3 +1137,6 @@ body.pk-open { overflow: hidden; }
 .notice.gate { border-left: 3px solid var(--accent); }
 .notice.fest { border-left: 3px solid #6aa86a; }
 .recap-head { margin-bottom: 8px; }
+.recap-seg { margin: 8px 0 4px; }
+.recap-list { margin: 0; padding-left: 18px; }
+.recap-list li { margin: 4px 0; }

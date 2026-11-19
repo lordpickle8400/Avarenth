@@ -2697,6 +2697,8 @@
       '<section class="group-box recap-head"><p style="margin:0"><b>' + esc(dayLine(t, today)) + '</b></p><p class="note" style="margin:4px 0 0">' +
       (ses.day != null ? (gap ? gap + (gap === 1 ? ' day' : ' days') + ' since the last session (day ' + from + ').' : 'No days have passed since the session was marked.') : 'No session marked yet; showing the last week.') + ' ' + esc(SEASON_NOTE[seasonOf(t)] || '') + '</p>' +
       '<div class="actions"><button type="button" class="btn primary" data-act="recap-mark" data-camp="' + esc(camp.id) + '">Start today’s session</button></div><p class="note" style="margin:0">Marks today, so next time this page shows what happened after it.</p></section>';
+    html += '<div class="seg wide recap-seg" role="group" aria-label="How to show it"><button type="button" data-act="recap-view" data-v="all" aria-pressed="' + (ui.recapView !== 'day') + '">All together</button><button type="button" data-act="recap-view" data-v="day" aria-pressed="' + (ui.recapView === 'day') + '">Day by day</button></div>';
+    if (ui.recapView === 'day') { html += recapByDay(camp, t, R, from, today); $view.innerHTML = html + '</div>'; return; }
     var sec = function (title, body, n) { return body ? '<section class="block"><h2 class="sec-title">' + title + (n != null ? '<small>' + n + '</small>' : '') + '</h2>' + body + '</section>' : ''; };
     // The world
     var world = '';
@@ -2741,6 +2743,21 @@
     if (quests === null) loadQuests();
     html += sec('Coming up', up);
     $view.innerHTML = html + '</div>';
+  }
+  // The same story, one game day at a time: what the realm did, what happened behind the screen and what the party did.
+  function recapByDay(camp, t, R, from, today) {
+    var html = '', any = false;
+    for (var d = today; d >= Math.max(1, from); d--) {
+      var news = R ? (R.news || []).filter(function (n) { return num(n.day, 0) === d; }) : [], ns = (t.notices || []).filter(function (n) { return num(n.day, 0) === d; });
+      var real = news.filter(function (n) { return !n.petty || n.deed; }), petty = news.length - real.length, hol = calHolidays(dayDate(t, d));
+      var lines = real.map(function (n) { return '<li>' + (n.deed ? '<b>The party:</b> “' + esc(n.text) + '”' : '<b>' + esc(factionName(camp.id, n.fid)) + ':</b> ' + esc(n.text)) + (n.at ? ' <small class="note">' + esc(n.at) + '</small>' : '') + '</li>'; })
+        .concat(ns.map(function (n) { return '<li>' + (n.kind === 'hunters' ? '<b>Bounty hunters caught up:</b> ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) : '<b>' + (n.searched ? 'Searched' : 'Waved through') + ' at ' + esc(midLabel(n.place)) + '</b>' + (n.carriers && n.carriers.length ? ': ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) + ' carrying' : '')) + '</li>'; }));
+      if (petty) lines.push('<li class="note">' + petty + ' bits of petty gossip</li>');
+      if (!lines.length && !hol.length) continue;
+      any = true;
+      html += '<section class="block recap-day"><h2 class="sec-title">Day ' + d + '<small>' + esc(calText(dayDate(t, d), true)) + (hol.length ? ' · ' + esc(hol.join(', ')) : '') + '</small></h2>' + (lines.length ? '<ul class="recap-list">' + lines.join('') + '</ul>' : '<p class="note">Quiet.</p>') + '</section>';
+    }
+    return any ? html : '<div class="empty">Nothing happened in these days.</div>';
   }
   function markSession(campId) {
     var t = travel[campId]; if (!t) return;
@@ -8681,6 +8698,7 @@
     var c = currentChar();
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
     if (act === 'backup') { downloadBackup(); return; }
+    if (act === 'recap-view') { ui.recapView = el.getAttribute('data-v'); render(); return; }
     if (act === 'recap-mark') { markSession(el.getAttribute('data-camp')); return; }
     if (act === 'deed-open') { ui.deedOpen = !ui.deedOpen; render(); return; }
     if (act === 'gate-now') { var gc = el.getAttribute('data-camp'), gt = travel[gc]; if (gt && gt.arrival) { saveNotices(gc, (gt.notices || []).concat([gateCheck(gc, gt.arrival.label, gt.arrival.slug, num(gt.day, 1))])); render(); } return; }
