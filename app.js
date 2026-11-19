@@ -4941,9 +4941,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
-  KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
+  KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -5294,6 +5294,45 @@
     return rows;
   }
 
+  /* ---------- The Skyrim effect: open any shop and it's full of real stuff ----------
+     Tableware worth pocketing, hides and animal parts, raw materials, kids' things and bugs in jars, on top of the odds and ends. */
+  var SKY = {
+    tableware: ['a pewter plate', 0.2, 'a pewter goblet', 0.3, 'a clay jug', 0.05, 'a wooden bowl', 0.02, 'a tin candlestick', 0.2, 'a pewter teapot', 1, 'a silver goblet', 5,
+      'a silver candlestick', 10, 'a silver plate', 8, 'a silver ewer', 15, 'a gold-rimmed goblet', 25, 'a gilded candlestick', 30, 'a set of silver spoons', 6, 'a glass decanter', 3,
+      'a copper kettle', 1, 'an enamelled jewellery box', 12, 'a carved wooden tray', 0.5, 'a painted serving dish', 2],
+    statues: ['a little stone statue of a saint', 8, 'a brass figurine of a horse', 6, 'a soapstone carving of a bear', 4, 'a wooden statuette of a sailor', 3, 'a bronze statuette of a dancer', 20,
+      'a small marble hand', 12, 'a carved ivory bird', 25],
+    hides: ['a rabbit pelt', 0.1, 'a fox pelt', 0.5, 'a wolf pelt', 2, 'a deer hide', 1, 'a goat hide', 0.5, 'a cow hide', 1, 'a bear pelt', 10, 'a snow fox pelt', 3, 'a sabre-cat pelt', 20,
+      'tanned leather (a hide’s worth)', 2, 'leather strips (bundle)', 0.2, 'a sealskin', 3],
+    parts: ['deer antlers', 1, 'goat horns', 0.3, 'boar tusks', 1, 'bear claws', 2, 'wolf teeth (a pouch)', 0.5, 'a ram’s skull', 0.5, 'fish scales (a jar)', 0.1, 'a hawk feather', 0.1,
+      'bone meal (a sack)', 0.2, 'a horse skull', 0.3, 'a snake skin', 0.5, 'a crab shell', 0.1, 'sabre-tooth cat fangs', 5, 'a mammoth tusk', 50, 'troll fat (a jar)', 4, 'a giant’s tooth', 15],
+    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'silver ore (a sack)', 5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a silver ingot', 10, 'a gold ingot', 50,
+      'a sack of coal', 0.2, 'a bag of nails', 0.05, 'iron hinges (pair)', 0.2, 'a lock and hasp', 0.5, 'a pane of glass', 1, 'a bundle of straw', 0.02, 'a lump of clay', 0.02,
+      'a block of quarried stone', 0.1, 'sawn planks (a bundle)', 0.5, 'a bundle of firewood', 0.05, 'a coil of wire', 0.2, 'a jar of glue', 0.1, 'a bolt of linen', 1],
+    children: ['a wooden sword', 0.05, 'a rag doll', 0.05, 'a toy horse', 0.1, 'a hobby horse', 0.2, 'a child’s tunic', 0.2, 'a child’s dress', 0.3, 'a spinning top', 0.02, 'a set of wooden blocks', 0.1,
+      'a child’s bow (blunt arrows)', 0.5, 'a ball of rags', 0.01],
+    jars: ['a moth in a jar', 0.01, 'a butterfly in a jar', 0.01, 'a bee in a jar', 0.01, 'a dragonfly in a jar', 0.02, 'a beetle in a jar', 0.01, 'a glowing bug in a jar', 0.05],
+    ruined: ['a water-damaged book (unreadable)', 0.01, 'a book with half its pages missing', 0.05, 'a bloodied rag', 0, 'a broken lute', 0.2, 'a torn flag', 0.1, 'an empty wine bottle', 0.01, 'a ruined map', 0.01]
+  };
+  var SKY_KIND = { tableware: 'va', statues: 'va', hides: 'hd', parts: 'hd', materials: 'mt', children: 'j', jars: 'j', ruined: 'j' };
+  var SKY_IN = {
+    'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1], ['ruined', 0, 1]],
+    Blacksmith: [['materials', 3, 5], ['parts', 0, 1]], Armorer: [['materials', 1, 3], ['hides', 1, 2]], 'Bowyer & fletcher': [['hides', 1, 3], ['parts', 1, 2]],
+    Alchemist: [['parts', 2, 4], ['jars', 1, 2]], 'Tailor & outfitter': [['hides', 1, 3], ['children', 0, 2], ['materials', 0, 1]], Stables: [['hides', 0, 2], ['materials', 0, 1], ['parts', 0, 1]],
+    'Tavern & inn': [['tableware', 1, 2], ['ruined', 0, 1]], Temple: [['statues', 0, 2], ['tableware', 0, 1]], Fence: [['tableware', 1, 3], ['statues', 0, 2], ['materials', 0, 1]],
+    'Tinker & toolmaker': [['materials', 1, 3], ['children', 0, 1]], 'Shipwright & chandler': [['materials', 1, 2], ['hides', 0, 1]], 'Magic shop': [['jars', 0, 1], ['parts', 1, 2], ['statues', 0, 1]]
+  };
+  function skyRows(shopKind, size, pm) {
+    var rows = [];
+    (SKY_IN[shopKind] || []).forEach(function (g) {
+      pickPairs(SKY[g[0]], rint(g[1], g[2] + (size >= 3 ? 1 : 0))).forEach(function (p) {
+        var cheap = p[1] < 1, bulk = g[0] === 'materials' || g[0] === 'hides' || g[0] === 'parts' || g[0] === 'jars';
+        rows.push({ n: p[0], k: SKY_KIND[g[0]], p: Math.max(0.01, niceCp(p[1] * 100 * pm * (0.85 + Math.random() * 0.3)) / 100), q: bulk ? rint(cheap ? 3 : 1, cheap ? 12 : 4) : rint(1, 2) });
+      });
+    });
+    return rows;
+  }
+
   function pairs(list) { var out = []; for (var i = 0; i < list.length; i += 2) out.push([list[i], list[i + 1]]); return out; }
   function pickPairs(list, n) { var all = pairs(list), out = []; while (out.length < n && all.length) out.push(all.splice(Math.floor(Math.random() * all.length), 1)[0]); return out; }
   function quirkOf(shop) { return shop && shop.quirk ? QUIRKS.filter(function (q) { return q[0] === shop.quirk; })[0] || null : null; }
@@ -5309,7 +5348,7 @@
     if (q || K.fence || shop.kind === 'Magic shop' || size >= 3 && Math.random() < 0.4) pickPairs(CURIOS, q ? rint(2, 4) : rint(1, 2)).forEach(function (p) { add(p, 'cu', 1); });
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
-    rows = rows.concat(everydayRows(shop.kind, size, pm));
+    rows = rows.concat(everydayRows(shop.kind, size, pm), skyRows(shop.kind, size, pm));
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
     if (q && Math.random() < 0.5) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); });
     (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
@@ -5757,7 +5796,8 @@
     var blocked = c ? recogMult(shop, c).blocked : false;
     // The fun shelves fold away under "Browse the shelves" so the useful gear stays easy to find. Specialist shops keep theirs open: it's what they sell.
     var special = !!(ITEMS.shopKinds[shop.kind] || {}).special || !!((ITEMS.trades || {})[shop.trade] || {}).special;
-    var FUN = special ? [] : ['mm', 'bk', 'co', 'an', 'cu', 'j'], funHtml = '', funRows = [];
+    // The Skyrim effect: everything that makes a shop feel lived in folds here.
+    var FUN = special ? [] : ['mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
     var rowHtml = function (g) {
         var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
         var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';
@@ -5780,7 +5820,7 @@
     if (funRows.length) {
       // Three things to describe as they walk in. Picked the same way until the shelves change, so it doesn't jump about.
       var seed = 0, key = shop.id + ':' + (shop.stock_day || '') + ':' + funRows.length; for (var si = 0; si < key.length; si++) seed = (seed * 31 + key.charCodeAt(si)) >>> 0;
-      var odd = funRows.filter(function (g) { return g.row.k !== 'j' && !/eggs \(|a tin of|a jar of crickets|a hen\b/.test(g.row.n); }), pool = (odd.length >= 3 ? odd : funRows).slice(), eye = [];
+      var odd = funRows.filter(function (g) { return g.row.k !== 'j' && g.row.k !== 'mt' && !/eggs \(|a tin of|a jar of crickets|a hen\b/.test(g.row.n); }), pool = (odd.length >= 3 ? odd : funRows).slice(), eye = [];
       while (eye.length < 3 && pool.length) { seed = (seed * 1103515245 + 12345) >>> 0; eye.push(pool.splice(seed % pool.length, 1)[0]); }
       html += '<div class="eye"><h3 class="kind-h">What catches your eye</h3><div class="tbl">' + eye.map(rowHtml).join('') + '</div></div>';
       html += '<details class="browse"' + (ui.browseOpen && ui.browseOpen[shop.id] ? ' open' : '') + ' data-browse="' + esc(shop.id) + '"><summary>Browse the shelves <span class="note">' + funRows.length + ' odds, ends and oddities</span></summary>' + funHtml + '</details>';
