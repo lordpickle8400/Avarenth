@@ -5670,13 +5670,12 @@
     if (!P) { if (box) box.remove(); document.body.classList.remove('modal-open'); return; }
     if (!box) { box = document.createElement('div'); box.id = 'day-prompt'; box.className = 'ask-wrap'; document.body.appendChild(box); }
     document.body.classList.add('modal-open');
-    var campId = P.campId, t = travel[campId], w = P.step, st = watchState(campId, w), chars = campaignChars(campId);
+    var campId = P.campId, t = travel[campId], w = P.step, st = watchState(campId, w);
     var when = w === 'night' ? 'The night of ' + dateShort(t, t.day) : 'The day: ' + dateShort(t, t.day + 1);
     var auto = autoRegion(campId), pick = (ui.regionPick || {})[campId] || '';
     box.innerHTML = '<div class="ask day-ask" role="dialog" aria-modal="true" aria-labelledby="dp-h">' +
       '<p class="eyebrow" style="margin:0 0 4px;font-size:11px">' + (w === 'night' ? 'Step 1 of 2' : 'Step 2 of 2') + '</p>' +
       '<h2 id="dp-h">' + (w === 'night' ? 'Night roll' : 'Day roll') + '</h2><p class="note" style="margin:0 0 10px">' + esc(when) + '. Rolled at the table: a d20 for how it goes (1 disaster, 5 or less bad, 15 or more good, 20 legendary), then a d100 for what happens.</p>' +
-      '<div class="field"><label for="dp-who">Who rolls</label><select id="dp-who" data-dp="who"><option value="">Someone</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === st.who ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div>' +
       '<div class="two"><div class="field"><label for="dp-d20">d20</label><input class="input dp-big" type="number" id="dp-d20" min="1" max="20" inputmode="numeric" value="' + esc(st.d20) + '" data-dp="d20"></div>' +
       '<div class="field"><label for="dp-d100">d100</label><input class="input dp-big" type="number" id="dp-d100" min="1" max="100" inputmode="numeric" value="' + esc(st.d100) + '" data-dp="d100"></div></div>' +
       '<div class="field"><label for="dp-region">Where they are</label><select id="dp-region" data-dp="region"><option value="">' + esc(auto ? 'From the map: ' + REGION_LABEL[auto] : 'Not sure: all-isles lists') + '</option>' +
@@ -5708,8 +5707,8 @@
     var P = ui.dayPrompt, campId = P.campId, t = travel[campId], day = num(t.day, 1);
     ui.dayPrompt = null; drawDayPrompt();
     var rows = [['night', day], ['day', day + 1]].filter(function (x) { return P.done[x[0]]; }).map(function (x) {
-      var d = P.done[x[0]], who = d.who ? charById(d.who) : null;
-      return { campaign_id: campId, day: x[1], miles: 0, food_used: 0, map_id: t.map_id || null, text: (x[0] === 'day' ? 'Day' : 'Night') + (who ? ' (' + who.name + ' rolled ' + d.r.d20 + ')' : ' (rolled ' + d.r.d20 + ')') + ': ' + String(d.r.text).split(' Play: ')[0] };
+      var d = P.done[x[0]];
+      return { campaign_id: campId, day: x[1], miles: 0, food_used: 0, map_id: t.map_id || null, text: (x[0] === 'day' ? 'Day' : 'Night') + ' (rolled ' + d.r.d20 + ')' + ': ' + String(d.r.text).split(' Play: ')[0] };
     });
     var go = function () { rememberMapScroll(); nextDay(campId); };
     if (!rows.length) return go();
