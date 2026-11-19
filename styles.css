@@ -1381,3 +1381,6 @@ body:has(.m-sheet) { overflow: hidden; }
 .back-room { border: 1px dashed color-mix(in srgb, var(--accent) 50%, var(--line)); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
 .back-room.locked .note { font-style: italic; }
 .back-tag { margin-left: 6px; font-size: 9.5px; padding: 1px 6px; vertical-align: 2px; color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
+.shop-ask-btn { margin: 0 0 14px; }
+.shop-ask { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, var(--bg)); }
+.shop-ask p { margin: 0 0 6px; font-size: 16px; line-height: 1.5; }

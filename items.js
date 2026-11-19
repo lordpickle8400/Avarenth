@@ -124,7 +124,11 @@
     'Magic shop': { kinds: ['fo'], tags: ['magic'], extra: ['Ink (1 ounce bottle)', 'Ink pen', 'Parchment (one sheet)', 'Book'], about: 'Foci, components and potions.' },
     'Tinker & toolmaker': { kinds: ['t', 'k', 'gm', 'i'], extra: ['Lock', 'Abacus', 'Hourglass', 'Magnifying glass', 'Merchant\'s scale'], about: 'Tools, kits, locks and instruments.' },
     'Wandering merchant': { wander: true, about: 'On the road with whatever he picked up: oddities, curiosities and a few useful things. Different every time you meet him.' },
-    'Fence': { kinds: ['x', 'k', 'sw', 'mw', 'rw', 'g', 'p', 'la'], fence: true, about: 'Stolen goods and things the law won\'t sell. Never asks your name.' }
+    'Fence': { kinds: ['x', 'k', 'sw', 'mw', 'rw', 'g', 'p', 'la'], fence: true, about: 'Stolen goods and things the law won\'t sell. Never asks your name.' },
+    'Bookseller': { kinds: [], special: 'books', about: 'Books, sets of books to collect, and shelves to keep them on.' },
+    'Trophy hall': { kinds: [], special: 'trophies', about: 'Monster trophies, mounted heads, old coins and cases to show them off.' },
+    'Cheesemaker': { kinds: [], special: 'cheese', about: 'Cheese from any milk you can name.' },
+    'Artist\'s studio': { kinds: [], special: 'art', about: 'Paintings, sculptures and portraits to order.' }
   };
 
   // What a place's tags do to its shops.
@@ -145,6 +149,7 @@
   // Wandering merchants: who they are and what they sell. "base" borrows a shop kind's stock; "extra" adds named items;
   // "odd" is how many oddities they carry (min, max). A trade with no base sells oddities plus a few useful things.
   var TRADES = {
+    'Bug dealer': { special: 'bugs', unique: true, about: 'Insects, each one rare, each one priced like it.' },
     'Curio dealer': { odd: [5, 9], about: 'Oddities, curiosities and whatever caught his eye on the road.' },
     'Tome seller': { extra: ['Book', 'Spellbook (blank)', 'Ink (1 ounce bottle)', 'Ink pen', 'Paper (one sheet)', 'Parchment (one sheet)', 'Map or scroll case', 'Sealing wax', 'Calligrapher\'s supplies', 'Book of truly terrible poetry', 'Map to a place that may not exist', 'Half a treasure map'], odd: [0, 2], about: 'Books, paper, ink and the odd strange map.' },
     'Wandering blacksmith': { base: 'Blacksmith', odd: [0, 1], about: 'A forge on wheels: blades, tools and repairs.' },

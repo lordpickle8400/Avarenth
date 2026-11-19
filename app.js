@@ -4941,8 +4941,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
+  KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -4999,6 +5000,7 @@
     function pick(list, n) { list = list.slice(); var out = []; while (list.length && out.length < n) out.push(list.splice(Math.floor(Math.random() * list.length), 1)[0]); return out; }
     var odd = ITEMS.items.filter(function (it) { return it.kind === 'z'; });
     var T = (ITEMS.trades || {})[(shop && shop.trade) || ''] || null;
+    if (T && T.special && SPECIAL[T.special]) return SPECIAL[T.special](shop, 2, 1);
     if (T && (T.base || T.extra)) {
       var rows = [];
       if (T.base) rows = stockFor({ kind: T.base, place_id: null }).filter(function (r) { return r.k !== 's' && r.k !== 'z'; });
@@ -5007,6 +5009,7 @@
         rows.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.85 + Math.random() * 0.4) * 100) / 100, q: it.kind === 'z' ? 1 : rint(1, 3) });
       });
       rows = pick(rows, Math.min(rows.length, rint(6, 12)));
+      if (shop && shop.trade === 'Tome seller') rows = rows.concat(collectRows('books', rint(4, 7), 1));
       rows.forEach(function (r) { if (r.q && r.q > 3) r.q = rint(1, 3); });
       var on = T.odd || [0, 1];
       pick(odd.filter(function (it) { return !rows.some(function (r) { return r.n === it.name; }); }), rint(on[0], on[1])).forEach(function (it) { rows.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.6 + Math.random() * 1.2) * 100) / 100, q: 1 }); });
@@ -5016,6 +5019,7 @@
     var out = [];
     pick(odd, rint(5, 9)).forEach(function (it) { out.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.6 + Math.random() * 1.2) * 100) / 100, q: 1 }); });
     pick(useful, rint(3, 7)).forEach(function (it) { out.push({ n: it.name, k: it.kind, p: niceCp(it.price * (0.8 + Math.random() * 0.8) * 100) / 100, q: rint(1, 3) }); });
+    if (shop && shop.trade === 'Curio dealer') out = out.concat(collectRows('trophy', rint(1, 3), 1), collectRows('coin', rint(0, 2), 1), collectRows('natural', rint(1, 2), 1));
     return out;
   }
   function isWanderer(shop) { return !!(ITEMS.shopKinds[shop.kind] || {}).wander; }
@@ -5024,7 +5028,7 @@
   function aAn(w) { return /^[aeiou]/i.test(w) ? 'an' : 'a'; }
   function randomWanderer(campId) {
     var races = ITEMS.wanderRaces || { Human: ['Aldous'] }, race = rpick(Object.keys(races)), name = rpick(races[race]);
-    var trade = rpick(Object.keys(ITEMS.trades || { 'Curio dealer': {} })), quirk = rpick(ITEMS.quirks || ['']);
+    var trade = rpick(Object.keys(ITEMS.trades || { 'Curio dealer': {} }).filter(function (k) { return !ITEMS.trades[k].unique; })), quirk = rpick(ITEMS.quirks || ['']);
     var row = { campaign_id: campId, kind: 'Wandering merchant', trade: trade, saved: false, watch: 0,
       name: name + '\u2019s ' + rpick(['Cart', 'Wagon', 'Wares', 'Pack', 'Stall', 'Caravan', 'Goods']),
       keeper: name + ', ' + aAn(race) + ' ' + race.toLowerCase() + ' ' + trade.toLowerCase(), notes: quirk, stocked_at: new Date().toISOString() };
@@ -5254,13 +5258,109 @@
     if (q || K.fence || shop.kind === 'Magic shop' || size >= 3 && Math.random() < 0.4) pickPairs(CURIOS, q ? rint(2, 4) : rint(1, 2)).forEach(function (p) { add(p, 'cu', 1); });
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
-    var seen = {}; return rows.filter(function (r) { if (seen[r.n]) return false; seen[r.n] = 1; return true; });
+    (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
+    if (q && q[0] === 'dusty') rows = rows.concat(collectRows('books', 2, pm), collectRows('trophy', 1, pm), collectRows('coin', 1, pm));
+    return mergeRows(rows);
   }
+
+  /* ---------- Things worth collecting: books in sets, monster trophies, coins, figurines, art ---------- */
+  // Book series: collect every volume. [series, [volume titles], price each]
+  var BOOK_SERIES = [
+    ['A Field Guide to Beasts', ['Vol. I: Of the Field', 'Vol. II: Of the Forest', 'Vol. III: Of the Deep', 'Vol. IV: Of the Mountain', 'Vol. V: Of the Night'], 12],
+    ['The Lusty Shepherdess', ['Vol. I', 'Vol. II', 'Vol. III', 'Vol. IV'], 8],
+    ['The Six Knights', ['Vol. I: The Oath', 'Vol. II: The Bridge', 'Vol. III: The Winter Siege', 'Vol. IV: The Traitor', 'Vol. V: The Long Ride', 'Vol. VI: The Last Knight'], 10],
+    ['The Hedge Wizard’s Almanac', ['for the Year of Rain', 'for the Year of the Long Frost', 'for the Year of the Red Comet', 'for the Year of Many Frogs'], 3],
+    ['Cooking with Fire', ['Book One: Meat', 'Book Two: Bread', 'Book Three: Things That Shouldn’t Be Cooked'], 6],
+    ['Letters of a Lighthouse Keeper', ['Spring', 'Summer', 'Autumn', 'Winter'], 5],
+    ['The Thief Who Wasn’t', ['Part One', 'Part Two', 'Part Three'], 7]
+  ];
+  var BOOKS = ['On the Proper Care of Swords', 6, 'A Treatise on Bridges', 8, 'Ninety-Nine Uses for a Dead Rat', 2, 'The Gentle Art of Haggling', 5, 'The Collected Insults of a Dwarven Grandmother', 4,
+    'Herbs That Will Kill You', 10, 'Sea Shanties, Clean and Otherwise', 3, 'A Child’s First Book of Monsters', 2, 'How to Speak to Cats', 3, 'The Honest Thief, a memoir', 6,
+    'Prayers for Bad Weather', 2, 'Riddles for Dark Places', 4, 'A Brief History of Cheese', 3, 'Knots, and How to Untie Them', 3, 'The Duellist’s Handbook', 12,
+    'An Atlas of Imaginary Islands', 15, 'The Book of Lost Recipes', 9, 'Ghost Stories for Long Nights', 4, 'Beekeeping for the Brave', 5, 'The Art of the Siege', 20,
+    'Poems Written in Prison', 6, 'Etiquette at Court, Revised', 8, 'A Dictionary of Goblin Swears', 7, 'Wild Mushrooms: Which Ones', 6, 'The Stars and Their Names', 14];
+  var BOOK_RARE = [['signed by the author', 5], ['first printing', 3], ['illuminated', 8], ['bound in dragon leather (probably cow)', 2]];
+  // Monster trophies: proof you were there, or that someone was.
+  var TROPHIES = ['a troll skull', 75, 'an ogre’s tooth', 15, 'an owlbear beak', 60, 'a manticore tail spike', 120, 'a wyvern stinger, drained', 150, 'a griffon feather', 40,
+    'a basilisk eye in a glass jar', 200, 'a hydra tooth', 180, 'a giant spider fang', 25, 'a harpy talon', 20, 'a minotaur horn', 90, 'a bulette armour plate', 250,
+    'a dragon wyrmling’s tooth', 400, 'a kraken sucker the size of a plate', 120, 'a dire wolf pelt', 50, 'a cave bear claw necklace', 30, 'a gorgon scale', 300,
+    'a cockatrice feather', 35, 'an ankheg mandible', 45, 'a giant’s knucklebone', 70, 'a displacer beast hide', 500, 'a purple worm tooth', 800, 'a hag’s fingernail', 60,
+    'a wight’s iron crown', 150, 'a mounted boar head', 30, 'a mounted stag head', 25];
+  var DISPLAY = ['a skull display stand', 2, 'a glass display case', 15, 'an engraved trophy plaque', 5, 'a book stand', 1, 'a wall shelf for curios', 3];
+  var COINS = ['a coin from a kingdom that no longer exists', 5, 'a misstruck coin with two heads', 15, 'a war medal for bravery', 20, 'a silver guild token', 8,
+    'a tourney champion’s badge', 25, 'a gold coronation coin', 40, 'a pirate’s doubloon, holed for a necklace', 12, 'a copper coin bent by a famous strongman', 3];
+  var FIGURES = ['the King', 'the Queen', 'the Knight', 'the Archer', 'the Spearman', 'the Banner-bearer', 'the Drummer', 'the Traitor'];
+  var NATURAL = ['amber with a bug inside', 30, 'a geode, cracked open', 10, 'a fossil shell', 5, 'a fossil fern', 8, 'a chunk of fallen star', 25, 'a pearl of a strange colour', 60,
+    'a pressed flower from a mountaintop', 5, 'an antique sea chart', 30, 'a star chart in a brass tube', 15, 'a map of the world as people once believed it', 40];
+  function bookRow(pm) {
+    var name, price;
+    if (Math.random() < 0.55) { var sr = rpick(BOOK_SERIES), v = Math.floor(Math.random() * sr[1].length); name = sr[0] + ', ' + sr[1][v] + ' (' + (v + 1) + ' of ' + sr[1].length + ')'; price = sr[2]; }
+    else { var b = rpick(pairs(BOOKS)); name = b[0]; price = b[1]; }
+    if (Math.random() < 0.08) { var rr = rpick(BOOK_RARE); name += ', ' + rr[0]; price *= rr[1]; }
+    return { n: name, k: 'bk', p: niceCp(price * 100 * pm * (0.85 + Math.random() * 0.3)) / 100, q: 1 };
+  }
+  // Two of the same thing on a shelf is one row with two in stock.
+  function mergeRows(rows) { var by = {}, out = []; rows.forEach(function (r) { var k = r.n.toLowerCase(); if (by[k]) { if (by[k].q != null) by[k].q += num(r.q, 1); } else { by[k] = r; out.push(r); } }); return out; }
+  function collectRows(kind, n, pm) {
+    var rows = [], add = function (pair, k) { rows.push({ n: pair[0], k: k, p: niceCp(pair[1] * 100 * pm * (0.85 + Math.random() * 0.3)) / 100, q: 1 }); };
+    for (var i = 0; i < n; i++) {
+      if (kind === 'books') rows.push(bookRow(pm));
+      else if (kind === 'trophy') add(rpick(pairs(TROPHIES)), 'co');
+      else if (kind === 'coin') add(rpick(pairs(COINS)), 'co');
+      else if (kind === 'figure') rows.push({ n: 'a carved soldier: ' + rpick(FIGURES) + ' (one of eight)', k: 'co', p: 2, q: rint(1, 2) });
+      else if (kind === 'natural') add(rpick(pairs(NATURAL)), 'co');
+      else if (kind === 'display') add(rpick(pairs(DISPLAY)), 'co');
+    }
+    return mergeRows(rows);
+  }
+  // Where collectibles turn up in ordinary shops.
+  var COLLECT_IN = {
+    'General store': [['books', 0, 2], ['figure', 0, 1]], Temple: [['books', 0, 2]], 'Magic shop': [['books', 1, 3], ['trophy', 1, 2], ['natural', 0, 2]],
+    Fence: [['trophy', 1, 2], ['coin', 1, 2], ['books', 0, 1]], 'Tavern & inn': [['trophy', 0, 1]], Blacksmith: [['coin', 0, 1]], Armorer: [['coin', 0, 1], ['trophy', 0, 1]],
+    'Bowyer & fletcher': [['trophy', 0, 2]], 'Tinker & toolmaker': [['figure', 0, 2], ['natural', 0, 1]], 'Shipwright & chandler': [['natural', 0, 2], ['coin', 0, 1]],
+    'Tailor & outfitter': [['coin', 0, 1]], Alchemist: [['natural', 0, 1], ['books', 0, 1]]
+  };
+
+  /* ---------- Specialist shops with nothing from the ordinary catalog ---------- */
+  var BUGS = ['an ordinary beetle (he insists it isn’t)', 25, 'a ladybird with seven spots, not six', 80, 'a moth whose wings look like a face', 150, 'a jar of fireflies, mating season', 60,
+    'a stag beetle, retired champion fighter', 400, 'a cockroach from a royal kitchen', 250, 'a cricket that chirps in tune', 300, 'a dung beetle and its ball', 120, 'the ball, without the beetle', 20,
+    'a praying mantis, very devout', 500, 'a pinned butterfly the size of a hand', 350, 'a bee that only stings people it dislikes', 220, 'a centipede, all legs accounted for', 99,
+    'a spider (“not a bug, I know, I have a licence”)', 75, 'a pill bug that rolls up on command', 45, 'a caterpillar (will become something, he promises)', 200, 'a water strider in a teacup', 90,
+    'a glowworm, slightly dim', 40, 'an ant from a very famous colony', 150, 'a weevil found in a king’s biscuit', 180, 'a beetle that shines like a jewel', 650, 'a jar of fleas (trained)', 300,
+    'a mosquito in amber, very old', 900, 'an assassin bug (retired)', 275, 'a grasshopper that once won a jumping contest', 130];
+  var CHEESES = ['cow’s cheese, aged a year', 0.5, 'goat’s cheese in ash', 0.6, 'sheep’s cheese, crumbly', 0.6, 'buffalo cheese, soft', 1, 'yak cheese, smoked', 2, 'mare’s milk cheese, sour', 2,
+    'camel cheese', 4, 'reindeer cheese', 3, 'donkey cheese (better than you’d think)', 2, 'pig’s cheese (don’t knock it)', 3, 'moose cheese, enormous wheel', 5, 'rothé cheese, very strong', 2,
+    'giant goat cheese', 6, 'mammoth cheese, by the slab', 25, 'owlbear cheese (he won’t say how he milked it)', 40, 'dire wolf cheese', 30, 'whale cheese (“sea cheese”)', 50,
+    'bat cheese, a wheel the size of a coin', 15, 'cat cheese (the cats did not agree to this)', 8, 'displacer beast cheese (never quite where you put it)', 120, 'a cheese board, oak', 1,
+    'a cheese knife, very sharp', 0.5, 'a cheese of the week (ask)', 1, 'cheese wax, by the block', 0.1];
+  var ART = ['a seascape in a storm', 40, 'a still life of fruit and a skull', 25, 'a portrait of a stranger nobody can place', 30, 'a painting of the studio cat in armour', 15,
+    'a battle scene, very dramatic', 120, 'a landscape at dawn', 50, 'a miniature portrait in a locket', 20, 'a study of hands', 10, 'a painting of a ship that never came home', 60,
+    'a marble bust of an unknown hero', 150, 'a bronze horse, rearing', 200, 'a clay figurine of a dancing goat', 5, 'a carved wooden owl', 8, 'a small stone gargoyle', 30,
+    'a plaster cast of the artist’s own face', 10, 'a statue of a weeping maiden, knee-high', 90, 'a tapestry of a hunt', 140];
+  var ART_JOBS = ['Sketch while you wait', 1, 'Paint a crest on a shield', 5, 'Miniature portrait in a locket (2 days)', 25, 'Portrait sitting (ready in 3 days)', 50,
+    'Group portrait of the party (a week)', 150, 'Marble bust (a month)', 400, 'Life-size statue (a season)', 2500];
+  var SPECIAL = {
+    books: function (shop, size, pm) { var rows = collectRows('books', rint(8, 12) + size * 2, pm); return rows.concat(collectRows('display', 1, pm)); },
+    trophies: function (shop, size, pm) { return collectRows('trophy', rint(5, 8) + size, pm).concat(collectRows('display', rint(2, 3), pm), collectRows('coin', rint(1, 2), pm)); },
+    bugs: function (shop, size, pm) { return pickPairs(BUGS, rint(8, 12)).map(function (b) { return { n: b[0], k: 'bg', p: niceCp(b[1] * 100 * (0.9 + Math.random() * 0.4)) / 100, q: 1 }; }).concat([{ n: 'amber with a bug inside', k: 'bg', p: 95, q: 1 }]); },
+    cheese: function (shop, size, pm) { return pickPairs(CHEESES, rint(12, 18)).map(function (c) { return { n: c[0], k: 'ch', p: niceCp(c[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: c[1] >= 20 ? rint(1, 2) : rint(2, 8) }; }); },
+    art: function (shop, size, pm) {
+      return pickPairs(ART, rint(6, 9)).map(function (a) { return { n: a[0], k: 'art', p: niceCp(a[1] * 100 * pm * (0.85 + Math.random() * 0.4)) / 100, q: 1 }; })
+        .concat(pairs(ART_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
+    }
+  };
+  // Some shops have a thing you only learn by asking.
+  var SHOP_ASK = {
+    cheese: ['Ask what the cheese is made from', 'He goes very still. Then, without a word, he points at a board nailed behind the counter, face to the wall. He turns it round. In big angry letters: “ANY MILK. ANY BEAST. NEVER PEOPLE. STOP ASKING.” He turns it back and goes on cutting cheese.'],
+    bugs: ['Ask why the bugs are so expensive', 'He pulls a little card from his waistcoat, already written: “Every bug is unique. So is every customer. Only one of you is rare.” Then he puts the card away and waits.'],
+    art: ['Ask if they’d paint you', 'They step back, squint, and frame your face with their thumbs. “Yes. Your left side. Never the right.” They are already reaching for charcoal.']
+  };
 
   function stockFor(shop) {
     var K = ITEMS.shopKinds[shop.kind] || ITEMS.shopKinds['General store'];
     if (K.wander) return wanderStock(shop);
     var p = shop.place_id ? placeOf(shop.place_id) : { size: 2, tags: [], price_mod: 1 };
+    if (K.special && SPECIAL[K.special]) { if (shop.id && shop.quirk == null) shop.quirk = ''; return mergeRows(SPECIAL[K.special](shop, Math.max(0, Math.min(4, num(p.size, 2))), fnum(p.price_mod, 1))); }
     var size = Math.max(0, Math.min(4, num(p.size, 2))), eff = size + (hasTag(p, 'trade') ? 1 : 0);
     var armed = hasTag(p, 'forge') || hasTag(p, 'military');
     var out = [];
@@ -5544,6 +5644,9 @@
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
+    var askKey = (ITEMS.shopKinds[shop.kind] || {}).special || ((ITEMS.trades || {})[shop.trade] || {}).special, ask = askKey && SHOP_ASK[askKey];
+    if (ask) html += (ui.shopAsk && ui.shopAsk[shop.id]) ? '<div class="shop-ask open"><p>' + esc(ask[1]) + '</p><button type="button" class="linkish note" data-act="shop-ask" data-id="' + esc(shop.id) + '">Put it away</button></div>'
+      : '<button type="button" class="btn small quiet shop-ask-btn" data-act="shop-ask" data-id="' + esc(shop.id) + '">' + esc(ask[0]) + '</button>';
     if (shop.notes) html += '<div class="prose">' + rich(shop.notes) + '</div>';
     var shRm = realmMapOf(shop.campaign_id); if (shRm && !markers[shRm.id] && !renderShop.mk) { renderShop.mk = true; loadMarkers(shRm.id).then(function () { renderShop.mk = false; render(); }); }
     var shTr = shopTrouble(shop); if (shTr.length) html += '<p class="note shop-news">Trouble nearby (' + esc(uniq(shTr.map(function (n) { return factionName(shop.campaign_id, n.fid); })).join(', ')) + '): prices are up ' + Math.round((realmPriceMult(shop) - 1) * 100) + '% for anyone at the counter.</p>';
@@ -9506,6 +9609,7 @@
         ui.filters[el.getAttribute('data-scope')] = el.getAttribute('data-group');
         go(el.getAttribute('data-target') || '#/wiki'); break;
       case 'new-shop': ui.newShop = { place: el.getAttribute('data-place') || '', campaign: el.getAttribute('data-campaign') || '', kind: el.getAttribute('data-kind') || '' }; go('#/shop-edit/new'); break;
+      case 'shop-ask': ui.shopAsk = ui.shopAsk || {}; ui.shopAsk[el.getAttribute('data-id')] = !ui.shopAsk[el.getAttribute('data-id')]; render(); break;
       case 'shop-stock':
         var stk = shopById(el.getAttribute('data-id'));
         if (!stk) return;
