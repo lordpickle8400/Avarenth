@@ -243,7 +243,7 @@
 
   /* ================= Data ================= */
   function loadProfile() {
-    return sb.from('profiles').select('id, display_name, role').eq('id', uid()).maybeSingle().then(function (r) {
+    return sb.from('profiles').select('id, display_name, role, prefs').eq('id', uid()).maybeSingle().then(function (r) {
       if (r.error) throw r.error;
       profile = r.data;
     });
@@ -346,17 +346,88 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['screen', 'DM screen'], ['journey-rules', 'Journey rules'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
-  var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['quests', 'Quests'], ['homebrew', 'Homebrew']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['screen', 'DM screen'], ['journey-rules', 'Journey rules'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players'], ['support', 'Support']];
+  var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['quests', 'Quests'], ['homebrew', 'Homebrew'], ['support', 'Support']];
   var CAMP_ROUTES = { travel: 1, 'journey-rules': 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
+  // Top tabs: each person picks which sections sit in the bar; the rest live under More.
+  var TAB_DEFAULT = { dm: ['map', 'wiki', 'party', 'screen', 'shops'], player: ['map', 'characters', 'rules', 'spells', 'quests'] };
+  function tabRole() { return isDM() ? 'dm' : 'player'; }
+  function tabPins() {
+    var all = (isDM() ? NAV : PLAYER_NAV).map(function (t) { return t[0]; });
+    var p = profile && profile.prefs && profile.prefs.tabs && profile.prefs.tabs[tabRole()];
+    if (!p) { try { p = JSON.parse(localStorage.getItem('av-tabs-' + tabRole()) || 'null'); } catch (e) { p = null; } }
+    if (!Array.isArray(p)) p = TAB_DEFAULT[tabRole()];
+    return p.filter(function (k) { return all.indexOf(k) >= 0; });
+  }
+  function saveTabPins(list) {
+    var role = tabRole();
+    try { localStorage.setItem('av-tabs-' + role, JSON.stringify(list)); } catch (e) {}
+    if (!profile) return;
+    var prefs = Object.assign({}, profile.prefs || {}); prefs.tabs = Object.assign({}, prefs.tabs || {}); prefs.tabs[role] = list; profile.prefs = prefs;
+    sb.from('profiles').update({ prefs: prefs }).eq('id', uid()).then(function (r) { if (r.error) fail(r.error, 'Could not save your tabs. They’re kept on this device for now.'); });
+  }
+  var tabHref = null;
+  function tabsHtml(list, cur, href) {
+    tabHref = href;
+    var pins = tabPins(), name = {}; list.forEach(function (t) { name[t[0]] = t[1]; });
+    var html = pins.map(function (k) { return '<a href="' + href(k) + '"' + (cur === k ? ' aria-current="page"' : '') + '>' + name[k] + '</a>'; }).join('');
+    // Somewhere not pinned: show it anyway, so you can always see where you are.
+    if (cur && name[cur] && pins.indexOf(cur) < 0) html += '<a href="' + href(cur) + '" aria-current="page" class="tab-here">' + name[cur] + '</a>';
+    html += '<button type="button" class="tab-more" data-act="tabs-more" aria-haspopup="true" aria-expanded="' + (!!ui.moreOpen) + '">More<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+    return html;
+  }
+  function moreMenu() {
+    var box = document.getElementById('more-menu');
+    if (!ui.moreOpen) { if (box) box.remove(); return; }
+    if (!box) { box = document.createElement('div'); box.id = 'more-menu'; box.className = 'more-menu'; document.body.appendChild(box); }
+    var list = isDM() ? NAV : PLAYER_NAV, pins = tabPins(), cur = ($tabs.querySelector('[aria-current="page"]') || {}).getAttribute ? $tabs.querySelector('[aria-current="page"]').getAttribute('href') : '';
+    var html;
+    if (ui.moreOpen === 'edit') {
+      var order = pins.concat(list.map(function (t) { return t[0]; }).filter(function (k) { return pins.indexOf(k) < 0; }));
+      var name = {}; list.forEach(function (t) { name[t[0]] = t[1]; });
+      html = '<p class="mm-h">Your tabs<small>On shows it up top. Arrows move it.</small></p><ul class="mm-edit">' + order.map(function (k) {
+        var on = pins.indexOf(k) >= 0, i = pins.indexOf(k);
+        return '<li class="' + (on ? 'on' : '') + '"><button type="button" class="mm-tog" data-act="tabs-tog" data-k="' + k + '" aria-pressed="' + on + '"><span class="mm-box" aria-hidden="true"></span>' + name[k] + '</button>' +
+          (on ? '<button type="button" class="mm-arrow" data-act="tabs-move" data-k="' + k + '" data-d="-1" aria-label="Move ' + name[k] + ' left"' + (i === 0 ? ' disabled' : '') + '>↑</button><button type="button" class="mm-arrow" data-act="tabs-move" data-k="' + k + '" data-d="1" aria-label="Move ' + name[k] + ' right"' + (i === pins.length - 1 ? ' disabled' : '') + '>↓</button>' : '') + '</li>';
+      }).join('') + '</ul><div class="mm-foot"><button type="button" class="linkish note" data-act="tabs-reset">Back to the usual</button><button type="button" class="btn small primary" data-act="tabs-done">Done</button></div>';
+    } else {
+      var rest = list.filter(function (t) { return pins.indexOf(t[0]) < 0; });
+      html = (rest.length ? '<nav class="mm-list">' + rest.map(function (t) { var h = tabHref ? tabHref(t[0]) : '#/' + t[0]; return '<a href="' + h + '"' + (h === cur ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</nav>' : '<p class="note" style="margin:4px 4px 8px">Everything’s already up top.</p>') +
+        '<div class="mm-foot"><button type="button" class="btn small quiet" data-act="tabs-edit">Choose your tabs</button></div>';
+    }
+    box.innerHTML = html;
+    var btn = $tabs.querySelector('.tab-more'), br = btn ? btn.getBoundingClientRect() : { bottom: 100, right: innerWidth - 16 };
+    box.style.top = Math.round(br.bottom + 4) + 'px';
+    box.style.right = Math.max(12, Math.round(innerWidth - br.right)) + 'px';
+  }
+  function tabsClick(el, act) {
+    var pins = tabPins().slice(), k = el.getAttribute('data-k');
+    if (act === 'tabs-more') ui.moreOpen = ui.moreOpen ? null : 'list';
+    else if (act === 'tabs-edit') ui.moreOpen = 'edit';
+    else if (act === 'tabs-done') ui.moreOpen = null;
+    else if (act === 'tabs-reset') saveTabPins(TAB_DEFAULT[tabRole()].slice());
+    else if (act === 'tabs-tog') { var at = pins.indexOf(k); if (at >= 0) { if (pins.length > 1) pins.splice(at, 1); } else pins.push(k); saveTabPins(pins); }
+    else if (act === 'tabs-move') { var i = pins.indexOf(k), j = i + num(el.getAttribute('data-d'), 0); if (i >= 0 && j >= 0 && j < pins.length) { pins.splice(i, 1); pins.splice(j, 0, k); saveTabPins(pins); } }
+    else return false;
+    renderChrome(); moreMenu();
+    var b = $tabs.querySelector('.tab-more'); if (b) b.setAttribute('aria-expanded', String(!!ui.moreOpen));
+    return true;
+  }
+  document.addEventListener('click', function (e) {
+    if (!ui.moreOpen) return;
+    if (e.target.closest('#more-menu a')) { ui.moreOpen = null; moreMenu(); return; }
+    if (!e.target.closest('#more-menu, .tab-more')) { ui.moreOpen = null; moreMenu(); renderChrome(); }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ui.moreOpen) { ui.moreOpen = null; moreMenu(); renderChrome(); } });
+  window.addEventListener('hashchange', function () { if (ui.moreOpen) { ui.moreOpen = null; moreMenu(); } });
   function renderChrome() {
     var r = parseRoute();
     document.body.classList.toggle('table-mode', isTable());
     document.body.classList.toggle('atlas-mode', r.name === 'map' || r.name === '');
     if (session && isMember() && !isDM()) {
       $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells', homebrew: 'homebrew', quests: 'quests' })[r.name] || '';
-      $tabs.innerHTML = PLAYER_NAV.map(function (t) { return '<a href="#/' + t[0] + '"' + (psec === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
+      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells', homebrew: 'homebrew', quests: 'quests', support: 'support' })[r.name] || '';
+      $tabs.innerHTML = tabsHtml(PLAYER_NAV, psec, function (k) { return '#/' + k; });
       $tabs.hidden = false;
       return;
     }
@@ -366,9 +437,9 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
-    $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
+    $tabs.innerHTML = tabsHtml(NAV, section, function (k) { return '#/' + k + (CAMP_ROUTES[k] ? cs : ''); });
     $tabs.hidden = false;
   }
 
@@ -405,6 +476,7 @@
       case 'wiki': return renderHome();
       case 'pins': return renderMap(r.arg);
       case 'account': return renderAccount();
+      case 'support': return renderSupport();
       case 'crimes': return renderCrimes(r.arg);
       case 'travel': AT.sel = { t: 'journey' }; AT.hist = []; location.replace('#/map'); return;
       case 'journey-rules': var jrc = r.arg ? campaignBySlug(r.arg) : activeCamp(); if (!jrc) { $view.innerHTML = '<div class="page"><div class="empty">No campaign yet.</div></div>'; return; } return renderTravel(jrc.slug, 'rules');
@@ -452,6 +524,7 @@
       case 'spell-new': return renderSpellForm('');
       case 'homebrew': return renderHomebrew(r.arg);
       case 'account': return renderAccount();
+      case 'support': return renderSupport();
       case 'a': if (articleBySlug(r.arg)) { AT.sel = { t: 'article', slug: r.arg }; } location.replace('#/map'); return;
       default: document.body.classList.add('atlas-mode'); return renderAtlas('');
     }
@@ -506,6 +579,98 @@
       '<div class="empty">Your account is set up as <b>' + esc(profile.display_name || 'a new player') + '</b>. The DM needs to approve you before the map and your character sheet open up. Once they do, tap Check again.</div>' +
       '<div class="actions" style="justify-content:center"><button type="button" class="btn primary" data-act="recheck">Check again</button><button type="button" class="btn" data-act="signout">Sign out</button></div></div>';
   }
+  // How-to text: shown in full the first time, then folded behind a small "How this works" button.
+  var helpSeen = (function () { try { return JSON.parse(localStorage.getItem('av-help-seen') || '{}') || {}; } catch (e) { return {}; } })(), helpNow = {};
+  function helpIsSeen(k) { return helpSeen[k] || (profile && profile.prefs && profile.prefs.seen && profile.prefs.seen[k]); }
+  function helpNote(k, html) {
+    var seen = helpIsSeen(k), open = !seen || (ui.helpOpen && ui.helpOpen[k]);
+    if (!seen) helpNow[k] = 1;
+    if (!open) return '<button type="button" class="help-q" data-act="help" data-k="' + k + '" aria-expanded="false"><span aria-hidden="true">?</span>How this works</button>';
+    return '<div class="help"><p>' + html + '</p>' + (seen ? '<button type="button" class="help-x" data-act="help" data-k="' + k + '" aria-expanded="true">Hide</button>' : '') + '</div>';
+  }
+  function helpCommit() {
+    var ks = Object.keys(helpNow); if (!ks.length) return; helpNow = {};
+    ks.forEach(function (k) { helpSeen[k] = 1; });
+    try { localStorage.setItem('av-help-seen', JSON.stringify(helpSeen)); } catch (e) {}
+    if (profile && session) { var prefs = Object.assign({}, profile.prefs || {}); prefs.seen = Object.assign({}, prefs.seen || {}, helpSeen); profile.prefs = prefs; sb.from('profiles').update({ prefs: prefs }).eq('id', uid()).then(function () {}); }
+  }
+  window.addEventListener('hashchange', helpCommit);
+  window.addEventListener('pagehide', helpCommit);
+  /* ================= Support: tickets for fixes and ideas ================= */
+  var tickets = null, ticketVotes = [];
+  var TK_KIND = { bug: ['Broken', 'Broken'], qol: ['Make it easier', 'Easier'], idea: ['New idea', 'Idea'] };
+  var TK_STATUS = { open: 'Open', planned: 'Planned', doing: 'In progress', done: 'Done', wont: 'Not doing' };
+  function loadTickets() {
+    return Promise.all([
+      sb.from('tickets').select('id, user_id, author_name, kind, title, body, status, reply, created_at, updated_at').order('created_at', { ascending: false }).limit(300),
+      sb.from('ticket_votes').select('ticket_id, user_id')
+    ]).then(function (res) { res.forEach(function (r) { if (r.error) throw r.error; }); tickets = res[0].data || []; ticketVotes = res[1].data || []; });
+  }
+  function tkVotes(id) { return ticketVotes.filter(function (v) { return v.ticket_id === id; }); }
+  function tkDate(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+  function renderSupport() {
+    if (tickets == null) { $view.innerHTML = '<div class="page narrow"><div class="empty">Loading tickets…</div></div>'; loadTickets().then(render).catch(function (e) { tickets = []; fail(e, 'Could not load tickets.'); render(); }); return; }
+    var dm = isDM(), f = ui.tkFilter || 'active', kind = ui.tkKind || 'qol';
+    var html = '<div class="page narrow"><p class="eyebrow">Help make it better</p><h1 class="page-title">Support</h1>' +
+      helpNote('support', 'Spotted something broken, or something that takes too many taps? Send it in. Tap ▲ on tickets you want too; the most-wanted get done first.') +
+      '<form class="group-box tk-form" id="ticket-form" novalidate><div class="seg tk-kinds" role="group" aria-label="What kind">' + Object.keys(TK_KIND).map(function (k) { return '<button type="button" data-act="tk-kind" data-k="' + k + '" aria-pressed="' + (kind === k) + '">' + TK_KIND[k][0] + '</button>'; }).join('') + '</div>' +
+      '<div class="field"><label for="tk-title">In a few words</label><input type="text" id="tk-title" maxlength="140" placeholder="' + (kind === 'bug' ? 'e.g. Spend button does nothing on my sheet' : kind === 'qol' ? 'e.g. Let me heal everyone at once' : 'e.g. A tavern name generator') + '"></div>' +
+      '<div class="field"><label for="tk-body">Details <span class="note">(optional)</span></label><textarea id="tk-body" rows="3" maxlength="4000" placeholder="' + (kind === 'bug' ? 'What you tapped, what you expected, what happened instead.' : 'What would it help with?') + '"></textarea></div>' +
+      '<div class="actions"><button type="submit" class="btn primary">Send it</button></div></form>';
+    var counts = { active: 0, done: 0, all: tickets.length, mine: 0 };
+    tickets.forEach(function (t) { if (t.status === 'done' || t.status === 'wont') counts.done++; else counts.active++; if (t.user_id === uid()) counts.mine++; });
+    html += '<div class="tk-filters" role="group" aria-label="Show">' + [['active', 'Open'], ['done', 'Finished'], ['mine', 'Mine'], ['all', 'All']].map(function (o) { return '<button type="button" class="chip pick" data-act="tk-filter" data-f="' + o[0] + '" aria-pressed="' + (f === o[0]) + '">' + o[1] + ' <span class="tk-n">' + counts[o[0]] + '</span></button>'; }).join('') + '</div>';
+    var list = tickets.filter(function (t) { var fin = t.status === 'done' || t.status === 'wont'; return f === 'all' || (f === 'mine' ? t.user_id === uid() : f === 'done' ? fin : !fin); });
+    list.sort(function (a, b) { return (f === 'done' ? 0 : tkVotes(b.id).length - tkVotes(a.id).length) || (b.updated_at || b.created_at || '').localeCompare(a.updated_at || a.created_at || ''); });
+    html += list.length ? '<div class="tk-list">' + list.map(function (t) {
+      var vs = tkVotes(t.id), mine = vs.some(function (v) { return v.user_id === uid(); }), own = t.user_id === uid(), open = ui.tkOpen === t.id;
+      var h = '<article class="tk' + (open ? ' open' : '') + '"><button type="button" class="tk-vote" data-act="tk-vote" data-id="' + esc(t.id) + '" aria-pressed="' + mine + '" aria-label="' + (mine ? 'Remove your vote' : 'Want this too') + '"><span aria-hidden="true">▲</span><b>' + vs.length + '</b></button>' +
+        '<div class="tk-main"><button type="button" class="tk-head" data-act="tk-open" data-id="' + esc(t.id) + '" aria-expanded="' + open + '"><span class="tk-title">' + esc(t.title) + '</span>' +
+        '<span class="tk-meta"><span class="tag tk-k-' + esc(t.kind) + '">' + esc((TK_KIND[t.kind] || TK_KIND.qol)[1]) + '</span><span class="tag tk-s-' + esc(t.status || 'open') + '">' + esc(TK_STATUS[t.status || 'open']) + '</span>' + esc([own ? 'You' : t.author_name || 'Someone', tkDate(t.created_at)].filter(Boolean).join(' · ')) + (t.reply ? ' · <span class="tk-replied">Replied</span>' : '') + '</span></button>';
+      if (open) {
+        if (t.body) h += '<p class="tk-body">' + esc(t.body).replace(/\n/g, '<br>') + '</p>';
+        if (t.reply && !dm) h += '<div class="tk-reply"><span class="eyebrow">Reply</span><p>' + esc(t.reply).replace(/\n/g, '<br>') + '</p></div>';
+        if (dm) h += '<div class="tk-dm"><div class="two"><div class="field"><label for="tks-' + esc(t.id) + '">Status</label><select id="tks-' + esc(t.id) + '">' + Object.keys(TK_STATUS).map(function (k) { return '<option value="' + k + '"' + (t.status === k ? ' selected' : '') + '>' + TK_STATUS[k] + '</option>'; }).join('') + '</select></div></div>' +
+          '<div class="field"><label for="tkr-' + esc(t.id) + '">Reply</label><textarea id="tkr-' + esc(t.id) + '" rows="2" placeholder="Shown to everyone">' + esc(t.reply || '') + '</textarea></div>' +
+          '<div class="actions tight"><button type="button" class="btn small primary" data-act="tk-save" data-id="' + esc(t.id) + '">Save</button>' + (ui.tkDel === t.id ? '<button type="button" class="btn small danger" data-act="tk-del" data-id="' + esc(t.id) + '" data-sure="1">Delete for good</button>' : '<button type="button" class="btn small quiet" data-act="tk-del" data-id="' + esc(t.id) + '">Delete</button>') + '</div></div>';
+        else if (own && t.status === 'open') h += '<div class="actions tight">' + (ui.tkDel === t.id ? '<button type="button" class="btn small danger" data-act="tk-del" data-id="' + esc(t.id) + '" data-sure="1">Take it back for good</button>' : '<button type="button" class="btn small quiet" data-act="tk-del" data-id="' + esc(t.id) + '">Take it back</button>') + '</div>';
+      }
+      return h + '</div></article>';
+    }).join('') + '</div>' : '<div class="empty">' + (f === 'mine' ? 'You haven’t sent anything yet.' : f === 'done' ? 'Nothing finished yet.' : 'No open tickets. Nice.') + '</div>';
+    $view.innerHTML = html + '</div>';
+  }
+  function submitTicket() {
+    var title = (document.getElementById('tk-title').value || '').trim(), body = (document.getElementById('tk-body').value || '').trim();
+    if (!title) { toast('Give it a few words first.'); document.getElementById('tk-title').focus(); return; }
+    sb.from('tickets').insert({ kind: ui.tkKind || 'qol', title: title.slice(0, 140), body: body.slice(0, 4000) || null, author_name: (profile && profile.display_name) || null }).select('id, user_id, author_name, kind, title, body, status, reply, created_at, updated_at').single().then(function (r) {
+      if (r.error) return fail(r.error, 'Could not send it. Try again in a moment.');
+      tickets = [r.data].concat(tickets || []); ui.tkFilter = 'mine'; toast('Sent. Thanks!'); render();
+    });
+  }
+  function ticketClick(el, act) {
+    var id = el.getAttribute('data-id'), t = (tickets || []).filter(function (x) { return x.id === id; })[0];
+    if (act === 'tk-kind') { var keep = [document.getElementById('tk-title').value, document.getElementById('tk-body').value]; ui.tkKind = el.getAttribute('data-k'); render(); document.getElementById('tk-title').value = keep[0]; document.getElementById('tk-body').value = keep[1]; return true; }
+    if (act === 'tk-filter') { ui.tkFilter = el.getAttribute('data-f'); render(); return true; }
+    if (act === 'tk-open') { ui.tkOpen = ui.tkOpen === id ? null : id; ui.tkDel = null; render(); return true; }
+    if (act === 'tk-vote') {
+      var mine = ticketVotes.some(function (v) { return v.ticket_id === id && v.user_id === uid(); });
+      if (mine) { ticketVotes = ticketVotes.filter(function (v) { return !(v.ticket_id === id && v.user_id === uid()); }); sb.from('ticket_votes').delete().eq('ticket_id', id).eq('user_id', uid()).then(function (r) { if (r.error) fail(r.error); }); }
+      else { ticketVotes.push({ ticket_id: id, user_id: uid() }); sb.from('ticket_votes').insert({ ticket_id: id }).then(function (r) { if (r.error) fail(r.error); }); }
+      render(); return true;
+    }
+    if (act === 'tk-save' && t) {
+      var st = document.getElementById('tks-' + id).value, rep = (document.getElementById('tkr-' + id).value || '').trim() || null, now = new Date().toISOString();
+      sb.from('tickets').update({ status: st, reply: rep, updated_at: now }).eq('id', id).then(function (r) { if (r.error) return fail(r.error); t.status = st; t.reply = rep; t.updated_at = now; toast('Saved'); render(); });
+      return true;
+    }
+    if (act === 'tk-del' && t) {
+      if (!el.getAttribute('data-sure')) { ui.tkDel = id; render(); return true; }
+      sb.from('tickets').delete().eq('id', id).then(function (r) { if (r.error) return fail(r.error); tickets = tickets.filter(function (x) { return x.id !== id; }); ui.tkDel = null; ui.tkOpen = null; toast('Removed'); render(); });
+      return true;
+    }
+    return false;
+  }
+
   function renderAccount() {
     $view.innerHTML = '<div class="page narrow"><div><p class="eyebrow">Account</p><h1 class="page-title">' + esc(profile.display_name || 'Your account') + '</h1>' +
       '<p class="note" style="margin:6px 0 0">' + esc(session.user.email || '') + ' · ' + (isDM() ? 'Dungeon Master' : 'Player') + '</p></div>' +
@@ -1019,7 +1184,7 @@
       }
       return '<div class="tbl-row" style="border-bottom:' + (campRow ? '0' : '1px solid var(--soft)') + '"><div class="main"><b>' + esc(m.display_name || 'Unnamed') + (you ? ' (you)' : '') + '</b>' + (m.created_at && !isNaN(new Date(m.created_at)) ? '<span>Joined ' + esc(new Date(m.created_at).toLocaleDateString()) + '</span>' : '') + '</div>' + tag + btn + '</div>' + (campRow ? campRow + '<div style="border-bottom:1px solid var(--soft)"></div>' : '');
     };
-    var html = '<div class="page narrow"><div><p class="eyebrow">Your table</p><h1 class="page-title">Players</h1><p class="note" style="margin:6px 0 0">Send your players the app link. When they create an account, approve them here. Then give them a campaign’s PIN, or tap a campaign under their name to add them yourself.</p></div>';
+    var html = '<div class="page narrow"><div><p class="eyebrow">Your table</p><h1 class="page-title">Players</h1>' + helpNote('members', 'Send your players the app link. When they create an account, approve them here. Then give them a campaign’s PIN, or tap a campaign under their name to add them yourself.') + '</div>';
     html += '<section class="block"><h2 class="sec-title">Waiting for approval<small>' + pending.length + '</small></h2>' + (pending.length ? '<div class="tbl">' + pending.map(row).join('') + '</div>' : '<div class="empty">Nobody is waiting right now.</div>') + '</section>';
     html += '<section class="block"><h2 class="sec-title">At the table</h2><div class="tbl">' + rest.map(row).join('') + '</div></section>';
     html += '<button type="button" class="btn" data-act="reload-members">Refresh</button></div>';
@@ -1783,6 +1948,7 @@
 
 
     // Top strip: the six abilities, proficiency, speed, inspiration, hit points and mana.
+    var mob = phone && !edit, mark0 = html.length;
     html += '<div class="cs-top"><div class="cs-abils">' + ABILITIES.map(function (a) {
       return '<div class="cs-ab"><span class="k">' + esc(a[1]) + '</span><span class="m">' + signed(abil[a[0]]) + '</span>' +
         (edit ? '<label class="sr" for="ab-' + a[0] + '">' + a[1] + ' score</label><input type="number" id="ab-' + a[0] + '" data-ab="' + a[0] + '" min="1" max="30" value="' + num(s.abilities[a[0]], 10) + '">' : '<span class="sc">' + num(s.abilities[a[0]], 10) + '</span>') + '</div>';
@@ -1815,15 +1981,57 @@
     html += conditionHtml(s, can, true);
     var tabs = (phone ? ['Abilities', 'Skills'] : []).concat(['Actions', 'Spells', 'Inventory', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
-    var tabName = { Features: 'Features & Traits', Abilities: 'Saves & Senses' };
+    var tabName = { Features: 'Features & Traits', Abilities: 'Abilities & Saves' };
     html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
     html += '<div role="tabpanel" class="cs-panel">' + (ui.sheetTab === 'Abilities' ? colA : ui.sheetTab === 'Skills' ? colB : ui.sheetTab === 'Background' ? csBackgroundHtml(c, s, sp0) : sheetTab(c, s, edit, can, abil, pb, perc)) + '</div>';
     html += '</div></div>';
+    if (mob) html = html.slice(0, mark0) + csPhone(c, s, html.slice(mark0), { can: can, abil: abil, pb: pb, init: init, perc: perc, sa: sa, mMax: mMax, hpPct: hpPct, mpPct: mpPct, acNow: acNow, colA: colA, colB: colB, sp0: sp0, tabs: tabs, tabName: tabName });
 
     if (edit) html += '<div class="actions" style="justify-content:flex-end"><button type="button" class="btn danger" data-act="delete-char" data-id="' + esc(c.id) + '">' + (ui.pendingDelete === c.id ? 'Tap again to delete' : 'Delete character') + '</button></div>';
     html += '</div>';
     $view.innerHTML = html;
+    var barEl = document.querySelector('header.bar'); if (barEl) document.documentElement.style.setProperty('--bar-h', barEl.offsetHeight + 'px');
   }
+  // Phone sheet, laid out like the D&D Beyond app: a vitals strip that stays put, one section at a time, and a section switcher along the bottom.
+  function csPhone(c, s, full, o) {
+    function cut(a, b) { var i = full.indexOf(a), j = b ? full.indexOf(b, i + 1) : -1; return i < 0 ? '' : full.slice(i, j < 0 ? undefined : j); }
+    var ab = cut('<div class="cs-abils">', '<div class="cs-mini">'), mini = cut('<div class="cs-mini">', '<section class="cs-box cs-hp"'),
+      hp = cut('<section class="cs-box cs-hp"', '<section class="cs-box cs-mp"'), mp = cut('<section class="cs-box cs-mp"', '<div class="cs-body">');
+    mp = mp.replace(/<\/div>\s*$/, '');
+    var cur = num(s.hp.cur, 0), max = num(s.hp.max, 0), tmp = num(s.hp.temp, 0), low = o.hpPct <= 25 ? ' low' : o.hpPct <= 50 ? ' mid' : '';
+    var h = '<div class="m-vitals" role="group" aria-label="Quick stats">' +
+      '<div class="mv mv-ac" title="' + esc(o.acNow.how) + '"><span class="k">AC</span><span class="v">' + o.acNow.ac + '</span></div>' +
+      '<div class="mv"><span class="k">Init</span><span class="v">' + signed(o.init) + '</span></div>' +
+      '<button type="button" class="mv mv-hp' + low + '" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Hit points' + (tmp ? ' <i>+' + tmp + ' temp</i>' : '') + '</span><span class="v">' + cur + '<small>/' + max + '</small></span><span class="mv-bar"><i style="width:' + o.hpPct + '%"></i></span></button>' +
+      (o.mMax > 0 ? '<button type="button" class="mv mv-mp" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Mana</span><span class="v">' + num(s.mana.cur, 0) + '<small>/' + o.mMax + '</small></span><span class="mv-bar"><i style="width:' + o.mpPct + '%"></i></span></button>' : '') +
+      '</div>';
+    if (ui.mHp) h += '<div class="m-drawer">' + hp + (o.mMax > 0 || (s.mana && s.mana.override) ? mp : '') + '<button type="button" class="btn small m-done" data-act="m-hp">Done</button></div>';
+    var tabs = o.tabs, t = ui.sheetTab, i = tabs.indexOf(t), name = function (k) { return o.tabName[k] || k; };
+    var body;
+    if (t === 'Abilities') {
+      body = ab + mini + (o.sa ? '<div class="cs-combat m-spellstats">' + csStat('Spell save', String(8 + o.pb + o.sa.mod), 'DC') + csStat('Spell attack', signed(o.pb + o.sa.mod), o.sa.key.toUpperCase()) + '</div>' : '') + conditionHtml(s, o.can, true) + o.colA;
+    } else if (t === 'Skills') body = o.colB;
+    else if (t === 'Background') body = csBackgroundHtml(c, s, o.sp0);
+    else body = (t === 'Spells' && o.sa ? '<div class="cs-combat m-spellstats">' + csStat('Spell save', String(8 + o.pb + o.sa.mod), 'DC') + csStat('Spell attack', signed(o.pb + o.sa.mod), o.sa.key.toUpperCase()) + '</div>' : '') +
+      (t === 'Actions' ? conditionHtml(s, o.can, true) : '') + sheetTab(c, s, false, o.can, o.abil, o.pb, o.perc);
+    h += '<section class="m-panel" aria-label="' + esc(name(t)) + '"><h2 class="m-sec">' + esc(name(t)) + '</h2>' + body + '</section>';
+    h += '<nav class="m-nav" aria-label="Sheet sections">' +
+      '<button type="button" class="m-arrow" data-act="sheet-tab" data-tab="' + tabs[(i - 1 + tabs.length) % tabs.length] + '" aria-label="Previous: ' + esc(name(tabs[(i - 1 + tabs.length) % tabs.length])) + '">‹</button>' +
+      '<button type="button" class="m-pick" data-act="m-secs" aria-expanded="' + !!ui.mSecs + '"><span>' + esc(name(t)) + '</span><small>' + (i + 1) + ' of ' + tabs.length + '</small></button>' +
+      '<button type="button" class="m-arrow" data-act="sheet-tab" data-tab="' + tabs[(i + 1) % tabs.length] + '" aria-label="Next: ' + esc(name(tabs[(i + 1) % tabs.length])) + '">›</button></nav>';
+    if (ui.mSecs) h += '<div class="m-secs" role="menu">' + tabs.map(function (k) { return '<button type="button" role="menuitem" data-act="sheet-tab" data-tab="' + k + '"' + (k === t ? ' aria-current="true"' : '') + '>' + esc(name(k)) + '</button>'; }).join('') + '</div>';
+    return h;
+  }
+  // Swipe left or right on a phone sheet to change section.
+  (function () {
+    var sx = null, sy = 0;
+    document.addEventListener('touchstart', function (e) { var p = e.target.closest && e.target.closest('.m-panel'); if (!p || e.touches.length !== 1 || e.target.closest('input, textarea, select, .subtabs, .tbl-scroll')) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (sx == null) return; var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
+      if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+      var b = document.querySelector('.m-nav .m-arrow:' + (dx < 0 ? 'last-child' : 'first-child')); if (b) b.click();
+    }, { passive: true });
+  })();
   /* ---------- Character sheet pieces (laid out like the familiar online sheets) ---------- */
   function isPhoneSheet() { return window.matchMedia && window.matchMedia('(max-width: 899px)').matches; }
   (function () {
@@ -2106,7 +2314,7 @@
   }
   function renderHomebrew(arg) {
     var parts = String(arg || '').split(':'), kind = HB_KINDS.some(function (k) { return k[0] === parts[0]; }) ? parts[0] : 'item', edit = parts[1] || '';
-    var dm = isDM(), html = '<div class="page"><h1 class="page-title">Homebrew</h1><p class="guide">Make your own items, classes, subclasses, species, backgrounds and feats. ' + (dm ? 'Yours go live right away; players’ wait for your review.' : 'Your DM reviews each one before it joins the lists.') + '</p>';
+    var dm = isDM(), html = '<div class="page"><h1 class="page-title">Homebrew</h1>' + helpNote('homebrew', 'Make your own items, classes, subclasses, species, backgrounds and feats. ' + (dm ? 'Yours go live right away; players’ wait for your review.' : 'Your DM reviews each one before it joins the lists.') + '') + '';
     html += '<div class="subtabs" role="tablist">' + HB_KINDS.map(function (k) { return '<a role="tab" href="#/homebrew/' + k[0] + '" aria-selected="' + (kind === k[0]) + '">' + k[1] + '</a>'; }).join('') +
       '<a role="tab" href="#/spells" aria-selected="false">Spells ↗</a></div>';
     if (edit) { html += hbFormHtml(kind, edit === 'new' ? null : homebrew.filter(function (h) { return h.id === edit; })[0]); $view.innerHTML = html + '</div>'; hbSyncItemType(); return; }
@@ -2299,7 +2507,7 @@
         '<form class="inline-form" id="cal-note" data-camp="' + esc(camp.id) + '" data-doy="' + pdt.doy + '" data-y="' + pdt.y + '" novalidate style="margin-top:10px"><div class="field grow"><label for="cal-text">Add a reminder or event</label><input type="text" id="cal-text" maxlength="200" placeholder="e.g. The Brine Lord’s ships reach Wreckholm"></div>' +
         '<label class="check"><input type="checkbox" id="cal-yearly"> Every year</label><button type="submit" class="btn primary">Add</button></form>' +
         '<div class="actions" style="margin-top:8px"><button type="button" class="btn small" data-act="cal-today" data-camp="' + esc(camp.id) + '" data-doy="' + pdt.doy + '" data-y="' + pdt.y + '">Make this today (day ' + t.day + ')</button></div></section>';
-    } else html += '<p class="note">Tap a day to see what’s on it, add a reminder, or make it today’s date.</p>';
+    } else html += '' + helpNote('calendar', 'Tap a day to see what’s on it, add a reminder, or make it today’s date.') + '';
     html += '<p class="note">Reminders are yours alone. The table and players see only the date and the feast days.</p></div>';
     $view.innerHTML = html;
   }
@@ -2370,7 +2578,7 @@
   function renderNpcs() {
     if (!isDM()) { location.replace('#/map'); return; }
     var npc = ui.npc, dk = ui.npcDistrict || 'capital', D = NPCD.districts;
-    var html = '<div class="page narrow">' + dmTabs('npcs') + '<p class="guide">Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more dragonborn and kobolds, the Greywall Holds mostly dwarves.</p>' +
+    var html = '<div class="page narrow">' + dmTabs('npcs') + '' + helpNote('npcs', 'Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more dragonborn and kobolds, the Greywall Holds mostly dwarves.') + '' +
       '<div class="field"><label for="npc-district">District</label><select id="npc-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
       '<p class="note npc-odds">' + Object.keys(D[dk].races).sort(function (a, b) { return D[dk].races[b] - D[dk].races[a]; }).slice(0, 6).map(function (r) { var tot = Object.keys(D[dk].races).reduce(function (t, k) { return t + D[dk].races[k]; }, 0); return esc(r) + ' ' + Math.round(100 * D[dk].races[r] / tot) + '%'; }).join(' · ') + '</p>' +
       '<form class="form" id="npc-form" novalidate><div class="field"><label for="npc-words">Describe them (optional)</label><input type="text" id="npc-words" maxlength="200" value="' + esc((npc && npc.words) || '') + '" placeholder="e.g. grumpy old dwarf smith in Stonehelm"></div>' +
@@ -2469,7 +2677,7 @@
     var st = combat.state, order = cbOrder(st);
     ui.cbOpen = ui.cbOpen || {};
     var html = '<div class="page">' + dmTabs('combat') + (st.list.length ? '<p class="cb-round">Round <b>' + st.round + '</b></p>' : '') +
-      (st.list.length ? '' : '<p class="guide">Add the party and the monsters, then type in everyone’s initiative as it’s rolled at the table. The fight saves as you go, so you can close the app mid-battle.</p>') +
+      (st.list.length ? '' : '' + helpNote('combat', 'Add the party and the monsters, then type in everyone’s initiative as it’s rolled at the table. The fight saves as you go, so you can close the app mid-battle.') + '') +
       '<form class="form cb-add" id="cb-form" novalidate><div class="cb-add-row"><div class="field"><label for="cb-mon">Monster</label><input type="text" id="cb-mon" list="cb-mons" placeholder="Goblin Warrior, Wolf…" autocomplete="off"></div>' +
       '<div class="field cb-n"><label for="cb-n">How many</label><input type="number" id="cb-n" min="1" max="20" value="1" inputmode="numeric"></div><button type="submit" class="btn primary">Add</button></div>' +
       '<datalist id="cb-mons">' + allMonsters().map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist></form>' +
@@ -2781,7 +2989,7 @@
     renderLoot.ensure();
     var L = ui.loot, size = ui.lootTier || 'minor', party = camp ? campaignChars(camp.id) : [];
     var html = '<div class="page narrow">' + dmTabs('loot') +
-      '<p class="note lt-how">Tap a place, or add a monster, and it rolls. Tap <b>Keep</b> on what you like and reroll the rest.</p>' +
+      '' + helpNote('loot', 'Tap a place, or add a monster, and it rolls. Tap <b>Keep</b> on what you like and reroll the rest.') + '' +
       '<div class="lt-size" role="group" aria-label="Size of the place">' + Object.keys(LAIR_TIERS).map(function (k) { return '<button type="button" class="chip" data-act="lt-size" data-t="' + k + '" aria-pressed="' + (size === k) + '">' + LAIR_TIERS[k].label + '</button>'; }).join('') + '</div>' +
       '<div class="lt-places">' + Object.keys(LAIRS).map(function (k) { return '<button type="button" class="chip" data-act="lt-pl" data-k="' + k + '">' + esc(LAIRS[k].label) + '</button>'; }).join('') + '</div>' +
       '<form class="lt-mon-row" id="lt-form" novalidate><label class="sr" for="lt-mon">Monster</label><input class="input" type="text" id="lt-mon" list="lt-mons" placeholder="Or a monster: Giant Spider, Bandit…" autocomplete="off">' +
@@ -2982,7 +3190,7 @@
     if (dm) {
       var dk = ui.qDistrict || ui.npcDistrict || 'capital', D = NPCD.districts, d = ui.questDraft;
       var qt = ui.qTier || 'any';
-      html += '<section class="group-box q-gen"><h2>Random quest</h2><p class="note" style="margin-top:0">Minor jobs come from ordinary folk; big ones from elders, knights and barons; major ones from lords, dukes and sometimes the Crown. Who’s asking follows the district’s folk.</p>' +
+      html += '<section class="group-box q-gen"><h2>Random quest</h2>' + helpNote('quests', 'Minor jobs come from ordinary folk; big ones from elders, knights and barons; major ones from lords, dukes and sometimes the Crown. Who’s asking follows the district’s folk.') + '' +
         '<div class="two"><div class="field"><label for="q-district">District</label><select id="q-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
         '<div class="field"><label for="q-tier">Size</label><select id="q-tier">' + [['any', 'Any'], ['minor', 'Minor'], ['big', 'Big'], ['major', 'Major']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === qt ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div></div>' +
         '<div class="actions"><button type="button" class="btn' + (d ? '' : ' primary') + '" data-act="q-random">' + (d ? 'Another one' : 'Give me one') + '</button><button type="button" class="btn quiet" data-act="q-manual">' + (ui.qManual ? 'Close' : 'Write my own') + '</button></div>' +
@@ -3128,7 +3336,7 @@
     var crs = Object.keys(CR_XP);
     var sel = function (id, label, val, opts, any) { return '<div class="field"><label for="' + id + '">' + label + '</label><select id="' + id + '" data-monf="' + id.replace('mf-', '') + '"><option value="">' + any + '</option>' + opts.map(function (o) { o = Array.isArray(o) ? o : [o, o]; return '<option value="' + esc(o[0]) + '"' + (String(val) === String(o[0]) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; };
     var html = '<div class="page">' + dmTabs('monsters') + '<p class="note" style="margin:8px 0">' + list.length + ' of ' + allMonsters().length + ' monsters</p>' +
-      '<p class="guide">Your appendix: every monster and animal from the free SRD 5.2.1, plus your own. Players never see this page.</p>' +
+      '' + helpNote('monsters', 'Your appendix: every monster and animal from the free SRD 5.2.1, plus your own. Players never see this page.') + '' +
       '<div class="actions" style="margin:0 0 10px"><a class="btn primary" href="#/monsters/new">New monster</a></div>' +
       '<label class="search"><span class="sr">Search monsters</span>' + SEARCH_ICON + '<input id="mon-q" type="search" placeholder="Search by name or type…" value="' + esc(F.q) + '" autocomplete="off"></label>' +
       '<div class="mon-filters">' + sel('mf-type', 'Type', F.type, types, 'Any type') + sel('mf-size', 'Size', F.size, MON_SIZES, 'Any size') + sel('mf-crMin', 'CR from', F.crMin, crs, 'Any') + sel('mf-crMax', 'CR to', F.crMax, crs, 'Any') +
@@ -4262,7 +4470,7 @@
     var levels = [];
     for (var i = 0; i <= 9; i++) levels.push([String(i), levelText(i)]);
     var html = '<section class="hero"><div class="hero-in"><p class="eyebrow">Magic</p><h1>Spell Tomes</h1>' +
-      '<p class="crumbs">Each class list stops at 5th level for full casters and 4th for everyone else. Anything beyond that has to be found in a tome. Rarity is how hard that tome is to find. See <a href="#/a/spell-tomes">Spell Tomes</a>.</p></div></section><div class="page">';
+      '' + helpNote('spells', 'Each class list stops at 5th level for full casters and 4th for everyone else. Anything beyond that has to be found in a tome. Rarity is how hard that tome is to find. See <a href="#/a/spell-tomes">Spell Tomes</a>.') + '</div></section><div class="page">';
     html += '<div class="actions"><a class="btn' + (dmView() ? '' : ' primary') + '" href="#/spell-new">+ Homebrew spell</a></div>';
     if (dmView()) html += reviewHtml();
     else html += mySubmissionsHtml();
@@ -4446,7 +4654,7 @@
     var chars = campaignChars(camp.id), facs = factionsFor(camp.id);
     var q = (ui.repQuery || '').trim().toLowerCase();
     var html = '<div class="page"><p class="crumbs"><a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1 class="page-title">Reputation</h1>' +
-      '<p class="note">Every character starts somewhere with each faction, based on class, species, background and faith. Change a standing here or on their sheet. Players see theirs on the Reputation tab.</p>' +
+      '' + helpNote('reputation', 'Every character starts somewhere with each faction, based on class, species, background and faith. Change a standing here or on their sheet. Players see theirs on the Reputation tab.') + '' +
       '<label class="search"><span class="sr">Find a faction</span>' + SEARCH_ICON + '<input id="rep-q" type="search" placeholder="Find a faction…" value="' + esc(ui.repQuery || '') + '" autocomplete="off"></label>';
     if (!chars.length) html += '<div class="empty">No characters in this campaign yet.</div>';
     else facs.filter(function (a) { return !q || a.title.toLowerCase().indexOf(q) >= 0; }).forEach(function (a) {
@@ -4948,7 +5156,7 @@
     var q = (ui.shopQuery || '').trim().toLowerCase();
     var setts = settlementsFor(camp.id).filter(function (a) { return !q || a.title.toLowerCase().indexOf(q) >= 0 || shopsAt(a.id).some(function (s) { return s.name.toLowerCase().indexOf(q) >= 0; }); });
     var html = '<div class="page"><p class="crumbs"><a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1 class="page-title">Shops</h1>' +
-      '<p class="note">Only you see these. When the party walks into a shop, open it, pick who’s buying, and tap Sell. Coins and gear update on their sheet.</p>' +
+      '' + helpNote('shops', 'Only you see these. When the party walks into a shop, open it, pick who’s buying, and tap Sell. Coins and gear update on their sheet.') + '' +
       '<label class="search"><span class="sr">Find a place or shop</span>' + SEARCH_ICON + '<input id="shop-q" type="search" placeholder="Find a place or shop…" value="' + esc(ui.shopQuery || '') + '" autocomplete="off"></label>';
     if (!setts.length) html += '<div class="empty">No settlements' + (q ? ' match' : ' yet. Write a Settlement article first') + '.</div>';
     // Grouped by district, each place folded so 100 towns stay readable.
@@ -5166,7 +5374,15 @@
   }
   function contrabandMatch(name, list) {
     var k = String(name || '').toLowerCase().replace(/^(a|an|the|some)\s+|(clutch|crate|vial|twist|pouch|bundle|pinch|bag) of\s+/g, '').trim();
-    return list.filter(function (x) { var c = x.n.toLowerCase(); return c === k || (c.length > 4 && k.indexOf(c) >= 0) || (k.length > 4 && c.indexOf(k) >= 0); })[0] || null;
+    // A plain catalog item (a longsword) never matches a longer contraband name that happens to contain it (an unmarked Dornish steel longsword).
+    var plain = ITEMS.items.some(function (it) { return it.kind !== 'x' && it.name.toLowerCase() === k; });
+    // Nor does the honest version of a marked good: a Craghorn isn't an Unbranded Craghorn.
+    return list.filter(function (x) {
+      var c = x.n.toLowerCase(), c0 = c.replace(/\s*\([^)]*\)\s*$/, ''), honest = c0.replace(/^(unbranded|unmarked|unstamped|stolen|forged|poached|counterfeit)\s+/, '');
+      if (c === k || c0 === k) return true;
+      if (c0.length > 4 && k.indexOf(c0) >= 0) return true;
+      return !plain && honest !== c0 && (honest === k || honest.indexOf(k) === 0) ? false : !plain && k.length > 4 && c0.indexOf(k) >= 0;
+    })[0] || null;
   }
   function isContraband(name, campId) { return /^(unmarked\s+dornish[- ]steel|forged\b|counterfeit\b|fake\b)/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
   function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
@@ -5848,7 +6064,7 @@
       html += '<div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
     }
     if (mode === 'rules') {
-      html = '<div class="page narrow"><h1 class="page-title">Journey rules<small>' + esc(camp.name) + '</small></h1><p class="note">How fast the party moves on each kind of ground, boats, airships and weather. The day itself lives on the map: tap the date at the top of the Map.</p>' + html.slice(rulesAt) + '</div>';
+      html = '<div class="page narrow"><h1 class="page-title">Journey rules<small>' + esc(camp.name) + '</small></h1>' + helpNote('journey-rules', 'How fast the party moves on each kind of ground, boats, airships and weather. The day itself lives on the map: tap the date at the top of the Map.') + '' + html.slice(rulesAt) + '</div>';
     } else html = html.slice(0, rulesAt) + '</div>';
     $view.innerHTML = html;
   }
@@ -8215,7 +8431,7 @@
       '<div class="field"><button type="submit" class="btn">Start it</button></div></form></section>';
     if (cur) html += battleHtml(camp, cur, day);
     else html += '<div class="empty">No battles yet.</div>';
-    html += '<p class="note">Each unit takes one turn in initiative. Its attack uses the mob rules: the app works out how many soldiers it takes to land a hit against the target’s AC. Damage from spells and heroes goes straight onto a unit’s HP pool.</p></div>';
+    html += '' + helpNote('battles', 'Each unit takes one turn in initiative. Its attack uses the mob rules: the app works out how many soldiers it takes to land a hit against the target’s AC. Damage from spells and heroes goes straight onto a unit’s HP pool.') + '</div>';
     $view.innerHTML = html;
   }
   function battleHtml(camp, b, day) {
@@ -8782,6 +8998,9 @@
     if (!el) return;
     var act = el.getAttribute('data-act');
     var c = currentChar();
+    if (/^tabs-/.test(act) && tabsClick(el, act)) return;
+    if (act === 'help') { var hk = el.getAttribute('data-k'); ui.helpOpen = ui.helpOpen || {}; ui.helpOpen[hk] = !ui.helpOpen[hk]; render(); return; }
+    if (/^tk-/.test(act) && ticketClick(el, act)) return;
     if (/^(cb|lt|q)-/.test(act) && cbqClick(el, act)) return;
     if (act === 'backup') { downloadBackup(); return; }
     if (act === 'recap-view') { ui.recapView = el.getAttribute('data-v'); render(); return; }
@@ -9070,7 +9289,9 @@
       case 'newchar': ui.newChar = true; renderCharacters(); var f = document.getElementById('nc-name'); if (f) f.focus(); break;
       case 'newchar-cancel': ui.newChar = false; renderCharacters(); break;
       case 'sheet-edit': ui.sheetEdit = !ui.sheetEdit; ui.pendingDelete = null; render(); break;
-      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); render(); break;
+      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); ui.mSecs = false; render(); if (el.closest('.m-nav, .m-secs')) { var mvEl = document.querySelector('.m-vitals'), bh = (document.querySelector('header.bar') || {}).offsetHeight || 0; if (mvEl) window.scrollTo(0, Math.max(0, mvEl.getBoundingClientRect().top + scrollY - bh - 10)); } break;
+      case 'm-hp': ui.mHp = !ui.mHp; ui.mSecs = false; render(); break;
+      case 'm-secs': ui.mSecs = !ui.mSecs; render(); break;
       case 'hp': case 'mp':
         if (!c) return;
         var amt = Math.max(0, num(document.getElementById(act === 'hp' ? 'hp-amt' : 'mp-amt').value, 0));
@@ -9475,6 +9696,7 @@
     var f = e.target, c = currentChar();
     switch (f.id) {
       case 'auth-form': return submitAuth();
+      case 'ticket-form': return submitTicket();
       case 'edit-form': return saveEdit(f);
       case 'builder-form': return saveBuilder();
       case 'newchar-form': return createCharacter();
@@ -10516,7 +10738,7 @@
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
     var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Infusions'], ['curses', 'Blood curses']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
-    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1><p class="note" style="margin:6px 0 0">The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.</p></div>' +
+    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1>' + helpNote('rules', 'The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.') + '</div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
     if (tab === 'classes' || tab === 'subclasses') {
       var names = Object.keys(SRD.classes).concat(Object.keys(RULES.classes).filter(function (k) { return !SRD.classes[k]; }));
