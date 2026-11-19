@@ -4941,9 +4941,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'cw', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'hp', 'cw', 'ch', 'bg', 'art', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
-  KIND_LABEL.cw = 'Clockwork'; KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
+  KIND_LABEL.cw = 'Clockwork'; KIND_LABEL.hp = 'Copper helpers'; KIND_LABEL.va = 'Tableware & valuables'; KIND_LABEL.hd = 'Hides & animal parts'; KIND_LABEL.mt = 'Materials'; KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -5299,7 +5299,7 @@
       'tanned leather (a hide’s worth)', 2, 'leather strips (bundle)', 0.2, 'a sealskin', 3],
     parts: ['deer antlers', 1, 'goat horns', 0.3, 'boar tusks', 1, 'bear claws', 2, 'wolf teeth (a pouch)', 0.5, 'a ram’s skull', 0.5, 'fish scales (a jar)', 0.1, 'a hawk feather', 0.1,
       'bone meal (a sack)', 0.2, 'a horse skull', 0.3, 'a snake skin', 0.5, 'a crab shell', 0.1, 'sabre-tooth cat fangs', 5, 'a mammoth tusk', 50, 'troll fat (a jar)', 4, 'a giant’s tooth', 15],
-    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a gold ingot', 50,
+    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'silver ore (a sack)', 5, 'gold ore (a sack)', 15, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1,
       'a sack of coal', 0.2, 'a bag of nails', 0.05, 'iron hinges (pair)', 0.2, 'a lock and hasp', 0.5, 'a pane of glass', 1, 'a bundle of straw', 0.02, 'a lump of clay', 0.02,
       'a block of quarried stone', 0.1, 'sawn planks (a bundle)', 0.5, 'a bundle of firewood', 0.05, 'a coil of wire', 0.2, 'a jar of glue', 0.1, 'a bolt of linen', 1],
     children: ['a wooden sword', 0.05, 'a rag doll', 0.05, 'a toy horse', 0.1, 'a hobby horse', 0.2, 'a child’s tunic', 0.2, 'a child’s dress', 0.3, 'a spinning top', 0.02, 'a set of wooden blocks', 0.1,
@@ -5309,20 +5309,25 @@
   // Clockwork: wind it up and it does its one job, every time.
   var CLOCKWORK = ['a clockwork mouse that scurries in circles', 2, 'a clockwork songbird that sings three tunes', 15, 'a clockwork beetle that polishes boots', 12,
     'a clockwork frog that hops on the hour', 6, 'a clockwork owl that turns its head to follow you', 20, 'a clockwork crab that carries small things across a table', 10,
-    'a clockwork butler arm that pours tea', 45, 'a clockwork cat that purrs when stroked', 25, 'a pair of clockwork knights that duel each other', 18, 'a clockwork band of four tiny frogs', 60,
+    'a clockwork cat that purrs when stroked', 25, 'a pair of clockwork knights that duel each other', 18, 'a clockwork band of four tiny frogs', 60,
     'a clockwork dragon that puffs steam', 40, 'a clockwork fan that spins on its own', 8, 'a clockwork alarm clock that marches across the floor', 14, 'a clockwork spider that dusts the corners', 16,
-    'a clockwork turtle that carries a candle', 9, 'a clockwork fish that swims round a bowl', 11, 'a clockwork spoon that stirs your pot', 4, 'a clockwork nose-picker (it works, sadly)', 2,
-    'a clockwork dog that fetches slippers', 35, 'a clockwork snail that draws chalk spirals', 5, 'a pocket watch with a little dancing figure', 15, 'a clockwork bird that carries notes across a room', 22,
+    'a clockwork turtle that carries a candle', 9, 'a clockwork fish that swims round a bowl', 11, 'a clockwork spoon that stirs your pot', 4, 'a clockwork dog that fetches slippers', 35, 'a clockwork snail that draws chalk spirals', 5, 'a pocket watch with a little dancing figure', 15, 'a clockwork bird that carries notes across a room', 22,
     'a clockwork rocking horse that gallops in place', 30, 'a clockwork rooster that crows at dawn', 12, 'a wind-up dancing figure', 3, 'a clockwork monkey that claps cymbals', 5,
     'a clockwork bee that buzzes from flower to flower', 6, 'a clockwork squirrel that cracks nuts', 9, 'a clockwork card dealer', 28, 'a clockwork hand that waves from the window', 4,
     'a clockwork boot-shiner', 10, 'a clockwork page-turner for reading in bed', 8];
+  // Copper helpers: knee-high clockwork folk that each do one chore, all day. They go green with age and slow down until someone polishes them.
+  var HELPERS = ['a copper sorter that puts things back in the right chest', 120, 'a brass porter that follows you carrying a basket', 150, 'a copper sweeper that tidies one room a day', 80,
+    'a tin lamplighter that lights the candles at dusk and snuffs them at dawn', 60, 'a copper doorman that rings a bell when someone comes in', 50, 'a brass gardener that waters and weeds a small plot', 90,
+    'a copper stable hand that brushes and feeds one horse', 110, 'a copper page that fetches the book you name from a shelf', 140, 'a brass night watchman that walks the halls and rings if it sees a stranger', 220,
+    'a copper button-presser that pulls any lever or presses any button you point at', 70, 'a clockwork kitchen hand that turns the spit, stirs the pot and fetches water', 100,
+    'a little copper guard that sits on a chest and squeaks at anyone who opens it', 40, 'a copper courier that carries a note to any door in the same street', 65];
   var CLOCK_SUPPLIES = ['a spare winding key', 0.2, 'a tin of clock oil', 0.3, 'a bag of springs and cogs', 0.2];
-  var CLOCK_JOBS = ['Wind and oil any clockwork', 0.1, 'Mend a clockwork toy', 1, 'Build a clockwork to order (a week)', 50];
+  var CLOCK_JOBS = ['Wind and oil any clockwork', 0.1, 'Polish a green copper helper back to speed', 0.1, 'Mend a clockwork toy', 1, 'Build a clockwork to order (a week)', 50];
   var CLOCK_NOW = ['A brass owl on the top shelf swivels its head to watch you come in.', 'Three clockwork mice race each other along the counter and fall off the end. The keeper catches them without looking.',
     'A tin knight marches to the edge of a table, turns smartly, and marches back.', 'Somewhere behind the counter, forty clocks strike the hour at slightly different times.',
     'A clockwork frog band is halfway through a jig. The drummer frog is a beat behind.', 'A little brass dog trots up and drops a slipper at your feet.',
     'A clockwork spider is dusting the ceiling corners in neat spirals.', 'A clockwork rooster crows, though it is nowhere near dawn. The keeper sighs and adjusts it.',
-    'Every ticking thing in the shop goes quiet at once for a moment, then starts again.', 'A clockwork butler arm pours you a cup of tea you didn’t ask for.'];
+    'Every ticking thing in the shop goes quiet at once for a moment, then starts again.', 'A knee-high copper helper trundles past with a basket of spare cogs and puts it on exactly the right shelf.', 'An old copper helper, gone green, has stopped mid-step by the door. The keeper gives it a quick polish and off it goes again.', 'Two copper helpers are arguing over who gets to ring the door bell. Neither can talk, so it is mostly clanking.'];
   var SKY_KIND = { tableware: 'va', statues: 'va', hides: 'hd', parts: 'hd', materials: 'mt', children: 'j', jars: 'j' };
   var SKY_IN = {
     'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1]],
@@ -5361,6 +5366,7 @@
     var cw = { 'Tinker & toolmaker': [2, 4], 'General store': [0, 1], 'Magic shop': [0, 2] }[shop.kind];
     if (q && q[0] === 'inventor') cw = [2, 3];
     if (cw) pickPairs(CLOCKWORK, rint(cw[0], cw[1] + (size >= 3 ? 1 : 0))).forEach(function (p) { add(p, 'cw', 1); });
+    if (shop.kind === 'Tinker & toolmaker' && (size >= 3 || Math.random() < 0.3)) pickPairs(HELPERS, 1).forEach(function (p) { add(p, 'hp', 1); });
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
     if (q && Math.random() < 0.5) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); });
     (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
@@ -5446,6 +5452,7 @@
   var SPECIAL = {
     clockwork: function (shop, size, pm) {
       return pickPairs(CLOCKWORK, rint(12, 18)).map(function (c) { return { n: c[0], k: 'cw', p: niceCp(c[1] * 100 * pm * (0.9 + Math.random() * 0.3)) / 100, q: rint(1, 2) }; })
+        .concat(pickPairs(HELPERS, rint(4, 7)).map(function (c) { return { n: c[0], k: 'hp', p: niceCp(c[1] * 100 * pm * (0.9 + Math.random() * 0.3)) / 100, q: 1 }; }))
         .concat(pairs(CLOCK_SUPPLIES).map(function (c) { return { n: c[0], k: 'cw', p: c[1], q: rint(4, 12) }; }), pairs(CLOCK_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
     },
     books: function (shop, size, pm) { var rows = collectRows('books', rint(8, 12) + size * 2, pm); return rows.concat(collectRows('display', 1, pm)); },
@@ -5814,7 +5821,7 @@
     // The fun shelves fold away under "Browse the shelves" so the useful gear stays easy to find. Specialist shops keep theirs open: it's what they sell.
     var special = !!(ITEMS.shopKinds[shop.kind] || {}).special || !!((ITEMS.trades || {})[shop.trade] || {}).special;
     // The Skyrim effect: everything that makes a shop feel lived in folds here.
-    var FUN = special ? [] : ['cw', 'mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
+    var FUN = special ? [] : ['hp', 'cw', 'mm', 'bk', 'co', 'va', 'hd', 'mt', 'an', 'cu', 'j'], funHtml = '', funRows = [];
     var rowHtml = function (g) {
         var row = g.row, price = priceFor(shop, c, row), out = row.q !== null && row.q !== undefined && num(row.q, 0) <= 0;
         var left = row.q === null || row.q === undefined ? '' : ' · ' + num(row.q, 0) + ' left';
