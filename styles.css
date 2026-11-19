@@ -1140,3 +1140,13 @@ body.pk-open { overflow: hidden; }
 .recap-seg { margin: 8px 0 4px; }
 .recap-list { margin: 0; padding-left: 18px; }
 .recap-list li { margin: 4px 0; }
+
+/* Next day prompt and the date on the map */
+.day-ask { max-width: 440px; }
+.day-ask .dp-big { font-size: 22px; font-weight: 700; text-align: center; }
+.dp-res { min-height: 48px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.04); }
+.at-crumbs .at-date { margin-left: 8px; }
+.at-crumbs .at-next { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.jr-panel .hero-date { color: var(--muted); }
+.day-ask { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.day-ask [data-act="dp-cancel"] { font: 14px var(--ui); color: var(--muted); background: none; border: 0; padding: 4px 0; text-decoration: underline; cursor: pointer; }

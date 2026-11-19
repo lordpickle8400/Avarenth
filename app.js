@@ -346,9 +346,9 @@
     return { name: parts[0] || 'wiki', arg: parts[1] || '' };
   }
 
-  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['travel', 'Journey'], ['screen', 'DM screen'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
+  var NAV = [['map', 'Map'], ['wiki', 'Wiki'], ['party', 'Party'], ['screen', 'DM screen'], ['journey-rules', 'Journey rules'], ['shops', 'Shops'], ['holdings', 'Holdings'], ['realm', 'Realm'], ['battles', 'Battles'], ['reputation', 'Reputation'], ['crimes', 'Crimes'], ['spells', 'Spells'], ['homebrew', 'Homebrew'], ['rules', 'Rules'], ['members', 'Players']];
   var PLAYER_NAV = [['map', 'Map'], ['characters', 'Characters'], ['rules', 'Rules'], ['spells', 'Spells'], ['quests', 'Quests'], ['homebrew', 'Homebrew']];
-  var CAMP_ROUTES = { travel: 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
+  var CAMP_ROUTES = { travel: 1, 'journey-rules': 1, shops: 1, holdings: 1, realm: 1, battles: 1, reputation: 1, crimes: 1 };
   function renderChrome() {
     var r = parseRoute();
     document.body.classList.toggle('table-mode', isTable());
@@ -366,7 +366,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'travel', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'travel', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members' , recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = NAV.map(function (t) { return '<a href="#/' + t[0] + (CAMP_ROUTES[t[0]] ? cs : '') + '"' + (section === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('');
     $tabs.hidden = false;
@@ -406,7 +406,8 @@
       case 'pins': return renderMap(r.arg);
       case 'account': return renderAccount();
       case 'crimes': return renderCrimes(r.arg);
-      case 'travel': return renderTravel(r.arg);
+      case 'travel': AT.sel = { t: 'journey' }; AT.hist = []; location.replace('#/map'); return;
+      case 'journey-rules': var jrc = r.arg ? campaignBySlug(r.arg) : activeCamp(); if (!jrc) { $view.innerHTML = '<div class="page"><div class="empty">No campaign yet.</div></div>'; return; } return renderTravel(jrc.slug, 'rules');
       case 'map': return renderAtlas(r.arg);
       case 'map-edit': return renderMapEdit(r.arg);
       case 'campaign': return renderCampaign(r.arg);
@@ -2250,6 +2251,8 @@
     return CAL_DAYS[dt.wd] + ', the ' + ordinal(dt.d) + ' of ' + mo[0] + ', ' + dt.y + ' AC' + (folk ? ' (' + (dt.d <= 9 ? 'early ' : dt.d <= 19 ? 'mid-' : 'late ') + mo[1] + ')' : '');
   }
   function dayDate(t, day) { return calDate(calAbs(t, day == null ? t.day : day)); }
+  // A game day as a short date: "5 Aurelmas 412".
+  function dateShort(t, day) { var dt = dayDate(t, day == null ? (t ? t.day : 1) : day); return dt.m ? dt.d + ' ' + CAL_MONTHS[dt.m - 1][0] + ' ' + dt.y : 'Crowning Day ' + dt.y; }
   function dayLine(t, day) { var dt = dayDate(t, day), h = calHolidays(dt), se = dt.m ? SEASONS[dt.m] : ''; return calText(dt, true) + (se ? ' · ' + se.charAt(0).toUpperCase() + se.slice(1) : '') + (h.length ? ' · ' + h.join(', ') : ''); }
   function calNotesOn(t, dt) { return calOf(t).notes.filter(function (n) { return n.doy === dt.doy && (n.y == null || n.y === dt.y); }); }
   function saveCalendar(camp, cal) {
@@ -2719,7 +2722,7 @@
     // Behind the screen
     var ns = (t.notices || []).filter(function (n) { return since(n.day); });
     if (ns.length) html += sec('Behind the screen', ns.map(function (n) {
-      return '<div class="tbl-row"><div class="main"><b>' + (n.kind === 'hunters' ? 'Bounty hunters caught up' : n.searched ? 'Searched at ' + esc(midLabel(n.place)) : 'Through the gate at ' + esc(midLabel(n.place))) + '</b><span>Day ' + n.day +
+      return '<div class="tbl-row"><div class="main"><b>' + (n.kind === 'hunters' ? 'Bounty hunters caught up' : n.searched ? 'Searched at ' + esc(midLabel(n.place)) : 'Through the gate at ' + esc(midLabel(n.place))) + '</b><span>' + esc(dateShort(t, n.day)) +
         (n.kind === 'hunters' ? ' · ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) : n.carriers && n.carriers.length ? ' · carrying: ' + esc(n.carriers.map(function (c) { return c.name; }).join(', ')) : '') + '</span></div></div>';
     }).join('') + '<p class="note"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Open the Journey</a> to act on these.</p>', ns.length);
     // The law
@@ -2755,7 +2758,7 @@
       if (petty) lines.push('<li class="note">' + petty + ' bits of petty gossip</li>');
       if (!lines.length && !hol.length) continue;
       any = true;
-      html += '<section class="block recap-day"><h2 class="sec-title">Day ' + d + '<small>' + esc(calText(dayDate(t, d), true)) + (hol.length ? ' · ' + esc(hol.join(', ')) : '') + '</small></h2>' + (lines.length ? '<ul class="recap-list">' + lines.join('') + '</ul>' : '<p class="note">Quiet.</p>') + '</section>';
+      html += '<section class="block recap-day"><h2 class="sec-title">' + esc(dateShort(t, d)) + '<small>' + esc(CAL_DAYS[dayDate(t, d).wd] || '') + (hol.length ? ' · ' + esc(hol.join(', ')) : '') + '</small></h2>' + (lines.length ? '<ul class="recap-list">' + lines.join('') + '</ul>' : '<p class="note">Quiet.</p>') + '</section>';
     }
     return any ? html : '<div class="empty">Nothing happened in these days.</div>';
   }
@@ -3914,7 +3917,7 @@
         (stopCount ? '<button type="button" class="btn small' + (ui.showTowns ? ' primary' : '') + '" data-act="show-towns" aria-pressed="' + !!ui.showTowns + '">' + (ui.showTowns ? 'Hide' : 'Show') + ' towns, tolls & ruins (' + stopCount + ')</button>' : '') +
         '<a class="btn small" href="#/map-edit/' + encodeURIComponent(m.id) + '">Edit map</a></div>' +
         (Number(m.miles_across) ? '<p class="note" style="margin:0">Scale: ' + Math.round(Number(m.miles_across)) + ' miles across.</p>' : '');
-      if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">Day ' + tstate.day + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
+      if (tstate && tstate.map_id === m.id) html += '<div class="actions"><span class="tag plain" style="font-size:13px">' + esc(dateShort(tstate)) + '</span><button type="button" class="btn small primary" data-act="next-day" data-camp="' + esc(tcamp.id) + '">Next day →</button><a class="btn small quiet" href="#/travel/' + encodeURIComponent(tcamp.slug) + '">Journey</a></div>';
       if (tstate && tstate.map_id === m.id) html += arrivalBlock(tcamp, true);
       else if (tcamp && !Number(m.miles_across)) html += '<p class="note" style="margin:0">Tip: set this map’s width in miles under Edit map so travel can be measured.</p>';
       if (placing) html += '<div class="empty" style="padding:10px 14px;border-style:solid;border-color:var(--accent);color:var(--text)">Tap the map to place <b>' + esc(placing.kind === 'party' ? 'the party' : placing.kind === 'dest' ? 'the destination' : placing.kind === 'cal1' ? 'one end of the scale bar (e.g. the 0)' : placing.kind === 'cal2' ? 'the other end of the scale bar' : placing.kind === 'character' ? charName(placing.characterId) : placing.kind === 'shop' ? (shopById(placing.shopId) || {}).name || 'the shop' : placing.kind === 'newshop' ? 'the new shop' : placing.kind === 'toll' ? 'the toll (on the bridge itself)' : placing.kind === 'ruin' ? 'the ruin' : placing.markerId ? 'this marker' : 'a new pin') + '</b>. <button type="button" class="btn small quiet" data-act="place-cancel">Cancel</button></div>';
@@ -5562,14 +5565,14 @@
     if (!t) return '';
     if (t.map_id && (!markers[t.map_id] || grids[t.map_id] === undefined)) {
       ensureTravelMarkers(t).then(function () { if (parseRoute().name === 'campaign') render(); }).catch(function () {});
-      return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + '</h2><div class="empty">Checking the road…</div></section>';
+      return '<section class="block"><h2 class="sec-title">Journey · ' + esc(dateShort(t)) + '</h2><div class="empty">Checking the road…</div></section>';
     }
     var j = journey(t);
     var arr = arrivalBlock(camp);
     var line = airOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + ' · ' + fmtMiles(j.mpd) + ' a day by air' : boatOf(t) ? t.mode + ' · ' + (t.weather || 'Fair') + (j.byMap ? ' · route over water' : ' · ' + fmtMiles(j.mpd) + ' a day')
       : j.byMap ? t.mode + ' · ' + t.pace + ' pace · terrain from the map' : t.mode + ' · ' + t.pace + ' pace · ' + t.terrain + ' · ' + fmtMiles(j.mpd) + ' a day';
     var dest = j.remaining != null ? (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at ' + t.dest_label : '') : fmtMiles(j.remaining) + ' to ' + (t.dest_label || 'destination') + ' · about ' + j.days + (j.days === 1 ? ' day' : ' days')) : '';
-    return '<section class="block"><h2 class="sec-title">Journey · Day ' + t.day + ' · ' + esc(calText(dayDate(t), false)) + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
+    return '<section class="block"><h2 class="sec-title">Journey · ' + esc(calText(dayDate(t), false)) + '<small><a class="btn small quiet" href="#/travel/' + encodeURIComponent(camp.slug) + '">Open journey</a></small></h2>' +
       '<div class="tbl"><div class="tbl-row"><div class="main"><b>' + esc(dest || (dmView() ? j.problem : 'On the road')) + '</b><span>' + esc(line) + '</span></div>' +
       (j.map && (dmView() || j.map.visible_to_players) ? '<a class="btn small" href="#/map/' + encodeURIComponent(j.map.id) + '">Map</a>' : '') + '</div></div></section>' + arr;
   }
@@ -5653,6 +5656,65 @@
           '<div class="actions"><button type="button" class="btn small" data-act="log-watch" data-watch="' + w + '" data-camp="' + esc(camp.id) + '">Add to journey log</button><button type="button" class="btn small quiet" data-act="clear-watch" data-watch="' + w + '" data-camp="' + esc(camp.id) + '">Clear</button></div></div>';
       }).join('') + '<div class="actions">' + meetButton(camp.id, false) + '</div></section>';
   }
+  /* ---------- Next day: the night roll, then the day roll ----------
+     Tapping Next day opens a prompt that can't be clicked away: first the night's d20 and d100, then the new day's.
+     Each can be skipped. When both are done the day moves on, and any rolls that landed go in the journey log. */
+  function openDayPrompt(campId) {
+    if (!travel[campId]) return;
+    ['night', 'day'].forEach(function (w) { var st = watchState(campId, w); st.d20 = ''; st.d100 = ''; });
+    ui.dayPrompt = { campId: campId, step: 'night', done: {} };
+    drawDayPrompt();
+  }
+  function drawDayPrompt() {
+    var box = document.getElementById('day-prompt'), P = ui.dayPrompt;
+    if (!P) { if (box) box.remove(); document.body.classList.remove('modal-open'); return; }
+    if (!box) { box = document.createElement('div'); box.id = 'day-prompt'; box.className = 'ask-wrap'; document.body.appendChild(box); }
+    document.body.classList.add('modal-open');
+    var campId = P.campId, t = travel[campId], w = P.step, st = watchState(campId, w), chars = campaignChars(campId);
+    var when = w === 'night' ? 'The night of ' + dateShort(t, t.day) : 'The day: ' + dateShort(t, t.day + 1);
+    var auto = autoRegion(campId), pick = (ui.regionPick || {})[campId] || '';
+    box.innerHTML = '<div class="ask day-ask" role="dialog" aria-modal="true" aria-labelledby="dp-h">' +
+      '<p class="eyebrow" style="margin:0 0 4px;font-size:11px">' + (w === 'night' ? 'Step 1 of 2' : 'Step 2 of 2') + '</p>' +
+      '<h2 id="dp-h">' + (w === 'night' ? 'Night roll' : 'Day roll') + '</h2><p class="note" style="margin:0 0 10px">' + esc(when) + '. Rolled at the table: a d20 for how it goes (1 disaster, 5 or less bad, 15 or more good, 20 legendary), then a d100 for what happens.</p>' +
+      '<div class="field"><label for="dp-who">Who rolls</label><select id="dp-who" data-dp="who"><option value="">Someone</option>' + chars.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === st.who ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="two"><div class="field"><label for="dp-d20">d20</label><input class="input dp-big" type="number" id="dp-d20" min="1" max="20" inputmode="numeric" value="' + esc(st.d20) + '" data-dp="d20"></div>' +
+      '<div class="field"><label for="dp-d100">d100</label><input class="input dp-big" type="number" id="dp-d100" min="1" max="100" inputmode="numeric" value="' + esc(st.d100) + '" data-dp="d100"></div></div>' +
+      '<div class="field"><label for="dp-region">Where they are</label><select id="dp-region" data-dp="region"><option value="">' + esc(auto ? 'From the map: ' + REGION_LABEL[auto] : 'Not sure: all-isles lists') + '</option>' +
+        Object.keys(REGION_LABEL).map(function (k) { return '<option value="' + k + '"' + (pick === k ? ' selected' : '') + '>' + esc(REGION_LABEL[k]) + '</option>'; }).join('') + '</select></div>' +
+      '<div id="dp-res" class="dp-res">' + watchResultHtml(campId, w) + '</div>' +
+      '<div class="actions" style="margin:12px 0 0"><button type="button" class="btn primary" data-act="dp-next">' + (w === 'night' ? 'Next: the day roll ›' : 'Start the day ›') + '</button><button type="button" class="btn" data-act="dp-skip">Skip this roll</button></div>' +
+      '<p style="margin:10px 0 0"><button type="button" class="linkish note" data-act="dp-cancel">Not yet, stay on ' + esc(dateShort(t)) + '</button></p></div>';
+    var f = document.getElementById('dp-d20'); if (f && !st.d20) setTimeout(function () { f.focus(); }, 30);
+  }
+  function dayPromptInput(el) {
+    var P = ui.dayPrompt; if (!P) return;
+    var k = el.getAttribute('data-dp');
+    if (k === 'region') { ui.regionPick = ui.regionPick || {}; ui.regionPick[P.campId] = el.value; }
+    else watchState(P.campId, P.step)[k] = el.value;
+    var res = document.getElementById('dp-res'); if (res) res.innerHTML = watchResultHtml(P.campId, P.step);
+  }
+  function dayPromptStep(skip) {
+    var P = ui.dayPrompt; if (!P) return;
+    var r = watchResult(P.campId, P.step);
+    if (!skip) {
+      if (!r) return toast('Enter the d20, or skip this roll.');
+      if (!r.text) return toast('Now the d100, or skip this roll.');
+      P.done[P.step] = { who: watchState(P.campId, P.step).who, r: r };
+    }
+    if (P.step === 'night') { P.step = 'day'; drawDayPrompt(); return; }
+    finishDayPrompt();
+  }
+  function finishDayPrompt() {
+    var P = ui.dayPrompt, campId = P.campId, t = travel[campId], day = num(t.day, 1);
+    ui.dayPrompt = null; drawDayPrompt();
+    var rows = [['night', day], ['day', day + 1]].filter(function (x) { return P.done[x[0]]; }).map(function (x) {
+      var d = P.done[x[0]], who = d.who ? charById(d.who) : null;
+      return { campaign_id: campId, day: x[1], miles: 0, food_used: 0, map_id: t.map_id || null, text: (x[0] === 'day' ? 'Day' : 'Night') + (who ? ' (' + who.name + ' rolled ' + d.r.d20 + ')' : ' (rolled ' + d.r.d20 + ')') + ': ' + String(d.r.text).split(' Play: ')[0] };
+    });
+    var go = function () { rememberMapScroll(); nextDay(campId); };
+    if (!rows.length) return go();
+    sb.from('travel_log').insert(rows).then(function (res) { if (res.error) fail(res.error, 'Could not log the rolls.'); go(); });
+  }
   function logWatch(campId, w) {
     var t = travel[campId], r = watchResult(campId, w), st = watchState(campId, w);
     if (!t) return;
@@ -5666,7 +5728,8 @@
     }).then(function () { toast('Logged'); render(); }).catch(function (e) { fail(e, 'Could not log that.'); });
   }
 
-  function renderTravel(slug) {
+  // mode: 'panel' inside the map's journey panel; 'rules' for the Journey rules tab.
+  function renderTravel(slug, mode) {
     if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
     var camp = campaignBySlug(slug);
     if (!camp || !(isDM() || myCampaigns().indexOf(camp) >= 0)) { location.replace('#/wiki'); return; }
@@ -5681,11 +5744,12 @@
       if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
       return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
-    var html = '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>Day ' + t.day + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p></div></section><div class="page">';
+    var html = mode === 'panel' ? '<div class="jr-panel"><p class="hero-date" style="margin:0 0 8px">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p>'
+      : '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>' + esc(dateShort(t)) + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
     html += arrivalBlock(camp);
     if (dm) html += noticesBlock(camp);
-    if (dm) html += watchBlock(camp);
+    if (dm) html += '<div class="actions">' + meetButton(camp.id, false) + '</div>';
     var gridOn = j.map && grids[j.map.id];
     var boat = boatOf(t), air = airOf(t);
     var modeSel = dm ? '<div class="field"><label for="tr-mode">Mode</label><select id="tr-mode" data-travel="mode"><optgroup label="Over land">' +
@@ -5733,8 +5797,9 @@
     }
     html += '</section>';
     html += '<section class="block"><h2 class="sec-title">Journey log<small>' + log.length + ' entries</small></h2>' +
-      (log.length ? '<div class="tbl">' + log.map(function (l) { return '<div class="tbl-row"><div class="main"><b>Day ' + l.day + '</b><span>' + esc(l.text) + '</span></div>' + (Number(l.miles) ? '<span class="num">' + fmtMiles(Number(l.miles)) + '</span>' : '') + '</div>'; }).join('') + '</div>' : '<div class="empty">Nothing logged yet. Each “Next day” adds an entry.</div>') + '</section>';
+      (log.length ? '<div class="tbl">' + log.map(function (l) { return '<div class="tbl-row"><div class="main"><b>' + esc(dateShort(t, l.day)) + '</b><span>' + esc(l.text) + '</span></div>' + (Number(l.miles) ? '<span class="num">' + fmtMiles(Number(l.miles)) + '</span>' : '') + '</div>'; }).join('') + '</div>' : '<div class="empty">Nothing logged yet. Each “Next day” adds an entry.</div>') + '</section>';
 
+    var rulesAt = html.length;
     if (dm) {
       html += '<form class="form group-box" id="rules-form" novalidate data-camp="' + esc(camp.id) + '"><h2>Travel rules</h2>' +
         '<div class="two"><div class="field"><label for="ru-modes">Ways to travel</label><textarea id="ru-modes" style="min-height:120px">' + esc(r.modes.join('\n')) + '</textarea><span class="hint">One per line.</span></div>' +
@@ -5782,7 +5847,9 @@
         '<div class="field"><label for="cu-up">Upstream (multiplier)</label><input type="number" id="cu-up" step="0.05" min="0" value="' + r.current.up + '" inputmode="decimal"></div></div>';
       html += '<div class="actions"><button type="submit" class="btn primary">Save rules</button></div></form>';
     }
-    html += '</div>';
+    if (mode === 'rules') {
+      html = '<div class="page narrow"><h1 class="page-title">Journey rules<small>' + esc(camp.name) + '</small></h1><p class="note">How fast the party moves on each kind of ground, boats, airships and weather. The day itself lives on the map: tap the date at the top of the Map.</p>' + html.slice(rulesAt) + '</div>';
+    } else html = html.slice(0, rulesAt) + '</div>';
     $view.innerHTML = html;
   }
 
@@ -5965,7 +6032,7 @@
     var when = tw.d < 0.34 ? 'early in the day' : tw.d < 0.67 ? 'around midday' : 'late in the day';
     var step = s.list.length > 1 ? ' · ' + (s.i + 1) + ' of ' + s.list.length : '';
     if (tw.ruin) {
-      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
+      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">' + esc(dateShort(t)) + step + '</p>' +
         '<h2 id="ask-h">' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">Their road passes close to it ' + when + '.' + (tw.found ? ' They have been here before.' : ' They don’t know it’s there.') + '</p>' +
         (tw.desc ? '<p style="margin:0 0 10px;white-space:pre-line">' + esc(tw.desc) + '</p>' : '') +
         '<div class="actions" style="margin:0"><button type="button" class="btn primary" data-act="town-stop">Stop and explore</button><button type="button" class="btn" data-act="town-pass">Walk on by</button><button type="button" class="btn quiet" data-act="town-cancel">Cancel</button></div>' +
@@ -5974,7 +6041,7 @@
     }
     if (tw.toll) {
       var chars = campaignChars(s.campId), purse = chars.reduce(function (a, c) { return a + walletCp(c.sheet); }, 0);
-      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
+      box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">' + esc(dateShort(t)) + step + '</p>' +
         '<h2 id="ask-h">Toll at ' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">They reach it ' + when + '.</p>' +
         '<p style="margin:0 0 10px">The toll is <b>' + esc(money(tw.cp)) + '</b>: ' + partySize(t) + ' ' + (mounted(t) ? 'riding' : 'on foot') + '.</p>' +
         (chars.length ? '<div class="field" style="margin:0 0 10px"><label for="toll-payer">Who pays</label><select id="toll-payer"><option value="">Split across the party</option>' +
@@ -5983,7 +6050,7 @@
         '<p class="note" style="margin:8px 0 0">Talking past or going around: you run it at the table. The log just notes it.</p></div>';
       return;
     }
-    box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">Day ' + t.day + step + '</p>' +
+    box.innerHTML = '<div class="ask" role="dialog" aria-modal="true" aria-labelledby="ask-h"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">' + esc(dateShort(t)) + step + '</p>' +
       '<h2 id="ask-h">The road reaches ' + esc(tw.label) + '</h2><p class="note" style="margin:0 0 6px">They get there ' + when + '.' + (s.passed.length ? ' Already went through ' + esc(s.passed.join(', ')) + '.' : '') + '</p>' +
       (townWhat(tw.slug) ? '<p style="margin:0 0 10px">' + esc(townWhat(tw.slug)) + '</p>' : '') +
       '<p style="margin:0 0 12px"><b>Are they stopping or going through?</b></p>' +
@@ -6068,7 +6135,7 @@
         return arrival ? (arrival.ruin ? findRuin(arrival.ruin) : discover(arrival.slug)) : null;
       }).then(function () {
         return Promise.all([loadTravel(), t.map_id ? loadMarkers(t.map_id) : null]);
-      }).then(function () { toast(arrival ? 'Arrived at ' + midLabel(arrival.label) : 'Day ' + (day + 1)); render(); });
+      }).then(function () { toast(arrival ? 'Arrived at ' + midLabel(arrival.label) : dateShort(t, day + 1)); render(); });
     }).catch(function (e) { fail(e, 'Could not advance the day.'); });
   }
 
@@ -6125,7 +6192,7 @@
     list.forEach(function (n) {
       html += '<div class="group-box notice ' + n.kind + '"><button type="button" class="linkish cb-x notice-x" data-act="notice-x" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '" aria-label="Dismiss">×</button>';
       if (n.kind === 'gate') {
-        html += '<p class="notice-h"><b>' + (n.searched ? 'Guards search packs at ' : 'Through the gate at ') + esc(midLabel(n.place)) + '</b> <small>Day ' + n.day + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>';
+        html += '<p class="notice-h"><b>' + (n.searched ? 'Guards search packs at ' : 'Through the gate at ') + esc(midLabel(n.place)) + '</b> <small>' + esc(dateShort(t, n.day)) + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>';
         if (!n.searched) html += '<p class="note" style="margin:0">Nobody stopped them.</p>';
         else if (!n.carriers.length) html += '<p class="note" style="margin:0">The guards find nothing worth their time.</p>';
         else {
@@ -6136,7 +6203,7 @@
           });
         }
       } else if (n.kind === 'hunters') {
-        html += '<p class="notice-h"><b>Bounty hunters catch up</b> <small>Day ' + n.day + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>' +
+        html += '<p class="notice-h"><b>Bounty hunters catch up</b> <small>' + esc(dateShort(t, n.day)) + ' · rolled ' + n.roll + ' vs ' + n.chance + '%</small></p>' +
           '<p style="margin:0 0 6px">After ' + esc(n.after.join(', ')) + ', for ' + n.bounty.toLocaleString() + ' gp: ' + esc(n.group.map(function (g) { return (g.n > 1 ? g.n + ' × ' : '') + g.name; }).join(', ')) + '.</p>' +
           '<button type="button" class="btn small primary" data-act="hunt-fight" data-camp="' + esc(camp.id) + '" data-id="' + n.id + '">Set up the fight</button>';
       }
@@ -6374,12 +6441,12 @@
     var dm = dmView(), a = ar.slug ? articleBySlug(ar.slug) : null, known = a && (dm || !a.hidden);
     if (ar.ruin) {
       var rm = null; Object.keys(markers).forEach(function (k) { (markers[k] || []).forEach(function (x) { if (x.id === ar.ruin) rm = x; }); });
-      return '<section class="block arrival"><h2 class="sec-title">They stopped at ' + esc(midLabel(ar.label)) + '<small>Day ' + esc(ar.day) + '</small></h2><div class="group-box">' +
+      return '<section class="block arrival"><h2 class="sec-title">They stopped at ' + esc(midLabel(ar.label)) + '<small>' + esc(dateShort(t, ar.day)) + '</small></h2><div class="group-box">' +
         (dm && rm && rm.info && rm.info.desc ? '<p style="margin:0;white-space:pre-line">' + esc(rm.info.desc) + '</p>' : '<p class="note" style="margin:0">A place off the road, not a town.</p>') +
         (dm && !compact ? '<div class="actions"><button type="button" class="btn small quiet" data-act="arr-leave" data-camp="' + esc(camp.id) + '">Done here</button></div>' : '') + '</div></section>';
     }
     var facts = known ? ['Type', 'Region', 'Holder', 'Ruler', 'Population'].filter(function (k) { return a.fields && a.fields[k]; }).map(function (k) { return '<span><b>' + esc(k) + ':</b> ' + inline(String(a.fields[k])) + '</span>'; }) : [];
-    var html = '<section class="block arrival"><h2 class="sec-title">You’ve arrived at ' + esc(ar.label) + '<small>Day ' + esc(ar.day) + '</small></h2><div class="group-box">' +
+    var html = '<section class="block arrival"><h2 class="sec-title">You’ve arrived at ' + esc(ar.label) + '<small>' + esc(dateShort(t, ar.day)) + '</small></h2><div class="group-box">' +
       (known ? (a.summary ? '<p style="margin:0 0 6px">' + inline(a.summary) + '</p>' : '') + (facts.length ? '<p class="arr-facts">' + facts.join('') + '</p>' : '') + '<div class="actions" style="margin:6px 0 0"><a class="btn small" href="#/a/' + encodeURIComponent(a.slug) + '">Read about ' + esc(a.title) + '</a></div>'
         : '<p class="note" style="margin:0">' + (dm ? 'No wiki page for ' + esc(ar.label) + ' yet.' : 'Nothing written about this place yet.') + '</p>');
     if (dm && !compact) {
@@ -8812,7 +8879,10 @@
       case 'spell-delete': return deleteSpell(el.getAttribute('data-name'));
       case 'new-article': ui.editCampaign = el.getAttribute('data-campaign') || null; go('#/new'); break;
       case 'crime-filter': ui.crimeFilter = el.getAttribute('data-f'); render(); break;
-      case 'next-day': el.disabled = true; rememberMapScroll(); nextDay(el.getAttribute('data-camp')); break;
+      case 'next-day': openDayPrompt(el.getAttribute('data-camp')); break;
+      case 'dp-next': dayPromptStep(false); break;
+      case 'dp-skip': dayPromptStep(true); break;
+      case 'dp-cancel': ui.dayPrompt = null; drawDayPrompt(); break;
       case 'show-towns': ui.showTowns = !ui.showTowns; rememberMapScroll(); render(); break;
       case 'town-stop': townDecide(true); break;
       case 'town-pass': townDecide(false); break;
@@ -9291,9 +9361,11 @@
   });
 
   // Recalculate derived numbers once a field is finished.
+  document.addEventListener('input', function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute('data-dp')) dayPromptInput(t); });
   document.addEventListener('change', function (e) {
     var t = e.target;
     if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
+    if (t.hasAttribute && t.hasAttribute('data-dp')) { dayPromptInput(t); return; }
     if (t.getAttribute && t.getAttribute('data-temper')) { var rc = t.getAttribute('data-camp'), RR = clone(realm[rc]); RR.factions.forEach(function (x) { if (x.id === t.getAttribute('data-temper')) x.temper = t.value; }); return saveRealm(rc, RR, 'Temperament changed'); }
     if (t.id === 'hd-kind') { ui.holdKind = t.value; ui.holdVessel = null; ui.holdDraftName = (document.getElementById('hd-name') || {}).value || ''; return render(); }
     if (t.id === 'hd-vessel' && ui.holdEdit === 'new') { ui.holdVessel = t.value; ui.holdDraftName = (document.getElementById('hd-name') || {}).value || ''; return render(); }
@@ -9715,7 +9787,9 @@
   }
   function crumbsHtml(w) {
     var el = document.getElementById('at-crumbs');
-    if (!w.city) { el.innerHTML = '<b>' + esc(w.name) + '</b>' + (AT.placing ? '<span class="at-placing">Tap the map to ' + (AT.placing === 'party' ? 'move the party' : AT.placing === 'tpin' ? 'drop your pin' : 'set the destination') + ' <button type="button" class="at-btn small" data-at="place-cancel">Cancel</button></span>' : ''); return; }
+    var jc = activeCamp(), jt = jc && travel[jc.id] && travel[jc.id].map_id === (w.map || {}).id ? travel[jc.id] : null;
+    var dayBits = jt && isDM() && !TABLE ? '<button type="button" class="at-btn small at-date" data-at="party" title="Open the journey">' + esc(dateShort(jt)) + '</button><button type="button" class="at-btn small at-next" data-act="next-day" data-camp="' + esc(jc.id) + '">Next day ›</button>' : '';
+    if (!w.city) { el.innerHTML = '<b>' + esc(w.name) + '</b>' + dayBits + (AT.placing ? '<span class="at-placing">Tap the map to ' + (AT.placing === 'party' ? 'move the party' : AT.placing === 'tpin' ? 'drop your pin' : 'set the destination') + ' <button type="button" class="at-btn small" data-at="place-cancel">Cancel</button></span>' : ''); return; }
     var c = w.city;
     el.innerHTML = '<button type="button" class="at-btn small" data-at="isles">‹ ' + esc((islesMap() || {}).name || 'The isles') + '</button><b>' + esc(c.city.name) + '</b>' +
       (c.city.levels.length > 1 ? '<label class="sr" for="at-level">Level</label><select id="at-level" class="at-sel">' + c.city.levels.map(function (l) { return '<option value="' + esc(l.id) + '"' + (l.id === c.level.id ? ' selected' : '') + '>' + esc((/^-?\d+$/.test(l.id) ? 'Level ' + l.id + ': ' : '') + l.name) + '</option>'; }).join('') + '</select>' : '');
@@ -10058,11 +10132,11 @@
       body.innerHTML = '<div id="at-shop"></div>';
       intoPanel(document.getElementById('at-shop'), function () { renderShop(sel.id); });
     } else if (sel.t === 'journey') {
-      title.textContent = 'The party' + (camp && travel[camp.id] ? ' · Day ' + travel[camp.id].day : '');
+      title.textContent = 'The journey' + (camp && travel[camp.id] ? ' · ' + dateShort(travel[camp.id]) : '');
       var pmk = m ? partyMarker(m.id) : null;
       body.innerHTML = '<div class="at-acts">' + (pmk ? '<button type="button" class="btn small" data-at="fly" data-x="' + pmk.x + '" data-y="' + pmk.y + '">Show the party</button>' : '') +
         '<button type="button" class="btn small" data-at="place" data-what="party">Move the party</button><button type="button" class="btn small" data-at="place" data-what="dest">Set destination</button><button type="button" class="btn small" data-act="tshow-party">Show the table</button><a class="btn small quiet" href="#/party">Roster</a></div>' + partyStrip() + '<div id="at-journey"></div>';
-      if (camp) intoPanel(document.getElementById('at-journey'), function () { renderTravel(camp.slug); });
+      if (camp) intoPanel(document.getElementById('at-journey'), function () { renderTravel(camp.slug, 'panel'); });
     } else if (sel.t === 'mark') {
       var c = cityOfKey(sel.key), mk2 = c ? (c.level.marks || []).filter(function (x) { return x.n === sel.n; })[0] : null;
       title.textContent = mk2 ? mk2.n + '. ' + mk2.name : 'Key';
@@ -10603,7 +10677,7 @@
     var camp = activeCamp(), t = camp && travel[camp.id];
     if (!t) return '<div class="empty">No journey yet.</div>';
     var j = journey(t);
-    var html = '<p class="at-big">Day ' + esc(t.day) + '</p><p class="note" style="margin:-4px 0 8px">' + esc(dayLine(t)) + '</p>';
+    var html = '<p class="at-big">' + esc(dateShort(t)) + '</p><p class="note" style="margin:-4px 0 8px">' + esc(dayLine(t)) + '</p>';
     if (j.remaining != null) html += '<p class="prose">' + (j.remaining < 0.1 ? 'Arrived' + (t.dest_label ? ' at <b>' + esc(t.dest_label) + '</b>' : '') + '.' : 'Heading for <b>' + esc(t.dest_label || 'the destination') + '</b>: ' + fmtMiles(j.remaining) + ', about ' + j.days + (j.days === 1 ? ' day' : ' days') + ' ' + esc(String(t.mode || '').toLowerCase() === 'on foot' ? 'on foot' : 'by ' + String(t.mode || 'road').toLowerCase()) + '.') + '</p>';
     else html += '<p class="prose">On the road.</p>';
     if (t.weather) html += '<p class="note">Weather: ' + esc(t.weather) + '</p>';
