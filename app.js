@@ -3861,6 +3861,7 @@
     }).join('') + '</div>';
   }
   function mapImageUrl(path) {
+    if (/^(\.\/|https?:)/.test(String(path || ''))) return Promise.resolve(path);   // a picture shipped with the app itself
     var hit = mapUrls[path];
     if (hit && hit.until > Date.now()) return Promise.resolve(hit.url);
     return sb.storage.from('maps').createSignedUrl(path, 3600).then(function (r) {
@@ -4156,7 +4157,7 @@
       return id ? sb.from('maps').update(row).eq('id', id) : sb.from('maps').insert(Object.assign({ id: mapId }, row));
     }).then(function (r) {
       if (r.error) throw r.error;
-      if (old && row.image_path && old.image_path) sb.storage.from('maps').remove([old.image_path]);
+      if (old && row.image_path && old.image_path && !/^(\.\/|https?:)/.test(old.image_path)) sb.storage.from('maps').remove([old.image_path]);
       return loadMaps();
     }).then(function () { toast('Map saved'); go('#/map/' + encodeURIComponent(mapId)); })
       .catch(function (e) { console.error(e); show(e && e.message ? e.message : 'Could not save the map.'); });
@@ -8923,7 +8924,7 @@
         var dm0 = mapById(dmid);
         sb.from('maps').delete().eq('id', dmid).then(function (r) {
           if (r.error) return fail(r.error, 'Could not delete the map.');
-          if (dm0 && dm0.image_path) sb.storage.from('maps').remove([dm0.image_path]);
+          if (dm0 && dm0.image_path && !/^(\.\/|https?:)/.test(dm0.image_path)) sb.storage.from('maps').remove([dm0.image_path]);
           ui.pendingDelete = null;
           loadMaps().then(function () { toast('Map deleted'); go('#/wiki'); });
         });
