@@ -2006,7 +2006,7 @@
     Record: '<path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"/>',
     Notes: '<path d="M5 19l1-4L16 5l3 3L9 18zM14 7l3 3"/>'
   };
-  var M_NAME = { Abilities: 'Abilities, Saves, Senses', Features: 'Features & Traits', Profs: 'Proficiencies & Training' };
+  var M_NAME = { Abilities: 'Stats & Saves', Actions: 'Combat', Inventory: 'Pack', Spells: 'Magic', Features: 'Traits', Profs: 'Training', Background: 'Story', Reputation: 'Standing', Notes: 'Journal' };
   var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
   function mIcon(k) { return '<svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true">' + (M_ICON[k] || '') + '</svg>'; }
   function csPhone(c, s, full, o) {
@@ -2022,11 +2022,12 @@
       (can && cd && num(s.level, 1) < 20 ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') + '</div>';
     // The stat card: armor, initiative, inspiration, hit points; then rest, edit, mana and conditions.
     h += '<div class="m-card"><div class="m-row1">' +
-      '<div class="mc mc-ac" title="' + esc(o.acNow.how) + '"><span class="k">Armor</span><b>' + o.acNow.ac + '</b><span class="k">Class</span></div>' +
+      '<button type="button" class="mc mc-hp' + low + '" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Hit points</span><b>' + cur + '<small>/' + max + '</small></b>' + (tmp ? '<span class="mc-tmp">+' + tmp + ' temp</span>' : '<span class="mc-bar"><i style="width:' + o.hpPct + '%"></i></span>') + '</button>' +
+      '<div class="mc mc-ac" title="' + esc(o.acNow.how) + '"><b>' + o.acNow.ac + '</b><span class="k">Armor</span></div>' +
       '<div class="mc mc-init"><b>' + signed(o.init) + '</b><span class="k">Initiative</span></div>' +
-      (can ? '<button type="button" class="mc mc-insp" data-act="inspiration" aria-pressed="' + !!s.inspiration + '"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic<br>inspiration</span></button>'
-        : '<div class="mc mc-insp"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic<br>inspiration</span></div>') +
-      '<button type="button" class="mc mc-hp' + low + '" data-act="m-hp" aria-expanded="' + !!ui.mHp + '"><span class="k">Hit points</span><b>' + cur + '<small>/' + max + '</small></b>' + (tmp ? '<span class="mc-tmp">+' + tmp + ' temp</span>' : '<span class="mc-bar"><i style="width:' + o.hpPct + '%"></i></span>') + '</button></div>' +
+      (can ? '<button type="button" class="mc mc-insp" data-act="inspiration" aria-pressed="' + !!s.inspiration + '"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic</span></button>'
+        : '<div class="mc mc-insp"><b>' + (s.inspiration ? '★' : '☆') + '</b><span class="k">Heroic</span></div>') +
+      '</div>' +
       '<div class="m-row2">' +
       (can ? '<button type="button" class="mc2" data-act="m-rest" aria-expanded="' + !!ui.mRest + '" aria-label="Rest"><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 20l7-14 7 14M12 6v14M9 20l3-5 3 5"/></svg><span>Rest</span></button>' +
         '<button type="button" class="mc2" data-act="sheet-edit" aria-label="Edit sheet"><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Edit</span></button>' : '') +
@@ -2048,10 +2049,13 @@
     else if (t === 'Profs') body = '<div class="m-trio m-one">' + csStat('Proficiency bonus', signed(o.pb), '') + '</div>' + csProfsHtml(s, cd, o.sp0);
     else if (t === 'Background') body = csBackgroundHtml(c, s, o.sp0);
     else body = sheetTab(c, s, false, can, o.abil, o.pb, o.perc);
-    h += '<i class="m-anchor"></i><div class="m-secbar"><span class="m-sname">' + mIcon(t) + esc(name(t)) + '</span><button type="button" class="m-menu" data-act="m-secs" aria-expanded="' + !!ui.mSecs + '" aria-label="All sections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div>';
+    var ti = tabs.indexOf(t), prev = tabs[(ti - 1 + tabs.length) % tabs.length], next = tabs[(ti + 1) % tabs.length];
+    h += '<i class="m-anchor"></i><div class="m-secbar"><button type="button" class="m-step" data-act="sheet-tab" data-tab="' + prev + '" aria-label="Back to ' + esc(name(prev)) + '">‹</button>' +
+      '<button type="button" class="m-sname" data-act="m-secs" aria-expanded="' + !!ui.mSecs + '">' + mIcon(t) + '<span>' + esc(name(t)) + '</span><small>' + (ti + 1) + '/' + tabs.length + '</small></button>' +
+      '<button type="button" class="m-step" data-act="sheet-tab" data-tab="' + next + '" aria-label="On to ' + esc(name(next)) + '">›</button></div>';
     h += '<section class="m-panel" data-tabs="' + tabs.join(',') + '" aria-label="' + esc(name(t)) + '">' + body + '</section>';
-    if (ui.mSecs) h += '<div class="m-secs" role="dialog" aria-modal="true" aria-label="Sections"><div class="m-secs-top"><button type="button" class="m-x" data-act="m-secs" aria-label="Close">✕</button></div><div class="m-secs-list">' +
-      tabs.map(function (k) { return '<button type="button" data-act="sheet-tab" data-tab="' + k + '"' + (k === t ? ' aria-current="true"' : '') + '>' + mIcon(k) + esc(name(k)) + '</button>'; }).join('') + '</div></div>';
+    if (ui.mSecs) h += '<div class="m-veil" data-act="m-secs"></div><div class="m-sheet" role="dialog" aria-modal="true" aria-label="Sections"><div class="m-grip" aria-hidden="true"></div><div class="m-tiles">' +
+      tabs.map(function (k) { return '<button type="button" data-act="sheet-tab" data-tab="' + k + '"' + (k === t ? ' aria-current="true"' : '') + '>' + mIcon(k) + '<span>' + esc(name(k)) + '</span></button>'; }).join('') + '</div></div>';
     return h;
   }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ui.mSecs) { ui.mSecs = false; render(); } });
@@ -9325,7 +9329,7 @@
       case 'newchar': ui.newChar = true; renderCharacters(); var f = document.getElementById('nc-name'); if (f) f.focus(); break;
       case 'newchar-cancel': ui.newChar = false; renderCharacters(); break;
       case 'sheet-edit': ui.sheetEdit = !ui.sheetEdit; ui.pendingDelete = null; render(); break;
-      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); var fromMenu = !!el.closest('.m-secs'); ui.mSecs = false; render(); if (fromMenu) mSecTop(); break;
+      case 'sheet-tab': ui.sheetTab = el.getAttribute('data-tab'); var fromMenu = !!el.closest('.m-sheet, .m-secbar'); ui.mSecs = false; render(); if (fromMenu) mSecTop(); break;
       case 'm-hp': ui.mHp = !ui.mHp; ui.mSecs = false; ui.mCond = false; ui.mRest = false; render(); break;
       case 'm-cond': ui.mCond = !ui.mCond; ui.mHp = false; ui.mRest = false; render(); break;
       case 'm-rest': ui.mRest = !ui.mRest; ui.mHp = false; ui.mCond = false; render(); break;

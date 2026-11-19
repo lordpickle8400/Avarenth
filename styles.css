@@ -1305,3 +1305,22 @@ body.pk-open { overflow: hidden; }
 body:has(.m-secs) { overflow: hidden; }
 .m-panel .cs-mini { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .m-panel .cs-mini .cs-stat:nth-child(3) { display: none; }
+/* Avarenth's own take: hit points lead, plain AC tile with a gold crest, stepper header, tile picker from the bottom. */
+.m-row1 { grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(52px, 1fr)); }
+.mc-ac { border-radius: 6px; border-top: 3px solid var(--accent); }
+.mc-hp b { font-size: 30px; }
+.m-secbar { padding: 6px 12px; gap: 6px; }
+.m-step { flex: none; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 50%; background: var(--bg); color: var(--text); font-size: 22px; line-height: 1; cursor: pointer; }
+.m-secbar .m-sname { flex: 1; justify-content: center; min-height: 40px; padding: 0 8px; border: 0; border-radius: 6px; background: none; color: var(--text); font-family: var(--ui); cursor: pointer; }
+.m-secbar .m-sname span { overflow: hidden; text-overflow: ellipsis; }
+.m-secbar .m-sname small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.m-secbar .m-sname[aria-expanded="true"] { background: var(--soft); }
+.m-veil { position: fixed; inset: 0; z-index: 49; background: rgba(0,0,0,.55); }
+.m-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 8px 14px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--panel); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: 0 -12px 32px rgba(0,0,0,.5); max-height: 80dvh; overflow: auto; }
+.m-grip { width: 40px; height: 4px; margin: 0 auto 12px; border-radius: 2px; background: var(--line); }
+.m-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.m-tiles button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 76px; padding: 8px 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font-family: var(--ui); font-size: 13px; font-weight: 600; cursor: pointer; }
+.m-tiles button .m-ic { width: 24px; height: 24px; color: var(--muted); }
+.m-tiles button[aria-current="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+.m-tiles button[aria-current="true"] .m-ic { color: var(--accent-ink); }
+body:has(.m-sheet) { overflow: hidden; }
