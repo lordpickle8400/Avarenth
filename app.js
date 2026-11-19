@@ -9723,7 +9723,7 @@
   function layersHtml() {
     var w = atlasWorld(), L = AT.layers;
     var opts = w && w.city ? [['marks', 'Numbered key']] : [['labels', 'Names'], ['towns', 'Towns and villages'], ['shops', 'Shop counts'], ['ruins', 'Ruins'], ['tolls', 'Tolls'], ['party', 'Party, route and trail'], ['tpins', 'The party’s own pins'], ['grid', 'Travel roads (what the app uses)']];
-    document.getElementById('at-layers').innerHTML = '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('');
+    document.getElementById('at-layers').innerHTML = '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('') + (isDM() && !TABLE && w && w.map && !w.city ? '<div class="actions" style="margin-top:8px"><a class="btn small" href="#/map-edit/' + encodeURIComponent(w.map.id) + '">Edit this map</a><a class="btn small quiet" href="#/pins/' + encodeURIComponent(w.map.id) + '">Edit pins</a></div>' : '');
   }
 
   /* ---------- View math ---------- */
