@@ -5306,7 +5306,7 @@
       'tanned leather (a hide’s worth)', 2, 'leather strips (bundle)', 0.2, 'a sealskin', 3],
     parts: ['deer antlers', 1, 'goat horns', 0.3, 'boar tusks', 1, 'bear claws', 2, 'wolf teeth (a pouch)', 0.5, 'a ram’s skull', 0.5, 'fish scales (a jar)', 0.1, 'a hawk feather', 0.1,
       'bone meal (a sack)', 0.2, 'a horse skull', 0.3, 'a snake skin', 0.5, 'a crab shell', 0.1, 'sabre-tooth cat fangs', 5, 'a mammoth tusk', 50, 'troll fat (a jar)', 4, 'a giant’s tooth', 15],
-    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'silver ore (a sack)', 5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a silver ingot', 10, 'a gold ingot', 50,
+    materials: ['iron ore (a sack)', 0.5, 'copper ore (a sack)', 0.5, 'silver ore (a sack)', 5, 'an iron ingot', 1, 'a steel ingot', 2, 'a copper ingot', 1, 'a gold ingot', 50,
       'a sack of coal', 0.2, 'a bag of nails', 0.05, 'iron hinges (pair)', 0.2, 'a lock and hasp', 0.5, 'a pane of glass', 1, 'a bundle of straw', 0.02, 'a lump of clay', 0.02,
       'a block of quarried stone', 0.1, 'sawn planks (a bundle)', 0.5, 'a bundle of firewood', 0.05, 'a coil of wire', 0.2, 'a jar of glue', 0.1, 'a bolt of linen', 1],
     children: ['a wooden sword', 0.05, 'a rag doll', 0.05, 'a toy horse', 0.1, 'a hobby horse', 0.2, 'a child’s tunic', 0.2, 'a child’s dress', 0.3, 'a spinning top', 0.02, 'a set of wooden blocks', 0.1,
