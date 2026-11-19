@@ -4941,9 +4941,9 @@
   var ITEMS = window.AVARENTH_ITEMS || { items: [], shopKinds: {}, placeTags: {}, sizes: ['Hamlet', 'Village', 'Town', 'City', 'Capital'] };
   var SIZES = ITEMS.sizes;
   var KIND_LABEL = { sw: 'Simple weapons', mw: 'Martial weapons', rw: 'Ranged weapons', am: 'Ammunition', la: 'Light armor', ma: 'Medium armor', ha: 'Heavy armor', sh: 'Shields', g: 'Gear', c: 'Clothing', f: 'Food & drink', s: 'Services', t: 'Artisan’s tools', k: 'Kits', gm: 'Games', i: 'Instruments', p: 'Potions & alchemy', fo: 'Spellcasting', h: 'Holy goods', m: 'Mounts & animals', tk: 'Tack', v: 'Vehicles', b: 'Boats', x: 'Contraband', z: 'Oddities & other' };
-  var KIND_ORDER = ['s', 'f', 'g', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'an', 'cu', 'j', 'x', 'z'];
+  var KIND_ORDER = ['s', 'f', 'g', 'mm', 'c', 'sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh', 'p', 'fo', 'h', 't', 'k', 'gm', 'i', 'm', 'tk', 'v', 'b', 'ch', 'bg', 'art', 'bk', 'co', 'an', 'cu', 'j', 'x', 'z'];
   KIND_LABEL.j = 'Odds & ends'; KIND_LABEL.an = 'Live animals & eggs'; KIND_LABEL.cu = 'Curios';
-  KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
+  KIND_LABEL.mm = 'Everyday magic'; KIND_LABEL.bk = 'Books'; KIND_LABEL.co = 'Collectibles & trophies'; KIND_LABEL.bg = 'Bugs'; KIND_LABEL.ch = 'Cheese'; KIND_LABEL.art = 'Art';
   var WEAPON_ARMOR = ['sw', 'mw', 'rw', 'am', 'la', 'ma', 'ha', 'sh'];
   var SELL_MULT = { Hostile: null, Cold: 1.25, Neutral: 1, Friendly: 0.95, Allied: 0.9, Devoted: 0.8 };   // what they charge
   var BUY_MULT = { Hostile: null, Cold: 0.4, Neutral: 0.5, Friendly: 0.55, Allied: 0.6, Devoted: 0.65 };  // what they pay for your goods
@@ -5212,7 +5212,7 @@
       'a kitten', 0.05, 'a tortoise', 1, 'a tin of worms (bait)', 0.01, 'a jar of crickets', 0.01, 'a rabbit', 0.2, 'a ferret', 1],
     stable: ['a barn cat', 0.05, 'a bad-tempered goat', 1, 'a piglet', 1, 'a sheepdog pup', 5, 'a goose (it bites)', 0.2, 'a pair of ducks', 0.3, 'a mastiff pup', 10, 'an old pony', 15,
       'a donkey with opinions', 6, 'a milk cow', 10],
-    odd: ['a firenewt egg, kept warm', 60, 'a trained hawk', 50, 'a raven that says one word', 15, 'a parrot that swears', 20, 'a monkey in a waistcoat', 25, 'a giant snail (very calm)', 5,
+    odd: ['a firenewt egg, kept warm', 25, 'a trained hawk', 50, 'a raven that says one word', 15, 'a parrot that swears', 20, 'a monkey in a waistcoat', 25, 'a giant snail (very calm)', 5,
       'a hedgehog', 0.5, 'a giant beetle larva', 2, 'a frog that glows a little', 3, 'a barn owl', 8, 'a pair of fancy pigeons', 2, 'an egg nobody can name, warm to the touch', 25,
       'a lizard that changes colour', 6, 'a tiny goat', 4, 'a crow that steals shiny things', 3, 'an otter', 10]
   };
@@ -5243,6 +5243,61 @@
     ['twins', 'Run by twins who disagree on every price.', ['a pair of matching mugs', 0.2, 'a half-price receipt from the other twin', 0.01]],
     ['gossip', 'The keeper knows everyone’s business and gives it away free with every purchase.', ['a gossip broadsheet', 0.01, 'a jar of “truth sweets”', 0.2]]
   ];
+  /* ---------- Everyday magic: small charmed things that make chores easier. Nothing here wins a fight. ---------- */
+  var EVERYDAY = {
+    kitchen: ['a whisk that whisks on its own', 8, 'a spoon that stirs the pot until told to stop', 6, 'a pan nothing ever sticks to', 5, 'a kettle that whistles any tune you teach it', 10,
+      'a pot that heats itself, no fire needed', 40, 'a roasting spit that turns itself', 15, 'a dishrag that wrings itself out', 3, 'a sieve that sorts things by size', 6,
+      'a bread bin that keeps bread fresh for a month', 12, 'a butter crock that stays cold', 15, 'a salt cellar that refills once a day', 20, 'a kitchen knife that never needs sharpening', 12,
+      'an egg timer that shouts when the egg is done', 4, 'a cutlery drawer that sorts itself', 10, 'a mug that keeps a drink hot, or cold, as you like', 8, 'a tankard that can’t be spilled', 6,
+      'a plate that cleans itself after the meal', 3, 'a pepper mill that grinds when you shake it', 5, 'a ladle that never drips', 2, 'an apron that shrugs off stains', 4],
+    desk: ['an inkwell that can’t be spilled', 5, 'an inkwell that never dries out', 12, 'a quill that writes what you say (slowly, and spells badly)', 60, 'chalk that writes in any colour you name', 2,
+      'a bookmark that finds your page', 2, 'a little light that hovers over your book', 15, 'a candle that lights when you snap your fingers', 4, 'a candle that burns a month without melting', 10,
+      'a letter opener that only opens letters addressed to you', 6, 'paper that folds into a bird and flies to an address in the same town (per sheet)', 3, 'sealing wax that turns red if the letter was opened', 2,
+      'a book that turns to the page you name', 25, 'an eraser that lifts ink as well as pencil', 3, 'spectacles that make small print bigger', 20],
+    home: ['a lint brush that pulls fluff from across the room', 3, 'a needle that finishes any straight seam you start', 8, 'a thimble no needle can get through', 2, 'a wash tub that stirs the laundry itself', 25,
+      'socks that are always dry', 5, 'a cloak that brushes off its own mud', 20, 'shoes that clean themselves overnight', 15, 'a hat that tips itself to passers-by', 4, 'buttons that do themselves up', 6,
+      'a scarf that’s always just warm enough', 12, 'a broom that sweeps one room on its own, then stops', 50, 'a feather duster that does the high shelves itself', 20, 'a doormat that shakes off its own dirt', 8,
+      'a door chime that says who’s outside', 15, 'a pillow that’s always cool', 7, 'a blanket that warms to you', 10, 'a mirror that tells you when there’s something in your teeth', 10,
+      'a comb that untangles anything', 4, 'a toothbrush that brushes on its own (you still have to open up)', 3, 'a music box that plays any song you hum to it', 30,
+      'a lamp that turns itself down when you fall asleep', 12, 'a cradle that rocks itself', 25, 'a dinner bell that rings itself when food’s ready', 5, 'a window that cleans its own glass', 18],
+    travel: ['a compass that points home (wherever you last slept three nights)', 25, 'a purse that hums when someone else touches it', 10, 'a rope that ties or unties its knot on a word', 30,
+      'a saddle blanket that keeps a horse cool', 8, 'a horseshoe that never wears down', 5, 'a fishing float that rings a bell when something bites', 3, 'a bucket that can’t leak', 4,
+      'a waterskin that keeps water cold', 6, 'tent pegs that drive themselves in (set of 6)', 2, 'a map that rolls itself up', 3, 'a lock that remembers the last face that tried it', 25,
+      'a lantern that never blows out in wind', 10, 'boots that don’t squeak', 6, 'a bedroll that rolls itself up', 8, 'a stone that glows when held (cold light)', 5],
+    games: ['a chess set whose pieces walk to the square you call', 40, 'a pair of linked chessboards for games between towns', 150, 'a harp that plays itself (badly at first)', 60,
+      'a deck of cards that shuffles itself', 5, 'a toy dragon that flaps and squeaks', 3, 'a ball that comes back when thrown', 4, 'a kite that flies with no wind', 10,
+      'a spinning top that never falls over', 2, 'a puppet that dances on its own for a minute', 8, 'a bubble pipe that blows bubbles shaped like animals', 2, 'a drum that keeps the beat for you', 15],
+    holy: ['prayer beads that count themselves', 3, 'a candle that won’t go out in wind or rain', 6, 'incense that smells like whatever you miss', 4, 'a bell whose ring carries a mile and no further', 12]
+  };
+  var EVERYDAY_IN = {
+    'General store': [['kitchen', 1, 2], ['home', 0, 2], ['travel', 0, 1], ['games', 0, 1]], 'Tavern & inn': [['kitchen', 1, 2], ['games', 0, 1]],
+    'Tinker & toolmaker': [['kitchen', 0, 1], ['desk', 0, 2], ['travel', 1, 2], ['games', 0, 2]], 'Tailor & outfitter': [['home', 1, 3]], Temple: [['holy', 1, 2], ['desk', 0, 1]],
+    'Magic shop': [['desk', 1, 2], ['home', 1, 2], ['kitchen', 0, 2], ['games', 0, 2], ['travel', 0, 1]], Stables: [['travel', 0, 2]], 'Shipwright & chandler': [['travel', 0, 2]],
+    Bookseller: [['desk', 1, 3]], Alchemist: [['kitchen', 0, 1], ['desk', 0, 1]], Blacksmith: [['kitchen', 0, 1]], 'Bowyer & fletcher': [['travel', 0, 1]], Fence: [['home', 0, 1], ['games', 0, 1]]
+  };
+  // Eggs of every kind. Plain ones were already on the list; these are the ones a fantasy world sells.
+  var EGGS = {
+    farm: ['a giant chicken egg (feeds a family)', 0.5, 'a giant goose egg', 1, 'a sea turtle egg', 2, 'a jar of giant frog spawn', 2, 'a giant crab egg cluster', 5, 'a giant vulture egg', 20],
+    mount: ['an axe beak egg', 15, 'a giant lizard egg', 10, 'a giant owl egg', 80, 'a giant eagle egg', 150, 'a hippogriff egg', 300, 'a griffon egg', 800, 'a roc egg (bring a cart)', 3000],
+    odd: ['a cockatrice egg (keep it away from the chickens)', 30, 'a pseudodragon egg', 1000, 'a faerie dragon egg (it giggles)', 1500, 'a rust monster egg (store far from armour)', 120,
+      'a stirge egg (why would you)', 1, 'a salamander egg, hot to the touch', 40, 'a “dragon turtle egg” (it is a rock, probably)', 50, 'a darkmantle egg sac', 15]
+  };
+  // Fantasy pets for the odd shops, next to the ordinary ones.
+  var FANTASY_PETS = ['a tressym kitten (a cat with wings)', 120, 'a blink dog pup', 400, 'a tiny mimic the size of a shoebox (friendly, mostly)', 60, 'a flying squirrel that glides between rooftops', 6,
+    'a moss-backed tortoise with a garden on its shell', 15, 'a will-o’-wisp in a lantern (it hates this)', 90, 'a rat that can count to ten', 5, 'a cat that only appears when it wants to', 45];
+  // What a tavern kitchen in a fantasy world cooks.
+  var FANTASY_FOOD = ['wyvern jerky (a strip)', 0.2, 'owlbear sausage', 0.3, 'giant crab legs, steamed', 0.5, 'roc egg omelette (feeds twenty)', 8, 'dragon pepper stew (very hot)', 0.3,
+    'pixie honey cakes (you might giggle)', 0.2, 'troll-bone broth', 0.1, 'griffon-egg custard', 1, 'kraken calamari', 0.6, 'cockatrice drumsticks', 0.4];
+  function everydayRows(shopKind, size, pm) {
+    var rows = [], add = function (pair, k, q) { rows.push({ n: pair[0], k: k, p: niceCp(pair[1] * 100 * pm * (0.85 + Math.random() * 0.3)) / 100, q: q == null ? rint(1, 2) : q }); };
+    (EVERYDAY_IN[shopKind] || []).forEach(function (g) { pickPairs(EVERYDAY[g[0]], rint(g[1], g[2] + (size >= 3 ? 1 : 0))).forEach(function (p) { add(p, 'mm'); }); });
+    if (shopKind === 'Stables') pickPairs(EGGS.mount, rint(1, 2) + (size >= 3 ? 1 : 0)).forEach(function (p) { add(p, 'an', 1); });
+    if (shopKind === 'General store') pickPairs(EGGS.farm, rint(0, 2)).forEach(function (p) { add(p, 'an', rint(1, 4)); });
+    if (shopKind === 'Magic shop') { pickPairs(EGGS.odd, rint(0, 2)).forEach(function (p) { add(p, 'an', 1); }); if (Math.random() < 0.4) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); }); }
+    if (shopKind === 'Tavern & inn') pickPairs(FANTASY_FOOD, rint(1, 3)).forEach(function (p) { add(p, 'f', null); rows[rows.length - 1].q = null; });
+    return rows;
+  }
+
   function pairs(list) { var out = []; for (var i = 0; i < list.length; i += 2) out.push([list[i], list[i + 1]]); return out; }
   function pickPairs(list, n) { var all = pairs(list), out = []; while (out.length < n && all.length) out.push(all.splice(Math.floor(Math.random() * all.length), 1)[0]); return out; }
   function quirkOf(shop) { return shop && shop.quirk ? QUIRKS.filter(function (q) { return q[0] === shop.quirk; })[0] || null : null; }
@@ -5258,6 +5313,9 @@
     if (q || K.fence || shop.kind === 'Magic shop' || size >= 3 && Math.random() < 0.4) pickPairs(CURIOS, q ? rint(2, 4) : rint(1, 2)).forEach(function (p) { add(p, 'cu', 1); });
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
+    rows = rows.concat(everydayRows(shop.kind, size, pm));
+    if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
+    if (q && Math.random() < 0.5) pickPairs(FANTASY_PETS, 1).forEach(function (p) { add(p, 'an', 1); });
     (COLLECT_IN[shop.kind] || []).forEach(function (c) { var n = rint(c[1], c[2] + (size >= 3 ? 1 : 0)); if (n) rows = rows.concat(collectRows(c[0], n, pm)); });
     if (q && q[0] === 'dusty') rows = rows.concat(collectRows('books', 2, pm), collectRows('trophy', 1, pm), collectRows('coin', 1, pm));
     return mergeRows(rows);
@@ -5322,12 +5380,12 @@
   };
 
   /* ---------- Specialist shops with nothing from the ordinary catalog ---------- */
-  var BUGS = ['an ordinary beetle (he insists it isn’t)', 25, 'a ladybird with seven spots, not six', 80, 'a moth whose wings look like a face', 150, 'a jar of fireflies, mating season', 60,
-    'a stag beetle, retired champion fighter', 400, 'a cockroach from a royal kitchen', 250, 'a cricket that chirps in tune', 300, 'a dung beetle and its ball', 120, 'the ball, without the beetle', 20,
-    'a praying mantis, very devout', 500, 'a pinned butterfly the size of a hand', 350, 'a bee that only stings people it dislikes', 220, 'a centipede, all legs accounted for', 99,
-    'a spider (“not a bug, I know, I have a licence”)', 75, 'a pill bug that rolls up on command', 45, 'a caterpillar (will become something, he promises)', 200, 'a water strider in a teacup', 90,
-    'a glowworm, slightly dim', 40, 'an ant from a very famous colony', 150, 'a weevil found in a king’s biscuit', 180, 'a beetle that shines like a jewel', 650, 'a jar of fleas (trained)', 300,
-    'a mosquito in amber, very old', 900, 'an assassin bug (retired)', 275, 'a grasshopper that once won a jumping contest', 130];
+  var BUGS = ['an ordinary beetle (he insists it isn’t)', 2, 'a ladybird with seven spots, not six', 5, 'a moth whose wings look like a face', 12, 'a jar of fireflies, mating season', 4,
+    'a stag beetle, retired champion fighter', 30, 'a cockroach from a royal kitchen', 15, 'a cricket that chirps in tune', 20, 'a dung beetle and its ball', 8, 'the ball, without the beetle', 1,
+    'a praying mantis, very devout', 35, 'a pinned butterfly the size of a hand', 25, 'a bee that only stings people it dislikes', 14, 'a centipede, all legs accounted for', 7,
+    'a spider (“not a bug, I know, I have a licence”)', 5, 'a pill bug that rolls up on command', 3, 'a caterpillar (will become something, he promises)', 10, 'a water strider in a teacup', 6,
+    'a glowworm, slightly dim', 2, 'an ant from a very famous colony', 9, 'a weevil found in a king’s biscuit', 11, 'a beetle that shines like a jewel', 50, 'a jar of fleas (trained)', 18,
+    'a mosquito in amber, very old', 60, 'an assassin bug (retired)', 16, 'a grasshopper that once won a jumping contest', 8];
   var CHEESES = ['cow’s cheese, aged a year', 0.5, 'goat’s cheese in ash', 0.6, 'sheep’s cheese, crumbly', 0.6, 'buffalo cheese, soft', 1, 'yak cheese, smoked', 2, 'mare’s milk cheese, sour', 2,
     'camel cheese', 4, 'reindeer cheese', 3, 'donkey cheese (better than you’d think)', 2, 'pig’s cheese (don’t knock it)', 3, 'moose cheese, enormous wheel', 5, 'rothé cheese, very strong', 2,
     'giant goat cheese', 6, 'mammoth cheese, by the slab', 25, 'owlbear cheese (he won’t say how he milked it)', 40, 'dire wolf cheese', 30, 'whale cheese (“sea cheese”)', 50,
@@ -5342,7 +5400,7 @@
   var SPECIAL = {
     books: function (shop, size, pm) { var rows = collectRows('books', rint(8, 12) + size * 2, pm); return rows.concat(collectRows('display', 1, pm)); },
     trophies: function (shop, size, pm) { return collectRows('trophy', rint(5, 8) + size, pm).concat(collectRows('display', rint(2, 3), pm), collectRows('coin', rint(1, 2), pm)); },
-    bugs: function (shop, size, pm) { return pickPairs(BUGS, rint(8, 12)).map(function (b) { return { n: b[0], k: 'bg', p: niceCp(b[1] * 100 * (0.9 + Math.random() * 0.4)) / 100, q: 1 }; }).concat([{ n: 'amber with a bug inside', k: 'bg', p: 95, q: 1 }]); },
+    bugs: function (shop, size, pm) { return pickPairs(BUGS, rint(8, 12)).map(function (b) { return { n: b[0], k: 'bg', p: niceCp(b[1] * 100 * (0.9 + Math.random() * 0.4)) / 100, q: 1 }; }).concat([{ n: 'amber with a bug inside', k: 'bg', p: 8, q: 1 }]); },
     cheese: function (shop, size, pm) { return pickPairs(CHEESES, rint(12, 18)).map(function (c) { return { n: c[0], k: 'ch', p: niceCp(c[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: c[1] >= 20 ? rint(1, 2) : rint(2, 8) }; }); },
     art: function (shop, size, pm) {
       return pickPairs(ART, rint(6, 9)).map(function (a) { return { n: a[0], k: 'art', p: niceCp(a[1] * 100 * pm * (0.85 + Math.random() * 0.4)) / 100, q: 1 }; })
