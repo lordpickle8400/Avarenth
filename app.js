@@ -1017,7 +1017,7 @@
           return '<button type="button" class="opt" style="width:auto;min-height:40px;font-family:var(--ui);font-size:13px" data-act="member-camp" data-user="' + esc(m.id) + '" data-camp="' + esc(c.id) + '" aria-pressed="' + inIt + '">' + (inIt ? '✓ ' : '+ ') + esc(c.name) + '</button>';
         }).join('') + '</div>';
       }
-      return '<div class="tbl-row" style="border-bottom:' + (campRow ? '0' : '1px solid var(--soft)') + '"><div class="main"><b>' + esc(m.display_name || 'Unnamed') + (you ? ' (you)' : '') + '</b><span>Joined ' + esc(new Date(m.created_at).toLocaleDateString()) + '</span></div>' + tag + btn + '</div>' + (campRow ? campRow + '<div style="border-bottom:1px solid var(--soft)"></div>' : '');
+      return '<div class="tbl-row" style="border-bottom:' + (campRow ? '0' : '1px solid var(--soft)') + '"><div class="main"><b>' + esc(m.display_name || 'Unnamed') + (you ? ' (you)' : '') + '</b>' + (m.created_at && !isNaN(new Date(m.created_at)) ? '<span>Joined ' + esc(new Date(m.created_at).toLocaleDateString()) + '</span>' : '') + '</div>' + tag + btn + '</div>' + (campRow ? campRow + '<div style="border-bottom:1px solid var(--soft)"></div>' : '');
     };
     var html = '<div class="page narrow"><div><p class="eyebrow">Your table</p><h1 class="page-title">Players</h1><p class="note" style="margin:6px 0 0">Send your players the app link. When they create an account, approve them here. Then give them a campaign’s PIN, or tap a campaign under their name to add them yourself.</p></div>';
     html += '<section class="block"><h2 class="sec-title">Waiting for approval<small>' + pending.length + '</small></h2>' + (pending.length ? '<div class="tbl">' + pending.map(row).join('') + '</div>' : '<div class="empty">Nobody is waiting right now.</div>') + '</section>';
@@ -2252,6 +2252,7 @@
   }
   function dayDate(t, day) { return calDate(calAbs(t, day == null ? t.day : day)); }
   // A game day as a short date: "5 Aurelmas 412".
+  function campDate(cid, day) { var t = travel[cid]; return t ? dateShort(t, day) : 'day ' + day; }
   function dateShort(t, day) { var dt = dayDate(t, day == null ? (t ? t.day : 1) : day); return dt.m ? dt.d + ' ' + CAL_MONTHS[dt.m - 1][0] + ' ' + dt.y : 'Crowning Day ' + dt.y; }
   function dayLine(t, day) { var dt = dayDate(t, day), h = calHolidays(dt), se = dt.m ? SEASONS[dt.m] : ''; return calText(dt, true) + (se ? ' · ' + se.charAt(0).toUpperCase() + se.slice(1) : '') + (h.length ? ' · ' + h.join(', ') : ''); }
   function calNotesOn(t, dt) { return calOf(t).notes.filter(function (n) { return n.doy === dt.doy && (n.y == null || n.y === dt.y); }); }
@@ -2271,7 +2272,7 @@
     var logByAbs = {};
     travelLog.filter(function (l) { return l.campaign_id === camp.id; }).forEach(function (l) { var a = calAbs(t, l.day); (logByAbs[a] = logByAbs[a] || []).push(l.text); });
     var mo = CAL_MONTHS[view.m - 1];
-    var html = '<div class="page"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Calendar<small>Day ' + t.day + ' · ' + esc(calText(today, false)) + '</small></h1>';
+    var html = '<div class="page"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Calendar<small>' + esc(calText(today, false)) + '</small></h1>';
     if (!cal.set) html += '<div class="note-box">The journey hasn’t been given a date yet, so day 1 is the 1st of Akortide, 412 AC. Set today’s date below.</div>';
     html += '<div class="cal-head"><button type="button" class="btn small" data-act="cal-move" data-dir="-1" aria-label="Previous month">‹</button><div><h2>' + esc(mo[0]) + ' <small>' + view.y + ' AC</small></h2><p class="note" style="margin:0">' + esc(mo[1]) + ', the ' + ordinal(view.m) + ' month</p></div><button type="button" class="btn small" data-act="cal-move" data-dir="1" aria-label="Next month">›</button></div>';
     html += '<div class="cal-grid" role="grid"><div class="cal-wd" role="row">' + CAL_DAYS.map(function (d) { return '<span role="columnheader">' + d.slice(0, 3) + '</span>'; }).join('') + '</div><div class="cal-days">';
@@ -4748,7 +4749,7 @@
     if (!(shop.stock || []).length) {
       shop.stock = stockFor(shop); shop.stocked_at = new Date().toISOString(); shop.stock_day = day;
       if ((ITEMS.shopKinds[shop.kind] || {}).fence) ensureContraband(shop);
-      ui.shopNews[shop.id] = 'Stocked for the first time' + (day != null ? ' (day ' + day + ')' : '') + '.';
+      ui.shopNews[shop.id] = 'Stocked for the first time' + (day != null ? ' (' + campDate(shop.campaign_id, day) + ')' : '') + '.';
       saveShop(shop); return;
     }
     if (day == null) return;
@@ -4994,7 +4995,7 @@
     var shTr = shopTrouble(shop); if (shTr.length) html += '<p class="note shop-news">Trouble nearby (' + esc(uniq(shTr.map(function (n) { return factionName(shop.campaign_id, n.fid); })).join(', ')) + '): prices are up ' + Math.round((realmPriceMult(shop) - 1) * 100) + '% for anyone at the counter.</p>';
     if (ui.shopNews && ui.shopNews[shop.id]) html += '<p class="note shop-news">' + esc(ui.shopNews[shop.id]) + '</p>';
     if (ui.marketNews && (ui.marketNews[shop.id] || []).length) html += ui.marketNews[shop.id].map(function (t) { return '<p class="note shop-news">' + esc(t) + '</p>'; }).join('');
-    else if (shop.stock_day != null && !isWanderer(shop)) html += '<p class="note shop-news">Shelves as of day ' + esc(shop.stock_day) + '. Come back after 2 days or more and they’ll have changed.</p>';
+    else if (shop.stock_day != null && !isWanderer(shop) && !(ui.shopNews && ui.shopNews[shop.id])) html += '<p class="note shop-news">Shelves as of ' + esc(campDate(shop.campaign_id, shop.stock_day)) + '. Come back after 2 days or more and they’ll have changed.</p>';
     var smap = shop.map_id ? mapById(shop.map_id) : null;
     html += '<div class="actions">' + (smap ? '<a class="btn" href="#/map/' + encodeURIComponent(smap.id) + '">On the ' + esc(smap.name) + ' map</a>' : '') + '<a class="btn" href="#/shop-edit/' + encodeURIComponent(shop.id) + '">Edit shop</a><button type="button" class="btn' + ((shop.stock || []).length ? '' : ' primary') + '" data-act="shop-stock" data-id="' + esc(shop.id) + '">' + ((shop.stock || []).length ? (ui.pendingDelete === 'restock:' + shop.id ? 'Tap again to replace the stock' : 'Restock') : 'Stock it') + '</button>' +
       '<button type="button" class="btn quiet" data-act="shop-edit-toggle" aria-pressed="' + !!ui.shopEdit + '">' + (ui.shopEdit ? 'Done editing' : 'Edit stock') + '</button></div>';
@@ -7282,7 +7283,7 @@
     var due = paydayDue(camp.id), left = e.payday != null ? e.payday - day : null;
     if (dm) html += '<div class="actions tight" style="margin:0 0 8px"><button type="button" class="btn small quiet" data-act="autoroll" data-camp="' + esc(camp.id) + '">The app rolls behind the curtain: ' + (e.autoroll === false ? 'off' : 'on') + '</button></div>';
     html += '<section class="block"><h2 class="sec-title">Party treasury<small>' + (e.payday == null ? 'No payday set' : due ? 'Payday is due' : 'Payday in ' + left + (left === 1 ? ' day' : ' days')) + '</small></h2>' +
-      '<div class="vitals sum">' + vital('Treasury', gp(e.treasury)) + vital('Holdings', list.length) + vital('Next payday', e.payday == null ? '—' : 'Day ' + e.payday) + '</div>' +
+      '<div class="vitals sum">' + vital('Treasury', gp(e.treasury)) + vital('Holdings', list.length) + vital('Next payday', e.payday == null ? '—' : campDate(camp.id, e.payday)) + '</div>' +
       (Number(e.treasury) < 0 ? '<p class="err" style="margin:0">In debt.</p>' : '');
     if (dm) html += '<form class="two" id="estate-form" novalidate data-camp="' + esc(camp.id) + '" style="align-items:end">' +
       '<div class="field"><label for="es-amt">Put in (+) or take out (−), gp</label><input type="number" id="es-amt" step="1" inputmode="decimal" placeholder="e.g. 500 or -120"></div>' +
@@ -7308,7 +7309,7 @@
     var ledger = (e.ledger || []).filter(function (l) { return dm || !l.dm; }).slice(-15).reverse();
     html += '<section class="block"><h2 class="sec-title">Ledger<small>' + (e.ledger || []).length + ' entries</small></h2>' +
       (ledger.length ? '<div class="tbl">' + ledger.map(function (l) {
-        return '<div class="tbl-row"><div class="main"><b>Day ' + esc(l.day) + ' · ' + esc(l.text) + '</b>' + ((l.lines || []).length ? '<span>' + esc(l.lines.join(' · ')) + '</span>' : '') + '</div>' + (l.dm ? '' : '<span class="tag ' + (Number(l.amt) < 0 ? 'tier-bad' : 'ok') + '">' + (Number(l.amt) >= 0 ? '+' : '') + esc(gp(l.amt)) + '</span>') + '</div>';
+        return '<div class="tbl-row"><div class="main"><b>' + esc(campDate(camp.id, l.day)) + ' · ' + esc(l.text) + '</b>' + ((l.lines || []).length ? '<span>' + esc(l.lines.join(' · ')) + '</span>' : '') + '</div>' + (l.dm ? '' : '<span class="tag ' + (Number(l.amt) < 0 ? 'tier-bad' : 'ok') + '">' + (Number(l.amt) >= 0 ? '+' : '') + esc(gp(l.amt)) + '</span>') + '</div>';
       }).join('') + '</div>' : '<div class="empty">Nothing recorded yet.</div>') + '</section>';
     html += '<p class="note">' + (dm ? 'Loyalty numbers are only shown to you. Players see the mood. Wages buy steadiness; deeds buy devotion.' : 'Crews and households have moods. Keep them paid and treat them well.') + '</p></div>';
     $view.innerHTML = html;
@@ -7331,8 +7332,8 @@
       (HOLD_LAND[h.kind] && dm ? '<p class="note" style="margin:0 0 6px">Prosperity ' + (num(d.prosper, 0) > 0 ? '+' : '') + num(d.prosper, 0) + ' of ±3 toward the next step.</p>' : '') +
       '<div class="tbl">' + moods + '</div>' + (d.notes ? '<p class="note">' + esc(d.notes) + '</p>' : '');
     var reps = (d.reports || []).slice().reverse();
-    if (reps.length) html += '<div class="report"><p class="note" style="margin:8px 0 2px"><b>Latest report, day ' + esc(reps[0].day) + '</b></p><p class="note" style="margin:0">' + esc((reps[0].text || []).join(' ')) + '</p>' +
-      (reps.length > 1 ? '<details><summary class="note">Earlier reports</summary>' + reps.slice(1).map(function (rp) { return '<p class="note" style="margin:6px 0 0"><b>Day ' + esc(rp.day) + ':</b> ' + esc((rp.text || []).join(' ')) + '</p>'; }).join('') + '</details>' : '') + '</div>';
+    if (reps.length) html += '<div class="report"><p class="note" style="margin:8px 0 2px"><b>Latest report, ' + esc(campDate(h.campaign_id, reps[0].day)) + '</b></p><p class="note" style="margin:0">' + esc((reps[0].text || []).join(' ')) + '</p>' +
+      (reps.length > 1 ? '<details><summary class="note">Earlier reports</summary>' + reps.slice(1).map(function (rp) { return '<p class="note" style="margin:6px 0 0"><b>' + esc(campDate(h.campaign_id, rp.day)) + ':</b> ' + esc((rp.text || []).join(' ')) + '</p>'; }).join('') + '</details>' : '') + '</div>';
     if (canTouch(h)) {
       var away = holdAway(h);
       html += '<div class="actions tight" style="flex-wrap:wrap;align-items:center"><input class="input mini" type="number" min="0" step="1" inputmode="decimal" id="hc-' + esc(h.id) + '" placeholder="gp" aria-label="Amount for ' + esc(h.name) + '">' +
@@ -8715,7 +8716,7 @@
     html += '</section>';
     var news = (R.news || []).filter(function (n) { return !ui.realmQuiet || !n.petty; }).slice(-40).reverse();
     if (news.length) html += '<section class="block"><h2 class="sec-title">News<small>truth, and what folk say</small></h2><div class="tbl">' + news.map(function (n) {
-      return '<div class="tbl-row"><div class="main"><b>' + (n.party ? '⚑ ' : '') + 'Day ' + esc(n.day) + ': ' + esc(n.text) + ' <span class="note">(d100 ' + esc(n.roll) + ')</span></b>' + (n.major ? ' <span class="tag tier-disaster">big news</span>' : '') + (n.rumour ? '<span>Rumour: “' + esc(n.rumour) + '”</span>' : '') + '</div></div>';
+      return '<div class="tbl-row"><div class="main"><b>' + (n.party ? '⚑ ' : '') + esc(campDate(camp.id, n.day)) + ': ' + esc(n.text) + ' <span class="note">(d100 ' + esc(n.roll) + ')</span></b>' + (n.major ? ' <span class="tag tier-disaster">big news</span>' : '') + (n.rumour ? '<span>Rumour: “' + esc(n.rumour) + '”</span>' : '') + '</div></div>';
     }).join('') + '</div><p class="note">⚑ touches the party. Rumours are yours to drop in taverns, letters and gossip.</p><div class="actions tight"><button type="button" class="btn small quiet" data-act="realm-quiet">' + (ui.realmQuiet ? 'Show petty doings too' : 'Hide petty doings') + '</button></div></section>';
     Object.keys(FACTION_KINDS).forEach(function (k) {
       html += '<section class="block"><h2 class="sec-title">' + FACTION_KINDS[k] + '</h2>';
@@ -9671,7 +9672,7 @@
     if (L.party && t && t.map_id === m.id) {
       var pm = partyMarker(m.id);
       if (t.dest_x != null) html += '<span class="ap ap-dest" style="left:' + (t.dest_x * w.w) + 'px;top:' + (t.dest_y * w.h) + 'px"><i></i><span class="lbl">' + esc(t.dest_label || 'Destination') + '</span></span>';
-      if (pm) html += '<button type="button" class="ap ap-party' + (AT.sel && AT.sel.t === 'journey' ? ' sel' : '') + '" style="left:' + (pm.x * w.w) + 'px;top:' + (pm.y * w.h) + 'px" data-pin="party" aria-label="The party"><i></i><span class="lbl">The party · Day ' + esc(t.day) + '</span></button>';
+      if (pm) html += '<button type="button" class="ap ap-party' + (AT.sel && AT.sel.t === 'journey' ? ' sel' : '') + '" style="left:' + (pm.x * w.w) + 'px;top:' + (pm.y * w.h) + 'px" data-pin="party" aria-label="The party"><i></i><span class="lbl">The party · ' + esc(dateShort(t)) + '</span></button>';
     }
     if (L.tpins) TBL.pins.forEach(function (p) {
       if (p.map_id !== m.id) return;
@@ -10638,7 +10639,7 @@
     if (t && t.map_id === m.id) {
       var pm = partyMarker(m.id);
       if (t.dest_x != null) html += '<span class="ap ap-dest" style="left:' + (t.dest_x * w.w) + 'px;top:' + (t.dest_y * w.h) + 'px"><i></i><span class="lbl">' + esc(t.dest_label || 'Destination') + '</span></span>';
-      if (pm) html += '<button type="button" class="ap ap-party' + (AT.sel && AT.sel.t === 'journey' ? ' sel' : '') + '" style="left:' + (pm.x * w.w) + 'px;top:' + (pm.y * w.h) + 'px" data-pin="party" aria-label="The party"><i></i><span class="lbl">The party · Day ' + esc(t.day) + '</span></button>';
+      if (pm) html += '<button type="button" class="ap ap-party' + (AT.sel && AT.sel.t === 'journey' ? ' sel' : '') + '" style="left:' + (pm.x * w.w) + 'px;top:' + (pm.y * w.h) + 'px" data-pin="party" aria-label="The party"><i></i><span class="lbl">The party · ' + esc(dateShort(t)) + '</span></button>';
     }
     return html;
   }
@@ -10885,6 +10886,30 @@
     if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') onSession(s);
     else if (s) session = s;
   });
+
+  // Scrolling tab strips: fade the edge that has more behind it, and keep the current tab in view.
+  var STRIPS = '.tabs, .subtabs, .bd-steps';
+  function stripFade(el) {
+    var more = el.scrollWidth - el.clientWidth > 2;
+    el.classList.toggle('fade-r', more && el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+    el.classList.toggle('fade-l', more && el.scrollLeft > 2);
+  }
+  var stripRaf = 0;
+  function stripsCheck() {
+    stripRaf = 0;
+    document.querySelectorAll(STRIPS).forEach(function (el) {
+      var cur = el.querySelector('[aria-current="page"], [aria-selected="true"], .on, .cur');
+      if (cur && el.dataset.seen !== (cur.textContent || '')) {
+        el.dataset.seen = cur.textContent || '';
+        var l = cur.offsetLeft - el.offsetLeft, r = l + cur.offsetWidth;
+        if (l < el.scrollLeft || r > el.scrollLeft + el.clientWidth) el.scrollLeft = Math.max(0, l - 24);
+      }
+      stripFade(el);
+    });
+  }
+  new MutationObserver(function () { if (!stripRaf) stripRaf = requestAnimationFrame(stripsCheck); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-current', 'aria-selected'] });
+  document.addEventListener('scroll', function (e) { var el = e.target; if (el && el.matches && el.matches(STRIPS)) stripFade(el); }, true);
+  window.addEventListener('resize', function () { if (!stripRaf) stripRaf = requestAnimationFrame(stripsCheck); });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });

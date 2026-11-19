@@ -1150,3 +1150,8 @@ body.pk-open { overflow: hidden; }
 .jr-panel .hero-date { color: var(--muted); }
 .day-ask { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; }
 .day-ask [data-act="dp-cancel"] { font: 14px var(--ui); color: var(--muted); background: none; border: 0; padding: 4px 0; text-decoration: underline; cursor: pointer; }
+
+/* Tab strips that scroll sideways fade at the edge with more to see. */
+.tabs.fade-r, .subtabs.fade-r, .bd-steps.fade-r { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+.tabs.fade-l, .subtabs.fade-l, .bd-steps.fade-l { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+.tabs.fade-l.fade-r, .subtabs.fade-l.fade-r, .bd-steps.fade-l.fade-r { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
