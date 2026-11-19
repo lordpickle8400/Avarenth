@@ -1916,7 +1916,7 @@
     html += '<p class="crumbs cs-crumbs"><a href="#/characters">Characters</a>' + (c.owner_id !== uid() ? ' · ' + esc(memberName(c.owner_id)) : '') + '</p>';
     html += '<header class="cs-head"><div class="cs-ava" aria-hidden="true">' + esc(initials(c.name)) + '</div><div class="cs-id">';
     if (edit) html += '<div class="field" style="margin:0"><label for="ch-name">Name</label><input type="text" id="ch-name" data-cf="name" value="' + esc(c.name) + '" maxlength="80"></div>';
-    else html += '<h1>' + esc(c.name) + '</h1><p class="cs-who">' + esc(who || 'No class yet') + '</p><p class="cs-lvl">Level ' + num(s.level, 1) + (s.background ? ' · ' + esc(s.background) : '') + (s.patron ? ' · ' + patronLine(s) : '') + '</p>';
+    else html += '<h1>' + esc(c.name) + '</h1><p class="cs-who">' + esc(who || 'No class yet') + '</p><p class="cs-lvl">Level ' + num(s.level, 1) + (s.background ? ' · ' + esc(s.background) : '') + (s.patron ? ' · ' + patronLine(s) : '') + '</p>' + charBadges(c, s);
     html += '</div><div class="cs-acts">' + (can ? '<span class="saved" id="saved" aria-live="polite"></span>' +
       '<button type="button" class="btn small" data-act="short-rest">Short rest</button><button type="button" class="btn small" data-act="long-rest">Long rest</button>' +
       (cd && num(s.level, 1) < 20 && !edit ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') +
@@ -2018,7 +2018,7 @@
     var conds = s.conditions.filter(function (x) { return CONDITIONS.indexOf(x) >= 0; }).length + (s.exhaustion ? 1 : 0);
     var who = [s.species, s.cls].filter(Boolean).join(' ');
     // Name line, like the app's title bar.
-    var h = '<div class="m-head"><div class="m-id"><h1>' + esc(c.name) + '</h1><p>' + esc((who || 'No class yet') + ' ' + num(s.level, 1)) + (s.subclass ? ' · ' + esc(s.subclass) : '') + '</p></div>' +
+    var h = '<div class="m-head"><div class="m-id"><h1>' + esc(c.name) + '</h1><p>' + esc((who || 'No class yet') + ' ' + num(s.level, 1)) + (s.subclass ? ' · ' + esc(s.subclass) : '') + '</p>' + charBadges(c, s) + '</div>' +
       (can && cd && num(s.level, 1) < 20 ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') + '</div>';
     // The stat card: armor, initiative, inspiration, hit points; then rest, edit, mana and conditions.
     h += '<div class="m-card"><div class="m-row1">' +
@@ -4719,16 +4719,51 @@
       render();
     });
   }
+  // What the world thinks of a character: the law, the factions, what's in their pack, and (for the DM) what folk are saying.
+  function charLaw(c) {
+    var camp = c.campaign_id ? campaignById(c.campaign_id) : null; if (!camp) return null;
+    var mine = crimes.filter(function (x) { return x.campaign_id === camp.id && (x.character_id === c.id || !x.character_id) && (dmView() || !x.dm_only); });
+    return { camp: camp, list: mine, sum: crimeSummary(mine) };
+  }
+  function charHot(c, s) { return (s.items || []).filter(function (it) { return isStolen(it) || isContraband(it.name, c.campaign_id); }); }
+  function charBadges(c, s) {
+    var out = [], law = charLaw(c);
+    if (law && law.sum.wanted) out.push('<button type="button" class="tag cb-badge bad" data-act="sheet-tab" data-tab="Record">Wanted' + (law.sum.bounty ? ' · ' + gp(law.sum.bounty) : '') + '</button>');
+    else if (law && law.sum.status === 'Suspected') out.push('<button type="button" class="tag cb-badge warn" data-act="sheet-tab" data-tab="Record">Suspected</button>');
+    var hot = charHot(c, s); if (hot.length) out.push('<button type="button" class="tag cb-badge warn" data-act="sheet-tab" data-tab="Inventory">Carrying ' + hot.length + ' hot item' + (hot.length === 1 ? '' : 's') + '</button>');
+    var facs = factionsFor(c.campaign_id || null), best = null, worst = null;
+    facs.forEach(function (a) { var x = standingFor(c, a); if (x.idx >= 4 && (!best || x.idx > best.st.idx)) best = { a: a, st: x }; if (x.idx <= 0 && x.shift < 0 && !worst) worst = { a: a, st: x }; });
+    if (best) out.push('<button type="button" class="tag cb-badge st st-' + best.st.name.toLowerCase() + '" data-act="sheet-tab" data-tab="Reputation">' + esc(best.st.name) + ': ' + esc(best.a.title) + '</button>');
+    if (worst) out.push('<button type="button" class="tag cb-badge st st-hostile" data-act="sheet-tab" data-tab="Reputation">Hostile: ' + esc(worst.a.title) + '</button>');
+    return out.length ? '<div class="cb-badges">' + out.join('') + '</div>' : '';
+  }
+  function standingMeter(idx) { return '<span class="st-meter" aria-hidden="true">' + STANDINGS.map(function (x, i) { return '<i class="' + (i === idx ? 'on st-' + x.toLowerCase() : i < idx ? 'past' : '') + '"></i>'; }).join('') + '</span>'; }
   function standingTabHtml(c, s) {
-    var facs = factionsFor(c.campaign_id || null), dm = dmView();
-    var html = '<section class="block" style="margin-top:12px"><h2 class="sec-title">Reputation</h2><p class="note" style="margin-top:0">How each faction sees you. You start where your class, people, past and faith put you. Your deeds move it from there.</p>';
-    if (!facs.length) return html + '<div class="empty">No factions known yet.</div></section>';
+    var facs = factionsFor(c.campaign_id || null), dm = dmView(), law = charLaw(c), hot = charHot(c, s);
     var rows = facs.map(function (a) { return { a: a, st: standingFor(c, a) }; });
+    var friends = rows.filter(function (r) { return r.st.idx >= 3; }).length, foes = rows.filter(function (r) { return r.st.idx <= 1; }).length;
+    var html = '<section class="block" style="margin-top:12px"><div class="vitals sum st-sum">' + vital('Friends', friends) + vital('Foes', foes) +
+      vital('The law', law ? (law.sum.wanted ? 'Wanted' : law.sum.status === 'Suspected' ? 'Suspected' : law.sum.count ? 'Unknown' : 'Clean') : '—') + vital('Bounty', law && law.sum.bounty ? gp(law.sum.bounty) : '—') + '</div>';
+    if (law && law.sum.count) html += '<p class="note" style="margin:6px 0 0">' + law.sum.count + ' open charge' + (law.sum.count === 1 ? '' : 's') + ', worst ' + esc(law.sum.worst.toLowerCase()) + '. <button type="button" class="linkish" data-act="sheet-tab" data-tab="Record">See the record</button></p>';
+    if (hot.length) html += '<div class="hot-box"><b>Guards would take these</b><span>' + hot.map(function (it) { return esc(it.name) + (isStolen(it) ? ' (stolen)' : ''); }).join(', ') + '. Fences buy them; gate searches find them.</span></div>';
+    html += '</section>';
+    html += '<section class="block"><h2 class="sec-title">Factions<small>' + rows.length + '</small></h2>' + helpNote('standing', 'How each faction sees you. You start where your class, people, past and faith put you. Your deeds move it from there.');
+    if (!rows.length) return html + '<div class="empty">No factions known yet.</div></section>';
     // Strongest feelings first, either way.
     rows.sort(function (x, y) { return Math.abs(y.st.idx - 2) - Math.abs(x.st.idx - 2) || String(x.a.title).localeCompare(y.a.title); });
-    html += '<div class="tbl">' + rows.map(function (r) {
-      return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/a/' + encodeURIComponent(r.a.slug) + '">' + esc(r.a.title) + '</a></b><span>' + esc(STANDING_MEANS[r.st.name]) + ' ' + esc(standingWhy(r.st)) + '.</span></div>' +
+    var rowHtml = function (r) {
+      return '<div class="tbl-row st-row"><div class="main"><b><a class="link" href="#/a/' + encodeURIComponent(r.a.slug) + '">' + esc(r.a.title) + '</a></b>' + standingMeter(r.st.idx) + '<span>' + esc(STANDING_MEANS[r.st.name]) + ' ' + esc(standingWhy(r.st)) + '.</span></div>' +
         (dm ? standingSelect(c, r.a, r.st) : standingTag(r.st.name)) + '</div>';
+    };
+    // Factions that feel something come first; the plain Neutral ones fold away.
+    var felt = rows.filter(function (r) { return r.st.idx !== 2; }), plain = rows.filter(function (r) { return r.st.idx === 2; });
+    html += (felt.length ? '<div class="tbl">' + felt.map(rowHtml).join('') + '</div>' : '<p class="note">Nobody feels strongly about you yet.</p>') +
+      (plain.length ? '<details class="st-plain"' + (ui.stPlain ? ' open' : '') + '><summary>Neutral with ' + plain.length + ' more</summary><div class="tbl">' + plain.map(rowHtml).join('') + '</div></details>' : '') + '</section>';
+    // The DM can see what folk are saying about the party, from the deeds log.
+    var R = dm && c.campaign_id ? realm[c.campaign_id] : null, t = c.campaign_id ? travel[c.campaign_id] : null;
+    var deeds = R && R.news ? R.news.filter(function (n) { return n.deed; }).slice(-6).reverse() : [];
+    if (deeds.length) html += '<section class="block"><h2 class="sec-title">What folk say<small>the party’s deeds</small></h2><div class="tbl">' + deeds.map(function (n) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(n.text) + '</b><span>' + esc([t ? dateShort(t, n.day) : '', n.at || ''].filter(Boolean).join(' · ')) + '</span></div><span class="tag ' + (n.tone === 'good' ? 'ok' : n.tone === 'bad' ? '' : 'plain') + '">' + (n.tone === 'good' ? 'Praised' : n.tone === 'bad' ? 'Feared' : 'Talked of') + '</span></div>';
     }).join('') + '</div></section>';
     var tomes = s.tomes || [];
     if (tomes.length) html += '<section class="block"><h2 class="sec-title">Tomes in your pack<small>' + tomes.length + '</small></h2><div class="tbl">' + tomes.map(function (t) {
@@ -10711,6 +10746,7 @@
     var d = e.target;
     if (d && d.classList && d.classList.contains('spell-more') && d.open) fillSpellMore(d);
     if (d && d.classList && d.classList.contains('cs-cond')) ui.condOpen = d.open;
+    if (d && d.classList && d.classList.contains('st-plain')) ui.stPlain = d.open;
   }, true);
 
   // Our own short summaries of the subclasses in the paid books (not the book text).
