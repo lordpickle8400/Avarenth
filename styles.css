@@ -1375,3 +1375,9 @@ body:has(.m-sheet) { overflow: hidden; }
 .fest-tag { margin-left: 6px; font-size: 9.5px; padding: 1px 6px; vertical-align: 2px; color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
 .folk-row { margin-bottom: 10px; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 6px; padding: 0 10px; }
 .folk-next { display: block; margin-top: 4px; font-size: 12px; color: var(--accent-ink); }
+/* Shops: keeper quirks and the back room */
+.shop-quirk { display: flex; gap: 8px; margin: 0 0 14px; padding: 10px 12px; border-left: 2px solid var(--accent); background: var(--soft); font-style: italic; font-size: 16px; }
+.shop-quirk span { font-style: normal; color: var(--accent-ink); }
+.back-room { border: 1px dashed color-mix(in srgb, var(--accent) 50%, var(--line)); border-radius: 8px; padding: 10px 12px; background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+.back-room.locked .note { font-style: italic; }
+.back-tag { margin-left: 6px; font-size: 9.5px; padding: 1px 6px; vertical-align: 2px; color: var(--accent-ink); border-color: color-mix(in srgb, var(--accent) 45%, var(--bg)); }
