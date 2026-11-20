@@ -4908,6 +4908,16 @@
   function craftBonus(s, tool) { var ab = CRAFT_AB[tool] || 'int', b = mod(s.abilities[ab]) + (craftTools(s).indexOf(tool) >= 0 ? profBonus(s.level) : 0); return { b: b, ab: ab.toUpperCase(), trained: craftTools(s).indexOf(tool) >= 0 }; }
   function stealthBonus(s) { return mod(s.abilities.dex) + num((s.skills || {}).Stealth, 0) * profBonus(s.level); }
   function firstName(c) { return String(c.name || '').split(' ')[0]; }
+  /* The guilds hold the towns, not the countryside. Villages and hamlets: sell freely. Towns: the guild takes a cut.
+     Cities, and a guild's own seat: you need the guild's leave to sell your work there at all, and it takes its cut. */
+  var GUILD_DUES = 0.1, GUILD_LEAVE = 10, GUILD_SEAT_LEAVE = 50;
+  var GUILD_SEATS = { crisfey: { all: 'the Merchants’ Company' }, 'dyers-ford': { 'Weaver’s tools': 'the Weavers and Dyers' }, keelhaven: { 'Carpenter’s tools': 'the Shipwrights', 'Woodcarver’s tools': 'the Shipwrights' } };
+  function guildRule(placeId, tool) {
+    var a = placeId ? articleById(placeId) : null, size = placeId ? num((placeOf(placeId) || {}).size, 2) : 0, seat = a && GUILD_SEATS[a.slug], who = seat && (seat[tool] || seat.all);
+    var level = who || size >= 3 ? 2 : size === 2 ? 1 : 0;
+    return { level: level, dues: level ? GUILD_DUES : 0, fee: who ? GUILD_SEAT_LEAVE : GUILD_LEAVE, who: who || 'the local guild', place: a ? a.title : '', seat: !!who };
+  }
+  function hasLeave(s, placeId, tool) { var L = (craftOf(s).leave || {})[placeId]; return !!(L && L.indexOf(tool) >= 0); }
   function craftDays(v, q) { return Math.max(1, Math.ceil(v * q / 10)); }
   function craftFame(s, placeId) { return num(craftOf(s).fame[placeId], 0); }
   function craftFameMult(s, placeId) { return 1 + Math.min(0.3, craftFame(s, placeId) * 0.03); }
@@ -4939,7 +4949,7 @@
     html += helpNote('workshop', 'Make things with your tools, to keep or to sell. Materials cost half the item’s value. Work goes at about a day for every 10 gp of value, and you log the days as you spend them. When it’s done, roll your tool check and put in the total: the better the roll, the more it’s worth. Shops sometimes order work through your DM. <a class="link" href="#/a/crafting-and-trade-work">All the rules and numbers</a>.');
     // Orders from shops, sent by the DM.
     if (k.offers.length) html += '<section class="block"><h2 class="sec-title">Work offered<small>' + k.offers.length + '</small></h2><div class="tbl">' + k.offers.map(function (o, i) {
-      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>For ' + esc(o.shop) + (o.place ? ' in ' + esc(o.place) : '') + ' · pays ' + money(toCp(o.pay)) + (o.due ? ' · wanted by ' + esc(campDate(c.campaign_id, o.due)) : '') + ' · ' + craftDays(o.v, o.qty) + ' days’ work, ' + money(toCp(o.v * o.qty / 2)) + ' in materials</span></div>' +
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>For ' + esc(o.shop) + (o.place ? ' in ' + esc(o.place) : '') + ' · pays ' + money(toCp(o.pay)) + (o.due ? ' · wanted by ' + esc(campDate(c.campaign_id, o.due)) : '') + ' · ' + craftDays(o.v, o.qty) + ' days’ work, ' + money(toCp(o.v * o.qty / 2)) + ' in materials' + (o.place_id && guildRule(o.place_id, o.tool).level === 2 && !hasLeave(s, o.place_id, o.tool) ? ' · needs ' + esc(guildRule(o.place_id, o.tool).who) + '’s leave in ' + esc(o.place) : '') + '</span></div>' +
         (can ? '<button type="button" class="btn small primary" data-act="craft-take" data-i="' + i + '"' + (tools.indexOf(o.tool) < 0 ? ' disabled title="Needs ' + esc(o.tool) + '"' : '') + '>Take it</button><button type="button" class="btn small quiet" data-act="craft-pass" data-i="' + i + '">Pass</button>' : '') + '</div>';
     }).join('') + '</div></section>';
     // Work in hand.
@@ -4994,6 +5004,8 @@
       return '<button type="button" class="chip pick" data-act="craft-tool" data-tool="' + esc(x) + '" aria-pressed="' + (k.tools.indexOf(x) >= 0) + '">' + esc(x) + '</button>';
     }).join('') + '</div><p class="note">Tools from your class and background count already.</p></details>';
     html += '</section>';
+    var lv = k.leave || {}, lvk = Object.keys(lv).filter(function (p) { return (lv[p] || []).length; });
+    if (lvk.length) html += '<section class="block"><h2 class="sec-title">Guild leave</h2><div class="tbl">' + lvk.map(function (p) { var a = articleById(p); return '<div class="tbl-row"><div class="main"><b>' + esc(a ? a.title : 'Somewhere') + '</b><span>' + esc(lv[p].join(', ')) + '</span></div></div>'; }).join('') + '</div></section>';
     var fame = Object.keys(k.fame).filter(function (p) { return k.fame[p] > 0; });
     if (fame.length) html += '<section class="block"><h2 class="sec-title">Name for their work</h2><div class="tbl">' + fame.map(function (p) { var a = articleById(p), n = k.fame[p]; return '<div class="tbl-row"><div class="main"><b>' + esc(a ? a.title : (k.famePlace || {})[p] || 'Somewhere') + '</b><span>' + esc(craftFameName(n)) + ' · shops there pay ' + Math.round((craftFameMult(s, p) - 1) * 100) + '% more for their work</span></div></div>'; }).join('') + '</div></section>';
     if (k.log.length) html += '<section class="block"><h2 class="sec-title">Made so far</h2><div class="tbl">' + k.log.slice(0, 12).map(function (l) { return '<div class="tbl-row"><div class="main"><b>' + esc(l.t) + '</b><span>' + esc(l.d || '') + '</span></div></div>'; }).join('') + '</div></section>';
@@ -5046,6 +5058,8 @@
   }
   function craftTake(c, i) {
     var s = c.sheet = normSheet(c.sheet), k = craftOf(s), o = k.offers[i]; if (!o) return;
+    var gr = o.place_id ? guildRule(o.place_id, o.tool) : null;
+    if (gr && gr.level === 2 && !hasLeave(s, o.place_id, o.tool)) return toast('Work for a shop in ' + gr.place + ' needs ' + gr.who + '’s leave first (' + money(toCp(gr.fee)) + ', from any shop there).');
     var cost = toCp(o.v * o.qty / 2), have = walletCp(s), C = CRAFTS[o.tool] || {};
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
     setWallet(s, have - cost);
@@ -5058,7 +5072,7 @@
     var chars = shop.campaign_id ? campaignChars(shop.campaign_id) : characters;
     return '<section class="block shop-orders"><h2 class="sec-title">Wants made<small>this tenday</small></h2><div class="tbl">' + list.map(function (o, i) {
       var can = chars.filter(function (x) { return craftTools(normSheet(x.sheet)).indexOf(o.tool) >= 0; }), sent = chars.filter(function (x) { var k = normSheet(x.sheet).craft; return k && ((k.offers || []).concat(k.jobs || []).some(function (y) { return y.key === o.key || (y.com && y.com.key === o.key); })); });
-      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>Pays ' + money(toCp(o.pay)) + ' · ' + esc(o.tool) + ' · wanted by ' + esc(campDate(shop.campaign_id, o.due)) + (sent.length ? ' · offered to ' + esc(sent.map(function (x) { return x.name; }).join(', ')) : '') + '</span></div>' +
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + '</b><span>Pays ' + money(toCp(o.pay)) + ' · ' + esc(o.tool) + ' · wanted by ' + esc(campDate(shop.campaign_id, o.due)) + (sent.length ? ' · offered to ' + esc(sent.map(function (x) { return x.name; }).join(', ')) : '') + (guildRule(shop.place_id, o.tool).level === 2 ? ' · needs guild leave (' + money(toCp(guildRule(shop.place_id, o.tool).fee)) + ')' : '') + '</span></div>' +
         (can.length ? '<label class="sr" for="so-' + i + '">Offer to</label><select class="input" id="so-' + i + '">' + can.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.name) + '</option>'; }).join('') + '</select><button type="button" class="btn small" data-act="craft-offer" data-id="' + esc(shop.id) + '" data-i="' + i + '">Offer</button>' : '<span class="note">Nobody in the party has ' + esc(o.tool.toLowerCase()) + '</span>') + '</div>';
     }).join('') + '</div></section>';
   }
@@ -5854,7 +5868,9 @@
       if (m0 === null) return null;
       var wants = craftWants(shop.kind).some(function (w) { return craftItemName(w.n) === own.name; });
       // New work fetches more than second-hand: half again, more if it's good, more where they know the maker, a little more if it's what the shop deals in.
-      var mm = Math.min(1.25, m0 * 1.5 * CRAFT_Q[num(own.made.q, 1)][1] * craftFameMult(normSheet(c.sheet), shop.place_id) * (wants ? 1.1 : 1));
+      var gr = guildRule(shop.place_id, own.made.tool);
+      if (gr.level === 2 && !hasLeave(normSheet(c.sheet), shop.place_id, own.made.tool) && !(ITEMS.shopKinds[shop.kind] || {}).fence) return null;
+      var mm = (1 - ((ITEMS.shopKinds[shop.kind] || {}).fence ? 0 : gr.dues)) * Math.min(1.25, m0 * 1.5 * CRAFT_Q[num(own.made.q, 1)][1] * craftFameMult(normSheet(c.sheet), shop.place_id) * (wants ? 1.1 : 1));
       if ((ITEMS.shopKinds[shop.kind] || {}).fence) mm *= 0.6;
       return niceCp(toCp(own.made.v) * mm * r0.buy);
     }
@@ -6112,8 +6128,10 @@
       else html += '<div class="tbl">' + inv.map(function (it) {
         var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : '';
         if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
-        var off = offerFor(shop, c, it.name, it);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : isUnlicensed(it) ? ' · no royal stamp' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span>' + ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<span class="craft-ask">Ask ' + esc(firstName(c)) + ' for Stealth: <b>d20 ' + signed(stealthBonus(s)) + '</b>' + (isForgedMark(it) ? ', with advantage (roll two, keep the higher)' : '') + '. DC ' + forgedDC(shop) + ', keep that to yourself.</span>' : '') + '</div>' +
+        var off = offerFor(shop, c, it.name, it), gl = it.made && !K.fence ? guildRule(shop.place_id, it.made.tool) : null, noLeave = gl && gl.level === 2 && !hasLeave(s, shop.place_id, it.made.tool);
+        if (noLeave) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · their own make · ' + esc(gl.who) + ' won’t let it be sold in ' + esc(gl.place || 'this town') + ' without their leave</span></div>' +
+          '<button type="button" class="btn small" data-act="guild-leave" data-id="' + esc(shop.id) + '" data-tool="' + esc(it.made.tool) + '">Buy leave (' + money(toCp(gl.fee)) + ')</button></div>';
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : isUnlicensed(it) ? ' · no royal stamp' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + (gl && gl.dues ? ' · after the guild’s ' + Math.round(gl.dues * 100) + '% cut' : '') + '</span>' + ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<span class="craft-ask">Ask ' + esc(firstName(c)) + ' for Stealth: <b>d20 ' + signed(stealthBonus(s)) + '</b>' + (isForgedMark(it) ? ', with advantage (roll two, keep the higher)' : '') + '. DC ' + forgedDC(shop) + ', keep that to yourself.</span>' : '') + '</div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
           ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<label class="sr" for="bst-' + i + '">Their Stealth roll</label><input type="number" class="input mini" id="bst-' + i + '" min="1" max="40" inputmode="numeric" placeholder="Stealth">' +
             '<button type="button" class="btn small" data-act="shop-forged" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + ' title="Stealth DC ' + forgedDC(shop) + (isForgedMark(it) ? ', with advantage' : '') + '">Try it, DC ' + forgedDC(shop) + (isForgedMark(it) ? ' (adv.)' : '') + '</button></div>'
@@ -6395,6 +6413,7 @@
     if (!it || num(it.qty, 1) <= 0) return;
     if (recogMult(shop, c).blocked) return toast('They won’t deal with ' + c.name + '.');
     if (!(ITEMS.shopKinds[shop.kind] || {}).fence && (isContraband(it.name, shop.campaign_id) || isStolen(it) || (isUnlicensed(it) && !slipped))) return toast('Only a fence will take that.');
+    if (it.made && !(ITEMS.shopKinds[shop.kind] || {}).fence && guildRule(shop.place_id, it.made.tool).level === 2 && !hasLeave(s, shop.place_id, it.made.tool)) return toast('Not without the guild’s leave.');
     var inp = document.getElementById('bo-' + i), cp = toCp(inp ? inp.value : 0);
     if (!cp) return toast('Name a price first.');
     setWallet(s, walletCp(s) + cp);
@@ -10341,6 +10360,9 @@
       case 'craft-tool': if (c) { var ctl = craftOf(c.sheet).tools, ctn = el.getAttribute('data-tool'), cti = ctl.indexOf(ctn); if (cti >= 0) ctl.splice(cti, 1); else ctl.push(ctn); ui.craftToolsOpen = true; render(); saveCharSoon(c); } break;
       case 'craft-licence': if (c && dmView()) { var clk = craftOf(c.sheet); clk.licence = !clk.licence; toast(clk.licence ? c.name + ' now holds a royal licence.' : 'Licence taken away.'); render(); saveCharSoon(c); } break;
       case 'craft-stamp': if (c && hasPunch(c.sheet)) { var cst = c.sheet.items[num(el.getAttribute('data-i'), -1)]; if (cst && cst.made) { cst.made.unlic = false; cst.made.forged = true; cst.notes = String(cst.notes || '').replace(', unlicensed', ', forged hallmark'); toast('Stamped. It passes for the Crown’s mark, at a glance.'); render(); saveCharSoon(c); } } break;
+      case 'guild-leave': var gls = shopById(el.getAttribute('data-id')), glc = gls && charById(ui.shopChar && ui.shopChar[gls.id]); if (glc) { var gtool = el.getAttribute('data-tool'), gr0 = guildRule(gls.place_id, gtool), gsh = glc.sheet = normSheet(glc.sheet), gfee = toCp(gr0.fee);
+        if (walletCp(gsh) < gfee) { toast(glc.name + ' is ' + money(gfee - walletCp(gsh)) + ' short.'); break; } setWallet(gsh, walletCp(gsh) - gfee); var gk = craftOf(gsh); gk.leave = gk.leave || {}; (gk.leave[gls.place_id] = gk.leave[gls.place_id] || []).push(gtool);
+        toast(glc.name + ' has ' + gr0.who + '’s leave to sell ' + gtool.replace(/’s (tools|supplies)$/, '').toLowerCase() + ' work in ' + (gr0.place || 'town') + '.'); render(); saveCharSoon(glc); } break;
       case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
