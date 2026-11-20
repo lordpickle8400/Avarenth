@@ -4892,6 +4892,9 @@
     'Cartographer’s tools': { rent: 0, make: [['a local map', 2, 'General store,Bookseller'], ['a sea chart', 10, 'Shipwright & chandler'], ['a map of the realm', 25, 'Bookseller']] },
     'Painter’s supplies': { rent: 0, make: [['a painted sign', 2, 'Tavern & inn,General store'], ['a painted icon', 5, 'Temple'], ['a landscape', 10, "Artist's studio"], ['a portrait', 20, "Artist's studio"]] }
   };
+  // A forger works documents: papers for every trade, merchant's papers, the royal licence, and the punch that fakes the Crown's hallmark.
+  CRAFTS['Forgery kit'] = { rent: 0, note: 'Everything made here is contraband: honest shops won’t touch it, and carrying it counts as hot goods.', make: [['forged merchant’s papers', 25, 'Fence'], ['forged hallmark punch', 40, 'Fence'], ['forged royal licence', 50, 'Fence']]
+    .concat(Object.keys(CRAFTS).map(function (t) { return ['forged ' + (t === 'Herbalism kit' ? 'herbalist' : t.replace(/’s (tools|supplies)$/, '').toLowerCase()) + '’s papers', 25, 'Fence']; })) };
   var CRAFT_Q = [['Rough', 0.5], ['Sound', 1], ['Good', 1.25], ['Fine', 1.5], ['Masterwork', 2]];
   function craftQ(total) { total = num(total, 0); return total >= 25 ? 4 : total >= 20 ? 3 : total >= 15 ? 2 : total >= 10 ? 1 : 0; }
   function craftOf(s) { var k = s.craft && typeof s.craft === 'object' ? s.craft : (s.craft = {}); ['tools', 'jobs', 'offers', 'log'].forEach(function (x) { if (!Array.isArray(k[x])) k[x] = []; }); if (!k.fame || typeof k.fame !== 'object') k.fame = {}; return k; }
@@ -4903,7 +4906,7 @@
     return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
   }
   // The ability each tool uses (2024 rules), so the app can say what to roll.
-  var CRAFT_AB = { 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
+  var CRAFT_AB = { 'Forgery kit': 'dex', 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
     'Weaver’s tools': 'dex', 'Cobbler’s tools': 'dex', 'Brewer’s supplies': 'int', 'Alchemist’s supplies': 'int', 'Herbalism kit': 'int', 'Tinker’s tools': 'dex', 'Calligrapher’s supplies': 'dex', 'Cartographer’s tools': 'wis', 'Painter’s supplies': 'wis' };
   function craftBonus(s, tool) { var ab = CRAFT_AB[tool] || 'int', b = mod(s.abilities[ab]) + (craftTools(s).indexOf(tool) >= 0 ? profBonus(s.level) : 0); return { b: b, ab: ab.toUpperCase(), trained: craftTools(s).indexOf(tool) >= 0 }; }
   function stealthBonus(s) { return mod(s.abilities.dex) + num((s.skills || {}).Stealth, 0) * profBonus(s.level); }
@@ -4913,7 +4916,7 @@
   var PAPERS_COST = 25;
   var GUILD_SEATS = { crisfey: { all: 'the Merchants’ Company' }, 'dyers-ford': { 'Weaver’s tools': 'the Weavers and Dyers' }, timberfall: { 'Carpenter’s tools': 'the Carpenters’ Guild' } };
   var BULK = 10;
-  function paperNeed(it) { if (!it) return ''; if (it.made) return it.made.tool || ''; return num(it.qty, 1) >= BULK ? 'Merchant' : ''; }
+  function paperNeed(it) { if (!it) return ''; if (it.made) return it.made.tool === 'Forgery kit' ? '' : it.made.tool || ''; return num(it.qty, 1) >= BULK ? 'Merchant' : ''; }
   function paperName(need) { if (need === 'Merchant') return 'merchant’s papers'; if (need === 'Herbalism kit') return 'herbalist’s papers'; return need.replace(/’s (tools|supplies)$/, '').toLowerCase() + '’s papers'; }
   function nobleSeat(a) { return !!(a && /\b(Lord|Lady|King|Queen|Duke|Duchess)\b/.test(String((a.fields || {}).Ruler || ''))); }
   function papersCheck(placeId, need) {
@@ -4923,6 +4926,26 @@
     if (size >= 3) return { p: 0.35, word: 'now and then' };
     if (size === 2) return { p: 0.15, word: 'once in a while' };
     return { p: 0, word: 'never' };
+  }
+  // Forged papers get shown like real ones; the keeper may see through them. Better forgeries are easier to pass.
+  function forgedPapersOf(s, need) { var n = 'forged ' + paperName(need); return (s.items || []).filter(function (it) { return String(it.name || '').toLowerCase() === n && num(it.qty, 1) > 0; })[0] || null; }
+  function papersDC(placeId, need) { var c = papersCheck(placeId, need); return c.p >= 1 ? 16 : c.p >= 0.6 ? 14 : c.p >= 0.35 ? 12 : 10; }
+  function deceptionBonus(s) { return mod(s.abilities.cha) + num((s.skills || {}).Deception, 0) * profBonus(s.level); }
+  function forgedEdge(it) { var q = it && it.made ? num(it.made.q, 1) : 1; return q >= 3 ? 1 : q === 0 ? -1 : 0; }
+  function shopShowPapers(shop, i) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]); if (!c) return;
+    var s = normSheet(c.sheet), it = s.items[i], need = paperNeed(it), fp = need && forgedPapersOf(s, need); if (!fp) return;
+    var inp = document.getElementById('bdc-' + i), roll = inp ? num(inp.value, 0) : 0;
+    if (!roll) return toast('Put in their Deception roll first.');
+    var pk = shopKey(shop, c) + '|' + need; ui.papersChk = ui.papersChk || {};
+    if (roll >= papersDC(shop.place_id, need)) { ui.papersChk[pk] = 'ok'; toast('The keeper glances at the papers and nods.'); return shopBuy(shop, i); }
+    ui.papersChk[pk] = 'caught';
+    fp.qty = num(fp.qty, 1) - 1; if (fp.qty <= 0) s.items.splice(s.items.indexOf(fp), 1);
+    c.sheet = s; saveCharSoon(c);
+    var place = shop.place_id ? articleById(shop.place_id) : null;
+    sb.from('crimes').insert({ campaign_id: shop.campaign_id, character_id: c.id, kind: 'crime', title: 'Showing forged guild papers', location: [shop.name, place ? place.title : ''].filter(Boolean).join(', '), severity: 'Moderate', status: 'Suspected', bounty: 0, quantity: 1,
+      notes: 'Showed forged ' + paperName(need) + ' at ' + shop.name + '. The keeper saw through them and kept them.', dm_only: false }).then(function (r) { if (r.error) return fail(r.error, 'Could not add it to the record.'); loadCrimes().then(render); });
+    toast('The keeper sees through the papers and keeps them. ' + c.name + ' is now suspected of forgery.'); render();
   }
   function hasPapers(s, need) { var k = craftOf(s); if (!Array.isArray(k.papers)) k.papers = []; return k.papers.indexOf(need) >= 0; }
   function craftDays(v, q) { return Math.max(1, Math.ceil(v * q / 10)); }
@@ -5014,10 +5037,10 @@
     // Old per-town leave becomes papers for that trade.
     if (k.leave) { Object.keys(k.leave).forEach(function (p) { (k.leave[p] || []).forEach(function (t) { if (!hasPapers(s, t)) k.papers.push(t); }); }); delete k.leave; }
     hasPapers(s, '');
-    var pneeds = uniq(tools.concat(k.papers.filter(function (t) { return t !== 'Merchant'; })).concat(s.items.filter(function (it) { return it.made && it.made.tool; }).map(function (it) { return it.made.tool; }))).concat(['Merchant']);
+    var pneeds = uniq(tools.filter(function (t) { return t !== 'Forgery kit'; }).concat(k.papers.filter(function (t) { return t !== 'Merchant'; })).concat(s.items.filter(function (it) { return it.made && it.made.tool && it.made.tool !== 'Forgery kit'; }).map(function (it) { return it.made.tool; }))).concat(['Merchant']);
     html += '<section class="block"><h2 class="sec-title">Guild papers<small>' + k.papers.length + '</small></h2><div class="tbl">' + pneeds.map(function (t) {
       var has = k.papers.indexOf(t) >= 0;
-      return '<div class="tbl-row"><div class="main"><b>' + esc(craftItemName(paperName(t))) + '</b><span>' + (has ? '✓ Carries them' : 'None') + (t === 'Merchant' ? ' · for selling in bulk (' + BULK + ' or more of a thing)' : '') + '</span></div>' +
+      return '<div class="tbl-row"><div class="main"><b>' + esc(craftItemName(paperName(t))) + '</b><span>' + (has ? '✓ Carries them' : forgedPapersOf(s, t) ? 'Forged ones (' + CRAFT_Q[forgedPapersOf(s, t).made ? num(forgedPapersOf(s, t).made.q, 1) : 1][0].toLowerCase() + ')' : 'None') + (t === 'Merchant' ? ' · for selling in bulk (' + BULK + ' or more of a thing)' : '') + '</span></div>' +
         (dmView() ? (has ? '<button type="button" class="btn small quiet" data-act="papers" data-need="' + esc(t) + '">Take away</button>' : '<button type="button" class="btn small" data-act="papers" data-need="' + esc(t) + '" data-pay="1">Buy (' + money(toCp(PAPERS_COST)) + ')</button><button type="button" class="btn small quiet" data-act="papers" data-need="' + esc(t) + '">Give</button>') : '') + '</div>';
     }).join('') + '</div><p class="note">Only needed to sell your own work, or to sell in bulk. Villages never ask; towns once in a while; cities now and then; a lord’s seat often; a guild’s own seat always. <a class="link" href="#/a/crafting-and-trade-work">How guild papers work</a></p></section>';
     var fame = Object.keys(k.fame).filter(function (p) { return k.fame[p] > 0; });
@@ -5073,7 +5096,7 @@
   function craftTake(c, i) {
     var s = c.sheet = normSheet(c.sheet), k = craftOf(s), o = k.offers[i]; if (!o) return;
     var gp0 = o.place_id ? papersCheck(o.place_id, o.tool) : null;
-    if (gp0 && gp0.p >= 0.35 && !hasPapers(s, o.tool)) return toast('A shop in ' + o.place + ' only orders from someone with ' + paperName(o.tool) + '.');
+    if (gp0 && gp0.p >= 0.35 && !hasPapers(s, o.tool) && !forgedPapersOf(s, o.tool)) return toast('A shop in ' + o.place + ' only orders from someone with ' + paperName(o.tool) + '.');
     var cost = toCp(o.v * o.qty / 2), have = walletCp(s), C = CRAFTS[o.tool] || {};
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
     setWallet(s, have - cost);
@@ -6024,7 +6047,7 @@
     if (!loaded.wiki || !loaded.shops || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the shop…</div></div>'; return; }
     var shop = shopById(id);
     if (!shop) { $view.innerHTML = '<div class="page narrow"><div class="empty">That shop is gone.</div></div>'; return; }
-    if (ui.freshened !== shop.id) { ui.freshened = shop.id; if (ui.marketNews) delete ui.marketNews[shop.id]; marketTick(shop.campaign_id); freshenShop(shop); }
+    if (ui.freshened !== shop.id) { ui.freshened = shop.id; if (ui.papersChk) Object.keys(ui.papersChk).forEach(function (k) { if (k.indexOf(shop.id + '|') === 0) delete ui.papersChk[k]; }); if (ui.marketNews) delete ui.marketNews[shop.id]; marketTick(shop.campaign_id); freshenShop(shop); }
     var place = shop.place_id ? articleById(shop.place_id) : null, camp = shop.campaign_id ? campaignById(shop.campaign_id) : null;
     var K = ITEMS.shopKinds[shop.kind] || {};
     var chars = camp ? campaignChars(camp.id) : characters;
@@ -6141,7 +6164,12 @@
         var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : '';
         if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
         var off = offerFor(shop, c, it.name, it), need = K.fence ? '' : paperNeed(it), pc = need && !hasPapers(s, need) ? papersCheck(shop.place_id, need) : null, pst = pc && pc.p ? (ui.papersChk || {})[shopKey(shop, c) + '|' + need] : null;
-        if (pst === 'asked') return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · the keeper asked for ' + esc(firstName(c)) + '’s ' + esc(paperName(need)) + '. No papers, no sale.</span></div></div>';
+        var fpp = pst === 'asked' ? forgedPapersOf(s, need) : null;
+        if (fpp) { var ed = forgedEdge(fpp); return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · the keeper asked for ' + esc(firstName(c)) + '’s ' + esc(paperName(need)) + '. They have forged ones.</span>' +
+          '<span class="craft-ask">Ask ' + esc(firstName(c)) + ' for Deception: <b>d20 ' + signed(deceptionBonus(s)) + '</b>' + (ed > 0 ? ', with advantage (a fine forgery)' : ed < 0 ? ', with disadvantage (a rough forgery)' : '') + '. DC ' + papersDC(shop.place_id, need) + ', keep that to yourself.</span></div>' +
+          '<label class="sr" for="bdc-' + i + '">Their Deception roll</label><input type="number" class="input mini" id="bdc-' + i + '" min="1" max="40" inputmode="numeric" placeholder="Deception">' +
+          '<button type="button" class="btn small" data-act="shop-papers" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Show the papers</button></div>'; }
+        if (pst === 'asked' || pst === 'caught') return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · the keeper asked for ' + esc(firstName(c)) + '’s ' + esc(paperName(need)) + '. No papers, no sale.</span></div></div>';
         var pnote = pc && pc.p && !pst ? ' · no ' + paperName(need) + ': keepers here check ' + pc.word : '';
         return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : isUnlicensed(it) ? ' · no royal stamp' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + esc(pnote) + '</span>' + ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<span class="craft-ask">Ask ' + esc(firstName(c)) + ' for Stealth: <b>d20 ' + signed(stealthBonus(s)) + '</b>' + (isForgedMark(it) ? ', with advantage (roll two, keep the higher)' : '') + '. DC ' + forgedDC(shop) + ', keep that to yourself.</span>' : '') + '</div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
@@ -6228,7 +6256,7 @@
   /* Contraband and stolen goods. Contraband is anything the law forbids: the catalog's poisons and kits, any homebrew item
      ticked as contraband, anything logged as contraband on a campaign's Crimes page, and spider eggs. Fences stock all of it and
      buy it; honest shops won't touch contraband or anything marked stolen. */
-  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120], ['Forged hallmark punch', 40]];
+  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120], ['Forged hallmark punch', 40], ['Forged royal licence', 150], ['Forged merchant’s papers', 40]];
   function contrabandList(campId) {
     var out = [], seen = {};
     function add(n, p) { var k = String(n).toLowerCase().trim(); if (!k || seen[k]) return; seen[k] = 1; out.push({ n: n, p: p }); }
@@ -6430,6 +6458,7 @@
     if (need && !hasPapers(s, need)) {
       var pc = papersCheck(shop.place_id, need), pk = shopKey(shop, c) + '|' + need; ui.papersChk = ui.papersChk || {};
       if (pc.p && !ui.papersChk[pk]) ui.papersChk[pk] = Math.random() < pc.p ? 'asked' : 'ok';
+      if (ui.papersChk[pk] === 'caught' || ui.papersChk[pk] === 'asked' && forgedPapersOf(s, need)) { toast(ui.papersChk[pk] === 'caught' ? 'No sale.' : 'The keeper wants to see their papers.'); return render(); }
       if (ui.papersChk[pk] === 'asked') { toast('The keeper asks for ' + c.name + '’s ' + paperName(need) + (pc.who ? ' (' + pc.who + ' are strict here)' : '') + '. No papers, no sale.'); return render(); }
     }
     var inp = document.getElementById('bo-' + i), cp = toCp(inp ? inp.value : 0);
@@ -10101,6 +10130,7 @@
         srm.stock.splice(num(el.getAttribute('data-i'), -1), 1); saveShop(srm); render(); break;
       case 'shop-sell': var ss1 = shopById(el.getAttribute('data-id')); if (ss1) shopSell(ss1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-forged': var sf1 = shopById(el.getAttribute('data-id')); if (sf1) shopSellForged(sf1, num(el.getAttribute('data-i'), -1)); break;
+      case 'shop-papers': var spp = shopById(el.getAttribute('data-id')); if (spp) shopShowPapers(spp, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-buy': var sb1 = shopById(el.getAttribute('data-id')); if (sb1) shopBuy(sb1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-imp': var si1 = shopById(el.getAttribute('data-id')); if (si1) toggleImportant(si1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1, el.getAttribute('data-hit') === '1'); break;
