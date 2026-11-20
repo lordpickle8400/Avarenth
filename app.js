@@ -4935,7 +4935,7 @@
       ['a great clockwork dragon', 75000, 'Clockworks', '', 1095, 3]] };
   // A forger works documents: papers for every trade, merchant's papers, the royal licence, and the punch that fakes the Crown's hallmark.
   CRAFTS['Forgery kit'] = { rent: 0, note: 'Everything made here is contraband: honest shops won’t touch it, and carrying it counts as hot goods.', make: [['forged merchant’s papers', 25, 'Fence'], ['forged hallmark punch', 40, 'Fence'], ['forged royal licence', 50, 'Fence']]
-    .concat(Object.keys(CRAFTS).map(function (t) { return ['forged ' + (t === 'Herbalism kit' ? 'herbalist' : t.replace(/’s (tools|supplies)$/, '').toLowerCase()) + '’s papers', 25, 'Fence']; })) };
+    .concat(Object.keys(CRAFTS).map(function (t) { return ['forged ' + (t === 'Herbalism kit' ? 'herbalist' : t.replace(/’s (tools|supplies|utensils)$/, '').toLowerCase()) + '’s papers', 25, 'Fence']; })) };
   /* Crafting ranks, borrowed from Pathfinder 2e's proficiency ranks. Work above your rank rolls with disadvantage; your rank caps how good it can come out.
      Ranking up: 10 finished jobs at your rank (an order counts 3), then a guild test. */
   var CRAFT_RANKS = ['Apprentice', 'Journeyman', 'Master', 'Grand master'], RANK_CAP = [2, 3, 4, 4], RANK_TEST = [12, 16, 20], RANK_NEED = 10;
@@ -4968,7 +4968,7 @@
   var GUILD_SEATS = { crisfey: { all: 'the Merchants’ Company' }, 'dyers-ford': { 'Weaver’s tools': 'the Weavers and Dyers' }, timberfall: { 'Carpenter’s tools': 'the Carpenters’ Guild' } };
   var BULK = 10;
   function paperNeed(it) { if (!it) return ''; if (it.made) return it.made.tool === 'Forgery kit' ? '' : it.made.tool || ''; return num(it.qty, 1) >= BULK ? 'Merchant' : ''; }
-  function paperName(need) { if (need === 'Merchant') return 'merchant’s papers'; if (need === 'Herbalism kit') return 'herbalist’s papers'; return need.replace(/’s (tools|supplies)$/, '').toLowerCase() + '’s papers'; }
+  function paperName(need) { if (need === 'Merchant') return 'merchant’s papers'; if (need === 'Herbalism kit') return 'herbalist’s papers'; return need.replace(/’s (tools|supplies|utensils)$/, '').toLowerCase() + '’s papers'; }
   function nobleSeat(a) { return !!(a && /\b(Lord|Lady|King|Queen|Duke|Duchess)\b/.test(String((a.fields || {}).Ruler || ''))); }
   function papersCheck(placeId, need) {
     var a = placeId ? articleById(placeId) : null, size = placeId ? num((placeOf(placeId) || {}).size, 2) : 0, seat = a && GUILD_SEATS[a.slug], who = seat && (seat[need] || seat.all);
@@ -5045,7 +5045,7 @@
       if (can) {
         if (!ready) h += '<div class="actions tight"><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="1">+1 day</button><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="5">+5 days</button>' +
           '<button type="button" class="btn small quiet" data-act="craft-drop" data-i="' + i + '">' + (ui.pendingDelete === 'craft:' + i ? 'Tap again: materials are lost' : 'Give up') + '</button></div>';
-        else { var cb = craftBonus(s, j.tool), tname = j.tool.replace(/’s (tools|supplies)$/, '').replace(/ kit$/, '');
+        else { var cb = craftBonus(s, j.tool), tname = j.tool.replace(/’s (tools|supplies|utensils)$/, '').replace(/ kit$/, '');
           h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b>' + (jobTier(j) > craftRank(s, j.tool) ? ', with disadvantage (above their rank)' : '') + ' <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
           h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">' + (dmView() && c.owner_id !== uid() ? 'Their total' : 'Your total') + '</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
           '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork' + (RANK_CAP[craftRank(s, j.tool)] < 4 ? ' · best a ' + CRAFT_RANKS[craftRank(s, j.tool)].toLowerCase() + ' can do: ' + CRAFT_Q[RANK_CAP[craftRank(s, j.tool)]][0].toLowerCase() : '') + '</p>'; }
@@ -6061,7 +6061,7 @@
   // Trade in a town: who checks guild papers, whose seat it is, the makers here and their ranks, open orders, and who has a name here.
   function tradeHereHtml(a) {
     var seat = GUILD_SEATS[a.slug], bits = '';
-    var seatTxt = seat ? Object.keys(seat).map(function (t) { return seat[t] + (t === 'all' ? ' (every trade)' : ' (' + t.replace(/’s (tools|supplies)$/, '').toLowerCase() + ')'); }).join(', ') : '';
+    var seatTxt = seat ? Object.keys(seat).map(function (t) { return seat[t] + (t === 'all' ? ' (every trade)' : ' (' + t.replace(/’s (tools|supplies|utensils)$/, '').toLowerCase() + ')'); }).join(', ') : '';
     bits += '<p>Guild papers: keepers ask ' + esc(papersCheck(a.id, 'none').word) + (seatTxt ? '. Guild seat of ' + esc(seatTxt) + ', who always ask for their trade' : '') + '.</p>';
     if (loaded.shops) {
       var makers = shopsAt(a.id).filter(function (sh) { return keeperRank(sh) >= 0; }).sort(function (x, y) { return keeperRank(y) - keeperRank(x); });
