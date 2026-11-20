@@ -6026,7 +6026,23 @@
       }
       if (bits) out.push((camps.length > 1 ? '<p class="eyebrow">' + esc(camp.name) + '</p>' : '') + bits);
     });
+    if (a.template === 'Settlement' || (loaded.shops && shopsAt(a.id).length)) { var tr = tradeHereHtml(a); if (tr) out.push(tr); }
     return out.length ? '<section class="game-box"><h2>In play <span class="tag secret">DM only</span></h2>' + out.join('') + '</section>' : '';
+  }
+  // Trade in a town: who checks guild papers, whose seat it is, the makers here and their ranks, open orders, and who has a name here.
+  function tradeHereHtml(a) {
+    var seat = GUILD_SEATS[a.slug], bits = '';
+    var seatTxt = seat ? Object.keys(seat).map(function (t) { return seat[t] + (t === 'all' ? ' (every trade)' : ' (' + t.replace(/’s (tools|supplies)$/, '').toLowerCase() + ')'); }).join(', ') : '';
+    bits += '<p>Guild papers: keepers ask ' + esc(papersCheck(a.id, 'none').word) + (seatTxt ? '. Guild seat of ' + esc(seatTxt) + ', who always ask for their trade' : '') + '.</p>';
+    if (loaded.shops) {
+      var makers = shopsAt(a.id).filter(function (sh) { return keeperRank(sh) >= 0; }).sort(function (x, y) { return keeperRank(y) - keeperRank(x); });
+      if (makers.length) bits += '<div class="tbl">' + makers.map(function (sh) { var kr = keeperRank(sh); return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/shop/' + esc(sh.id) + '">' + esc(sh.name) + '</a></b><span>' + esc((kr === 0 ? 'Apprentice ' : CRAFT_RANKS[kr] + ' ') + KEEPER_TRADE[sh.kind]) + '</span></div></div>'; }).join('') + '</div>';
+      var orders = []; shopsAt(a.id).forEach(function (sh) { shopOrders(sh).forEach(function (o) { orders.push(esc(sh.name) + ': ' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + ' <small>' + money(toCp(o.pay)) + '</small>'); }); });
+      if (orders.length) bits += '<p class="rumours-h">Wants made this tenday</p>' + orders.map(function (o) { return '<p>' + o + '</p>'; }).join('');
+    }
+    var named = characters.filter(function (c) { var k = normSheet(c.sheet).craft; return k && k.fame && num(k.fame[a.id], 0) > 0; });
+    if (named.length) bits += '<p class="rumours-h">Known for their work here</p>' + named.map(function (c) { var n = num(normSheet(c.sheet).craft.fame[a.id], 0); return '<p>' + esc(c.name) + ' <small>' + esc(craftFameName(n)) + '</small></p>'; }).join('');
+    return '<div class="game-list"><p class="rumours-h">Trade here</p>' + bits + '</div>';
   }
   function articleShopsHtml(a) {
     if (!dmView() || a.template !== 'Settlement' || !loaded.shops) return '';
