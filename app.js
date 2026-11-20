@@ -4880,15 +4880,25 @@
       ['a glass goblet', 3, 'Tavern & inn'], ['a glass lamp chimney', 1, 'General store'], ['a glass net float', 0.5, 'Shipwright & chandler'], ['a set of window panes', 5, 'General store,Temple'], ['an art-glass vase', 15, "Artist's studio"],
       ['a lens', 10, 'Tinker & toolmaker'], ['a pair of spectacles', 20, 'Tinker & toolmaker,Bookseller'], ['Hourglass', 25, 'Tinker & toolmaker,Magic shop'], ['Arcane focus: crystal', 10, 'Magic shop'], ['Arcane focus: orb', 20, 'Magic shop'],
       ['a pair of glass eyes for a clockwork companion', 15, 'Clockworks'], ['a stained-glass panel', 50, 'Temple'], ['Magnifying glass', 100, 'Tinker & toolmaker,Bookseller'], ['a stained-glass window', 300, 'Temple']] },
-    'Smith’s tools': { need: 'a forge', rent: 0.5, make: [['a set of horseshoes', 0.5, 'Stables'], ['Iron spikes (10)', 1, 'General store'], ['Hammer', 1, 'General store'], ['Spear', 1, 'Blacksmith'], ['Iron pot', 2, 'General store,Tavern & inn'],
-      ['Crowbar', 2, 'General store'], ['Shovel', 2, 'General store'], ['Dagger', 2, 'Blacksmith'], ['Chain (10 feet)', 5, 'Shipwright & chandler,General store'], ['Hunting trap', 5, 'General store'], ['Mace', 5, 'Blacksmith'],
-      ['Shortsword', 10, 'Blacksmith'], ['Battleaxe', 10, 'Blacksmith'], ['Shield', 10, 'Armorer'], ['Longsword', 15, 'Blacksmith'], ['Warhammer', 15, 'Blacksmith'], ['Chain shirt', 50, 'Armorer'], ['Chain mail', 75, 'Armorer']] },
-    'Leatherworker’s tools': { rent: 0, make: [['Waterskin', 0.2, 'General store'], ['Pouch', 0.5, 'General store,Tailor & outfitter'], ['Quiver', 1, 'Bowyer & fletcher'], ['Backpack', 2, 'General store,Tailor & outfitter'], ['Bit and bridle', 2, 'Stables'],
-      ['Saddlebags', 4, 'Stables'], ['Leather armor', 10, 'Armorer'], ['Riding saddle', 10, 'Stables'], ['Studded leather armor', 45, 'Armorer']] },
+    'Smith’s tools': { need: 'a forge', rent: 0.5, note: 'Every metal weapon and every metal armour. Dornish steel is Clan Anvilborn’s alone: a smith can work it but not make it.', make: [['a set of horseshoes', 0.5, 'Stables'], ['Iron spikes (10)', 1, 'General store'], ['Hammer', 1, 'General store'], ['Iron pot', 2, 'General store,Tavern & inn'],
+      ['Crowbar', 2, 'General store'], ['Shovel', 2, 'General store'], ['Chain (10 feet)', 5, 'Shipwright & chandler,General store'], ['Hunting trap', 5, 'General store'],
+      ['Dart', 0.05, 'Bowyer & fletcher'], ['Sling bullets (20)', 0.04, 'Bowyer & fletcher'], ['Sickle', 1, 'General store'], ['Spear', 1, 'Blacksmith'], ['Dagger', 2, 'Blacksmith'],
+      ['Light hammer', 2, 'Blacksmith'], ['Javelin', 0.5, 'Blacksmith'], ['Handaxe', 5, 'Blacksmith'], ['Mace', 5, 'Blacksmith'], ['Pike', 5, 'Blacksmith'],
+      ['Trident', 5, 'Blacksmith,Shipwright & chandler'], ['War pick', 5, 'Blacksmith'], ['Battleaxe', 10, 'Blacksmith'], ['Flail', 10, 'Blacksmith'], ['Lance', 10, 'Blacksmith,Stables'],
+      ['Maul', 10, 'Blacksmith'], ['Shortsword', 10, 'Blacksmith'], ['Longsword', 15, 'Blacksmith'], ['Morningstar', 15, 'Blacksmith'], ['Warhammer', 15, 'Blacksmith'],
+      ['Glaive', 20, 'Blacksmith'], ['Halberd', 20, 'Blacksmith'], ['Rapier', 25, 'Blacksmith'], ['Scimitar', 25, 'Blacksmith'], ['Greataxe', 30, 'Blacksmith'],
+      ['Greatsword', 50, 'Blacksmith'], ['Shield', 10, 'Armorer'], ['Ring mail', 30, 'Armorer'], ['Chain shirt', 50, 'Armorer'], ['Scale mail', 50, 'Armorer'],
+      ['Chain mail', 75, 'Armorer'], ['Splint armor', 200, 'Armorer'], ['Breastplate', 400, 'Armorer'], ['Half plate', 750, 'Armorer'], ['Plate armor', 1500, 'Armorer']] },
+    'Leatherworker’s tools': { rent: 0, make: [['Waterskin', 0.2, 'General store'], ['Pouch', 0.5, 'General store,Tailor & outfitter'], ['Quiver', 1, 'Bowyer & fletcher'], ['Sling', 0.1, 'Bowyer & fletcher'],
+      ['Whip', 2, 'Blacksmith'], ['Backpack', 2, 'General store,Tailor & outfitter'], ['Bit and bridle', 2, 'Stables'], ['Saddlebags', 4, 'Stables'], ['Leather armor', 10, 'Armorer'],
+      ['Hide armor', 10, 'Armorer'], ['Riding saddle', 10, 'Stables'], ['Studded leather armor', 45, 'Armorer']] },
     'Carpenter’s tools': { rent: 0, make: [['a stool', 0.2, 'Tavern & inn'], ['Barrel', 2, 'Tavern & inn,Shipwright & chandler,General store'], ['a cart wheel', 2, 'Stables'], ['a table', 2, 'Tavern & inn'], ['Chest', 5, 'General store'],
       ['a set of shelves', 3, 'Bookseller,General store'], ['a sea chest', 5, 'Shipwright & chandler'], ['Cart', 15, 'Stables']] },
-    'Woodcarver’s tools': { rent: 0, make: [['a carved bowl and spoons', 0.2, 'General store'], ['Quarterstaff', 0.2, 'General store'], ['Arrows (20)', 1, 'Bowyer & fletcher'], ['a carved figure', 1, 'General store'], ['Arcane focus: wand', 10, 'Magic shop'],
-      ['Druidic focus: yew wand', 10, 'Herbalist'], ['a carved shrine panel', 15, 'Temple'], ['Shortbow', 25, 'Bowyer & fletcher'], ['Longbow', 50, 'Bowyer & fletcher']] },
+    'Woodcarver’s tools': { rent: 0, note: 'The bowyer’s craft too: bows, crossbows and their ammunition.', make: [['a carved bowl and spoons', 0.2, 'General store'], ['Club', 0.1, 'General store'], ['Greatclub', 0.2, 'Blacksmith'], ['Quarterstaff', 0.2, 'General store'],
+      ['Arrows (20)', 1, 'Bowyer & fletcher'], ['Crossbow bolts (20)', 1, 'Bowyer & fletcher'], ['Blowgun needles (50)', 1, 'Bowyer & fletcher'], ['a carved figure', 1, 'General store'],
+      ['Arcane focus: wand', 10, 'Magic shop'], ['Druidic focus: yew wand', 10, 'Herbalist'], ['Blowgun', 10, 'Bowyer & fletcher'], ['a carved shrine panel', 15, 'Temple'],
+      ['Shortbow', 25, 'Bowyer & fletcher'], ['Light crossbow', 25, 'Bowyer & fletcher'], ['Longbow', 50, 'Bowyer & fletcher'], ['Heavy crossbow', 50, 'Bowyer & fletcher'],
+      ['Hand crossbow', 75, 'Bowyer & fletcher']] },
     'Jeweler’s tools': { rent: 0, note: 'Working silver and gold needs a royal licence: finished silver and gold is the Crown’s trade. Anyone can still make it, but without a licence it’s illegal: sell it to a fence, or try to slip it past an honest keeper.', make: [['a copper ring', 1, 'General store'], ['a brass brooch', 2, 'Tailor & outfitter'],
       ['Holy symbol: amulet', 5, 'Temple'], ['Signet ring', 5, 'Tailor & outfitter'], ['a polished-stone pendant', 5, 'Tailor & outfitter'], ['a cut gem set in copper', 25, 'Magic shop,Fence'],
       ['a silver ring', 10, 'Tailor & outfitter', 'lic'], ['a silver chain', 15, 'Tailor & outfitter', 'lic'], ['a silver holy symbol', 20, 'Temple', 'lic'], ['a silver brooch', 20, 'Tailor & outfitter', 'lic'],
@@ -4896,7 +4906,7 @@
     'Potter’s tools': { need: 'a kiln', rent: 0.3, make: [['Jug or pitcher', 0.02, 'Tavern & inn'], ['a clay pot', 0.02, 'General store'], ['a storage crock', 0.1, 'Alchemist,General store'], ['a set of plates', 0.2, 'Tavern & inn'], ['roof tiles (a hundred)', 1, 'General store'],
       ['a glazed vase', 2, "Artist's studio"], ['a temple offering bowl', 3, 'Temple']] },
     'Mason’s tools': { need: 'a stone yard', rent: 0.2, make: [['a stone trough', 2, 'Stables'], ['a carved headstone', 5, 'Temple'], ['a millstone', 10, 'General store'], ['a carved mantelpiece', 10, 'Tavern & inn'], ['a carved statue', 25, "Artist's studio,Temple"]] },
-    'Weaver’s tools': { rent: 0, make: [['Sack', 0.01, 'General store'], ['Blanket', 0.5, 'General store'], ['Common clothes', 0.5, 'Tailor & outfitter'], ['Hempen rope (50 feet)', 1, 'Shipwright & chandler,General store'], ['Robes', 1, 'Temple'],
+    'Weaver’s tools': { rent: 0, make: [['Sack', 0.01, 'General store'], ['Blanket', 0.5, 'General store'], ['Common clothes', 0.5, 'Tailor & outfitter'], ['Hempen rope (50 feet)', 1, 'Shipwright & chandler,General store'], ['Robes', 1, 'Temple'], ['Net', 1, 'Shipwright & chandler'], ['Padded armor', 5, 'Armorer'],
       ['a bolt of cloth', 1, 'Tailor & outfitter'], ['Fine clothes', 15, 'Tailor & outfitter'], ['a tapestry', 25, "Artist's studio,Temple"]] },
     'Cobbler’s tools': { rent: 0, make: [['a pair of slippers', 0.5, 'Tailor & outfitter'], ['a pair of boots', 1, 'Tailor & outfitter,General store'], ['a pair of riding boots', 3, 'Stables,Tailor & outfitter'], ['a pair of fine shoes', 5, 'Tailor & outfitter']] },
     'Brewer’s supplies': { need: 'a brewhouse', rent: 0.3, make: [['a cask of ale', 2, 'Tavern & inn'], ['a cask of cider', 2, 'Tavern & inn'], ['a cask of stout', 3, 'Tavern & inn'], ['a cask of mead', 5, 'Tavern & inn']] },
@@ -4907,12 +4917,25 @@
     'Cartographer’s tools': { rent: 0, make: [['a local map', 2, 'General store,Bookseller'], ['a sea chart', 10, 'Shipwright & chandler'], ['a map of the realm', 25, 'Bookseller']] },
     'Painter’s supplies': { rent: 0, make: [['a painted sign', 2, 'Tavern & inn,General store'], ['a painted icon', 5, 'Temple'], ['a landscape', 10, "Artist's studio"], ['a portrait', 20, "Artist's studio"]] }
   };
+  // House tools, not in the books: an instrument maker, and the clockwork tinker's table (clockwork has its own times and ranks, not value-based).
+  CRAFTS['Instrument maker’s tools'] = { rent: 0, make: [['Shawm', 2, 'Tavern & inn'], ['Flute', 2, 'Tavern & inn,General store'], ['Horn', 3, 'Tavern & inn,Stables'], ['Drum', 6, 'Tavern & inn'], ['Pan flute', 12, 'Tavern & inn'],
+      ['Dulcimer', 25, 'Tavern & inn'], ['Bagpipes', 30, 'Tavern & inn'], ['Lyre', 30, 'Artist\'s studio,Tavern & inn'], ['Viol', 30, 'Artist\'s studio,Tavern & inn'],
+      ['Lute', 35, 'Artist\'s studio,Tavern & inn']] };
+  CRAFTS['Clockwork tinker’s tools'] = { need: 'a clockwork workshop', rent: 1, note: 'Clockwork is a novelty of the rich, of dwarves and gnomes. Labourers are journeyman’s work, companions master’s work, warriors and the great ones grand master’s work. Great clockwork is only built for a crown or a clan.', make: [['a clockwork mainspring', 5, 'Clockworks', '', 2, 1], ['a set of clockwork joints', 10, 'Clockworks', '', 3, 1], ['a clockwork labourer', 300, 'Clockworks', '', 14, 1],
+      ['a clockwork hound', 1200, 'Clockworks', '', 30, 2], ['a clockwork cat', 1200, 'Clockworks', '', 30, 2], ['a clockwork monkey', 1200, 'Clockworks', '', 30, 2],
+      ['a clockwork owl', 1200, 'Clockworks', '', 30, 2], ['a clockwork fox', 1200, 'Clockworks', '', 30, 2], ['a clockwork raven', 1200, 'Clockworks', '', 30, 2],
+      ['a clockwork warrior', 8000, 'Clockworks', '', 180, 3], ['a great clockwork golem', 12000, 'Clockworks', '', 300, 3], ['a great clockwork beast', 20000, 'Clockworks', '', 365, 3],
+      ['a great clockwork griffin', 25000, 'Clockworks', '', 365, 3], ['a great clockwork dreadnought', 50000, 'Clockworks', '', 730, 3],
+      ['a great clockwork dragon', 75000, 'Clockworks', '', 1095, 3]] };
   // A forger works documents: papers for every trade, merchant's papers, the royal licence, and the punch that fakes the Crown's hallmark.
   CRAFTS['Forgery kit'] = { rent: 0, note: 'Everything made here is contraband: honest shops won’t touch it, and carrying it counts as hot goods.', make: [['forged merchant’s papers', 25, 'Fence'], ['forged hallmark punch', 40, 'Fence'], ['forged royal licence', 50, 'Fence']]
     .concat(Object.keys(CRAFTS).map(function (t) { return ['forged ' + (t === 'Herbalism kit' ? 'herbalist' : t.replace(/’s (tools|supplies)$/, '').toLowerCase()) + '’s papers', 25, 'Fence']; })) };
   /* Crafting ranks, borrowed from Pathfinder 2e's proficiency ranks. Work above your rank rolls with disadvantage; your rank caps how good it can come out.
      Ranking up: 10 finished jobs at your rank (an order counts 3), then a guild test. */
   var CRAFT_RANKS = ['Apprentice', 'Journeyman', 'Master', 'Grand master'], RANK_CAP = [2, 3, 4, 4], RANK_TEST = [12, 16, 20], RANK_NEED = 10;
+  function rowDays(m, q) { return m && m[4] ? m[4] * q : craftDays(m[1], q); }
+  function rowTier(m) { return m && m[5] != null && m[5] !== '' ? m[5] : itemTier(m[1]); }
+  function jobTier(j) { return j.tier != null ? j.tier : itemTier(j.v); }
   function itemTier(v) { v = fnum(v, 0); return v < 5 ? 0 : v < 40 ? 1 : v < 200 ? 2 : 3; }
   var TIER_NAMES = ['simple work', 'journeyman’s work', 'master’s work', 'a grand master’s work'];
   function craftRank(s, tool) { var k = craftOf(s); return num((k.rank || {})[tool], 0); }
@@ -4928,7 +4951,7 @@
     return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
   }
   // The ability each tool uses (2024 rules), so the app can say what to roll.
-  var CRAFT_AB = { 'Forgery kit': 'dex', 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
+  var CRAFT_AB = { 'Forgery kit': 'dex', 'Instrument maker’s tools': 'dex', 'Clockwork tinker’s tools': 'int', 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
     'Weaver’s tools': 'dex', 'Cobbler’s tools': 'dex', 'Brewer’s supplies': 'int', 'Alchemist’s supplies': 'int', 'Herbalism kit': 'int', 'Tinker’s tools': 'dex', 'Calligrapher’s supplies': 'dex', 'Cartographer’s tools': 'wis', 'Painter’s supplies': 'wis' };
   function craftBonus(s, tool) { var ab = CRAFT_AB[tool] || 'int', b = mod(s.abilities[ab]) + (craftTools(s).indexOf(tool) >= 0 ? profBonus(s.level) : 0); return { b: b, ab: ab.toUpperCase(), trained: craftTools(s).indexOf(tool) >= 0 }; }
   function stealthBonus(s) { return mod(s.abilities.dex) + num((s.skills || {}).Stealth, 0) * profBonus(s.level); }
@@ -4981,7 +5004,7 @@
   }
   // What a shop would order this tenday, if anything. Same answer all tenday.
   function shopOrders(shop) {
-    var want = craftWants(shop.kind), day = gameDay(shop) || 1, per = Math.floor((day - 1) / 10), out = [];
+    var want = craftWants(shop.kind).filter(function (w) { return w.v <= 150; }), day = gameDay(shop) || 1, per = Math.floor((day - 1) / 10), out = [];
     if (!want.length || isWanderer(shop)) return out;
     for (var n = 0; n < 2; n++) {
       var h = 0, k = shop.id + ':' + per + ':' + n; for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
@@ -5017,7 +5040,7 @@
         if (!ready) h += '<div class="actions tight"><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="1">+1 day</button><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="5">+5 days</button>' +
           '<button type="button" class="btn small quiet" data-act="craft-drop" data-i="' + i + '">' + (ui.pendingDelete === 'craft:' + i ? 'Tap again: materials are lost' : 'Give up') + '</button></div>';
         else { var cb = craftBonus(s, j.tool), tname = j.tool.replace(/’s (tools|supplies)$/, '').replace(/ kit$/, '');
-          h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b>' + (itemTier(j.v) > craftRank(s, j.tool) ? ', with disadvantage (above their rank)' : '') + ' <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
+          h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b>' + (jobTier(j) > craftRank(s, j.tool) ? ', with disadvantage (above their rank)' : '') + ' <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
           h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">' + (dmView() && c.owner_id !== uid() ? 'Their total' : 'Your total') + '</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
           '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork' + (RANK_CAP[craftRank(s, j.tool)] < 4 ? ' · best a ' + CRAFT_RANKS[craftRank(s, j.tool)].toLowerCase() + ' can do: ' + CRAFT_Q[RANK_CAP[craftRank(s, j.tool)]][0].toLowerCase() : '') + '</p>'; }
       }
@@ -5038,7 +5061,7 @@
         '<div class="field"><label for="cf-where">Where</label><select id="cf-where">' + [['rent', 'Rent ' + (C.need || 'a workshop') + (C.rent ? ' (' + money(toCp(C.rent)) + ' a day)' : '')], ['own', 'Own workshop or holding'], ['road', 'On the road, with my tools']].map(function (o) {
           return '<option value="' + o[0] + '"' + (o[0] === where ? ' selected' : '') + (o[0] === 'road' && C.need ? ' disabled' : '') + '>' + esc(o[1]) + (o[0] === 'road' && C.need ? ' (needs ' + esc(C.need) + ')' : '') + '</option>';
         }).join('') + '</select></div></div>';
-      if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); var tr0 = itemTier(m0[1]), rk0 = craftRank(s, t); html += (tr0 > rk0 ? '<p class="note warn" style="margin:0 0 8px">That’s ' + TIER_NAMES[tr0] + ', above ' + esc(firstName(c)) + '’s rank (' + CRAFT_RANKS[rk0].toLowerCase() + '): the roll has disadvantage.</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc(craftItemName(TIER_NAMES[tr0])) + ' · materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
+      if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); var tr0 = rowTier(m0), rk0 = craftRank(s, t); html += (tr0 > rk0 ? '<p class="note warn" style="margin:0 0 8px">That’s ' + TIER_NAMES[tr0] + ', above ' + esc(firstName(c)) + '’s rank (' + CRAFT_RANKS[rk0].toLowerCase() + '): the roll has disadvantage.</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc(craftItemName(TIER_NAMES[tr0])) + ' · materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + rowDays(m0, q0) + ' day' + (rowDays(m0, q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * rowDays(m0, q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
       if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + ' ' + (k.licence ? esc(c.name) + ' holds one.' : hasPunch(s) ? esc(c.name) + ' doesn’t, but carries a forged hallmark punch: their silver and gold will carry a fake royal stamp.' : esc(c.name) + ' doesn’t have one.') + '</p>';
       if (tools.indexOf(t) < 0) html += '<p class="note" style="margin:0 0 8px">' + esc(c.name) + ' isn’t trained with ' + esc(t) + ' yet. You can still try, without your proficiency bonus, or tick it below if they are.</p>';
       html += '<div class="actions"><button type="submit" class="btn primary">Buy the materials and start</button></div></form></section>';
@@ -5089,7 +5112,7 @@
     var cost = toCp(v * qty / 2), have = walletCp(s);
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
     setWallet(s, have - cost);
-    k.jobs.push({ tool: t, n: n, v: v, qty: qty, days: craftDays(v, qty), done: 0, where: where, rent: where === 'rent' ? C.rent || 0 : 0, unlic: unlic, forged: forged });
+    k.jobs.push({ tool: t, n: n, v: v, qty: qty, days: m ? rowDays(m, qty) : craftDays(v, qty), tier: m ? rowTier(m) : itemTier(v), done: 0, where: where, rent: where === 'rent' ? C.rent || 0 : 0, unlic: unlic, forged: forged });
     ui.cfQty = 1; ui.cfItem = null;
     toast(forged ? 'Materials bought for ' + money(cost) + '. It’ll carry a forged hallmark.' : unlic ? 'Materials bought for ' + money(cost) + '. No licence: this is illegal work.' : 'Materials bought for ' + money(cost) + '. Work has started.'); render(); saveCharSoon(c);
   }
@@ -5105,7 +5128,7 @@
     var s = c.sheet = normSheet(c.sheet), k = craftOf(s), j = k.jobs[i]; if (!j) return;
     var inp = document.getElementById('cr-roll-' + i), roll = inp ? num(inp.value, 0) : 0;
     if (!roll) return toast('Put in your check total first.');
-    var rk = craftRank(s, j.tool), tier = itemTier(j.v), q = Math.min(craftQ(roll), RANK_CAP[rk]);
+    var rk = craftRank(s, j.tool), tier = jobTier(j), q = Math.min(craftQ(roll), RANK_CAP[rk]);
     if (tier >= rk) { k.prog = k.prog || {}; k.prog[j.tool] = craftProg(s, j.tool) + (j.com ? 3 : 1); }
     var Q = CRAFT_Q[q], today = c.campaign_id && travel[c.campaign_id] ? num(travel[c.campaign_id].day, 0) : 0, what = (j.qty > 1 ? j.qty + ' × ' : '') + j.n;
     if (j.com) {
