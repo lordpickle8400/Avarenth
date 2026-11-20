@@ -4911,9 +4911,9 @@
   /* The guilds hold the towns, not the countryside. Villages and hamlets: sell freely. Towns: the guild takes a cut.
      Cities, and a guild's own seat: you need the guild's leave to sell your work there at all, and it takes its cut. */
   var GUILD_DUES = 0.1, GUILD_LEAVE = 10, GUILD_SEAT_LEAVE = 50;
-  var GUILD_SEATS = { crisfey: { all: 'the Merchants’ Company' }, 'dyers-ford': { 'Weaver’s tools': 'the Weavers and Dyers' } };
-  // Whole regions where one power holds a trade, in its towns and cities: House Ignis holds carpentry in the Emberwood (it sells the timber).
-  var GUILD_REGIONS = { Emberwood: { 'Carpenter’s tools': 'House Ignis' } };
+  var GUILD_SEATS = { crisfey: { all: 'the Merchants’ Company' }, 'dyers-ford': { 'Weaver’s tools': 'the Weavers and Dyers' }, timberfall: { 'Carpenter’s tools': 'the Carpenters’ Guild' } };
+  // Whole regions where one power holds a trade, in its towns and cities (none yet).
+  var GUILD_REGIONS = {};
   function guildRule(placeId, tool) {
     var a = placeId ? articleById(placeId) : null, size = placeId ? num((placeOf(placeId) || {}).size, 2) : 0, seat = a && GUILD_SEATS[a.slug], who = seat && (seat[tool] || seat.all);
     if (!who && a && size >= 2) { var reg = String((a.fields || {}).Region || ''); Object.keys(GUILD_REGIONS).forEach(function (k) { if (reg.indexOf(k) >= 0 && GUILD_REGIONS[k][tool]) who = GUILD_REGIONS[k][tool]; }); }
