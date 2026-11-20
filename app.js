@@ -3806,7 +3806,7 @@
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
       return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
-        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (it.made ? ' <span class="tag plain" style="font-size:10px" title="Made by ' + esc(it.made.by || '') + '">' + esc(CRAFT_Q[num(it.made.q, 1)][0]) + ', own make</span>' + (it.made.unlic ? ' <span class="tag" style="font-size:10px" title="Silver or gold worked without a royal licence. Only a fence will buy it.">Unlicensed</span>' : '') : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (it.made ? ' <span class="tag plain" style="font-size:10px" title="Made by ' + esc(it.made.by || '') + '">' + esc(CRAFT_Q[num(it.made.q, 1)][0]) + ', own make</span>' + (it.made.unlic ? ' <span class="tag" style="font-size:10px" title="Silver or gold worked without a royal licence. Only a fence will buy it.">Unlicensed</span>' : it.made.forged ? ' <span class="tag" style="font-size:10px" title="Carries a forged royal hallmark. Honest shops take it if they don’t spot it.">Forged hallmark</span>' : '') : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
         '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
         (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
@@ -4844,7 +4844,7 @@
     var mine = crimes.filter(function (x) { return x.campaign_id === camp.id && (x.character_id === c.id || !x.character_id) && (dmView() || !x.dm_only); });
     return { camp: camp, list: mine, sum: crimeSummary(mine) };
   }
-  function charHot(c, s) { return (s.items || []).filter(function (it) { return isStolen(it) || isUnlicensed(it) || isContraband(it.name, c.campaign_id); }); }
+  function charHot(c, s) { return (s.items || []).filter(function (it) { return isStolen(it) || isUnlicensed(it) || isForgedMark(it) || isContraband(it.name, c.campaign_id); }); }
   function charBadges(c, s) {
     var out = [], law = charLaw(c);
     if (law && law.sum.wanted) out.push('<button type="button" class="tag cb-badge bad" data-act="sheet-tab" data-tab="Record">Wanted' + (law.sum.bounty ? ' · ' + gp(law.sum.bounty) : '') + '</button>');
@@ -4940,7 +4940,7 @@
     if (!k.jobs.length) html += '<div class="empty">Nothing being made.</div>';
     else html += '<div class="stack">' + k.jobs.map(function (j, i) {
       var pct = Math.min(100, Math.round(100 * j.done / j.days)), ready = j.done >= j.days;
-      var h = '<div class="group-box craft-job"><p style="margin:0"><b>' + esc(j.qty > 1 ? j.qty + ' × ' + j.n : craftItemName(j.n)) + '</b> <span class="note">' + esc(j.tool) + (j.com ? ' · for ' + esc(j.com.shop) : '') + (j.unlic ? ' <span class="tag" style="font-size:10px">Unlicensed</span>' : '') + '</span></p>' +
+      var h = '<div class="group-box craft-job"><p style="margin:0"><b>' + esc(j.qty > 1 ? j.qty + ' × ' + j.n : craftItemName(j.n)) + '</b> <span class="note">' + esc(j.tool) + (j.com ? ' · for ' + esc(j.com.shop) : '') + (j.unlic ? ' <span class="tag" style="font-size:10px">Unlicensed</span>' : j.forged ? ' <span class="tag" style="font-size:10px">Forged hallmark</span>' : '') + '</span></p>' +
         '<div class="meter" role="img" aria-label="' + pct + '% done"><i style="width:' + pct + '%"></i></div>' +
         '<p class="note" style="margin:4px 0 0">' + j.done + ' of ' + j.days + ' days' + (j.where === 'rent' ? ' · renting ' + esc(CRAFTS[j.tool] ? CRAFTS[j.tool].need || 'a workshop' : 'a workshop') + ' at ' + money(toCp(j.rent)) + ' a day' : j.where === 'own' ? ' · own workshop' : ' · on the road') +
         (j.com && j.com.due ? ' · wanted by ' + esc(campDate(c.campaign_id, j.com.due)) : '') + '</p>';
@@ -4961,17 +4961,22 @@
       if (where === 'road' && C.need) where = 'rent';
       html += '<section class="block"><h2 class="sec-title">Start something</h2><form class="form" id="craft-form" novalidate>' +
         '<div class="two"><div class="field"><label for="cf-tool">With</label><select id="cf-tool">' + all.map(function (x) { return '<option value="' + esc(x) + '"' + (x === t ? ' selected' : '') + '>' + esc(x) + (tools.indexOf(x) >= 0 ? ' ✓' : '') + '</option>'; }).join('') + '</select></div>' +
-        '<div class="field"><label for="cf-item">Make</label><select id="cf-item">' + C.make.map(function (m, i) { return '<option value="' + i + '"' + (String(i) === pick ? ' selected' : '') + '>' + esc(craftItemName(m[0])) + ' (' + money(toCp(m[1])) + ')' + (m[3] && !k.licence ? ' — illegal without a licence' : '') + '</option>'; }).join('') + '<option value="own"' + (pick === 'own' ? ' selected' : '') + '>Something else…</option></select></div></div>';
+        '<div class="field"><label for="cf-item">Make</label><select id="cf-item">' + C.make.map(function (m, i) { return '<option value="' + i + '"' + (String(i) === pick ? ' selected' : '') + '>' + esc(craftItemName(m[0])) + ' (' + money(toCp(m[1])) + ')' + (m[3] && !k.licence ? (hasForgedLicence(s) ? ' — forged hallmark' : ' — illegal without a licence') : '') + '</option>'; }).join('') + '<option value="own"' + (pick === 'own' ? ' selected' : '') + '>Something else…</option></select></div></div>';
       if (pick === 'own') html += '<div class="two"><div class="field"><label for="cf-name">What is it</label><input type="text" id="cf-name" maxlength="80" placeholder="A glass hummingbird"></div><div class="field"><label for="cf-val">Worth (gp each)</label><input type="number" id="cf-val" min="0.01" step="0.01" inputmode="decimal" placeholder="Ask your DM"></div></div>';
       html += '<div class="two"><div class="field"><label for="cf-qty">How many</label><input type="number" id="cf-qty" min="1" value="' + Math.max(1, num(ui.cfQty, 1)) + '" inputmode="numeric"></div>' +
         '<div class="field"><label for="cf-where">Where</label><select id="cf-where">' + [['rent', 'Rent ' + (C.need || 'a workshop') + (C.rent ? ' (' + money(toCp(C.rent)) + ' a day)' : '')], ['own', 'Own workshop or holding'], ['road', 'On the road, with my tools']].map(function (o) {
           return '<option value="' + o[0] + '"' + (o[0] === where ? ' selected' : '') + (o[0] === 'road' && C.need ? ' disabled' : '') + '>' + esc(o[1]) + (o[0] === 'road' && C.need ? ' (needs ' + esc(C.need) + ')' : '') + '</option>';
         }).join('') + '</select></div></div>';
       if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); html += '<p class="note" style="margin:0 0 8px">Materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
-      if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + ' ' + (k.licence ? esc(c.name) + ' holds one.' : esc(c.name) + ' doesn’t have one.') + '</p>';
+      if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + ' ' + (k.licence ? esc(c.name) + ' holds one.' : hasForgedLicence(s) ? esc(c.name) + ' has a forged one: their silver and gold will carry a forged hallmark.' : esc(c.name) + ' doesn’t have one.') + '</p>';
       if (tools.indexOf(t) < 0) html += '<p class="note" style="margin:0 0 8px">' + esc(c.name) + ' isn’t trained with ' + esc(t) + ' yet. You can still try, without your proficiency bonus, or tick it below if they are.</p>';
       html += '<div class="actions"><button type="submit" class="btn primary">Buy the materials and start</button></div></form></section>';
     }
+    // Unstamped silver and gold in the pack can take a forged hallmark, if they have the punch.
+    var bare = s.items.map(function (it, i) { return { it: it, i: i }; }).filter(function (o) { return isUnlicensed(o.it); });
+    if (bare.length) html += '<section class="block"><h2 class="sec-title">Unlicensed work<small>only fences buy it</small></h2><div class="tbl">' + bare.map(function (o) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(o.it.name) + '</b><span>\u00d7' + num(o.it.qty, 1) + ' · no hallmark</span></div>' + (can && hasForgedLicence(s) ? '<button type="button" class="btn small" data-act="craft-stamp" data-i="' + o.i + '">Stamp a forged hallmark</button>' : '') + '</div>';
+    }).join('') + '</div>' + (hasForgedLicence(s) ? '<p class="note">A forged hallmark lets it sell in honest shops, if the keeper doesn’t look too closely: a Stealth roll each time.</p>' : '<p class="note">A forged royal licence comes with a hallmark punch. Fences sometimes have one.</p>') + '</section>';
     // Trained tools and how well known their work is.
     html += '<section class="block"><h2 class="sec-title">Trained with</h2>' + (tools.length ? '<p style="margin:0">' + tools.map(esc).join(', ') + '</p>' : '<p class="note" style="margin:0">No artisan’s tools yet.</p>');
     if (k.licence || tools.indexOf('Jeweler’s tools') >= 0 || dmView()) html += '<p class="note" style="margin:6px 0 0">' + (k.licence ? '♛ Holds a royal licence to work silver and gold.' : 'No royal licence for silver and gold.') +
@@ -4992,13 +4997,14 @@
     var unlic = false;
     if (pick === 'own') { n = ((document.getElementById('cf-name') || {}).value || '').trim(); v = fnum((document.getElementById('cf-val') || {}).value, 0); if (!n) return toast('Say what you’re making.'); if (!(v > 0)) return toast('Put in what one is worth.'); }
     else { var m = C.make[num(pick, 0)]; n = m[0]; v = m[1]; unlic = !!(m[3] && !k.licence); }
+    var forged = unlic && hasForgedLicence(s); if (forged) unlic = false;
     if (where === 'road' && C.need) return toast('That needs ' + C.need + '.');
     var cost = toCp(v * qty / 2), have = walletCp(s);
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short for the materials.');
     setWallet(s, have - cost);
-    k.jobs.push({ tool: t, n: n, v: v, qty: qty, days: craftDays(v, qty), done: 0, where: where, rent: where === 'rent' ? C.rent || 0 : 0, unlic: unlic });
+    k.jobs.push({ tool: t, n: n, v: v, qty: qty, days: craftDays(v, qty), done: 0, where: where, rent: where === 'rent' ? C.rent || 0 : 0, unlic: unlic, forged: forged });
     ui.cfQty = 1; ui.cfItem = null;
-    toast(unlic ? 'Materials bought for ' + money(cost) + '. No licence: this is illegal work.' : 'Materials bought for ' + money(cost) + '. Work has started.'); render(); saveCharSoon(c);
+    toast(forged ? 'Materials bought for ' + money(cost) + '. It’ll carry a forged hallmark.' : unlic ? 'Materials bought for ' + money(cost) + '. No licence: this is illegal work.' : 'Materials bought for ' + money(cost) + '. Work has started.'); render(); saveCharSoon(c);
   }
   function craftDay(c, i, n) {
     var s = c.sheet = normSheet(c.sheet), j = craftOf(s).jobs[i]; if (!j) return;
@@ -5020,10 +5026,10 @@
       k.log.unshift({ t: craftItemName(what), d: Q[0] + ', delivered to ' + j.com.shop + ' for ' + money(pay) + (late ? ' (late, half pay)' : q === 0 ? ' (rough work, half pay)' : '') });
       toast(Q[0] + ' work. ' + j.com.shop + ' paid ' + money(pay) + '.');
     } else {
-      var same = s.items.filter(function (it) { return it.made && it.name === craftItemName(j.n) && it.made.q === q && !it.made.unlic === !j.unlic; })[0];
+      var same = s.items.filter(function (it) { return it.made && it.name === craftItemName(j.n) && it.made.q === q && !it.made.unlic === !j.unlic && !it.made.forged === !j.forged; })[0];
       if (same) same.qty = num(same.qty, 1) + j.qty;
-      else s.items.push({ name: craftItemName(j.n), notes: Q[0] + ', made by ' + c.name + (j.unlic ? ', unlicensed' : ''), qty: j.qty, made: { by: c.name, q: q, v: j.v, tool: j.tool, unlic: !!j.unlic } });
-      k.log.unshift({ t: craftItemName(what), d: Q[0] + ' · kept' + (j.unlic ? ' · unlicensed' : '') });
+      else s.items.push({ name: craftItemName(j.n), notes: Q[0] + ', made by ' + c.name + (j.unlic ? ', unlicensed' : j.forged ? ', forged hallmark' : ''), qty: j.qty, made: { by: c.name, q: q, v: j.v, tool: j.tool, unlic: !!j.unlic, forged: !!j.forged } });
+      k.log.unshift({ t: craftItemName(what), d: Q[0] + ' · kept' + (j.unlic ? ' · unlicensed' : j.forged ? ' · forged hallmark' : '') });
       toast(Q[0] + ' work. It’s in ' + c.name + '’s pack.');
     }
     k.log = k.log.slice(0, 40);
@@ -6098,9 +6104,11 @@
         var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : isUnlicensed(it) ? 'unlicensed silver or gold' : '';
         if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
         var off = offerFor(shop, c, it.name, it);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
-          '<button type="button" class="btn small" data-act="shop-buy" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Buy 1</button></div>';
+          (isForgedMark(it) && !K.fence ? '<label class="sr" for="bst-' + i + '">Their Stealth roll</label><input type="number" class="input mini" id="bst-' + i + '" min="1" max="40" inputmode="numeric" placeholder="Stealth">' +
+            '<button type="button" class="btn small" data-act="shop-forged" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + ' title="Stealth DC ' + forgedDC(shop) + '">Try it, DC ' + forgedDC(shop) + '</button></div>'
+          : '<button type="button" class="btn small" data-act="shop-buy" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + '>Buy 1</button></div>');
       }).join('') + '</div>';
       html += '</section>';
     }
@@ -6111,7 +6119,7 @@
     // Ledger
     var led = shop.ledger || [];
     if (led.length) html += '<section class="block"><h2 class="sec-title">Recent sales<small>' + led.length + '</small></h2><div class="tbl">' + led.slice(0, 12).map(function (l) {
-      return '<div class="tbl-row"><div class="main"><b>' + esc(l.who) + (l.dir === 'bought' ? ' sold ' : ' bought ') + esc(l.qty > 1 ? l.qty + '× ' + l.what : l.what) + '</b><span>' + esc(new Date(l.at).toLocaleDateString()) + '</span></div><span class="num">' + money(l.cp) + '</span></div>';
+      return '<div class="tbl-row"><div class="main"><b>' + esc(l.who) + (l.dir === 'seized' ? ' had seized: ' : l.dir === 'bought' ? ' sold ' : ' bought ') + esc(l.qty > 1 ? l.qty + '× ' + l.what : l.what) + '</b><span>' + esc(new Date(l.at).toLocaleDateString()) + '</span></div><span class="num">' + (l.dir === 'seized' ? '—' : money(l.cp)) + '</span></div>';
     }).join('') + '</div></section>';
     $view.innerHTML = html + '</div>';
   }
@@ -6181,7 +6189,7 @@
   /* Contraband and stolen goods. Contraband is anything the law forbids: the catalog's poisons and kits, any homebrew item
      ticked as contraband, anything logged as contraband on a campaign's Crimes page, and spider eggs. Fences stock all of it and
      buy it; honest shops won't touch contraband or anything marked stolen. */
-  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120]];
+  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120], ['Forged royal licence (with hallmark punch)', 150]];
   function contrabandList(campId) {
     var out = [], seen = {};
     function add(n, p) { var k = String(n).toLowerCase().trim(); if (!k || seen[k]) return; seen[k] = 1; out.push({ n: n, p: p }); }
@@ -6206,6 +6214,30 @@
   function isContraband(name, campId) { return /^(unmarked\s+dornish[- ]steel|forged\b|counterfeit\b|fake\b)/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
   function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
   function isUnlicensed(it) { return !!(it && it.made && it.made.unlic); }
+  // A forged hallmark passes for the Crown's stamp until someone looks hard. Selling one to an honest shop takes a Stealth roll.
+  function isForgedMark(it) { return !!(it && it.made && it.made.forged); }
+  function hasForgedLicence(s) { return (s.items || []).some(function (it) { return /^forged royal licence/i.test(it.name || '') && num(it.qty, 1) > 0; }); }
+  function forgedDC(shop) {
+    var size = shop.place_id ? num((placeOf(shop.place_id) || {}).size, 2) : 2;
+    return 12 + (size >= 3 ? 2 : 0) + (/Tailor|Magic shop|Curio|Trinket/.test(shop.kind) ? 2 : 0);
+  }
+  function shopSellForged(shop, i) {
+    var c = charById(ui.shopChar && ui.shopChar[shop.id]); if (!c) return;
+    var s = normSheet(c.sheet), it = s.items[i]; if (!it) return;
+    var inp = document.getElementById('bst-' + i), roll = inp ? num(inp.value, 0) : 0;
+    if (!roll) return toast('Put in their Stealth roll first.');
+    var dc = forgedDC(shop);
+    if (roll >= dc) { toast('The keeper doesn’t look twice at the hallmark.'); return shopBuy(shop, i); }
+    // Spotted: the keeper keeps the piece and the law hears of it.
+    it.qty = num(it.qty, 1) - 1; if (it.qty <= 0) s.items.splice(i, 1);
+    c.sheet = s; saveCharSoon(c);
+    var place = shop.place_id ? articleById(shop.place_id) : null;
+    ledgerAdd(shop, { who: c.name, what: it.name + ' (forged hallmark)', qty: 1, cp: 0, dir: 'seized' }); saveShop(shop, 'Spotted. The keeper keeps the piece, and ' + c.name + ' is now suspected of forging the Crown’s mark.');
+    var row = { campaign_id: shop.campaign_id, character_id: c.id, kind: 'crime', title: 'Passing silver or gold under a forged hallmark', location: [shop.name, place ? place.title : ''].filter(Boolean).join(', '),
+      severity: 'Serious', status: 'Suspected', bounty: 0, quantity: 1, notes: 'Tried to sell ' + it.name.toLowerCase() + ' at ' + shop.name + '. The keeper spotted the forged hallmark and kept the piece.', dm_only: false };
+    sb.from('crimes').insert(row).then(function (r) { if (r.error) return fail(r.error, 'Could not add it to the record.'); loadCrimes().then(render); });
+    render();
+  }
   // Every fence carries every piece of contraband the realm knows about.
   // Feast days put fair goods on the shelves of the shops that would sell them. They go again when the day is over.
   var FEST_GOODS = {
@@ -10021,6 +10053,7 @@
         if (!srm) return;
         srm.stock.splice(num(el.getAttribute('data-i'), -1), 1); saveShop(srm); render(); break;
       case 'shop-sell': var ss1 = shopById(el.getAttribute('data-id')); if (ss1) shopSell(ss1, num(el.getAttribute('data-i'), -1)); break;
+      case 'shop-forged': var sf1 = shopById(el.getAttribute('data-id')); if (sf1) shopSellForged(sf1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-buy': var sb1 = shopById(el.getAttribute('data-id')); if (sb1) shopBuy(sb1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-imp': var si1 = shopById(el.getAttribute('data-id')); if (si1) toggleImportant(si1, num(el.getAttribute('data-i'), -1)); break;
       case 'shop-recog': var sr1 = shopById(el.getAttribute('data-id')); if (sr1) shopRecog(sr1, el.getAttribute('data-hit') === '1'); break;
@@ -10297,6 +10330,7 @@
       case 'craft-drop': if (c) { var cdi = num(el.getAttribute('data-i'), -1); if (ui.pendingDelete !== 'craft:' + cdi) { ui.pendingDelete = 'craft:' + cdi; render(); return; } ui.pendingDelete = null; craftOf(c.sheet).jobs.splice(cdi, 1); render(); saveCharSoon(c); } break;
       case 'craft-tool': if (c) { var ctl = craftOf(c.sheet).tools, ctn = el.getAttribute('data-tool'), cti = ctl.indexOf(ctn); if (cti >= 0) ctl.splice(cti, 1); else ctl.push(ctn); ui.craftToolsOpen = true; render(); saveCharSoon(c); } break;
       case 'craft-licence': if (c && dmView()) { var clk = craftOf(c.sheet); clk.licence = !clk.licence; toast(clk.licence ? c.name + ' now holds a royal licence.' : 'Licence taken away.'); render(); saveCharSoon(c); } break;
+      case 'craft-stamp': if (c && hasForgedLicence(c.sheet)) { var cst = c.sheet.items[num(el.getAttribute('data-i'), -1)]; if (cst && cst.made) { cst.made.unlic = false; cst.made.forged = true; cst.notes = String(cst.notes || '').replace(', unlicensed', ', forged hallmark'); toast('Stamped. It passes for the Crown’s mark, at a glance.'); render(); saveCharSoon(c); } } break;
       case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
