@@ -4909,13 +4909,20 @@
       ['a bolt of cloth', 1, 'Tailor & outfitter'], ['Fine clothes', 15, 'Tailor & outfitter'], ['a tapestry', 25, "Artist's studio,Temple"]] },
     'Cobbler’s tools': { rent: 0, make: [['a pair of slippers', 0.5, 'Tailor & outfitter'], ['a pair of boots', 1, 'Tailor & outfitter,General store'], ['a pair of riding boots', 3, 'Stables,Tailor & outfitter'], ['a pair of fine shoes', 5, 'Tailor & outfitter']] },
     'Brewer’s supplies': { need: 'a brewhouse', rent: 0.3, make: [['a cask of ale', 2, 'Tavern & inn'], ['a cask of cider', 2, 'Tavern & inn'], ['a cask of stout', 3, 'Tavern & inn'], ['a cask of mead', 5, 'Tavern & inn']] },
-    'Alchemist’s supplies': { rent: 0, make: [['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple']] },
+    'Alchemist’s supplies': { rent: 0, note: 'Poisons too: an alchemist is a poisoner if they choose to be. Selling poison openly is your DM’s call.', make: [['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'],
+      ['Basic poison (vial)', 100, 'Fence'], ['Truth serum', 150, 'Fence'], ['Assassin’s blood', 150, 'Fence'], ['Serpent venom', 200, 'Fence'], ['Drow poison', 200, 'Fence'], ['Carrion crawler mucus', 200, 'Fence'],
+      ['Malice', 250, 'Fence'], ['Pale tincture', 250, 'Fence'], ['Essence of ether', 300, 'Fence'], ['Oil of taggit', 400, 'Fence'], ['Burnt othur fumes', 500, 'Fence'], ['Torpor', 600, 'Fence'],
+      ['Wyvern poison', 1200, 'Fence'], ['Midnight tears', 1500, 'Fence'], ['Purple worm poison', 2000, 'Fence']] },
     'Herbalism kit': { rent: 0, make: [['dried herbs (a bundle)', 0.1, 'Alchemist,Herbalist'], ['a healing salve', 1, 'Temple,Herbalist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'], ['Potion of healing', 50, 'Alchemist,Temple,Herbalist']] },
     'Tinker’s tools': { rent: 0, make: [['Bell', 1, 'General store,Temple'], ['Ball bearings (1,000)', 1, 'Tinker & toolmaker'], ['Hooded lantern', 5, 'General store'], ['a set of clockwork gears', 5, 'Clockworks'], ['Bullseye lantern', 10, 'General store'], ['Lock', 10, 'General store,Tinker & toolmaker']] },
     'Calligrapher’s supplies': { rent: 0, make: [['a letter written fair', 0.1, 'General store'], ['a copied scroll', 2, 'Bookseller,Temple'], ['a fine charter', 10, 'Bookseller'], ['Book', 25, 'Bookseller,Magic shop']] },
     'Cartographer’s tools': { rent: 0, make: [['a local map', 2, 'General store,Bookseller'], ['a sea chart', 10, 'Shipwright & chandler'], ['a map of the realm', 25, 'Bookseller']] },
     'Painter’s supplies': { rent: 0, make: [['a painted sign', 2, 'Tavern & inn,General store'], ['a painted icon', 5, 'Temple'], ['a landscape', 10, "Artist's studio"], ['a portrait', 20, "Artist's studio"]] }
   };
+  // Cooks: real cooking, for inns, feasts and the road.
+  CRAFTS['Cook’s utensils'] = { rent: 0, make: [['Rations (1 day)', 0.5, 'General store'], ['a loaf of travel bread', 0.05, 'General store'], ['a meat pie', 0.1, 'Tavern & inn'], ['a pot of stew (feeds ten)', 0.5, 'Tavern & inn'],
+      ['a side of smoked meat', 1, 'General store,Tavern & inn'], ['a wheel of hard biscuit (a week’s rations)', 2, 'Shipwright & chandler,General store'], ['wyvern jerky (a dozen strips)', 2, 'Tavern & inn'], ['a honey cake', 0.2, 'Tavern & inn'],
+      ['a spiced roast (feeds twenty)', 5, 'Tavern & inn'], ['a wedding cake', 10, 'Tavern & inn'], ['a lord’s feast (feeds fifty)', 100, 'Tavern & inn']] };
   // House tools, not in the books: an instrument maker, and the clockwork tinker's table (clockwork has its own times and ranks, not value-based).
   CRAFTS['Instrument maker’s tools'] = { rent: 0, make: [['Shawm', 2, 'Tavern & inn'], ['Flute', 2, 'Tavern & inn,General store'], ['Horn', 3, 'Tavern & inn,Stables'], ['Drum', 6, 'Tavern & inn'], ['Pan flute', 12, 'Tavern & inn'],
       ['Dulcimer', 25, 'Tavern & inn'], ['Bagpipes', 30, 'Tavern & inn'], ['Lyre', 30, 'Artist\'s studio,Tavern & inn'], ['Viol', 30, 'Artist\'s studio,Tavern & inn'],
@@ -4950,7 +4957,7 @@
     return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
   }
   // The ability each tool uses (2024 rules), so the app can say what to roll.
-  var CRAFT_AB = { 'Forgery kit': 'dex', 'Instrument maker’s tools': 'dex', 'Clockwork tinker’s tools': 'int', 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
+  var CRAFT_AB = { 'Cook’s utensils': 'wis', 'Forgery kit': 'dex', 'Instrument maker’s tools': 'dex', 'Clockwork tinker’s tools': 'int', 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
     'Weaver’s tools': 'dex', 'Cobbler’s tools': 'dex', 'Brewer’s supplies': 'int', 'Alchemist’s supplies': 'int', 'Herbalism kit': 'int', 'Tinker’s tools': 'dex', 'Calligrapher’s supplies': 'dex', 'Cartographer’s tools': 'wis', 'Painter’s supplies': 'wis' };
   function craftBonus(s, tool) { var ab = CRAFT_AB[tool] || 'int', b = mod(s.abilities[ab]) + (craftTools(s).indexOf(tool) >= 0 ? profBonus(s.level) : 0); return { b: b, ab: ab.toUpperCase(), trained: craftTools(s).indexOf(tool) >= 0 }; }
   function stealthBonus(s) { return mod(s.abilities.dex) + num((s.skills || {}).Stealth, 0) * profBonus(s.level); }
