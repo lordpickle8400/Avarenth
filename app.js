@@ -4902,6 +4902,12 @@
     var mine = craftOf(s).tools;
     return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
   }
+  // The ability each tool uses (2024 rules), so the app can say what to roll.
+  var CRAFT_AB = { 'Glassblower’s tools': 'int', 'Smith’s tools': 'str', 'Leatherworker’s tools': 'dex', 'Carpenter’s tools': 'str', 'Woodcarver’s tools': 'dex', 'Jeweler’s tools': 'int', 'Potter’s tools': 'int', 'Mason’s tools': 'str',
+    'Weaver’s tools': 'dex', 'Cobbler’s tools': 'dex', 'Brewer’s supplies': 'int', 'Alchemist’s supplies': 'int', 'Herbalism kit': 'int', 'Tinker’s tools': 'dex', 'Calligrapher’s supplies': 'dex', 'Cartographer’s tools': 'wis', 'Painter’s supplies': 'wis' };
+  function craftBonus(s, tool) { var ab = CRAFT_AB[tool] || 'int', b = mod(s.abilities[ab]) + (craftTools(s).indexOf(tool) >= 0 ? profBonus(s.level) : 0); return { b: b, ab: ab.toUpperCase(), trained: craftTools(s).indexOf(tool) >= 0 }; }
+  function stealthBonus(s) { return mod(s.abilities.dex) + num((s.skills || {}).Stealth, 0) * profBonus(s.level); }
+  function firstName(c) { return String(c.name || '').split(' ')[0]; }
   function craftDays(v, q) { return Math.max(1, Math.ceil(v * q / 10)); }
   function craftFame(s, placeId) { return num(craftOf(s).fame[placeId], 0); }
   function craftFameMult(s, placeId) { return 1 + Math.min(0.3, craftFame(s, placeId) * 0.03); }
@@ -4929,6 +4935,7 @@
 
   function workshopTabHtml(c, s, can) {
     var k = craftOf(s), tools = craftTools(s), html = '<div style="margin-top:12px">';
+    if (dmView() && c.owner_id !== uid()) html += '<p class="note craft-dm">Running this for ' + esc(firstName(c)) + ' at the table? It all works from here: start their work, log the days, then ask for the roll it shows and type in their total.</p>';
     html += helpNote('workshop', 'Make things with your tools, to keep or to sell. Materials cost half the item’s value. Work goes at about a day for every 10 gp of value, and you log the days as you spend them. When it’s done, roll your tool check and put in the total: the better the roll, the more it’s worth. Shops sometimes order work through your DM.');
     // Orders from shops, sent by the DM.
     if (k.offers.length) html += '<section class="block"><h2 class="sec-title">Work offered<small>' + k.offers.length + '</small></h2><div class="tbl">' + k.offers.map(function (o, i) {
@@ -4947,8 +4954,10 @@
       if (can) {
         if (!ready) h += '<div class="actions tight"><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="1">+1 day</button><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="5">+5 days</button>' +
           '<button type="button" class="btn small quiet" data-act="craft-drop" data-i="' + i + '">' + (ui.pendingDelete === 'craft:' + i ? 'Tap again: materials are lost' : 'Give up') + '</button></div>';
-        else h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">Your ' + esc(j.tool.replace(/s$/, '').replace(/’s (tool|supplie|kit)$/, '').toLowerCase()) + ' check total</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
-          '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork</p>';
+        else { var cb = craftBonus(s, j.tool), tname = j.tool.replace(/’s (tools|supplies)$/, '').replace(/ kit$/, '');
+          h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b> <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
+          h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">' + (dmView() && c.owner_id !== uid() ? 'Their total' : 'Your total') + '</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
+          '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork</p>'; }
       }
       return h + '</div>';
     }).join('') + '</div>';
@@ -6104,7 +6113,7 @@
         var i = s.items.indexOf(it), bad = isContraband(it.name, shop.campaign_id) ? 'contraband' : isStolen(it) ? 'stolen' : '';
         if (bad && !K.fence) return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + ' · ' + bad + ': won’t touch it. Try a fence.</span></div></div>';
         var off = offerFor(shop, c, it.name, it);
-        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : isUnlicensed(it) ? ' · no royal stamp' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span></div>' +
+        return '<div class="tbl-row"><div class="main"><b>' + esc(it.name) + '</b><span>×' + num(it.qty, 1) + (it.made ? ' · ' + CRAFT_Q[num(it.made.q, 1)][0].toLowerCase() + ', their own make' : '') + (isForgedMark(it) ? ' · forged hallmark' : isUnlicensed(it) ? ' · no royal stamp' : '') + (bad ? ' · ' + bad : '') + (off ? ' · offers ' + money(off) + ' each' : ' · not on the list, name a price') + '</span>' + ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<span class="craft-ask">Ask ' + esc(firstName(c)) + ' for Stealth: <b>d20 ' + signed(stealthBonus(s)) + '</b>' + (isForgedMark(it) ? ', with advantage (roll two, keep the higher)' : '') + '. DC ' + forgedDC(shop) + ', keep that to yourself.</span>' : '') + '</div>' +
           '<label class="sr" for="bo-' + i + '">Offer in gp</label><input type="number" class="input mini" id="bo-' + i + '" min="0" step="0.01" inputmode="decimal" value="' + (off ? off / 100 : '') + '" placeholder="gp">' +
           ((isForgedMark(it) || isUnlicensed(it)) && !K.fence ? '<label class="sr" for="bst-' + i + '">Their Stealth roll</label><input type="number" class="input mini" id="bst-' + i + '" min="1" max="40" inputmode="numeric" placeholder="Stealth">' +
             '<button type="button" class="btn small" data-act="shop-forged" data-id="' + esc(shop.id) + '" data-i="' + i + '"' + (blocked ? ' disabled' : '') + ' title="Stealth DC ' + forgedDC(shop) + (isForgedMark(it) ? ', with advantage' : '') + '">Try it, DC ' + forgedDC(shop) + (isForgedMark(it) ? ' (adv.)' : '') + '</button></div>'

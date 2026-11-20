@@ -1403,3 +1403,5 @@ body:has(.m-sheet) { overflow: hidden; }
 .craft-tools { margin-top: 8px; }
 .craft-tools .chips { margin-top: 6px; }
 .shop-orders select.input { max-width: 9rem; }
+.craft-ask { margin: 8px 0 0; font-size: 14px; }
+.tbl-row .main .craft-ask { display: block; margin-top: 4px; color: var(--text); }
