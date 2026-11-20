@@ -3615,6 +3615,20 @@
   // Dornish steel: Stonehelm's dwarf-forged steel. Any weapon +1 damage, any armor or shield +1 AC. Not magic, so it stacks with a magic bonus.
   function dornishBase(name) { var m = /^(?:unmarked\s+)?dornish[- ]steel\s+(.+)$/i.exec(String(name || '').trim()); return m ? m[1] : ''; }
   function isDornish(it) { return !!(it && (it.ds || dornishBase(it.name))); }
+  /* Item quality, 0 Rough to 4 Masterwork. Sound is normal. Never as good as magic: masterwork is +1 to hit, nothing on damage, and doesn't stack with a magic bonus.
+     Built on D&D 3.5's masterwork items; Rough's drawbacks are house rules. */
+  var QUALITY_NAMES = ['Rough', 'Sound', 'Good', 'Fine', 'Masterwork'];
+  function itemQ(it) { return !it ? 1 : it.made ? num(it.made.q, 1) : it.q != null ? num(it.q, 1) : 1; }
+  function qualityKind(k) { return /^(sw|mw|rw|la|ma|ha|sh|t|k|i|p|weapon|armor|shield|tool|kit|instrument|potion)$/.test(k || ''); }
+  function qualityEffect(it) {
+    var q = itemQ(it), ref = itemRef(it), k = ref ? ref.k : '', g = ref ? gearItem(ref) : null, rk = it.k || '';
+    var wpn = k === 'weapons' || /^(sw|mw|rw)$/.test(rk), shd = /^shield$/i.test(it.name || '') || rk === 'sh' || !!(g && g.shield), arm = !shd && (k === 'armor' || /^(la|ma|ha)$/.test(rk)),
+      tool = k === 'tools' || /^(t|k|i)$/.test(rk) || /tools|supplies|kit$/i.test(it.name || ''), pot = rk === 'p' || /potion|antitoxin|acid|alchemist/i.test(it.name || '');
+    if (q === 1 || q === 2) return q === 2 && (wpn || arm || shd || tool || pot) ? 'Good work: sells for more.' : '';
+    if (q === 0) return wpn ? '−1 to hit, and it breaks on a natural 1.' : arm || shd ? '−1 AC.' : tool ? '−1 to checks with it.' : pot ? 'Weak: half the effect.' : 'Rough work.';
+    if (q === 3) return wpn ? 'Advantage on checks to keep hold of it.' : arm ? 'Half the time to put on or take off.' : shd ? 'Fine work.' : tool ? '+1 to checks with it.' : pot ? 'Keeps twice as long.' : 'Fine work.';
+    return wpn ? '+1 to hit (not with a magic bonus).' : arm ? 'No disadvantage on Stealth.' : shd ? 'Masterwork.' : tool ? '+1 to checks, and counts as a spare set.' : pot ? 'Best result: healing potions heal the maximum.' : 'Masterwork.';
+  }
   // "2 Daggers, Thieves' Tools, 10 days of Rations, and 15 GP" -> items and coins. Packs are opened up.
   function parseGear(text, from) {
     var out = { items: [], gp: 0 };
@@ -3675,9 +3689,10 @@
     // Warforged: armour plates are part of the body, +1 AC always.
     var wf = /^warforged$/i.test(String(s.species || '').trim()) ? 1 : 0;
     if (!armor && !shield) return { ac: num(s.ac, 10) + wf, how: 'Unarmored' + (wf ? ' + Integrated Protection' : ''), worn: false, notes: notes };
-    var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) : num(s.ac, 10);
-    if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0);
-    if (armor && armor.g.stealth) notes.push('Disadvantage on Stealth');
+    var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) - (itemQ(armor.it) === 0 ? 1 : 0) : num(s.ac, 10);
+    if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0) - (itemQ(shield.it) === 0 ? 1 : 0);
+    if (armor && armor.g.stealth && itemQ(armor.it) < 4) notes.push('Disadvantage on Stealth');
+    if (armor && itemQ(armor.it) === 0) notes.push('Rough armor: −1 AC');
     if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
     return { ac: ac + wf, how: [armor ? armor.it.name : '', shield ? 'Shield' : '', wf ? 'Integrated Protection' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
   }
@@ -3694,14 +3709,14 @@
     if (!w) return null;
     var ranged = /Ranged/.test(w.cat), fin = w.props.some(function (p) { return /^Finesse/.test(p); });
     var ab = ranged ? 'dex' : fin ? (abil.dex > abil.str ? 'dex' : 'str') : 'str';
-    var prof = weaponProf(classOf(s), w), bonus = num(it.bonus, 0), dm = abil[ab] + bonus + (isDornish(it) ? 1 : 0);
+    var prof = weaponProf(classOf(s), w), bonus = num(it.bonus, 0), dm = abil[ab] + bonus + (isDornish(it) ? 1 : 0), iq = itemQ(it), qhit = iq === 0 ? -1 : iq === 4 && !bonus ? 1 : 0;
     var rng = w.props.map(function (p) { var m = /Range (\d+\/\d+)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
     var reach = w.props.some(function (p) { return /^Reach/.test(p); });
     var vers = w.props.map(function (p) { var m = /Versatile \(([^)]+)\)/.exec(p); return m ? m[1] : ''; }).filter(Boolean)[0];
     return {
       name: it.name + (bonus ? ' +' + bonus : ''), ref: itemRef(it), range: ranged ? rng + ' ft' : (reach ? '10 ft' : '5 ft') + (rng ? ' (' + rng + ')' : ''),
-      hit: signed(abil[ab] + (prof ? pb : 0) + bonus), dmg: w.dmg + (dm ? (dm > 0 ? '+' : '−') + Math.abs(dm) : '') + ' ' + w.type + (w.extra ? ' + ' + w.extra : ''),
-      notes: w.props.map(function (p) { return p.replace(/\s*\(.*$/, ''); }).concat(w.mastery ? [w.mastery + ' (mastery)'] : []).join(', ') + (vers ? ' · ' + vers + ' two-handed' : '') + (prof ? '' : ' · not proficient'),
+      hit: signed(abil[ab] + (prof ? pb : 0) + bonus + qhit), dmg: w.dmg + (dm ? (dm > 0 ? '+' : '−') + Math.abs(dm) : '') + ' ' + w.type + (w.extra ? ' + ' + w.extra : ''),
+      notes: w.props.map(function (p) { return p.replace(/\s*\(.*$/, ''); }).concat(w.mastery ? [w.mastery + ' (mastery)'] : []).join(', ') + (vers ? ' · ' + vers + ' two-handed' : '') + (prof ? '' : ' · not proficient') + (iq === 0 ? ' · rough: breaks on a natural 1' : iq === 3 ? ' · fine' : iq === 4 ? ' · masterwork' : ''),
       light: w.props.indexOf('Light') >= 0
     };
   }
@@ -3806,10 +3821,10 @@
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
       return '<div class="inv-tr' + (it.eq ? ' on' : '') + '"><span class="eq">' + (eqable && can ? '<button type="button" class="inv-eq" data-act="equip" data-i="' + i + '" aria-pressed="' + !!it.eq + '" aria-label="' + (it.eq ? 'Unequip ' : 'Equip ') + esc(it.name) + '"></button>' : eqable ? '<span class="inv-eq" aria-hidden="true"></span>' : '') + '</span>' +
-        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (it.made ? ' <span class="tag plain" style="font-size:10px" title="Made by ' + esc(it.made.by || '') + '">' + esc(CRAFT_Q[num(it.made.q, 1)][0]) + ', own make</span>' + (it.made.unlic ? ' <span class="tag" style="font-size:10px" title="Silver or gold worked without a royal licence. Fences buy it; honest shops only if you slip it past them.">Unlicensed</span>' : it.made.forged ? ' <span class="tag" style="font-size:10px" title="Carries a forged royal hallmark. Honest shops take it if they don’t spot it.">Forged hallmark</span>' : '') : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
+        '<span class="nm">' + (r ? peekBtn('item', r.n, esc(it.name)) : '<b>' + esc(it.name) + '</b>') + (num(it.bonus, 0) ? ' <span class="tag" style="font-size:10px">+' + num(it.bonus, 0) + '</span>' : '') + (isDornish(it) ? ' <span class="tag plain" style="font-size:10px" title="+1 damage, or +1 AC on armor">Dornish steel</span>' : '') + (!it.made && itemQ(it) !== 1 ? ' <span class="tag plain" style="font-size:10px" title="' + esc(qualityEffect(it)) + '">' + QUALITY_NAMES[itemQ(it)] + '</span>' : '') + (it.made ? ' <span class="tag plain" style="font-size:10px" title="Made by ' + esc(it.made.by || '') + '">' + esc(CRAFT_Q[num(it.made.q, 1)][0]) + ', own make</span>' + (it.made.unlic ? ' <span class="tag" style="font-size:10px" title="Silver or gold worked without a royal licence. Fences buy it; honest shops only if you slip it past them.">Unlicensed</span>' : it.made.forged ? ' <span class="tag" style="font-size:10px" title="Carries a forged royal hallmark. Honest shops take it if they don’t spot it.">Forged hallmark</span>' : '') : '') + (isStolen(it) ? ' <span class="tag" style="font-size:10px">Stolen</span>' : '') + (isContraband(it.name, c.campaign_id) ? ' <span class="tag" style="font-size:10px">Contraband</span>' : '') +
         '<small>' + esc([kind.label, it.notes && kind.k !== 'other' ? it.notes : '', it.from ? 'from ' + it.from : ''].filter(Boolean).join(' · ')) + '</small>' +
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
-        (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
+        (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="iq-' + i + '">Quality</label><select class="input mini" id="iq-' + i + '" data-iq="' + i + '">' + QUALITY_NAMES.map(function (n, qi) { return '<option value="' + qi + '"' + (qi === itemQ(it) ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select><label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
         '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
         '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
         '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
@@ -4895,6 +4910,13 @@
   // A forger works documents: papers for every trade, merchant's papers, the royal licence, and the punch that fakes the Crown's hallmark.
   CRAFTS['Forgery kit'] = { rent: 0, note: 'Everything made here is contraband: honest shops won’t touch it, and carrying it counts as hot goods.', make: [['forged merchant’s papers', 25, 'Fence'], ['forged hallmark punch', 40, 'Fence'], ['forged royal licence', 50, 'Fence']]
     .concat(Object.keys(CRAFTS).map(function (t) { return ['forged ' + (t === 'Herbalism kit' ? 'herbalist' : t.replace(/’s (tools|supplies)$/, '').toLowerCase()) + '’s papers', 25, 'Fence']; })) };
+  /* Crafting ranks, borrowed from Pathfinder 2e's proficiency ranks. Work above your rank rolls with disadvantage; your rank caps how good it can come out.
+     Ranking up: 10 finished jobs at your rank (an order counts 3), then a guild test. */
+  var CRAFT_RANKS = ['Apprentice', 'Journeyman', 'Master', 'Grand master'], RANK_CAP = [2, 3, 4, 4], RANK_TEST = [12, 16, 20], RANK_NEED = 10;
+  function itemTier(v) { v = fnum(v, 0); return v < 5 ? 0 : v < 40 ? 1 : v < 200 ? 2 : 3; }
+  var TIER_NAMES = ['simple work', 'journeyman’s work', 'master’s work', 'a grand master’s work'];
+  function craftRank(s, tool) { var k = craftOf(s); return num((k.rank || {})[tool], 0); }
+  function craftProg(s, tool) { var k = craftOf(s); return num((k.prog || {})[tool], 0); }
   var CRAFT_Q = [['Rough', 0.5], ['Sound', 1], ['Good', 1.25], ['Fine', 1.5], ['Masterwork', 2]];
   function craftQ(total) { total = num(total, 0); return total >= 25 ? 4 : total >= 20 ? 3 : total >= 15 ? 2 : total >= 10 ? 1 : 0; }
   function craftOf(s) { var k = s.craft && typeof s.craft === 'object' ? s.craft : (s.craft = {}); ['tools', 'jobs', 'offers', 'log'].forEach(function (x) { if (!Array.isArray(k[x])) k[x] = []; }); if (!k.fame || typeof k.fame !== 'object') k.fame = {}; return k; }
@@ -4995,9 +5017,9 @@
         if (!ready) h += '<div class="actions tight"><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="1">+1 day</button><button type="button" class="btn small" data-act="craft-day" data-i="' + i + '" data-n="5">+5 days</button>' +
           '<button type="button" class="btn small quiet" data-act="craft-drop" data-i="' + i + '">' + (ui.pendingDelete === 'craft:' + i ? 'Tap again: materials are lost' : 'Give up') + '</button></div>';
         else { var cb = craftBonus(s, j.tool), tname = j.tool.replace(/’s (tools|supplies)$/, '').replace(/ kit$/, '');
-          h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b> <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
+          h += '<p class="craft-ask">' + (dmView() && c.owner_id !== uid() ? 'Ask ' + esc(firstName(c)) + ' for a ' : 'Roll a ') + esc(tname) + ' check: <b>d20 ' + signed(cb.b) + '</b>' + (itemTier(j.v) > craftRank(s, j.tool) ? ', with disadvantage (above their rank)' : '') + ' <span class="note">(' + cb.ab + (cb.trained ? ' + proficiency' : ', not trained') + ')</span></p>';
           h += '<div class="inline-form craft-roll"><div class="field"><label for="cr-roll-' + i + '">' + (dmView() && c.owner_id !== uid() ? 'Their total' : 'Your total') + '</label><input type="number" id="cr-roll-' + i + '" inputmode="numeric" min="1" max="40" placeholder="Roll it"></div>' +
-          '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork</p>'; }
+          '<button type="button" class="btn primary" data-act="craft-finish" data-i="' + i + '">Finish' + (j.com ? ' and deliver' : '') + '</button></div><p class="note" style="margin:4px 0 0">Under 10 rough · 10 sound · 15 good · 20 fine · 25 masterwork' + (RANK_CAP[craftRank(s, j.tool)] < 4 ? ' · best a ' + CRAFT_RANKS[craftRank(s, j.tool)].toLowerCase() + ' can do: ' + CRAFT_Q[RANK_CAP[craftRank(s, j.tool)]][0].toLowerCase() : '') + '</p>'; }
       }
       return h + '</div>';
     }).join('') + '</div>';
@@ -5016,7 +5038,7 @@
         '<div class="field"><label for="cf-where">Where</label><select id="cf-where">' + [['rent', 'Rent ' + (C.need || 'a workshop') + (C.rent ? ' (' + money(toCp(C.rent)) + ' a day)' : '')], ['own', 'Own workshop or holding'], ['road', 'On the road, with my tools']].map(function (o) {
           return '<option value="' + o[0] + '"' + (o[0] === where ? ' selected' : '') + (o[0] === 'road' && C.need ? ' disabled' : '') + '>' + esc(o[1]) + (o[0] === 'road' && C.need ? ' (needs ' + esc(C.need) + ')' : '') + '</option>';
         }).join('') + '</select></div></div>';
-      if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); html += '<p class="note" style="margin:0 0 8px">Materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
+      if (pick !== 'own') { var m0 = C.make[num(pick, 0)], q0 = Math.max(1, num(ui.cfQty, 1)); var tr0 = itemTier(m0[1]), rk0 = craftRank(s, t); html += (tr0 > rk0 ? '<p class="note warn" style="margin:0 0 8px">That’s ' + TIER_NAMES[tr0] + ', above ' + esc(firstName(c)) + '’s rank (' + CRAFT_RANKS[rk0].toLowerCase() + '): the roll has disadvantage.</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc(craftItemName(TIER_NAMES[tr0])) + ' · materials ' + money(toCp(m0[1] * q0 / 2)) + ' · about ' + craftDays(m0[1], q0) + ' day' + (craftDays(m0[1], q0) === 1 ? '' : 's') + '’ work' + (where === 'rent' && C.rent ? ' · rent ' + money(toCp(C.rent * craftDays(m0[1], q0))) : '') + ' · worth ' + money(toCp(m0[1] * q0)) + (m0[2] ? ' · wanted by: ' + esc(m0[2].split(',').join(', ').toLowerCase()) : '') + '</p>'; }
       if (C.note) html += '<p class="note" style="margin:0 0 8px">' + esc(C.note) + ' ' + (k.licence ? esc(c.name) + ' holds one.' : hasPunch(s) ? esc(c.name) + ' doesn’t, but carries a forged hallmark punch: their silver and gold will carry a fake royal stamp.' : esc(c.name) + ' doesn’t have one.') + '</p>';
       if (tools.indexOf(t) < 0) html += '<p class="note" style="margin:0 0 8px">' + esc(c.name) + ' isn’t trained with ' + esc(t) + ' yet. You can still try, without your proficiency bonus, or tick it below if they are.</p>';
       html += '<div class="actions"><button type="submit" class="btn primary">Buy the materials and start</button></div></form></section>';
@@ -5027,7 +5049,14 @@
       return '<div class="tbl-row"><div class="main"><b>' + esc(o.it.name) + '</b><span>\u00d7' + num(o.it.qty, 1) + ' · no hallmark</span></div>' + (can && hasPunch(s) ? '<button type="button" class="btn small" data-act="craft-stamp" data-i="' + o.i + '">Stamp a forged hallmark</button>' : '') + '</div>';
     }).join('') + '</div>' + (hasPunch(s) ? '<p class="note">Honest shops take it if the keeper doesn’t look too closely: a Stealth roll, with advantage once it carries a forged hallmark.</p>' : '<p class="note">Honest shops take it if the keeper doesn’t look too closely: a Stealth roll. A forged hallmark punch (fences sometimes have one) gives advantage.</p>') + '<p class="note"><a class="link" href="#/a/silver-gold-and-the-royal-hallmark">How the royal hallmark works</a></p>' + '</section>';
     // Trained tools and how well known their work is.
-    html += '<section class="block"><h2 class="sec-title">Trained with</h2>' + (tools.length ? '<p style="margin:0">' + tools.map(esc).join(', ') + '</p>' : '<p class="note" style="margin:0">No artisan’s tools yet.</p>');
+    html += '<section class="block"><h2 class="sec-title">Trained with</h2>' + (tools.length ? '<div class="tbl">' + tools.map(function (t) {
+      var rk = craftRank(s, t), pg = craftProg(s, t), ready = rk < 3 && pg >= RANK_NEED, ti = tools.indexOf(t);
+      var row = '<div class="tbl-row"><div class="main"><b>' + esc(t) + '</b><span>' + CRAFT_RANKS[rk] + (rk < 3 ? ' · ' + Math.min(pg, RANK_NEED) + ' of ' + RANK_NEED + ' toward ' + CRAFT_RANKS[rk + 1].toLowerCase() : '') + '</span>' +
+        (ready ? '<span class="craft-ask">Guild test for ' + CRAFT_RANKS[rk + 1].toLowerCase() + ': ' + (dmView() && c.owner_id !== uid() ? 'ask ' + esc(firstName(c)) + ' for a ' : 'roll a ') + 'tool check, <b>d20 ' + signed(craftBonus(s, t).b) + '</b>, DC ' + RANK_TEST[rk] + '</span>' : '') + '</div>' +
+        (ready && can ? '<label class="sr" for="rt-' + ti + '">Test total</label><input type="number" class="input mini" id="rt-' + ti + '" min="1" max="40" inputmode="numeric" placeholder="Total"><button type="button" class="btn small primary" data-act="craft-test" data-tool="' + esc(t) + '" data-i="' + ti + '">Take the test</button>' : '') +
+        (dmView() ? '<label class="sr" for="rk-' + ti + '">Rank</label><select class="input mini" id="rk-' + ti + '" data-craft-rank="' + esc(t) + '">' + CRAFT_RANKS.map(function (n, ri) { return '<option value="' + ri + '"' + (ri === rk ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select>' : '') + '</div>';
+      return row;
+    }).join('') + '</div>' : '<p class="note" style="margin:0">No artisan’s tools yet.</p>');
     if (k.licence || tools.indexOf('Jeweler’s tools') >= 0 || dmView()) html += '<p class="note" style="margin:6px 0 0">' + (k.licence ? '♛ Holds a royal licence to work silver and gold.' : 'No royal licence for silver and gold.') +
       (dmView() ? ' <button type="button" class="linkish" data-act="craft-licence">' + (k.licence ? 'Take it away' : 'Grant one') + '</button>' : '') + '</p>';
     if (can) html += '<details class="craft-tools"' + (ui.craftToolsOpen ? ' open' : '') + '><summary class="note">Add or remove tools</summary><div class="chips">' + Object.keys(CRAFTS).map(function (x) {
@@ -5040,7 +5069,7 @@
     var pneeds = uniq(tools.filter(function (t) { return t !== 'Forgery kit'; }).concat(k.papers.filter(function (t) { return t !== 'Merchant'; })).concat(s.items.filter(function (it) { return it.made && it.made.tool && it.made.tool !== 'Forgery kit'; }).map(function (it) { return it.made.tool; }))).concat(['Merchant']);
     html += '<section class="block"><h2 class="sec-title">Guild papers<small>' + k.papers.length + '</small></h2><div class="tbl">' + pneeds.map(function (t) {
       var has = k.papers.indexOf(t) >= 0;
-      return '<div class="tbl-row"><div class="main"><b>' + esc(craftItemName(paperName(t))) + '</b><span>' + (has ? '✓ Carries them' : forgedPapersOf(s, t) ? 'Forged ones (' + CRAFT_Q[forgedPapersOf(s, t).made ? num(forgedPapersOf(s, t).made.q, 1) : 1][0].toLowerCase() + ')' : 'None') + (t === 'Merchant' ? ' · for selling in bulk (' + BULK + ' or more of a thing)' : '') + '</span></div>' +
+      return '<div class="tbl-row"><div class="main"><b>' + esc(craftItemName(paperName(t))) + '</b><span>' + (has ? '✓ Carries them' + (t !== 'Merchant' ? ' (' + CRAFT_RANKS[craftRank(s, t)].toLowerCase() + ')' : '') : forgedPapersOf(s, t) ? 'Forged ones (' + CRAFT_Q[forgedPapersOf(s, t).made ? num(forgedPapersOf(s, t).made.q, 1) : 1][0].toLowerCase() + ')' : 'None') + (t === 'Merchant' ? ' · for selling in bulk (' + BULK + ' or more of a thing)' : '') + '</span></div>' +
         (dmView() ? (has ? '<button type="button" class="btn small quiet" data-act="papers" data-need="' + esc(t) + '">Take away</button>' : '<button type="button" class="btn small" data-act="papers" data-need="' + esc(t) + '" data-pay="1">Buy (' + money(toCp(PAPERS_COST)) + ')</button><button type="button" class="btn small quiet" data-act="papers" data-need="' + esc(t) + '">Give</button>') : '') + '</div>';
     }).join('') + '</div><p class="note">Only needed to sell your own work, or to sell in bulk. Villages never ask; towns once in a while; cities now and then; a lord’s seat often; a guild’s own seat always. <a class="link" href="#/a/crafting-and-trade-work">How guild papers work</a></p></section>';
     var fame = Object.keys(k.fame).filter(function (p) { return k.fame[p] > 0; });
@@ -5076,7 +5105,9 @@
     var s = c.sheet = normSheet(c.sheet), k = craftOf(s), j = k.jobs[i]; if (!j) return;
     var inp = document.getElementById('cr-roll-' + i), roll = inp ? num(inp.value, 0) : 0;
     if (!roll) return toast('Put in your check total first.');
-    var q = craftQ(roll), Q = CRAFT_Q[q], today = c.campaign_id && travel[c.campaign_id] ? num(travel[c.campaign_id].day, 0) : 0, what = (j.qty > 1 ? j.qty + ' × ' : '') + j.n;
+    var rk = craftRank(s, j.tool), tier = itemTier(j.v), q = Math.min(craftQ(roll), RANK_CAP[rk]);
+    if (tier >= rk) { k.prog = k.prog || {}; k.prog[j.tool] = craftProg(s, j.tool) + (j.com ? 3 : 1); }
+    var Q = CRAFT_Q[q], today = c.campaign_id && travel[c.campaign_id] ? num(travel[c.campaign_id].day, 0) : 0, what = (j.qty > 1 ? j.qty + ' × ' : '') + j.n;
     if (j.com) {
       var late = j.com.due && today > j.com.due, pay = toCp(j.com.pay * (q === 0 ? 0.5 : q >= 3 ? 1.1 : 1) * (late ? 0.5 : 1));
       setWallet(s, walletCp(s) + pay);
@@ -5892,8 +5923,29 @@
     if (c && see.length < rows.length) html += '<p class="note" style="margin:6px 0 0">There’s a little more, for Devoted customers.</p>';
     return html + '</section>';
   }
+  /* Every maker behind a counter has a rank, and what they sell mostly comes out at it. A master's shelf is mostly good and fine work; now and then
+     something better than their rank. Resellers (general stores, fences and the like) carry whatever came in, mostly sound. */
+  var KEEPER_TRADE = { Blacksmith: 'smith', Armorer: 'armourer', 'Bowyer & fletcher': 'bowyer', Alchemist: 'alchemist', 'Tailor & outfitter': 'tailor', 'Tinker & toolmaker': 'tinker' };
+  var RANK_ODDS = [[30, 60, 9, 1, 0], [5, 50, 35, 9, 1], [0, 25, 40, 30, 5], [0, 10, 30, 40, 20]], RESELL_ODDS = [15, 70, 12, 3, 0];
+  function shopHash(k) { var h = 0; k = String(k); for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0; return h; }
+  function keeperRank(shop) {
+    if (!shop || !KEEPER_TRADE[shop.kind]) return -1;
+    if (shop.rank != null) return num(shop.rank, 1);
+    var size = shop.place_id ? num((placeOf(shop.place_id) || {}).size, 2) : 1, w = size <= 1 ? [55, 40, 5, 0] : size === 2 ? [30, 50, 18, 2] : [15, 45, 33, 7], h = shopHash(shop.id + ':rank') % 100, acc = 0;
+    for (var i = 0; i < 4; i++) { acc += w[i]; if (h < acc) return i; }
+    return 1;
+  }
+  function rowQ(shop, row) {
+    if (!row || row.k === 's' || row.magic) return null;
+    if (row.made) return Math.max(0, QUALITY_NAMES.indexOf(row.made));
+    if (row.ql != null) return num(row.ql, 1);
+    if (!qualityKind(row.k)) return null;
+    var rk = keeperRank(shop), odds = rk < 0 ? RESELL_ODDS : RANK_ODDS[rk], h = shopHash(shop.id + ':' + row.n + ':' + (row.seen || 0)) % 100, acc = 0;
+    for (var i = 0; i < 5; i++) { acc += odds[i]; if (h < acc) return i; }
+    return 1;
+  }
   function priceFor(shop, c, row) {
-    var cp = toCp(row.p);
+    var rq = rowQ(shop, row), cp = toCp(row.p) * (rq != null && !row.made ? CRAFT_Q[rq][1] : 1);
     if (!c) return cp;
     var st = shopStanding(shop, c), m = SELL_MULT[st.name], r = recogMult(shop, c);
     if (m === null) return null;
@@ -5917,7 +5969,7 @@
     var st = shopStanding(shop, c), m = BUY_MULT[st.name], r = recogMult(shop, c);
     if (m === null) return null;
     if (K.fence) m *= 0.6;
-    return niceCp(toCp(base) * m * r.buy);
+    return niceCp(toCp(base) * m * r.buy * (own && own.q != null ? CRAFT_Q[num(own.q, 1)][1] : 1));
   }
 
   /* ---------- Pages ---------- */
@@ -6058,6 +6110,7 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs">' + (camp ? '<a href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a>' : '') + (place ? ' › <a href="#/a/' + encodeURIComponent(place.slug) + '">' + esc(place.title) + '</a>' : '') + '</p><h1>' + esc(shop.name) + '</h1>' +
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
+    var kr = keeperRank(shop); if (kr >= 0) html += '<p class="shop-quirk keeper-rank"><span aria-hidden="true">⚒</span> ' + (ui.shopEdit ? '<label for="keeper-rank">The keeper is a</label> <select class="input mini" id="keeper-rank" data-id="' + esc(shop.id) + '">' + CRAFT_RANKS.map(function (n, i) { return '<option value="' + i + '"' + (i === kr ? ' selected' : '') + '>' + n.toLowerCase() + '</option>'; }).join('') + '</select> ' + esc(KEEPER_TRADE[shop.kind]) : 'The keeper is ' + (kr === 0 ? 'an apprentice ' : 'a ' + CRAFT_RANKS[kr].toLowerCase() + ' ') + esc(KEEPER_TRADE[shop.kind]) + '. ' + ['Rough and sound work, mostly.', 'Sound and good work, now and then something fine.', 'Good and fine work, the odd masterwork.', 'Fine work and masterworks. People travel for this.'][kr]) + '</p>';
     var own = keeperClock(shop); if (own) html += '<p class="shop-quirk own-clock"><span aria-hidden="true">⚙</span> ' + esc(own) + '</p>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
     if ((ITEMS.shopKinds[shop.kind] || {}).special === 'clockwork') { var cwi = Math.floor(Date.now() / 60000), cnow = [CLOCK_NOW[cwi % CLOCK_NOW.length], CLOCK_NOW[(cwi * 7 + 3) % CLOCK_NOW.length]]; html += '<div class="shop-now"><p class="eyebrow">Right now</p>' + uniq(cnow).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>'; }
@@ -6131,7 +6184,8 @@
           '<button type="button" class="btn small quiet" data-act="shop-rm" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-label="Remove ' + esc(row.n) + '">✕</button></div>';
         var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
         var used = row.made ? ' · new, ' + esc(row.made.toLowerCase()) + ' work by ' + esc(row.by) : row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
-        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== toCp(row.p) ? ' <s class="note">' + money(toCp(row.p)) + '</s>' : '') + left + used + '</span></div>' +
+        var rq = rowQ(shop, row);
+        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (rq != null && rq !== 1 && !row.made ? ' <span class="tag plain" style="font-size:10px" title="' + esc(qualityEffect({ name: row.n, q: rq, k: row.k })) + '">' + QUALITY_NAMES[rq] + '</span>' : '') + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== priceFor(shop, null, row) ? ' <s class="note">' + money(priceFor(shop, null, row)) + '</s>' : '') + left + used + '</span></div>' +
           (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
     };
@@ -6238,7 +6292,7 @@
     });
   }
   function saveShop(shop, msg) {
-    return sb.from('shops').update({ stock: shop.stock, ledger: shop.ledger || [], orders: shop.orders || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day, quirk: shop.quirk == null ? null : shop.quirk }).eq('id', shop.id).then(function (r) {
+    return sb.from('shops').update({ stock: shop.stock, rank: shop.rank == null ? null : num(shop.rank, 1), ledger: shop.ledger || [], orders: shop.orders || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day, quirk: shop.quirk == null ? null : shop.quirk }).eq('id', shop.id).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save the shop.');
       if (msg) toast(msg);
     });
@@ -6435,8 +6489,9 @@
     if (have < cost) return toast(c.name + ' is ' + money(cost - have) + ' short.');
     setWallet(s, have - cost);
     if (row.k !== 's') {
-      var mine = s.items.filter(function (it) { return it.name.toLowerCase() === row.n.toLowerCase(); })[0];
-      if (mine) mine.qty = num(mine.qty, 1) + q; else s.items.push({ name: row.n, notes: '', qty: q });
+      var rq = rowQ(shop, row); if (row.made) rq = null;
+      var mine = s.items.filter(function (it) { return !it.made && it.name.toLowerCase() === row.n.toLowerCase() && itemQ(it) === (rq == null ? 1 : rq); })[0];
+      if (mine) mine.qty = num(mine.qty, 1) + q; else { var ni = { name: row.n, notes: '', qty: q }; if (rq != null && rq !== 1) ni.q = rq; s.items.push(ni); }
     }
     if (limited) row.q = num(row.q, 0) - q;
     if ((row.used || row.made) && num(row.q, 0) <= 0) shop.stock.splice(i, 1);
@@ -10412,6 +10467,11 @@
         if (pix >= 0) { pks.papers.splice(pix, 1); toast('Papers taken away.'); }
         else { if (el.getAttribute('data-pay')) { var pcp = toCp(PAPERS_COST); if (walletCp(c.sheet) < pcp) { toast(c.name + ' is ' + money(pcp - walletCp(c.sheet)) + ' short.'); break; } setWallet(c.sheet, walletCp(c.sheet) - pcp); } pks.papers.push(pnd); toast(c.name + ' now carries ' + paperName(pnd) + '.'); }
         render(); saveCharSoon(c); } break;
+      case 'craft-test': if (c) { var ctt = el.getAttribute('data-tool'), cti2 = document.getElementById('rt-' + el.getAttribute('data-i')), ctv = cti2 ? num(cti2.value, 0) : 0; if (!ctv) { toast('Put in the test total first.'); break; }
+        var ctk = craftOf(c.sheet), crk = craftRank(c.sheet, ctt); ctk.rank = ctk.rank || {}; ctk.prog = ctk.prog || {};
+        if (ctv >= RANK_TEST[crk]) { ctk.rank[ctt] = crk + 1; ctk.prog[ctt] = 0; toast(c.name + ' passes the guild test: ' + CRAFT_RANKS[crk + 1].toLowerCase() + ' now.'); }
+        else { ctk.prog[ctt] = RANK_NEED - 3; toast('Not this time. Three more jobs, then try again.'); }
+        render(); saveCharSoon(c); } break;
       case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
@@ -10720,6 +10780,11 @@
     if (t.hasAttribute('data-ids')) {
       var dc = currentChar(), dit = dc && dc.sheet.items[num(t.getAttribute('data-ids'), -1)];
       if (dit) { if (t.checked) dit.ds = true; else delete dit.ds; render(); saveCharSoon(dc); }
+      return;
+    }
+    if (t.hasAttribute('data-iq')) {
+      var qc = currentChar(), qit = qc && qc.sheet.items[num(t.getAttribute('data-iq'), -1)];
+      if (qit) { var qv = Math.max(0, Math.min(4, num(t.value, 1))); if (qit.made) qit.made.q = qv; else if (qv === 1) delete qit.q; else qit.q = qv; render(); saveCharSoon(qc); }
       return;
     }
     if (t.hasAttribute('data-ibonus')) {
@@ -11631,6 +11696,8 @@
   document.addEventListener('change', function (e) {
     if (cbqChange(e.target)) return;
     if (e.target && e.target.id === 'clock-pick') { ui.clockPick = num(e.target.value, 0); return render(); }
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-craft-rank')) { var rcc = currentChar(); if (rcc && dmView()) { var rck = craftOf(rcc.sheet); rck.rank = rck.rank || {}; rck.rank[e.target.getAttribute('data-craft-rank')] = num(e.target.value, 0); render(); saveCharSoon(rcc); } return; }
+    if (e.target && e.target.id === 'keeper-rank') { var krs = shopById(e.target.getAttribute('data-id')); if (krs) { krs.rank = num(e.target.value, 1); saveShop(krs, 'Keeper’s rank set.'); render(); } return; }
     if (e.target && e.target.id === 'cf-tool') { ui.cfTool = e.target.value; ui.cfItem = null; ui.cfWhere = null; return render(); }
     if (e.target && e.target.id === 'cf-item') { ui.cfItem = e.target.value; return render(); }
     if (e.target && e.target.id === 'cf-where') { ui.cfWhere = e.target.value; return render(); }
