@@ -5957,11 +5957,16 @@
   }
   /* Every maker behind a counter has a rank, and what they sell mostly comes out at it. A master's shelf is mostly good and fine work; now and then
      something better than their rank. Resellers (general stores, fences and the like) carry whatever came in, mostly sound. */
-  var KEEPER_TRADE = { Blacksmith: 'smith', Armorer: 'armourer', 'Bowyer & fletcher': 'bowyer', Alchemist: 'alchemist', 'Tailor & outfitter': 'tailor', 'Tinker & toolmaker': 'tinker' };
+  var KEEPER_TRADE = { Blacksmith: 'smith', Armorer: 'armourer', 'Bowyer & fletcher': 'bowyer', Alchemist: 'alchemist', 'Tailor & outfitter': 'tailor', 'Tinker & toolmaker': 'tinker',
+    'Shipwright & chandler': 'shipwright', 'Tavern & inn': 'cook', Cheesemaker: 'cheesemaker', "Artist's studio": 'artist', Clockworks: 'clockwork tinker' };
+  var KEEPER_ROAD = { 'Wandering blacksmith': 'smith', 'Roving armorer': 'armourer', 'Traveling alchemist': 'alchemist', Herbalist: 'herbalist', Tinker: 'tinker', Bowyer: 'bowyer', 'Cloth merchant': 'tailor', 'Cook with a cart': 'cook', 'Map seller': 'cartographer', 'Instrument seller': 'instrument maker' };
+  // The goods a trade makes, beyond weapons, armour, tools and potions: these take the keeper's quality too.
+  var TRADE_GOODS = { 'Tavern & inn': ['f'], Cheesemaker: ['ch'], "Artist's studio": ['art'], Clockworks: ['hp', 'hc', 'cw'], 'Shipwright & chandler': ['b', 'v', 'g'], 'Tailor & outfitter': ['c'], 'Cook with a cart': ['f'], 'Map seller': ['g'], 'Instrument seller': ['i'] };
+  function keeperWord(shop) { return !shop ? '' : KEEPER_TRADE[shop.kind] || (shop.kind === 'Wandering merchant' ? KEEPER_ROAD[shop.trade] || '' : ''); }
   var RANK_ODDS = [[30, 60, 9, 1, 0], [5, 50, 35, 9, 1], [0, 25, 40, 30, 5], [0, 10, 30, 40, 20]], RESELL_ODDS = [15, 70, 12, 3, 0];
   function shopHash(k) { var h = 0; k = String(k); for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0; return h; }
   function keeperRank(shop) {
-    if (!shop || !KEEPER_TRADE[shop.kind]) return -1;
+    if (!keeperWord(shop)) return -1;
     if (shop.rank != null) return num(shop.rank, 1);
     var size = shop.place_id ? num((placeOf(shop.place_id) || {}).size, 2) : 1, w = size <= 1 ? [55, 40, 5, 0] : size === 2 ? [30, 50, 18, 2] : [15, 45, 33, 7], h = shopHash(shop.id + ':rank') % 100, acc = 0;
     for (var i = 0; i < 4; i++) { acc += w[i]; if (h < acc) return i; }
@@ -5971,7 +5976,7 @@
     if (!row || row.k === 's' || row.magic) return null;
     if (row.made) return Math.max(0, QUALITY_NAMES.indexOf(row.made));
     if (row.ql != null) return num(row.ql, 1);
-    if (!qualityKind(row.k)) return null;
+    if (!qualityKind(row.k) && (TRADE_GOODS[shop.kind] || TRADE_GOODS[shop.trade] || []).indexOf(row.k) < 0) return null;
     var rk = keeperRank(shop), odds = rk < 0 ? RESELL_ODDS : RANK_ODDS[rk], h = shopHash(shop.id + ':' + row.n + ':' + (row.seen || 0)) % 100, acc = 0;
     for (var i = 0; i < 5; i++) { acc += odds[i]; if (h < acc) return i; }
     return 1;
@@ -6068,7 +6073,7 @@
     bits += '<p>Guild papers: keepers ask ' + esc(papersCheck(a.id, 'none').word) + (seatTxt ? '. Guild seat of ' + esc(seatTxt) + ', who always ask for their trade' : '') + '.</p>';
     if (loaded.shops) {
       var makers = shopsAt(a.id).filter(function (sh) { return keeperRank(sh) >= 0; }).sort(function (x, y) { return keeperRank(y) - keeperRank(x); });
-      if (makers.length) bits += '<div class="tbl">' + makers.map(function (sh) { var kr = keeperRank(sh); return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/shop/' + esc(sh.id) + '">' + esc(sh.name) + '</a></b><span>' + esc((kr === 0 ? 'Apprentice ' : CRAFT_RANKS[kr] + ' ') + KEEPER_TRADE[sh.kind]) + '</span></div></div>'; }).join('') + '</div>';
+      if (makers.length) bits += '<div class="tbl">' + makers.map(function (sh) { var kr = keeperRank(sh); return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/shop/' + esc(sh.id) + '">' + esc(sh.name) + '</a></b><span>' + esc((kr === 0 ? 'Apprentice ' : CRAFT_RANKS[kr] + ' ') + keeperWord(sh)) + '</span></div></div>'; }).join('') + '</div>';
       var orders = []; shopsAt(a.id).forEach(function (sh) { shopOrders(sh).forEach(function (o) { orders.push(esc(sh.name) + ': ' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + ' <small>' + money(toCp(o.pay)) + '</small>'); }); });
       var noted = []; shopsAt(a.id).forEach(function (sh) { (sh.noted || []).forEach(function (n) { noted.push(esc(n.who) + ' bought ' + esc(n.what.toLowerCase()) + ' at ' + esc(sh.name) + (n.day ? ' <small>' + esc(campDate(sh.campaign_id, n.day)) + '</small>' : '')); }); });
       if (noted.length) bits += '<p class="rumours-h">Restricted poisons, remembered</p>' + noted.slice(0, 8).map(function (o) { return '<p>' + o + '</p>'; }).join('');
@@ -6160,7 +6165,7 @@
     var html = '<section class="hero"><div class="hero-in"><p class="crumbs">' + (camp ? '<a href="#/shops/' + encodeURIComponent(camp.slug) + '">Shops</a>' : '') + (place ? ' › <a href="#/a/' + encodeURIComponent(place.slug) + '">' + esc(place.title) + '</a>' : '') + '</p><h1>' + esc(shop.name) + '</h1>' +
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
-    var kr = keeperRank(shop); if (kr >= 0) html += '<p class="shop-quirk keeper-rank"><span aria-hidden="true">⚒</span> ' + (ui.shopEdit ? '<label for="keeper-rank">The keeper is a</label> <select class="input mini" id="keeper-rank" data-id="' + esc(shop.id) + '">' + CRAFT_RANKS.map(function (n, i) { return '<option value="' + i + '"' + (i === kr ? ' selected' : '') + '>' + n.toLowerCase() + '</option>'; }).join('') + '</select> ' + esc(KEEPER_TRADE[shop.kind]) : 'The keeper is ' + (kr === 0 ? 'an apprentice ' : 'a ' + CRAFT_RANKS[kr].toLowerCase() + ' ') + esc(KEEPER_TRADE[shop.kind]) + '. ' + ['Rough and sound work, mostly.', 'Sound and good work, now and then something fine.', 'Good and fine work, the odd masterwork.', 'Fine work and masterworks. People travel for this.'][kr]) + '</p>';
+    var kr = keeperRank(shop); if (kr >= 0) html += '<p class="shop-quirk keeper-rank"><span aria-hidden="true">⚒</span> ' + (ui.shopEdit ? '<label for="keeper-rank">The keeper is a</label> <select class="input mini" id="keeper-rank" data-id="' + esc(shop.id) + '">' + CRAFT_RANKS.map(function (n, i) { return '<option value="' + i + '"' + (i === kr ? ' selected' : '') + '>' + n.toLowerCase() + '</option>'; }).join('') + '</select> ' + esc(keeperWord(shop)) : 'The keeper is ' + (kr === 0 ? 'an apprentice ' : 'a ' + CRAFT_RANKS[kr].toLowerCase() + ' ') + esc(keeperWord(shop)) + '. ' + ['Rough and sound work, mostly.', 'Sound and good work, now and then something fine.', 'Good and fine work, the odd masterwork.', 'Fine work and masterworks. People travel for this.'][kr]) + '</p>';
     if ((shop.noted || []).length) html += '<details class="shop-noted"><summary class="note">The keeper remembers ' + shop.noted.length + ' buyer' + (shop.noted.length === 1 ? '' : 's') + ' of restricted poisons</summary>' + shop.noted.map(function (n) { return '<p class="note" style="margin:4px 0">' + esc(n.who) + ': ' + esc(n.qty > 1 ? n.qty + ' × ' + n.what : n.what) + (n.day ? ', ' + esc(campDate(shop.campaign_id, n.day)) : '') + '</p>'; }).join('') + '</details>';
     var own = keeperClock(shop); if (own) html += '<p class="shop-quirk own-clock"><span aria-hidden="true">⚙</span> ' + esc(own) + '</p>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
