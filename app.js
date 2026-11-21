@@ -4909,9 +4909,9 @@
       ['a bolt of cloth', 1, 'Tailor & outfitter'], ['Fine clothes', 15, 'Tailor & outfitter'], ['a tapestry', 25, "Artist's studio,Temple"]] },
     'Cobbler’s tools': { rent: 0, make: [['a pair of slippers', 0.5, 'Tailor & outfitter'], ['a pair of boots', 1, 'Tailor & outfitter,General store'], ['a pair of riding boots', 3, 'Stables,Tailor & outfitter'], ['a pair of fine shoes', 5, 'Tailor & outfitter']] },
     'Brewer’s supplies': { need: 'a brewhouse', rent: 0.3, make: [['a cask of ale', 2, 'Tavern & inn'], ['a cask of cider', 2, 'Tavern & inn'], ['a cask of stout', 3, 'Tavern & inn'], ['a cask of mead', 5, 'Tavern & inn']] },
-    'Alchemist’s supplies': { rent: 0, note: 'Poisons too: an alchemist is a poisoner if they choose to be. Selling poison openly is your DM’s call.', make: [['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'],
-      ['Basic poison (vial)', 100, 'Fence'], ['Truth serum', 150, 'Fence'], ['Assassin’s blood', 150, 'Fence'], ['Serpent venom', 200, 'Fence'], ['Drow poison', 200, 'Fence'], ['Carrion crawler mucus', 200, 'Fence'],
-      ['Malice', 250, 'Fence'], ['Pale tincture', 250, 'Fence'], ['Essence of ether', 300, 'Fence'], ['Oil of taggit', 400, 'Fence'], ['Burnt othur fumes', 500, 'Fence'], ['Torpor', 600, 'Fence'],
+    'Alchemist’s supplies': { rent: 0, note: 'Poisons too: household ones sell anywhere; restricted ones are remembered; lethal ones are contraband, for fences only.', make: [['rat poison (a tin)', 0.5, 'General store,Alchemist'], ['pest powder (a pouch)', 0.2, 'General store'], ['weed killer (a jug)', 0.3, 'General store'], ['a purgative', 0.5, 'Herbalist,Alchemist'], ['numbing drops', 1, 'Temple,Herbalist'], ['a sleeping draught', 2, 'Alchemist,Herbalist'], ['Torpor', 600, 'Alchemist'], ['Pale tincture', 250, 'Alchemist'], ['Essence of ether', 300, 'Alchemist'], ['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'],
+      ['Basic poison (vial)', 100, 'Fence'], ['Truth serum', 150, 'Fence'], ['Drow poison', 200, 'Alchemist'], ['Assassin’s blood', 150, 'Fence'], ['Serpent venom', 200, 'Fence'], ['Carrion crawler mucus', 200, 'Fence'],
+      ['Malice', 250, 'Fence'], ['Oil of taggit', 400, 'Fence'], ['Burnt othur fumes', 500, 'Fence'], 
       ['Wyvern poison', 1200, 'Fence'], ['Midnight tears', 1500, 'Fence'], ['Purple worm poison', 2000, 'Fence']] },
     'Herbalism kit': { rent: 0, make: [['dried herbs (a bundle)', 0.1, 'Alchemist,Herbalist'], ['a healing salve', 1, 'Temple,Herbalist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'], ['Potion of healing', 50, 'Alchemist,Temple,Herbalist']] },
     'Tinker’s tools': { rent: 0, make: [['Bell', 1, 'General store,Temple'], ['Ball bearings (1,000)', 1, 'Tinker & toolmaker'], ['Hooded lantern', 5, 'General store'], ['a set of clockwork gears', 5, 'Clockworks'], ['Bullseye lantern', 10, 'General store'], ['Lock', 10, 'General store,Tinker & toolmaker']] },
@@ -5715,6 +5715,9 @@
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
     rows = rows.concat(everydayRows(shop.kind, size, pm), skyRows(shop.kind, size, pm));
+    // Household poisons on the shelf; restricted ones behind an alchemist's counter.
+    if (/^(Alchemist|Herbalist|General store)$/.test(shop.kind)) pickPairs([].concat.apply([], POISON_HOUSEHOLD), rint(1, shop.kind === 'Alchemist' ? 4 : 2)).forEach(function (p) { rows.push({ n: craftItemName(p[0]), k: 'p', p: niceCp(p[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: rint(1, 6) }); });
+    if (shop.kind === 'Alchemist' && size >= 2) pickPairs([].concat.apply([], POISON_RESTRICTED), rint(0, size >= 3 ? 2 : 1)).forEach(function (p) { rows.push({ n: p[0], k: 'p', p: niceCp(p[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: 1, restr: true }); });
     // A clockwork servant turns up now and then at a big-town tinker or magic shop (wizards like them for fetching scrolls).
     if ((shop.kind === 'Tinker & toolmaker' || shop.kind === 'Magic shop') && size >= 3 && Math.random() < 0.4) rows.push(labourerRow(pm));
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
@@ -6067,6 +6070,8 @@
       var makers = shopsAt(a.id).filter(function (sh) { return keeperRank(sh) >= 0; }).sort(function (x, y) { return keeperRank(y) - keeperRank(x); });
       if (makers.length) bits += '<div class="tbl">' + makers.map(function (sh) { var kr = keeperRank(sh); return '<div class="tbl-row"><div class="main"><b><a class="link" href="#/shop/' + esc(sh.id) + '">' + esc(sh.name) + '</a></b><span>' + esc((kr === 0 ? 'Apprentice ' : CRAFT_RANKS[kr] + ' ') + KEEPER_TRADE[sh.kind]) + '</span></div></div>'; }).join('') + '</div>';
       var orders = []; shopsAt(a.id).forEach(function (sh) { shopOrders(sh).forEach(function (o) { orders.push(esc(sh.name) + ': ' + esc(o.qty > 1 ? o.qty + ' × ' + o.n : craftItemName(o.n)) + ' <small>' + money(toCp(o.pay)) + '</small>'); }); });
+      var noted = []; shopsAt(a.id).forEach(function (sh) { (sh.noted || []).forEach(function (n) { noted.push(esc(n.who) + ' bought ' + esc(n.what.toLowerCase()) + ' at ' + esc(sh.name) + (n.day ? ' <small>' + esc(campDate(sh.campaign_id, n.day)) + '</small>' : '')); }); });
+      if (noted.length) bits += '<p class="rumours-h">Restricted poisons, remembered</p>' + noted.slice(0, 8).map(function (o) { return '<p>' + o + '</p>'; }).join('');
       if (orders.length) bits += '<p class="rumours-h">Wants made this tenday</p>' + orders.map(function (o) { return '<p>' + o + '</p>'; }).join('');
     }
     var named = characters.filter(function (c) { var k = normSheet(c.sheet).craft; return k && k.fame && num(k.fame[a.id], 0) > 0; });
@@ -6156,6 +6161,7 @@
       '<p class="crumbs">' + [esc(shop.trade && isWanderer(shop) ? 'Wandering merchant · ' + shop.trade : shop.kind), shop.keeper ? inline(shop.keeper) : '', shop.faction_id ? factionLinkHtml(shop.faction_id) : '', place ? esc(placeSummary(placeOf(place.id))) : ''].filter(Boolean).join(' · ') + '</p></div></section><div class="page">';
     if (isWanderer(shop) && shop.saved === false) html += '<div class="group-box new-face"><p class="eyebrow" style="margin:0 0 4px;font-size:11px">A stranger on the road</p><p style="margin:0 0 8px">Like this one? Keep them and they can turn up again. Otherwise they\u2019re gone the next time you meet someone new.</p><div class="actions" style="margin:0"><button type="button" class="btn small primary" data-act="shop-keep" data-id="' + esc(shop.id) + '">Keep this merchant</button>' + (shop.campaign_id ? meetButton(shop.campaign_id, false, 'Someone else') : '') + '</div></div>';
     var kr = keeperRank(shop); if (kr >= 0) html += '<p class="shop-quirk keeper-rank"><span aria-hidden="true">⚒</span> ' + (ui.shopEdit ? '<label for="keeper-rank">The keeper is a</label> <select class="input mini" id="keeper-rank" data-id="' + esc(shop.id) + '">' + CRAFT_RANKS.map(function (n, i) { return '<option value="' + i + '"' + (i === kr ? ' selected' : '') + '>' + n.toLowerCase() + '</option>'; }).join('') + '</select> ' + esc(KEEPER_TRADE[shop.kind]) : 'The keeper is ' + (kr === 0 ? 'an apprentice ' : 'a ' + CRAFT_RANKS[kr].toLowerCase() + ' ') + esc(KEEPER_TRADE[shop.kind]) + '. ' + ['Rough and sound work, mostly.', 'Sound and good work, now and then something fine.', 'Good and fine work, the odd masterwork.', 'Fine work and masterworks. People travel for this.'][kr]) + '</p>';
+    if ((shop.noted || []).length) html += '<details class="shop-noted"><summary class="note">The keeper remembers ' + shop.noted.length + ' buyer' + (shop.noted.length === 1 ? '' : 's') + ' of restricted poisons</summary>' + shop.noted.map(function (n) { return '<p class="note" style="margin:4px 0">' + esc(n.who) + ': ' + esc(n.qty > 1 ? n.qty + ' × ' + n.what : n.what) + (n.day ? ', ' + esc(campDate(shop.campaign_id, n.day)) : '') + '</p>'; }).join('') + '</details>';
     var own = keeperClock(shop); if (own) html += '<p class="shop-quirk own-clock"><span aria-hidden="true">⚙</span> ' + esc(own) + '</p>';
     var qk = quirkOf(shop); if (qk) html += '<p class="shop-quirk"><span aria-hidden="true">✦</span> ' + esc(qk[1]) + '</p>';
     if ((ITEMS.shopKinds[shop.kind] || {}).special === 'clockwork') { var cwi = Math.floor(Date.now() / 60000), cnow = [CLOCK_NOW[cwi % CLOCK_NOW.length], CLOCK_NOW[(cwi * 7 + 3) % CLOCK_NOW.length]]; html += '<div class="shop-now"><p class="eyebrow">Right now</p>' + uniq(cnow).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') + '</div>'; }
@@ -6230,7 +6236,7 @@
         var cant = !c || price === null || blocked || out || walletCp(s) < price * (row.q === null || row.q === undefined ? qty : Math.min(qty, num(row.q, 0)) || qty);
         var used = row.made ? ' · new, ' + esc(row.made.toLowerCase()) + ' work by ' + esc(row.by) : row.used ? ' · second-hand' + (row.by ? ', sold by ' + esc(row.by) : '') + (row.came ? ', came from ' + esc(row.came) : '') : '';
         var rq = rowQ(shop, row);
-        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (rq != null && rq !== 1 && !row.made ? ' <span class="tag plain" style="font-size:10px" title="' + esc(qualityEffect({ name: row.n, q: rq, k: row.k })) + '">' + QUALITY_NAMES[rq] + '</span>' : '') + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== priceFor(shop, null, row) ? ' <s class="note">' + money(priceFor(shop, null, row)) + '</s>' : '') + left + used + '</span></div>' +
+        return '<div class="tbl-row"><div class="main"><b>' + (row.imp ? '★ ' : '') + esc(row.n) + (poisonTier(row.n) === 'restricted' ? ' <span class="tag" style="font-size:10px" title="Legal, but the keeper remembers a stranger who buys it">Restricted</span>' : '') + (rq != null && rq !== 1 && !row.made ? ' <span class="tag plain" style="font-size:10px" title="' + esc(qualityEffect({ name: row.n, q: rq, k: row.k })) + '">' + QUALITY_NAMES[rq] + '</span>' : '') + (row.fest ? ' <span class="tag fest-tag">' + esc(row.fest) + '</span>' : '') + '</b><span>' + (price === null ? 'Not to them' : money(price)) + (c && price !== null && price !== priceFor(shop, null, row) ? ' <s class="note">' + money(priceFor(shop, null, row)) + '</s>' : '') + left + used + '</span></div>' +
           (row.used ? '<button type="button" class="btn small quiet" data-act="shop-imp" data-id="' + esc(shop.id) + '" data-i="' + g.i + '" aria-pressed="' + !!row.imp + '" title="Important pieces sell slowly and resurface elsewhere">' + (row.imp ? '★ Important' : '☆ Important') + '</button>' : '') +
           (out ? '<span class="tag plain">Sold out</span>' : c ? '<button type="button" class="btn small primary" data-act="shop-sell" data-id="' + esc(shop.id) + '" data-i="' + g.i + '"' + (cant ? ' disabled' : '') + '>Sell' + (qty > 1 ? ' ' + qty : '') + '</button>' : '') + '</div>';
     };
@@ -6337,7 +6343,7 @@
     });
   }
   function saveShop(shop, msg) {
-    return sb.from('shops').update({ stock: shop.stock, rank: shop.rank == null ? null : num(shop.rank, 1), ledger: shop.ledger || [], orders: shop.orders || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day, quirk: shop.quirk == null ? null : shop.quirk }).eq('id', shop.id).then(function (r) {
+    return sb.from('shops').update({ stock: shop.stock, rank: shop.rank == null ? null : num(shop.rank, 1), noted: shop.noted || [], ledger: shop.ledger || [], orders: shop.orders || [], stocked_at: shop.stocked_at || null, stock_day: shop.stock_day == null ? null : shop.stock_day, quirk: shop.quirk == null ? null : shop.quirk }).eq('id', shop.id).then(function (r) {
       if (r.error) return fail(r.error, 'Could not save the shop.');
       if (msg) toast(msg);
     });
@@ -6355,7 +6361,7 @@
   /* Contraband and stolen goods. Contraband is anything the law forbids: the catalog's poisons and kits, any homebrew item
      ticked as contraband, anything logged as contraband on a campaign's Crimes page, and spider eggs. Fences stock all of it and
      buy it; honest shops won't touch contraband or anything marked stolen. */
-  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120], ['Forged hallmark punch', 40], ['Forged royal licence', 150], ['Forged merchant’s papers', 40]];
+  var CONTRABAND_BASE = [['Giant spider eggs', 40], ['Unmarked Dornish steel longsword', 35], ['Unmarked Dornish steel shortsword', 25], ['Unmarked Dornish steel dagger', 5], ['Unmarked Dornish steel chain shirt', 120], ['Forged hallmark punch', 40], ['Forged royal licence', 150], ['Forged merchant’s papers', 40], ['Basic poison (vial)', 150], ['Serpent venom', 300]];
   function contrabandList(campId) {
     var out = [], seen = {};
     function add(n, p) { var k = String(n).toLowerCase().trim(); if (!k || seen[k]) return; seen[k] = 1; out.push({ n: n, p: p }); }
@@ -6377,7 +6383,19 @@
       return !plain && honest !== c0 && (honest === k || honest.indexOf(k) === 0) ? false : !plain && k.length > 4 && c0.indexOf(k) >= 0;
     })[0] || null;
   }
-  function isContraband(name, campId) { return /^(unmarked\s+dornish[- ]steel|forged\b|counterfeit\b|fake\b)/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
+  /* Poisons in three tiers. Household: sold openly, mostly for vermin. Restricted: legal, but a keeper remembers a stranger who buys it.
+     Lethal: contraband, fences only, a Moderate crime to be caught with (prohibited substances). */
+  var POISON_HOUSEHOLD = [['rat poison (a tin)', 0.5], ['pest powder (a pouch)', 0.2], ['weed killer (a jug)', 0.3], ['a purgative', 0.5], ['a sleeping draught', 2], ['numbing drops', 1]];
+  var POISON_RESTRICTED = [['Torpor', 600], ['Pale tincture', 250], ['Essence of ether', 300], ['Drow poison', 200]];
+  var POISON_LETHAL = ['basic poison (vial)', 'truth serum', 'assassin’s blood', 'serpent venom', 'carrion crawler mucus', 'malice', 'oil of taggit', 'burnt othur fumes', 'wyvern poison', 'midnight tears', 'purple worm poison'];
+  function poisonTier(name) {
+    var n = String(name || '').toLowerCase().trim();
+    if (POISON_LETHAL.indexOf(n) >= 0) return 'lethal';
+    if (POISON_RESTRICTED.some(function (p) { return p[0].toLowerCase() === n; })) return 'restricted';
+    if (POISON_HOUSEHOLD.some(function (p) { return p[0].toLowerCase() === n; })) return 'household';
+    return '';
+  }
+  function isContraband(name, campId) { return poisonTier(name) === 'lethal' || /^(unmarked\s+dornish[- ]steel|forged\b|counterfeit\b|fake\b)/i.test(String(name || '').trim()) || !!contrabandMatch(name, contrabandList(campId)); }
   function isStolen(it) { return !!(it && (it.stolen || /\bstolen\b/i.test(it.name || ''))); }
   function isUnlicensed(it) { return !!(it && it.made && it.made.unlic); }
   // Unlicensed silver and gold can be slipped past an honest keeper on a Stealth roll. A forged hallmark gives advantage.
@@ -6543,6 +6561,10 @@
     c.sheet = s;
     ledgerAdd(shop, { who: c.name, what: row.n, qty: q, cp: cost, dir: 'sold' });
     saveCharSoon(c);
+    if (poisonTier(row.n) === 'restricted' && STANDINGS.indexOf(shopStanding(shop, c).name) < 3) {
+      (shop.noted = shop.noted || []).unshift({ who: c.name, cid: c.id, what: row.n, qty: q, day: gameDay(shop), at: Date.now() }); shop.noted = shop.noted.slice(0, 30);
+      saveShop(shop, c.name + ' paid ' + money(cost) + '. The keeper asked what it was for, and wrote the name down.'); return render();
+    }
     saveShop(shop, c.name + ' paid ' + money(cost));
     render();
   }
