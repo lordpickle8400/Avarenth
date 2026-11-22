@@ -3910,11 +3910,11 @@
   function moneyControlsHtml(c, can) {
     if (!can) return '';
     var u = undoTop(c);
-    return '<div class="money-form"><div class="field"><label for="money-amt">Money</label><input type="number" id="money-amt" min="1" value="" placeholder="Amount" inputmode="numeric"></div>' +
+    return '<div class="money-card"><div class="money-form"><div class="field"><label for="money-amt">Money</label><input type="number" id="money-amt" min="1" placeholder="Amount" inputmode="numeric"></div>' +
       '<div class="field"><label for="money-unit" class="sr">Coin</label><select id="money-unit"><option value="gp">gp</option><option value="sp">sp</option><option value="cp">cp</option></select></div>' +
-      '<button type="button" class="btn small primary" data-act="money" data-dir="1">Add</button><button type="button" class="btn small" data-act="money" data-dir="-1">Take</button></div>' +
-      '<p class="note" style="margin:4px 0 8px">Change is made for you: 10 cp = 1 sp, 10 sp = 1 gp.</p>' +
-      (u ? '<div class="undo-bar"><span>' + esc(u.label) + '</span><button type="button" class="btn small" data-act="undo">Undo</button></div>' : '');
+      '<button type="button" class="btn primary" data-act="money" data-dir="1">Add</button><button type="button" class="btn" data-act="money" data-dir="-1">Take</button></div>' +
+      '<p class="hint">Change is made for you: 10 cp = 1 sp, 10 sp = 1 gp.</p>' +
+      (u ? '<div class="undo-bar" role="status"><span>' + esc(u.label) + '</span><button type="button" class="linkish" data-act="undo">Undo</button></div>' : '') + '</div>';
   }
   function inventoryTabHtml(c, s, edit, can, abil) {
     if (!GEAR) loadGear();
@@ -3928,7 +3928,7 @@
       csStat('Attunement', att + ' / 3', 'items') + csStat('Armor class', String(ac.ac), ac.worn ? 'worn' : 'unarmored') + '</div></div>';
     html += moneyControlsHtml(c, can);
     var rows = s.items.map(function (it, i) { return { it: it, i: i }; });
-    var head = '<div class="inv-th"><span>Active</span><span>Name</span><span>Weight</span><span>Qty</span><span>Cost</span></div>';
+    var head = '<div class="inv-th"><span>Active</span><span>Name</span><span>Weight</span><span>Qty</span><span>Cost</span><span></span></div>';
     var rowHtml = function (o) {
       var it = o.it, i = o.i, r = itemRef(it), g = gearItem(r), kind = itemKind(it), w = unitWeight(it);
       var eqable = canEquip(it), attune = r && r.k === 'magic' && g && g.attune;
@@ -3938,8 +3938,8 @@
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
         (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="iq-' + i + '">Quality</label><select class="input mini" id="iq-' + i + '" data-iq="' + i + '">' + QUALITY_NAMES.map(function (n, qi) { return '<option value="' + qi + '"' + (qi === itemQ(it) ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select><label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
         '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
-        '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button><button type="button" class="btn small danger inv-trash" data-act="item-trash" data-i="' + i + '" aria-label="Trash ' + esc(it.name) + '" title="Trash">\ud83d\uddd1</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
-        '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
+        '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
+        '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span><span class="tr">' + (can ? '<button type="button" class="inv-trash" data-act="item-trash" data-i="' + i + '" aria-label="Trash ' + esc(it.name) + '" title="Trash"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></button>' : '') + '</span></div>';
     };
     var eqd = rows.filter(function (o) { return o.it.eq; }), pack = rows.filter(function (o) { return !o.it.eq; });
     html += '<section class="act-sec"><h3 class="act-h">Equipment <small>' + eqd.length + ' in use</small></h3>' + (eqd.length ? head + eqd.map(rowHtml).join('') : '<p class="note">Nothing equipped. Tick the box beside a weapon, armor or magic item to use it.</p>') + '</section>';

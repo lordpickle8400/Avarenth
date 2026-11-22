@@ -1420,8 +1420,32 @@ body:has(.m-sheet) { overflow: hidden; }
 .shop-purse > div { flex: 1; padding: 8px 10px; border: 1px solid var(--soft); border-radius: 10px; display: flex; flex-direction: column; gap: 2px; }
 .shop-purse .k { font-family: var(--ui); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .shop-cart { margin-bottom: 12px; }
-.money-form { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; }
+
+/* Inventory: purse card, trash column, undo */
+.inv-th, .inv-tr { grid-template-columns: 44px minmax(0, 1fr) 64px 104px 64px 34px; }
+.inv-tr .tr { display: flex; justify-content: center; }
+.inv-trash { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 1px solid transparent; border-radius: var(--radius); color: var(--muted); cursor: pointer; }
+.inv-trash:hover, .inv-trash:focus-visible { color: #d9534f; border-color: #d9534f; }
+@media (max-width: 719px) {
+  .inv-tr { grid-template-columns: 40px minmax(0, 1fr) auto 34px; grid-template-areas: "eq nm qt tr" "eq wt ct tr"; }
+  .inv-tr .tr { grid-area: tr; grid-row: 1 / span 2; align-self: center; }
+}
+.money-card { margin-top: 12px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.money-form { display: flex; align-items: flex-end; gap: 8px; }
 .money-form .field { margin: 0; }
-.money-form #money-amt { width: 100px; }
-.undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 10px; padding: 8px 12px; border: 1px dashed var(--soft); border-radius: 10px; font-size: 14px; }
-.inv-trash { margin-left: 6px; }
+.money-form .field:first-child { flex: 1 1 auto; min-width: 0; }
+.money-form select { min-width: 70px; }
+.money-form .btn { min-height: 46px; }
+.money-card .hint { margin: 8px 0 0; }
+.undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 8px 12px; background: var(--soft); border-radius: var(--radius); font-family: var(--ui); font-size: 14px; }
+.undo-bar .linkish { font-weight: 700; }
+/* Builder shop and fit panel: same type as the rest of the sheet */
+.shop-purse b, .shop-list .tbl-row .main b, .shop-cart .tbl-row .main b { font-family: var(--ui); }
+.shop-purse b { font-size: 17px; }
+.shop-purse > div:last-child { border-color: var(--accent); }
+.shop-list .tbl-row .main b, .shop-cart .tbl-row .main b { font-size: 16px; }
+.bd-shop input[type=search] { width: 100%; min-height: 46px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); font-size: 17px; font-family: inherit; color: inherit; -webkit-appearance: none; appearance: none; }
+.bd-shop .chips { margin: 10px 0 6px; }
+.bd-fit .note { margin: 6px 0 0; }
+.fit-order li { font-family: var(--ui); }
+.money-form input, .money-form select, .bd-shop input[type=search] { font-family: var(--ui); }
