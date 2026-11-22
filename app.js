@@ -437,7 +437,7 @@
       return;
     }
     $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', weather: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = tabsHtml(NAV, section, function (k) { return '#/' + k + (CAMP_ROUTES[k] ? cs : ''); });
     $tabs.hidden = false;
@@ -504,6 +504,7 @@
       case 'loot': return renderLoot();
       case 'quests': return renderQuests();
       case 'calendar': return renderCalendar(r.arg);
+      case 'weather': return renderWeather(r.arg);
       default: return renderAtlas('');
     }
   }
@@ -2610,9 +2611,100 @@
   function calNotesOn(t, dt) { return calOf(t).notes.filter(function (n) { return n.doy === dt.doy && (n.y == null || n.y === dt.y); }); }
   function saveCalendar(camp, cal) {
     var t = travel[camp.id];
+    if (!cal.weather && t.calendar && t.calendar.weather) cal.weather = t.calendar.weather;
     t.calendar = cal;
     sb.from('travel_state').update({ calendar: cal }).eq('campaign_id', camp.id).then(function (r) { if (r.error) toast('Could not save the calendar: ' + r.error.message); });
     render();
+  }
+  /* ---------- Weather: DM only. Climate by month and by place, rolled by the app and kept with the calendar. ----------
+     travel_state.calendar.weather = { [absolute day]: { r: region, hi, lo, c: condition, w: wind } }. Temperatures are °F. */
+  // Per month [high, low, chance of rain or snow, wind, fog], for the central lowlands. Index 0 is Crowning Day.
+  var WX_MONTHS = [[46, 34, .10, .03, .05], [52, 38, .55, .10, .10], [58, 44, .45, .08, .06], [65, 50, .35, .07, .05], [72, 56, .15, .04, .03], [76, 60, .30, .06, .03], [78, 62, .12, .04, .03],
+    [70, 54, .30, .07, .12], [62, 48, .55, .30, .12], [54, 42, .60, .15, .18], [45, 34, .50, .15, .20], [40, 30, .55, .30, .10], [36, 26, .45, .12, .10], [42, 32, .50, .12, .10]];
+  var WX_MONTH_NOTE = ['Cold, still and clear', 'Cold rain and mud, the thaw', 'Showers, everything greening', 'Mild, the war season opens', 'Dry and clear, the best travelling', 'Warm, haymaking, thunderstorms',
+    'Hottest, dry spells, calm seas for raiders', 'Harvest, misty mornings', 'Gales, the straits turn dangerous', 'Wet, fog thickening, leaves down', 'First frost, northern passes begin to close', 'Gales, sleet, snow on the hills',
+    'Coldest, long nights, hard frost', 'Sleet and thaw, fools’ weather'];
+  var WX_REGIONS = {
+    lowlands: { n: 'Central lowlands', dt: 0, pm: 1, fog: 0, wind: 0, note: '' },
+    west: { n: 'Emerald Bay and the west', dt: 1, pm: 1.2, fog: 0, wind: .10, note: 'Mild and wet, with sea wind that never lets up.' },
+    south: { n: 'Golden Coast (south)', dt: 4, pm: .8, fog: -.02, wind: 0, note: 'Dry summers, and a frost only some winters.' },
+    fells: { n: 'Mournfells and the Strait March', dt: -5, pm: 1.1, fog: .20, wind: 0, note: 'Damp and cold. The fog comes down off the fells, thickest from Eighth to Tenth Pale, and never fully lifts.' },
+    woods: { n: 'Silken Woods', dt: -3, pm: 1, fog: .05, wind: -.05, note: 'Gloomy. The unnatural dark stays even at midday, and little weather reaches the forest floor.' },
+    greywalls: { n: 'Greywall Mountains', dt: -15, pm: 1.1, fog: 0, wind: .08, note: 'High passes like Snowcrown are snowed in from Tenth Pale through Rookstide.' }
+  };
+  var WX_TEXT = {
+    'Clear': 'A clear sky.', 'Partly cloudy': 'Broken cloud, sun on and off.', 'Overcast': 'A low grey sky, dry for now.', 'Fog': 'Fog on the ground. Sight shortens to about sixty feet and the road is easy to lose.',
+    'Drizzle': 'A fine drizzle that soaks through by evening.', 'Steady rain': 'Steady rain all day. The roads turn to mud.', 'Downpour': 'A downpour. Streams rise and nothing stays dry.', 'Thunderstorm': 'Thunder and heavy rain, with lightning on open ground.',
+    'Storm': 'A storm: gale wind and hard rain. Stay under cover.', 'Gale': 'A gale, dry but fierce. It tears at tents and cloaks.', 'Sleet': 'Cold sleet, wet and miserable.', 'Snow': 'Snow falls, settling on the ground.',
+    'Heavy snow': 'Heavy snow. Drifts build and visibility drops.'
+  };
+  function wxD(n) { return 1 + Math.floor(Math.random() * n); }
+  function wxRoll(m, rk) {
+    var c = WX_MONTHS[m] || WX_MONTHS[0], R = WX_REGIONS[rk] || WX_REGIONS.lowlands;
+    var hi = Math.round(c[0] + R.dt + wxD(6) + wxD(6) - 7), lo = Math.round(hi - (c[0] - c[1]) + wxD(4) - wxD(4));
+    if (lo > hi - 3) lo = hi - 3;
+    var wet = Math.min(.9, c[2] * R.pm), fog = Math.max(0, Math.min(.6, c[4] + R.fog)), wind = Math.max(0, Math.min(.6, c[3] + R.wind)), w = Math.random();
+    var windText = w < wind * .4 ? 'Gale' : w < wind * 1.5 ? 'Strong wind' : w < .5 ? 'Breeze' : 'Calm', cond;
+    if (Math.random() < wet) {
+      if (hi <= 32) cond = wxD(6) === 6 ? 'Heavy snow' : 'Snow';
+      else if (hi <= 38) cond = wxD(6) >= 5 ? 'Snow' : 'Sleet';
+      else {
+        var d = wxD(20), hot = m >= 5 && m <= 7; cond = d <= (hot ? 6 : 8) ? 'Drizzle' : d <= (hot ? 12 : 15) ? 'Steady rain' : d <= (hot ? 15 : 19) ? 'Downpour' : (hot ? 'Thunderstorm' : 'Storm');
+        if (cond === 'Downpour' && (m === 8 || m === 11) && wxD(3) === 1) cond = 'Storm';
+      }
+      if (cond === 'Storm' || cond === 'Thunderstorm') windText = windText === 'Gale' ? 'Gale' : 'Strong wind';
+    } else if (Math.random() < fog) cond = 'Fog';
+    else if (windText === 'Gale') cond = 'Gale';
+    else { var sk = wxD(6); cond = sk <= 2 ? 'Clear' : sk <= 4 ? 'Partly cloudy' : 'Overcast'; }
+    return { r: rk, hi: hi, lo: lo, c: cond, w: windText };
+  }
+  function wxC(f) { return Math.round((f - 32) * 5 / 9); }
+  // The nearest of the journey's own weather names, so a roll can be put straight onto the boat or airship.
+  function wxJourney(e) { return e.c === 'Storm' || e.c === 'Thunderstorm' || e.w === 'Gale' ? 'Storm' : e.c === 'Downpour' || e.c === 'Heavy snow' ? 'Rough seas' : e.w === 'Strong wind' ? 'Strong winds' : 'Fair'; }
+  function wxStore(t) { return (t && t.calendar && t.calendar.weather) || {}; }
+  function saveWeather(camp, wx) {
+    var t = travel[camp.id], today = calAbs(t, t.day);
+    Object.keys(wx).forEach(function (k) { if (num(k, 0) < today - 10) delete wx[k]; });
+    var cal = Object.assign({}, t.calendar || {}, { weather: wx });
+    t.calendar = cal;
+    sb.from('travel_state').update({ calendar: cal }).eq('campaign_id', camp.id).then(function (r) { if (r.error) toast('Could not save the weather: ' + r.error.message); });
+    render();
+  }
+  function wxCard(e, dt) {
+    var m = dt.m, R = WX_REGIONS[e.r] || WX_REGIONS.lowlands;
+    return '<div class="wx-card"><div class="wx-temp"><b>' + e.hi + '°</b><span>high</span><b class="lo">' + e.lo + '°</b><span>low</span></div><div class="wx-main"><b>' + esc(e.c) + '</b><span>' + esc(e.w) + ' · ' + wxC(e.hi) + '° / ' + wxC(e.lo) + '° C · ' + esc(R.n) + '</span></div>' +
+      '<p class="wx-text">' + esc(WX_TEXT[e.c] || '') + (e.lo <= 28 ? ' A hard frost overnight.' : '') + '</p></div>';
+  }
+  function renderWeather(slug) {
+    if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
+    var camp = campaignBySlug(slug) || activeCamp();
+    if (!camp || !isDM()) { location.replace('#/map'); return; }
+    var t = travel[camp.id];
+    if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
+    ui.wxRegion = ui.wxRegion || {};
+    var rk = ui.wxRegion[camp.id] || 'lowlands', R = WX_REGIONS[rk], wx = wxStore(t), todayAbs = calAbs(t, t.day), dt = calDate(todayAbs), cur = wx[todayAbs], cid = esc(camp.id);
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Weather<small>' + esc(camp.name) + '</small></h1>' +
+      '<p class="hero-date">' + esc(dayLine(t)) + '</p>' + helpNote('weather', 'Only you see this. Rolled weather is kept with the calendar, so it stays the same until you roll again.');
+    html += '<div class="field"><label for="wx-region">Where is the party?</label><select id="wx-region" data-wx-region data-camp="' + cid + '">' + Object.keys(WX_REGIONS).map(function (k) { return '<option value="' + k + '"' + (k === rk ? ' selected' : '') + '>' + esc(WX_REGIONS[k].n) + '</option>'; }).join('') + '</select></div>';
+    if (R.note) html += '<p class="note">' + esc(R.note) + '</p>';
+    html += '<h2 class="sec-title">Today</h2>';
+    if (cur) {
+      html += wxCard(cur, dt);
+      var sea = wxJourney(cur), tab = (airOf(t) ? rulesOf(t).skies : rulesOf(t).weathers) || {};
+      if (sea !== 'Fair' || t.weather !== 'Fair') html += '<p class="note">Suggested journey weather: <b>' + esc(sea) + '</b>' + (sea in tab && t.weather !== sea ? ' <button type="button" class="btn small" data-act="wx-sea" data-camp="' + cid + '" data-val="' + esc(sea) + '">Set it</button>' : t.weather === sea ? ' (already set)' : '') + '</p>';
+    } else html += '<p class="note">Nothing rolled for today yet.</p>';
+    html += '<div class="actions"><button type="button" class="btn primary" data-act="wx-roll" data-camp="' + cid + '">' + (cur ? 'Roll again' : 'Roll today’s weather') + '</button><button type="button" class="btn" data-act="wx-week" data-camp="' + cid + '">Roll the next 7 days</button></div>';
+    var days = [];
+    for (var i = 1; i <= 7; i++) if (wx[todayAbs + i]) days.push(todayAbs + i);
+    if (days.length) html += '<h2 class="sec-title">Coming days</h2><div class="tbl wx-days">' + days.map(function (a) {
+      var e = wx[a], d2 = calDate(a);
+      return '<div class="tbl-row"><div class="main"><b>' + esc(e.c) + '</b><span>' + esc(d2.m ? d2.d + ' ' + CAL_MONTHS[d2.m - 1][0] : 'Crowning Day') + ' · ' + esc(e.w) + '</span></div><span class="num">' + e.hi + '° / ' + e.lo + '°</span></div>';
+    }).join('') + '</div>';
+    html += '<details class="wx-ref"><summary>Climate by month' + (rk === 'lowlands' ? '' : ' · ' + esc(R.n)) + '</summary><div class="tbl">' + WX_MONTHS.slice(1).concat([WX_MONTHS[0]]).map(function (c, i) {
+      var mi = i + 1 > 13 ? 0 : i + 1, label = mi ? CAL_MONTHS[mi - 1][0] : 'Crowning Day', cm = WX_MONTHS[mi];
+      return '<div class="tbl-row' + (dt.m === mi ? ' on' : '') + '"><div class="main"><b>' + esc(label) + '</b><span>' + esc(WX_MONTH_NOTE[mi]) + '</span></div><span class="num">' + Math.round(cm[0] + R.dt) + '° / ' + Math.round(cm[1] + R.dt) + '°</span></div>';
+    }).join('') + '</div></details></div>';
+    $view.innerHTML = html;
   }
   function renderCalendar(slug) {
     if (!loaded.wiki) { $view.innerHTML = '<div class="page"><div class="empty">Opening the archive…</div></div>'; return; }
@@ -7194,8 +7286,8 @@
       if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
       return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
-    var html = mode === 'panel' ? '<div class="jr-panel"><p class="hero-date" style="margin:0 0 8px">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p>'
-      : '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>' + esc(dateShort(t)) + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a>' : '') + '</p></div></section><div class="page">';
+    var html = mode === 'panel' ? '<div class="jr-panel"><p class="hero-date" style="margin:0 0 8px">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> · <a href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p>'
+      : '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>' + esc(dateShort(t)) + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> · <a href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
     html += arrivalBlock(camp);
     if (dm) html += noticesBlock(camp);
@@ -10675,6 +10767,18 @@
       case 'craft-offer': var cos = shopById(el.getAttribute('data-id')); if (cos) craftOffer(cos, num(el.getAttribute('data-i'), -1)); break;
       case 'debt-paid': if (c) { var dd = c.sheet.debts[num(el.getAttribute('data-i'), -1)]; if (dd) { dd.paid = !dd.paid; render(); saveCharSoon(c); } } break;
       case 'spend-hd': if (c) spendHitDie(c); break;
+      case 'wx-roll':
+      case 'wx-week':
+        var wcamp = campaignById(el.getAttribute('data-camp')); if (!wcamp) break;
+        var wt = travel[wcamp.id], wrk = (ui.wxRegion && ui.wxRegion[wcamp.id]) || 'lowlands', wst = Object.assign({}, wxStore(wt)), wtoday = calAbs(wt, wt.day);
+        if (act === 'wx-roll') wst[wtoday] = wxRoll(calDate(wtoday).m, wrk);
+        else for (var wi = 0; wi < 7; wi++) if (!wst[wtoday + wi]) wst[wtoday + wi] = wxRoll(calDate(wtoday + wi).m, wrk);
+        saveWeather(wcamp, wst); break;
+      case 'wx-sea':
+        var scamp = campaignById(el.getAttribute('data-camp')); if (!scamp) break;
+        var sval = el.getAttribute('data-val'); travel[scamp.id].weather = sval;
+        sb.from('travel_state').update({ weather: sval }).eq('campaign_id', scamp.id).then(function (r) { if (r.error) toast('Could not set the weather: ' + r.error.message); });
+        toast('Journey weather set to ' + sval); render(); break;
       case 'cal-move':
         var cv = ui.calView; if (!cv) break;
         cv.m += num(el.getAttribute('data-dir'), 1); if (cv.m > 13) { cv.m = 1; cv.y++; } if (cv.m < 1) { cv.m = 13; cv.y--; } ui.calPick = null; render(); break;
@@ -10958,6 +11062,7 @@
   document.addEventListener('input', function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute('data-dp')) dayPromptInput(t); });
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.hasAttribute && t.hasAttribute('data-wx-region')) { ui.wxRegion = ui.wxRegion || {}; ui.wxRegion[t.getAttribute('data-camp')] = t.value; return render(); }
     if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
     if (t.hasAttribute && t.hasAttribute('data-dp')) { dayPromptInput(t); return; }
     if (t.getAttribute && t.getAttribute('data-temper')) { var rc = t.getAttribute('data-camp'), RR = clone(realm[rc]); RR.factions.forEach(function (x) { if (x.id === t.getAttribute('data-temper')) x.temper = t.value; }); return saveRealm(rc, RR, 'Temperament changed'); }
