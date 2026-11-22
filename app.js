@@ -12091,7 +12091,9 @@
     }
     return html;
   }
+  // No trail on the map: the party's past route isn't drawn, on the DM map or the table.
   function trailSvg(w) {
+    return '';
     var segs = TBL.trail.filter(function (s) { return s.fx != null && s.tx != null; });
     if (!segs.length) return '';
     // Each logged leg follows the roads the way the journey would have gone.
