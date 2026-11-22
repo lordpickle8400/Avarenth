@@ -1405,3 +1405,6 @@ body:has(.m-sheet) { overflow: hidden; }
 .shop-orders select.input { max-width: 9rem; }
 .craft-ask { margin: 8px 0 0; font-size: 14px; }
 .tbl-row .main .craft-ask { display: block; margin-top: 4px; color: var(--text); }
+.char-line { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--soft); }
+.char-line .row { flex: 1; min-width: 0; border-bottom: 0; }
+.char-line .btn { flex: none; }

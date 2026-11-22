@@ -1358,7 +1358,7 @@
       var list = characters.filter(function (c) { return (c.campaign_id || null) === g.id || (g.id === null && c.campaign_id && !campaignById(c.campaign_id)); });
       if (!list.length) return;
       any = true;
-      html += '<section class="block"><h2 class="sec-title">' + esc(g.name) + '</h2><div class="list">' + list.map(function (c) { return charRow(c, isDM() && c.owner_id !== uid()); }).join('') + '</div></section>';
+      html += '<section class="block"><h2 class="sec-title">' + esc(g.name) + '</h2><div class="list">' + list.map(function (c) { return '<div class="char-line">' + charRow(c, isDM() && c.owner_id !== uid()) + ((c.owner_id === uid() || isDM()) ? '<button type="button" class="btn small danger" data-act="delete-char" data-id="' + esc(c.id) + '" aria-label="Delete ' + esc(c.name) + '">Delete</button>' : '') + '</div>'; }).join('') + '</div></section>';
     });
     if (!any) html += '<div class="empty">No characters yet. Tap “Build a character” and the builder will walk you through it.</div>';
     html += '</div>';
@@ -2187,7 +2187,10 @@
         add('sense', 'Divine Sense', Math.max(1, 1 + cha), 'long');
         add('cd', 'Channel Divinity', L >= 3 ? 1 : 0, 'short'); break;
       case 'Rogue': add('luck', 'Stroke of Luck', L >= 20 ? 1 : 0, 'short'); break;
-      case 'Artificer': add('flash', 'Flash of Genius', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long'); break;
+      case 'Artificer':
+        add('flash', 'Flash of Genius', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
+        if (s.subclass === 'Artillerist') add('cannon', 'Eldritch Cannon', L >= 3 ? 1 : 0, 'long', { note: 'another costs 5 mana' });
+        break;
       case 'Blood Hunter':
         add('maledict', 'Blood Maledict', byLevel(L, [[1, 1], [6, 2], [13, 3], [17, 4]]), 'short', { note: 'hemocraft d' + byLevel(L, [[1, 4], [5, 6], [11, 8], [17, 10]]) }); break;
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
