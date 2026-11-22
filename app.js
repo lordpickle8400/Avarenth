@@ -2630,6 +2630,7 @@
     south: { n: 'Golden Coast (south)', dt: 4, pm: .8, fog: -.02, wind: 0, note: 'Dry summers, and a frost only some winters.' },
     fells: { n: 'Mournfells and the Strait March', dt: -5, pm: 1.1, fog: .20, wind: 0, note: 'Damp and cold. The fog comes down off the fells, thickest from Eighth to Tenth Pale, and never fully lifts.' },
     woods: { n: 'Silken Woods', dt: -3, pm: 1, fog: .05, wind: -.05, note: 'Gloomy. The unnatural dark stays even at midday, and little weather reaches the forest floor.' },
+    sea: { n: 'At sea', dt: -2, pm: 1, fog: .04, wind: .15, note: 'Open water: wind and swell matter more than rain, and gales are far likelier.' },
     greywalls: { n: 'Greywall Mountains', dt: -15, pm: 1.1, fog: 0, wind: .08, note: 'High passes like Snowcrown are snowed in from Tenth Pale through Rookstide.' }
   };
   var WX_TEXT = {
@@ -2639,8 +2640,14 @@
     'Heavy snow': 'Heavy snow. Drifts build and visibility drops.'
   };
   function wxD(n) { return 1 + Math.floor(Math.random() * n); }
-  function wxRoll(m, rk) {
-    var c = WX_MONTHS[m] || WX_MONTHS[0], R = WX_REGIONS[rk] || WX_REGIONS.lowlands;
+  // The climate on a given day: each month's numbers sit at its middle and ease into its neighbours, so the 1st and the 28th feel different.
+  function wxBase(dt) {
+    if (!dt.m) return WX_MONTHS[0].slice();
+    var p = (dt.d - 14.5) / 28, o = p >= 0 ? (dt.m === 13 ? 0 : dt.m + 1) : (dt.m === 1 ? 0 : dt.m - 1), w = Math.abs(p), a = WX_MONTHS[dt.m], b = WX_MONTHS[o];
+    return a.map(function (v, i) { return v + (b[i] - v) * w; });
+  }
+  function wxRoll(dt, rk) {
+    var m = dt.m, c = wxBase(dt), R = WX_REGIONS[rk] || WX_REGIONS.lowlands;
     var hi = Math.round(c[0] + R.dt + wxD(6) + wxD(6) - 7), lo = Math.round(hi - (c[0] - c[1]) + wxD(4) - wxD(4));
     if (lo > hi - 3) lo = hi - 3;
     var wet = Math.min(.9, c[2] * R.pm), fog = Math.max(0, Math.min(.6, c[4] + R.fog)), wind = Math.max(0, Math.min(.6, c[3] + R.wind)), w = Math.random();
@@ -2661,6 +2668,20 @@
   function wxC(f) { return Math.round((f - 32) * 5 / 9); }
   // The nearest of the journey's own weather names, so a roll can be put straight onto the boat or airship.
   function wxJourney(e) { return e.c === 'Storm' || e.c === 'Thunderstorm' || e.w === 'Gale' ? 'Storm' : e.c === 'Downpour' || e.c === 'Heavy snow' ? 'Rough seas' : e.w === 'Strong wind' ? 'Strong winds' : 'Fair'; }
+  // Where the party stands decides the climate, unless the DM picks a place by hand.
+  function wxAutoRegion(campId) { return ({ west: 'west', mournfells: 'fells', north: 'greywalls', central: 'lowlands', capital: 'lowlands', south: 'south', sea: 'sea' })[autoRegion(campId)] || 'lowlands'; }
+  function wxRegionKey(campId) { var pick = (ui.wxRegion || {})[campId]; return pick && pick !== 'auto' && WX_REGIONS[pick] ? pick : wxAutoRegion(campId); }
+  var WX_SHORT = { 'Partly cloudy': 'Cloud', 'Overcast': 'Grey', 'Steady rain': 'Rain', 'Downpour': 'Downpour', 'Thunderstorm': 'Thunder', 'Heavy snow': 'Heavy snow' };
+  function wxTabs(slug, active) {
+    var q = encodeURIComponent(slug);
+    return '<div class="subtabs" role="tablist" style="margin:8px 0 14px"><a href="#/calendar/' + q + '" role="tab" aria-selected="' + (active === 'calendar') + '">Calendar</a><a href="#/weather/' + q + '" role="tab" aria-selected="' + (active === 'weather') + '">Weather</a></div>';
+  }
+  // The weather block in a calendar day's detail.
+  function wxDayHtml(camp, t, dt, abs) {
+    var e = wxStore(t)[abs], rk = wxRegionKey(camp.id), R = WX_REGIONS[rk], b = wxBase(dt), cid = esc(camp.id);
+    return '<div class="wx-day"><h3 class="act-h">Weather</h3>' + (e ? wxCard(e, dt) : '<p class="note">Nothing rolled for this day yet. Typically about ' + Math.round(b[0] + R.dt) + '° / ' + Math.round(b[1] + R.dt) + '° with the party in the ' + esc(R.n) + '.</p>') +
+      '<div class="actions tight"><button type="button" class="btn small" data-act="wx-day" data-camp="' + cid + '" data-abs="' + abs + '">' + (e ? 'Roll again' : 'Roll weather for this day') + '</button><a class="btn small quiet" href="#/weather/' + encodeURIComponent(camp.slug) + '">Open weather tab</a></div></div>';
+  }
   function wxStore(t) { return (t && t.calendar && t.calendar.weather) || {}; }
   function saveWeather(camp, wx) {
     var t = travel[camp.id], today = calAbs(t, t.day);
@@ -2682,10 +2703,11 @@
     var t = travel[camp.id];
     if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
     ui.wxRegion = ui.wxRegion || {};
-    var rk = ui.wxRegion[camp.id] || 'lowlands', R = WX_REGIONS[rk], wx = wxStore(t), todayAbs = calAbs(t, t.day), dt = calDate(todayAbs), cur = wx[todayAbs], cid = esc(camp.id);
-    var html = '<div class="page narrow"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Weather<small>' + esc(camp.name) + '</small></h1>' +
+    var rk = wxRegionKey(camp.id), pickRk = ui.wxRegion[camp.id] || 'auto', R = WX_REGIONS[rk], wx = wxStore(t), todayAbs = calAbs(t, t.day), dt = calDate(todayAbs), cur = wx[todayAbs], cid = esc(camp.id);
+    var html = '<div class="page narrow"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Weather<small>' + esc(camp.name) + '</small></h1>' + wxTabs(camp.slug, 'weather') +
       '<p class="hero-date">' + esc(dayLine(t)) + '</p>' + helpNote('weather', 'Only you see this. Rolled weather is kept with the calendar, so it stays the same until you roll again.');
-    html += '<div class="field"><label for="wx-region">Where is the party?</label><select id="wx-region" data-wx-region data-camp="' + cid + '">' + Object.keys(WX_REGIONS).map(function (k) { return '<option value="' + k + '"' + (k === rk ? ' selected' : '') + '>' + esc(WX_REGIONS[k].n) + '</option>'; }).join('') + '</select></div>';
+    html += '<div class="field"><label for="wx-region">Where is the party?</label><select id="wx-region" data-wx-region data-camp="' + cid + '"><option value="auto"' + (pickRk === 'auto' ? ' selected' : '') + '>Follow the party</option>' + Object.keys(WX_REGIONS).map(function (k) { return '<option value="' + k + '"' + (pickRk === k ? ' selected' : '') + '>' + esc(WX_REGIONS[k].n) + '</option>'; }).join('') + '</select></div>' +
+      '<p class="note">' + (pickRk === 'auto' ? 'The party is ' + (REGION_LABEL[autoRegion(camp.id)] ? 'in <b>' + esc(REGION_LABEL[autoRegion(camp.id)]) + '</b>' : 'somewhere on the map') + ', so this uses <b>' + esc(R.n) + '</b> weather.' : 'Set by hand to <b>' + esc(R.n) + '</b>.') + '</p>';
     if (R.note) html += '<p class="note">' + esc(R.note) + '</p>';
     html += '<h2 class="sec-title">Today</h2>';
     if (cur) {
@@ -2713,10 +2735,10 @@
     var t = travel[camp.id];
     if (!t) { $view.innerHTML = '<div class="page"><div class="empty">Loading the journey…</div></div>'; return; }
     var cal = calOf(t), today = dayDate(t), view = ui.calView && ui.calView.camp === camp.id ? ui.calView : (ui.calView = { camp: camp.id, y: today.y, m: today.m || 13 });
-    var logByAbs = {};
+    var logByAbs = {}, wxs = wxStore(t);
     travelLog.filter(function (l) { return l.campaign_id === camp.id; }).forEach(function (l) { var a = calAbs(t, l.day); (logByAbs[a] = logByAbs[a] || []).push(l.text); });
     var mo = CAL_MONTHS[view.m - 1];
-    var html = '<div class="page"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Calendar<small>' + esc(calText(today, false)) + '</small></h1>';
+    var html = '<div class="page"><p class="crumbs"><a href="#/travel/' + encodeURIComponent(camp.slug) + '">Journey</a></p><h1 class="page-title">Calendar<small>' + esc(calText(today, false)) + '</small></h1>' + wxTabs(camp.slug, 'calendar');
     if (!cal.set) html += '<div class="note-box">The journey hasn’t been given a date yet, so day 1 is the 1st of Akortide, 412 AC. Set today’s date below.</div>';
     html += '<div class="cal-head"><button type="button" class="btn small" data-act="cal-move" data-dir="-1" aria-label="Previous month">‹</button><div><h2>' + esc(mo[0]) + ' <small>' + view.y + ' AC</small></h2><p class="note" style="margin:0">' + esc(mo[1]) + ', the ' + ordinal(view.m) + ' month</p></div><button type="button" class="btn small" data-act="cal-move" data-dir="1" aria-label="Next month">›</button></div>';
     html += '<div class="cal-grid" role="grid"><div class="cal-wd" role="row">' + CAL_DAYS.map(function (d) { return '<span role="columnheader">' + d.slice(0, 3) + '</span>'; }).join('') + '</div><div class="cal-days">';
@@ -2725,7 +2747,7 @@
       var tday = abs - calAbs(t, 1) + 1;
       return '<button type="button" class="cal-cell' + (isToday ? ' today' : '') + (hol.length ? ' hol' : '') + (dt.doy === 0 ? ' crown' : '') + '" data-act="cal-pick" data-doy="' + dt.doy + '" data-y="' + dt.y + '"' + (ui.calPick === dt.y + ':' + dt.doy ? ' aria-pressed="true"' : '') + '>' +
         '<span class="n">' + (dt.doy === 0 ? '♛' : dt.d) + '</span>' + (tday >= 1 && tday <= t.day ? '<span class="tday">day ' + tday + '</span>' : '') +
-        hol.map(function (h) { return '<span class="ev hol">' + esc(h) + '</span>'; }).join('') + notes.map(function (n) { return '<span class="ev note">' + esc(n.text) + '</span>'; }).join('') + (logs.length ? '<span class="ev log">' + esc(shortText(logs.join(' '), 40)) + '</span>' : '') + '</button>';
+        (wxs[abs] ? '<span class="ev wx">' + wxs[abs].hi + '° ' + esc(WX_SHORT[wxs[abs].c] || wxs[abs].c) + '</span>' : '') + hol.map(function (h) { return '<span class="ev hol">' + esc(h) + '</span>'; }).join('') + notes.map(function (n) { return '<span class="ev note">' + esc(n.text) + '</span>'; }).join('') + (logs.length ? '<span class="ev log">' + esc(shortText(logs.join(' '), 40)) + '</span>' : '') + '</button>';
     };
     for (var d = 1; d <= 28; d++) html += cell({ y: view.y, doy: calDoy(view.m, d), m: view.m, d: d, wd: (d - 1) % 7 });
     html += '</div>';
@@ -2736,7 +2758,7 @@
     if (pick) {
       var pdt = calDate(pick[0] * 365 + pick[1]), pabs = pick[0] * 365 + pick[1];
       html += '<section class="block cal-day"><h2 class="sec-title">' + esc(calText(pdt, true)) + '<small>' + (pabs - calAbs(t, 1) + 1 >= 1 ? 'journey day ' + (pabs - calAbs(t, 1) + 1) : 'before the journey') + '</small></h2>' +
-        calHolidays(pdt).map(function (h) { return '<p class="note" style="margin:0 0 4px">Feast: ' + esc(h) + '</p>'; }).join('') + '<div class="tbl">' +
+        calHolidays(pdt).map(function (h) { return '<p class="note" style="margin:0 0 4px">Feast: ' + esc(h) + '</p>'; }).join('') + wxDayHtml(camp, t, pdt, pabs) + '<div class="tbl">' +
         cal.notes.map(function (n, i) { return { n: n, i: i }; }).filter(function (o) { return o.n.doy === pdt.doy && (o.n.y == null || o.n.y === pdt.y); }).map(function (o) {
           return '<div class="tbl-row"><div class="main"><b>' + esc(o.n.text) + '</b><span>' + (o.n.y == null ? 'Every year' : 'This year only') + '</span></div><button type="button" class="btn small danger" data-act="cal-rm" data-i="' + o.i + '" data-camp="' + esc(camp.id) + '">Remove</button></div>';
         }).join('') + (logByAbs[pabs] || []).map(function (x) { return '<div class="tbl-row"><div class="main"><b>Journey log</b><span>' + esc(x) + '</span></div></div>'; }).join('') + '</div>' +
@@ -7286,8 +7308,8 @@
       if (!dm) return '<div class="vital"><span class="k">' + key + '</span><span class="v" style="font-size:17px">' + esc(t[key.toLowerCase()]) + '</span></div>';
       return '<div class="field"><label for="' + id + '">' + key + '</label><select id="' + id + '" data-travel="' + key.toLowerCase() + '">' + (Array.isArray(opts) ? opts : Object.keys(opts)).map(function (k) { return '<option' + (k === t[key.toLowerCase()] ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select></div>';
     };
-    var html = mode === 'panel' ? '<div class="jr-panel"><p class="hero-date" style="margin:0 0 8px">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> · <a href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p>'
-      : '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>' + esc(dateShort(t)) + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' · <a href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> · <a href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p></div></section><div class="page">';
+    var html = mode === 'panel' ? '<div class="jr-panel"><p class="hero-date" style="margin:0 0 8px">' + esc(dayLine(t)) + (dm ? ' <a class="btn small" href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> <a class="btn small" href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p>'
+      : '<section class="hero"><div class="hero-in"><p class="crumbs"><a href="#/wiki">Avarenth</a> › <a href="#/campaign/' + encodeURIComponent(camp.slug) + '">' + esc(camp.name) + '</a></p><h1>' + esc(dateShort(t)) + '</h1><p class="hero-date">' + esc(dayLine(t)) + (dm ? ' <a class="btn small" href="#/calendar/' + encodeURIComponent(camp.slug) + '">Calendar</a> <a class="btn small" href="#/weather/' + encodeURIComponent(camp.slug) + '">Weather</a>' : '') + '</p></div></section><div class="page">';
     if (dm) html += '<div class="actions"><button type="button" class="btn primary" data-act="next-day" data-camp="' + esc(camp.id) + '">Next day →</button><button type="button" class="btn" data-act="undo-day" data-camp="' + esc(camp.id) + '"' + (log.length ? '' : ' disabled') + '>Undo last entry</button></div>';
     html += arrivalBlock(camp);
     if (dm) html += noticesBlock(camp);
@@ -10770,10 +10792,15 @@
       case 'wx-roll':
       case 'wx-week':
         var wcamp = campaignById(el.getAttribute('data-camp')); if (!wcamp) break;
-        var wt = travel[wcamp.id], wrk = (ui.wxRegion && ui.wxRegion[wcamp.id]) || 'lowlands', wst = Object.assign({}, wxStore(wt)), wtoday = calAbs(wt, wt.day);
-        if (act === 'wx-roll') wst[wtoday] = wxRoll(calDate(wtoday).m, wrk);
-        else for (var wi = 0; wi < 7; wi++) if (!wst[wtoday + wi]) wst[wtoday + wi] = wxRoll(calDate(wtoday + wi).m, wrk);
+        var wt = travel[wcamp.id], wrk = wxRegionKey(wcamp.id), wst = Object.assign({}, wxStore(wt)), wtoday = calAbs(wt, wt.day);
+        if (act === 'wx-roll') wst[wtoday] = wxRoll(calDate(wtoday), wrk);
+        else for (var wi = 0; wi < 7; wi++) if (!wst[wtoday + wi]) wst[wtoday + wi] = wxRoll(calDate(wtoday + wi), wrk);
         saveWeather(wcamp, wst); break;
+      case 'wx-day':
+        var dcamp = campaignById(el.getAttribute('data-camp')); if (!dcamp) break;
+        var dabs = num(el.getAttribute('data-abs'), 0), dst = Object.assign({}, wxStore(travel[dcamp.id]));
+        dst[dabs] = wxRoll(calDate(dabs), wxRegionKey(dcamp.id));
+        saveWeather(dcamp, dst); break;
       case 'wx-sea':
         var scamp = campaignById(el.getAttribute('data-camp')); if (!scamp) break;
         var sval = el.getAttribute('data-val'); travel[scamp.id].weather = sval;

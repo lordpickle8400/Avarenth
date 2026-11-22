@@ -1466,3 +1466,5 @@ body:has(.m-sheet) { overflow: hidden; }
 .wx-ref .tbl-row.on { background: var(--soft); }
 .wx-ref .tbl-row .main b { font-family: var(--ui); font-size: 16px; }
 .wx-days .tbl-row .main b { font-family: var(--ui); font-size: 16px; }
+.cal-cell .ev.wx { background: color-mix(in srgb, #7fb98a 22%, transparent); }
+.wx-day { margin: 8px 0 12px; }
