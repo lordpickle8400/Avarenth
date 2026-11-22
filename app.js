@@ -1810,9 +1810,16 @@
           if (have) have.qty += x.qty * l.qty; else s.items.push({ name: x.name, qty: x.qty * l.qty, ref: x.ref || undefined, from: x.from || undefined });
         });
       });
-      var armorOn = false, shieldOn = false;
+      // Everyone starts with some general goods: at least 10 rations and a bedroll (packs may already hold them).
+      [['Rations', 10], ['Bedroll', 1]].forEach(function (gd) {
+        var have = s.items.filter(function (o) { return o.name === gd[0]; })[0];
+        if (have) have.qty = Math.max(num(have.qty, 1), gd[1]);
+        else parseGear(gd[1] + ' ' + gd[0], 'Starting goods').items.forEach(function (x) { s.items.push({ name: x.name, qty: x.qty, ref: x.ref || undefined, from: x.from || undefined }); });
+      });
+      var armorOn = false, shieldOn = false, packOn = false;
       s.items.forEach(function (it) {
         var k = itemKind(it).k, g = gearItem(itemRef(it));
+        if (isBackpack(it) && !packOn) it.eq = packOn = true;
         if (k === 'weapon') it.eq = true;
         if (k === 'armor' && g) { if (g.shield && !shieldOn) { it.eq = shieldOn = true; } else if (!g.shield && !armorOn) { it.eq = armorOn = true; } }
       });
@@ -2255,8 +2262,9 @@
     var items = s.items.reduce(function (t, it) { return t + itemWeight(it) * Math.max(0, num(it.qty, 1)); }, 0);
     var coins = (num(s.coins.cp, 0) + num(s.coins.sp, 0) + num(s.coins.gp, 0) + num(s.coins.pp, 0)) / 50;
     var sp = RULES.species[s.species] || {}, powerful = (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });
-    var cap = num(s.abilities.str, 10) * 15 * (powerful ? 2 : 1) * (sp.size === 'Small' ? 1 : 1);
-    return { total: Math.round((items + coins) * 10) / 10, coins: Math.round(coins * 10) / 10, cap: cap, powerful: powerful };
+    var pack = s.items.some(function (it) { return it.eq && isBackpack(it); });
+    var cap = num(s.abilities.str, 10) * 15 * (powerful ? 2 : 1) * (sp.size === 'Small' ? 1 : 1) + (pack ? BACKPACK_LB : 0);
+    return { total: Math.round((items + coins) * 10) / 10, coins: Math.round(coins * 10) / 10, cap: cap, powerful: powerful, pack: pack };
   }
   var FONT_TO_MANA = 5, FONT_FROM_MANA = 6;   // Font of Magic, traded against mana instead of spell slots
   function byLevel(lvl, table) { var v = 0; table.forEach(function (t) { if (lvl >= t[0]) v = t[1]; }); return v; }
@@ -3770,7 +3778,9 @@
     if (r.k === 'tools') return { k: 'tool', label: 'Tool' };
     return { k: 'gear', label: 'Adventuring gear' };
   }
-  function canEquip(it) { var k = itemKind(it).k; return k === 'weapon' || k === 'armor' || k === 'magic' || !itemRef(it); }
+  var BACKPACK_LB = 30;   // a worn backpack adds this much to what you can carry
+  function isBackpack(it) { var r = itemRef(it); return (r ? r.n : String(it.name || '')).toLowerCase() === 'backpack'; }
+  function canEquip(it) { var k = itemKind(it).k; return k === 'weapon' || k === 'armor' || k === 'magic' || isBackpack(it) || !itemRef(it); }
   // Armor class from what's worn. Without armor or a shield, the sheet's own number stands (unarmored, natural armor...).
   function acCalc(s, abil) {
     var armor = null, shield = null, notes = [];
@@ -3924,7 +3934,7 @@
       return '<div class="vital"><label class="k" for="coin-' + k + '">' + esc(coinName(k)) + '</label>' + (can ? '<input type="number" id="coin-' + k + '" data-coin="' + k + '" min="0" value="' + num(s.coins[k], 0) + '" inputmode="numeric">' : '<span class="v">' + num(s.coins[k], 0) + '</span>') + '</div>';
     }).join('') + '</div><div class="inv-stats"><div class="carry' + (over ? ' over' : '') + '"><div class="pool-top"><span class="k">Weight carried</span><span class="v">' + carry.total + ' <small>/ ' + carry.cap + ' lb</small></span></div>' +
       '<div class="meter" role="img" aria-label="' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '% of carrying capacity"><i style="width:' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '%"></i></div>' +
-      (over ? '<p class="note" style="margin:4px 0 0">Over capacity: speed drops to 5 feet.</p>' : '') + '</div>' +
+      (carry.pack ? '<p class="note" style="margin:4px 0 0">Backpack worn: +' + BACKPACK_LB + ' lb.</p>' : '') + (over ? '<p class="note" style="margin:4px 0 0">Over capacity: speed drops to 5 feet.</p>' : '') + '</div>' +
       csStat('Attunement', att + ' / 3', 'items') + csStat('Armor class', String(ac.ac), ac.worn ? 'worn' : 'unarmored') + '</div></div>';
     html += moneyControlsHtml(c, can);
     var rows = s.items.map(function (it, i) { return { it: it, i: i }; });
@@ -10697,6 +10707,7 @@
         var eit = c.sheet.items[num(el.getAttribute('data-i'), -1)];
         if (!eit) return;
         eit.eq = !eit.eq;
+        if (eit.eq && isBackpack(eit)) c.sheet.items.forEach(function (o) { if (o !== eit && isBackpack(o)) o.eq = false; });
         if (eit.eq && itemKind(eit).k === 'armor') {
           var eg = gearItem(itemRef(eit));
           c.sheet.items.forEach(function (o) { var og = o !== eit && o.eq && itemKind(o).k === 'armor' ? gearItem(itemRef(o)) : null; if (og && eg && og.shield === eg.shield) o.eq = false; });
