@@ -3899,6 +3899,23 @@
   }
 
   /* ---------- Inventory tab: equipped gear, the backpack, coins, weight and attunement ---------- */
+  // Undo for inventory changes on a sheet: money added or taken, and trashed items. Kept for this visit only.
+  function undoPush(c, label) {
+    ui.undo = ui.undo || [];
+    var sh = c.sheet;
+    ui.undo.push({ id: c.id, label: label, coins: JSON.parse(JSON.stringify(sh.coins || {})), items: JSON.parse(JSON.stringify(sh.items || [])) });
+    if (ui.undo.length > 20) ui.undo.shift();
+  }
+  function undoTop(c) { var u = ui.undo || []; for (var i = u.length - 1; i >= 0; i--) if (u[i].id === c.id) return u[i]; return null; }
+  function moneyControlsHtml(c, can) {
+    if (!can) return '';
+    var u = undoTop(c);
+    return '<div class="money-form"><div class="field"><label for="money-amt">Money</label><input type="number" id="money-amt" min="1" value="" placeholder="Amount" inputmode="numeric"></div>' +
+      '<div class="field"><label for="money-unit" class="sr">Coin</label><select id="money-unit"><option value="gp">gp</option><option value="sp">sp</option><option value="cp">cp</option></select></div>' +
+      '<button type="button" class="btn small primary" data-act="money" data-dir="1">Add</button><button type="button" class="btn small" data-act="money" data-dir="-1">Take</button></div>' +
+      '<p class="note" style="margin:4px 0 8px">Change is made for you: 10 cp = 1 sp, 10 sp = 1 gp.</p>' +
+      (u ? '<div class="undo-bar"><span>' + esc(u.label) + '</span><button type="button" class="btn small" data-act="undo">Undo</button></div>' : '');
+  }
   function inventoryTabHtml(c, s, edit, can, abil) {
     if (!GEAR) loadGear();
     var html = '', coinKeys = ['cp', 'sp', 'gp'].concat(num(s.coins.pp, 0) ? ['pp'] : []);
@@ -3909,6 +3926,7 @@
       '<div class="meter" role="img" aria-label="' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '% of carrying capacity"><i style="width:' + Math.min(100, Math.round(100 * carry.total / Math.max(1, carry.cap))) + '%"></i></div>' +
       (over ? '<p class="note" style="margin:4px 0 0">Over capacity: speed drops to 5 feet.</p>' : '') + '</div>' +
       csStat('Attunement', att + ' / 3', 'items') + csStat('Armor class', String(ac.ac), ac.worn ? 'worn' : 'unarmored') + '</div></div>';
+    html += moneyControlsHtml(c, can);
     var rows = s.items.map(function (it, i) { return { it: it, i: i }; });
     var head = '<div class="inv-th"><span>Active</span><span>Name</span><span>Weight</span><span>Qty</span><span>Cost</span></div>';
     var rowHtml = function (o) {
@@ -3920,7 +3938,7 @@
         (attune ? (can ? '<button type="button" class="linkish inv-att" data-act="attune" data-i="' + i + '">' + (it.att ? 'Attuned ✓' : 'Attune') + '</button>' : it.att ? '<small>Attuned</small>' : '') : '') +
         (edit ? '<span class="inv-edit"><label class="check"><input type="checkbox" data-istolen="' + i + '"' + (isStolen(it) ? ' checked' : '') + '> Stolen</label>' + (/weapon|armor|shield/.test(kind.k) ? '<label class="check"><input type="checkbox" data-ids="' + i + '"' + (isDornish(it) ? ' checked' : '') + (dornishBase(it.name) ? ' disabled' : '') + '> Dornish steel</label>' : '') + '<label for="iq-' + i + '">Quality</label><select class="input mini" id="iq-' + i + '" data-iq="' + i + '">' + QUALITY_NAMES.map(function (n, qi) { return '<option value="' + qi + '"' + (qi === itemQ(it) ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select><label for="ib-' + i + '">Magic +</label><input type="number" class="input mini" id="ib-' + i + '" data-ibonus="' + i + '" value="' + num(it.bonus, 0) + '" min="0" max="5"><label for="iw-' + i + '">Lb</label><input type="number" class="input mini" id="iw-' + i + '" data-iw="' + i + '" value="' + (typeof it.w === 'number' ? it.w : '') + '" placeholder="' + (w || 'lb') + '" min="0" step="0.25" inputmode="decimal"><button type="button" class="btn small danger" data-act="rm" data-list="items" data-i="' + i + '">Remove</button></span>' : '') + '</span>' +
         '<span class="wt">' + (w ? Math.round(w * num(it.qty, 1) * 100) / 100 + ' lb' : '—') + '</span>' +
-        '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
+        '<span class="qt">' + (can ? '<button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="-1" aria-label="One fewer ' + esc(it.name) + '">−</button><b>' + num(it.qty, 1) + '</b><button type="button" class="btn small" data-act="qty" data-i="' + i + '" data-dir="1" aria-label="One more ' + esc(it.name) + '">+</button><button type="button" class="btn small danger inv-trash" data-act="item-trash" data-i="' + i + '" aria-label="Trash ' + esc(it.name) + '" title="Trash">\ud83d\uddd1</button>' : '<b>' + num(it.qty, 1) + '</b>') + '</span>' +
         '<span class="ct">' + esc(g && g.cost ? g.cost : '—') + '</span></div>';
     };
     var eqd = rows.filter(function (o) { return o.it.eq; }), pack = rows.filter(function (o) { return !o.it.eq; });
@@ -10750,6 +10768,32 @@
         if (el.getAttribute('data-kind') === 'save') c.sheet.saves[key] = !c.sheet.saves[key];
         else c.sheet.skills[key] = (num(c.sheet.skills[key], 0) + 1) % 3;
         render(); saveCharSoon(c); break;
+      case 'money':
+        if (!c) return;
+        var mdir = num(el.getAttribute('data-dir'), 1), mamt = Math.floor(num((document.getElementById('money-amt') || {}).value, 0)), munit = (document.getElementById('money-unit') || {}).value || 'gp';
+        if (mamt <= 0) return toast('Type an amount first.');
+        var mcp = mamt * ({ gp: 100, sp: 10, cp: 1 }[munit] || 100), msh = c.sheet;
+        msh.coins = Object.assign({ cp: 0, sp: 0, gp: 0, pp: 0 }, msh.coins || {});
+        var mhave = walletCp(msh);
+        if (mdir < 0 && mcp > mhave) return toast('Not enough. You have ' + money(mhave) + '.');
+        undoPush(c, (mdir > 0 ? 'Added ' : 'Took ') + mamt + ' ' + munit);
+        setWallet(msh, mhave + mdir * mcp);
+        render(); saveCharSoon(c); break;
+      case 'item-trash':
+        if (!c) return;
+        var tdi = num(el.getAttribute('data-i'), -1), tit = c.sheet.items[tdi];
+        if (!tit) return;
+        undoPush(c, 'Trashed ' + tit.name);
+        c.sheet.items.splice(tdi, 1);
+        render(); saveCharSoon(c); break;
+      case 'undo':
+        if (!c) return;
+        var ustk = ui.undo || [], uidx = -1;
+        for (var uq = ustk.length - 1; uq >= 0; uq--) if (ustk[uq].id === c.id) { uidx = uq; break; }
+        if (uidx < 0) return;
+        var uent = ustk.splice(uidx, 1)[0];
+        c.sheet.coins = uent.coins; c.sheet.items = uent.items;
+        toast('Undid: ' + uent.label); render(); saveCharSoon(c); break;
       case 'qty':
         if (!c) return;
         var it = c.sheet.items[num(el.getAttribute('data-i'), -1)];

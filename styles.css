@@ -1420,3 +1420,8 @@ body:has(.m-sheet) { overflow: hidden; }
 .shop-purse > div { flex: 1; padding: 8px 10px; border: 1px solid var(--soft); border-radius: 10px; display: flex; flex-direction: column; gap: 2px; }
 .shop-purse .k { font-family: var(--ui); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .shop-cart { margin-bottom: 12px; }
+.money-form { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; }
+.money-form .field { margin: 0; }
+.money-form #money-amt { width: 100px; }
+.undo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 10px; padding: 8px 12px; border: 1px dashed var(--soft); border-radius: 10px; font-size: 14px; }
+.inv-trash { margin-left: 6px; }
