@@ -1449,3 +1449,5 @@ body:has(.m-sheet) { overflow: hidden; }
 .bd-fit .note { margin: 6px 0 0; }
 .fit-order li { font-family: var(--ui); }
 .money-form input, .money-form select, .bd-shop input[type=search] { font-family: var(--ui); }
+.tag.q-0 { color: #d9534f; border-color: #d9534f; }
+.tag.q-3, .tag.q-4 { color: var(--accent-ink); border-color: var(--accent); }
