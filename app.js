@@ -420,13 +420,21 @@
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ui.moreOpen) { ui.moreOpen = null; moreMenu(); renderChrome(); } });
   window.addEventListener('hashchange', function () { if (ui.moreOpen) { ui.moreOpen = null; moreMenu(); } });
+  // The date and the weather where the party is, pinned top right for everyone.
+  function barClockHtml() {
+    var camp = session && isMember() && !isTable() ? activeCamp() : null, t = camp && travel[camp.id];
+    if (!t) return '';
+    var abs = calAbs(t, t.day), dt = calDate(abs), e = wxStore(t)[abs], q = encodeURIComponent(camp.slug);
+    return '<span class="bar-clock"><a href="#/calendar/' + q + '" aria-label="Open the calendar">' + esc(dt.m ? dt.d + ' ' + CAL_MONTHS[dt.m - 1][0] : 'Crowning Day') + '</a>' +
+      '<a href="#/weather/' + q + '" aria-label="Open the weather">' + (e ? e.hi + '° ' + esc(e.c) : 'Weather') + '</a></span>';
+  }
   function renderChrome() {
     var r = parseRoute();
     document.body.classList.toggle('table-mode', isTable());
     document.body.classList.toggle('atlas-mode', r.name === 'map' || r.name === '');
     if (session && isMember() && !isDM()) {
-      $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells', homebrew: 'homebrew', quests: 'quests', support: 'support' })[r.name] || '';
+      $barRight.innerHTML = barClockHtml() + '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
+      var psec = ({ '': 'map', map: 'map', a: 'map', characters: 'characters', c: 'characters', build: 'characters', 'level-up': 'characters', join: 'characters', rules: 'rules', spells: 'spells', 'spell-new': 'spells', homebrew: 'homebrew', calendar: 'map', weather: 'map', quests: 'quests', support: 'support' })[r.name] || '';
       $tabs.innerHTML = tabsHtml(PLAYER_NAV, psec, function (k) { return '#/' + k; });
       $tabs.hidden = false;
       return;
@@ -436,7 +444,7 @@
       $tabs.hidden = true;
       return;
     }
-    $barRight.innerHTML = '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
+    $barRight.innerHTML = barClockHtml() + '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
     var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', weather: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = tabsHtml(NAV, section, function (k) { return '#/' + k + (CAMP_ROUTES[k] ? cs : ''); });
@@ -515,6 +523,8 @@
     if (r.name !== 'map' && r.name !== '' && r.name !== 'a') document.body.classList.remove('atlas-mode');
     switch (r.name) {
       case 'quests': return renderQuests();
+      case 'calendar': return renderCalendar(r.arg);
+      case 'weather': return renderWeather(r.arg);
       case 'characters': return renderCharacters();
       case 'c': return renderSheet(r.arg);
       case 'build': return renderBuild();
