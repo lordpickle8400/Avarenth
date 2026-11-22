@@ -11928,7 +11928,7 @@
       title.textContent = mk2 ? mk2.n + '. ' + mk2.name : 'Key';
       var ca = c ? articleBySlug(c.slug) : null;
       body.innerHTML = mk2 ? '<p class="eyebrow">' + esc(c.city.name) + (c.city.levels.length > 1 ? ' · ' + esc(c.level.name) : '') + '</p><h2 class="at-h">' + esc(mk2.name) + '</h2><p class="prose">' + esc(mk2.why) + '</p>' +
-        '<div class="at-acts">' + (ca ? '<button type="button" class="btn small" data-at="art" data-slug="' + esc(ca.slug) + '">About ' + esc(ca.title) + '</button>' : '') + '</div>' +
+        '<div class="at-acts">' + (mk2.slug && articleBySlug(mk2.slug) ? '<button type="button" class="btn small primary" data-at="art" data-slug="' + esc(mk2.slug) + '">About ' + esc(articleBySlug(mk2.slug).title) + '</button>' : '') + (ca ? '<button type="button" class="btn small" data-at="art" data-slug="' + esc(ca.slug) + '">About ' + esc(ca.title) + '</button>' : '') + '</div>' +
         '<section class="block"><h3 class="kind-h">Also on this map</h3><div class="at-keylist">' + c.level.marks.map(function (x) { return '<button type="button" class="at-key' + (x.n === sel.n ? ' on' : '') + '" data-at="mark" data-n="' + x.n + '"><i>' + x.n + '</i>' + esc(x.name) + '</button>'; }).join('') + '</div></section>' : '<div class="empty">Gone.</div>';
     } else if (sel.t === 'marker') {
       var mk3 = m ? (markers[m.id] || []).filter(function (x) { return x.id === sel.id; })[0] : null;
