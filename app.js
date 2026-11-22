@@ -1405,7 +1405,7 @@
     return out;
   }
   function newBuild() {
-    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [] };
+    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [], buy: [], shopQ: '', shopCat: 'Gear' };
   }
   function buildBase(b) {
     var out = {};
@@ -1467,6 +1467,62 @@
     var o = buildGearOpts(b), pick = function (list, key) { return (list.filter(function (x) { return x.key === key; })[0] || list[0] || { text: '' }).text; };
     return [pick(o.cls, b.eqC || 'A'), pick(o.bg, b.eqB || 'A')].filter(Boolean);
   }
+  // Spending starting gold on gear. Works in copper and makes change itself (10 cp = 1 sp, 10 sp = 1 gp).
+  function shopPool() {
+    var out = [];
+    if (!GEAR) return out;
+    [['weapons', 'Weapons'], ['armor', 'Armor'], ['gear', 'Gear'], ['tools', 'Tools']].forEach(function (c) {
+      (GEAR[c[0]] || []).forEach(function (x) { var cp = Math.round(costToGp(x.cost) * 100); if (cp > 0) out.push({ name: x.name, cat: c[1], cp: cp }); });
+    });
+    return out;
+  }
+  function buildGoldCp(b) { return Math.round(buildGearPicks(b).reduce(function (t, x) { return t + parseGear(x, '').gp; }, 0) * 100); }
+  // The cart, held to what the purse can pay: anything you can no longer afford drops off the end.
+  function buyLines(b) {
+    var byName = {}; shopPool().forEach(function (p) { byName[p.name] = p; });
+    var budget = buildGoldCp(b), spent = 0, lines = [];
+    (b.buy || []).forEach(function (l) {
+      var p = byName[l.name]; if (!p) return;
+      var ok = Math.min(Math.max(0, num(l.qty, 0)), Math.floor((budget - spent) / p.cp));
+      if (ok > 0) { lines.push({ name: p.name, qty: ok, cp: p.cp }); spent += ok * p.cp; }
+    });
+    return { lines: lines, budget: budget, spent: spent, left: budget - spent };
+  }
+  function purse(cp) { return cp > 0 ? money(cp) : '0 gp'; }
+  function bdShopTopHtml(b) {
+    var r = buyLines(b);
+    var html = '<div class="shop-purse"><div><span class="k">Starting gold</span><b>' + purse(r.budget) + '</b></div><div><span class="k">Spent</span><b>' + purse(r.spent) + '</b></div><div><span class="k">Left</span><b>' + purse(r.left) + '</b></div></div>';
+    if (r.lines.length) html += '<div class="tbl shop-cart">' + r.lines.map(function (l) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(l.name) + '</b><span>' + l.qty + ' × ' + purse(l.cp) + ' = ' + purse(l.qty * l.cp) + '</span></div>' +
+        '<button type="button" class="btn small" data-act="bd-buy" data-name="' + esc(l.name) + '" data-dir="-1" aria-label="Buy one fewer ' + esc(l.name) + '">−</button><span class="num" style="min-width:24px;text-align:center">' + l.qty + '</span>' +
+        '<button type="button" class="btn small" data-act="bd-buy" data-name="' + esc(l.name) + '" data-dir="1"' + (l.cp > r.left ? ' disabled' : '') + ' aria-label="Buy one more ' + esc(l.name) + '">+</button></div>';
+    }).join('') + '</div>';
+    return html;
+  }
+  function bdShopCtlHtml(b) {
+    return ['Gear', 'Weapons', 'Armor', 'Tools'].map(function (c) { return '<button type="button" class="chip pick" data-act="bd-shop-cat" data-val="' + c + '" aria-pressed="' + (!b.shopQ && b.shopCat === c) + '">' + c + '</button>'; }).join('');
+  }
+  function bdShopListHtml(b) {
+    var q = String(b.shopQ || '').toLowerCase().trim(), r = buyLines(b);
+    var rows = shopPool().filter(function (p) { return q ? p.name.toLowerCase().indexOf(q) >= 0 : p.cat === (b.shopCat || 'Gear'); });
+    if (!rows.length) return '<p class="note">Nothing matches.</p>';
+    var more = rows.length > 40;
+    return '<div class="tbl shop-list">' + rows.slice(0, 40).map(function (p) {
+      return '<div class="tbl-row"><div class="main"><b>' + esc(p.name) + '</b><span>' + esc(p.cat) + ' · ' + purse(p.cp) + '</span></div><button type="button" class="btn small" data-act="bd-buy" data-name="' + esc(p.name) + '" data-dir="1"' + (p.cp > r.left ? ' disabled' : '') + '>Buy</button></div>';
+    }).join('') + '</div>' + (more ? '<p class="note">Showing the first 40. Search to narrow it down.</p>' : '');
+  }
+  function bdShopHtml(b) {
+    if (buildGoldCp(b) <= 0) return '';
+    return '<section class="bd-shop"><h3 class="act-h">Spend your gold<small>optional</small></h3>' +
+      '<p class="note">Took the gold, or have some left over? Buy gear here. The cost comes out of your purse and change is made for you: 10 cp = 1 sp, 10 sp = 1 gp.</p>' +
+      '<div id="bd-shop-top">' + bdShopTopHtml(b) + '</div>' +
+      '<div class="field"><label for="bd-shop-q" class="sr">Search gear</label><input type="search" id="bd-shop-q" placeholder="Search gear" value="' + esc(b.shopQ || '') + '" autocomplete="off"></div>' +
+      '<div class="chips" id="bd-shop-ctl">' + bdShopCtlHtml(b) + '</div><div id="bd-shop-list">' + bdShopListHtml(b) + '</div></section>';
+  }
+  function bdShopRefresh() {
+    var b = ui.build; if (!b) return;
+    [['bd-shop-top', bdShopTopHtml], ['bd-shop-ctl', bdShopCtlHtml], ['bd-shop-list', bdShopListHtml]].forEach(function (x) { var el = document.getElementById(x[0]); if (el) el.innerHTML = x[1](b); });
+  }
   function buildEquipHtml(b) {
     if (!GEAR) { loadGear(); return '<div class="empty">Opening the armory…</div>'; }
     var o = buildGearOpts(b);
@@ -1476,12 +1532,13 @@
       return '<div class="cl-item' + (on ? ' on' : '') + '"><button type="button" class="cl-row" data-act="bd-eq" data-kind="' + kind + '" data-val="' + opt.key + '" aria-pressed="' + on + '"><span class="cl-badge" aria-hidden="true">' + opt.key + '</span><span class="cl-txt"><b>' + (g.items.length ? 'Option ' + opt.key + ': gear' + (g.gp ? ' and ' + g.gp + ' GP' : '') : 'Option ' + opt.key + ': ' + g.gp + ' GP to spend') + '</b><span>' + esc(shortText(opt.text, 140)) + '</span></span><span class="cl-chev" aria-hidden="true">' + (on ? '✓' : '›') + '</span></button>' +
         (on && list ? '<div class="cl-detail">' + list + '</div>' : '') + '</div>';
     };
-    var html = '<p class="guide">Pick your starting gear, or take the gold and buy your own in town. Everything goes into your inventory, with armor and weapons already equipped.</p>';
+    var html = '<p class="guide">Pick your starting gear, or take the gold and spend it on gear below. Everything goes into your inventory, with armor and weapons already equipped.</p>';
     html += '<h3 class="act-h">From your class<small>' + esc(b.cls) + '</small></h3><div class="choice-list">' + (o.cls.length ? o.cls.map(function (x) { return card(x, 'c', b.eqC || 'A'); }).join('') : '<p class="note">No starting gear listed.</p>') + '</div>';
     html += '<h3 class="act-h" style="margin-top:14px">From your background<small>' + esc(b.bg) + '</small></h3><div class="choice-list">' + (o.bg.length ? o.bg.map(function (x) { return card(x, 'b', b.eqB || 'A'); }).join('') : '<p class="note">No starting gear listed.</p>') + '</div>';
     var tot = buildGearPicks(b).reduce(function (t, x) { return t + parseGear(x, '').gp; }, 0);
     html += '<p class="note" style="margin-top:10px">You start with ' + Math.round(tot * 10) / 10 + ' GP.</p>';
-    return html;
+    b.buy = buyLines(b).lines.map(function (l) { return { name: l.name, qty: l.qty }; });
+    return html + bdShopHtml(b);
   }
   // The live summary beside the builder: the character filling in as you choose.
   function buildSummaryHtml(b) {
@@ -1746,6 +1803,13 @@
           if (have) have.qty += x.qty; else s.items.push({ name: x.name, qty: x.qty, ref: x.ref || undefined, from: x.from || undefined });
         });
       });
+      var bought = buyLines(b);
+      bought.lines.forEach(function (l) {
+        parseGear(l.name, 'Bought').items.forEach(function (x) {
+          var have = s.items.filter(function (o) { return o.name === x.name; })[0];
+          if (have) have.qty += x.qty * l.qty; else s.items.push({ name: x.name, qty: x.qty * l.qty, ref: x.ref || undefined, from: x.from || undefined });
+        });
+      });
       var armorOn = false, shieldOn = false;
       s.items.forEach(function (it) {
         var k = itemKind(it).k, g = gearItem(itemRef(it));
@@ -1753,7 +1817,7 @@
         if (k === 'armor' && g) { if (g.shield && !shieldOn) { it.eq = shieldOn = true; } else if (!g.shield && !armorOn) { it.eq = armorOn = true; } }
       });
       s.items.forEach(function (it) { Object.keys(it).forEach(function (k) { if (it[k] === undefined) delete it[k]; }); });
-      s.coins.gp = Math.floor(gp + 1e-6); s.coins.sp = Math.round((gp - Math.floor(gp + 1e-6)) * 10);
+      setWallet(s, Math.max(0, Math.round(gp * 100) - bought.spent));
     }
     s.log = [{ level: 1, text: 'Created with the character builder.' }];
     return s;
@@ -10633,6 +10697,17 @@
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
       case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
+      case 'bd-buy':
+        var bsb = ui.build, bsn = el.getAttribute('data-name'), bsd = num(el.getAttribute('data-dir'), 1);
+        bsb.buy = bsb.buy || [];
+        var bsl = bsb.buy.filter(function (l) { return l.name === bsn; })[0];
+        if (!bsl) { if (bsd > 0) bsb.buy.push({ name: bsn, qty: 1 }); }
+        else { bsl.qty += bsd; if (bsl.qty <= 0) bsb.buy = bsb.buy.filter(function (l) { return l !== bsl; }); }
+        bdShopRefresh(); break;
+      case 'bd-shop-cat':
+        ui.build.shopCat = el.getAttribute('data-val'); ui.build.shopQ = '';
+        var bsq = document.getElementById('bd-shop-q'); if (bsq) bsq.value = '';
+        bdShopRefresh(); break;
       case 'bd-eq': if (el.getAttribute('data-kind') === 'c') ui.build.eqC = el.getAttribute('data-val'); else ui.build.eqB = el.getAttribute('data-val'); render(); break;
       case 'bd-patron':
         ui.build.patron = el.getAttribute('data-val');
@@ -10736,6 +10811,7 @@
       if (wres) wres.innerHTML = watchResultHtml(wcamp, ww);
       return;
     }
+    if (t.id === 'bd-shop-q' && ui.build) { ui.build.shopQ = t.value; bdShopRefresh(); return; }
     if (t.id === 'home-search') {
       ui.homeQuery = t.value;
       var pos = t.selectionStart;
