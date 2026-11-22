@@ -11062,6 +11062,12 @@
   }
   function cityOfKey(key) { var p = String(key || '').split(':'); return p[0] === 'city' && CITIES && CITIES[p[1]] ? { slug: p[1], city: CITIES[p[1]], level: levelOf(CITIES[p[1]], p[2]) } : null; }
   function levelOf(city, id) { var L = city.levels || []; return L.filter(function (l) { return l.id === id; })[0] || L.filter(function (l) { return l.id === city.start; })[0] || L[0]; }
+  // Players (and the table) can only open a city's map once the party has visited it.
+  function cityOpenable(slug) {
+    if (!TABLE) return true;
+    var a = articleBySlug(slug);
+    return !!a && (a.state === 'known' || a.table_state === 'known');
+  }
   function cityPin(slug) { var m = islesMap(); return m ? (markers[m.id] || []).filter(function (mk) { return mk.article_slug === slug && mk.kind !== 'party'; })[0] || null : null; }
   function saveLayers() { writeLocal('avarenth-layers', JSON.stringify(AT.layers)); }
 
@@ -11309,7 +11315,7 @@
     var m = islesMap(); if (!m || !CITIES) return null;
     var best = null, bd = maxPx;
     (markers[m.id] || []).forEach(function (mk) {
-      if (!mk.article_slug || !CITIES[mk.article_slug] || mk.kind === 'party') return;
+      if (!mk.article_slug || !CITIES[mk.article_slug] || mk.kind === 'party' || !cityOpenable(mk.article_slug)) return;
       var p = worldToScreen(mk.x, mk.y), d = Math.hypot(p.x - sx, p.y - sy);
       if (d < bd) { bd = d; best = mk; }
     });
@@ -11317,7 +11323,6 @@
   }
   function cityHint() {
     var el = document.getElementById('at-hint'); if (!el) return;
-    if (TABLE) { el.hidden = true; return; }
     var s = stageSize(), cov = panelCover(), r = AT.k / AT.fit, c = cityOfKey(AT.key);
     if (c) {
       if (r < 0.95) { el.hidden = false; el.innerHTML = 'Zoom out more to go back to the isles'; } else el.hidden = true;
@@ -11329,7 +11334,7 @@
     el.innerHTML = '<button type="button" class="at-btn" data-at="enter" data-slug="' + esc(mk.article_slug) + '">Open the ' + esc(CITIES[mk.article_slug].name) + ' map</button><span>or keep zooming</span>';
   }
   function checkCityZoom(sx, sy) {
-    if (AT.switching || TABLE) return;
+    if (AT.switching) return;
     var r = AT.k / AT.fit, c = cityOfKey(AT.key);
     if (c && r < EXIT_AT) return leaveCity();
     if (!c && r >= ENTER_AT) {
@@ -11348,7 +11353,7 @@
     }, 180);
   }
   function enterCity(slug, levelId) {
-    var c = CITIES[slug]; if (!c) return;
+    var c = CITIES[slug]; if (!c || !cityOpenable(slug)) return;
     var lv = levelOf(c, levelId), a = articleBySlug(slug);
     if (a && !(AT.sel && AT.sel.t === 'article' && AT.sel.slug === slug)) { if (AT.sel) AT.hist.push(AT.sel); AT.sel = { t: 'article', slug: slug }; }
     swapTo('city:' + slug + ':' + lv.id, { cx: 0.5, cy: 0.5, r: 1 });
@@ -11445,6 +11450,17 @@
       openSel({ t: 'measure' }, true);
       return;
     }
+    if (!pin) {
+      // Tapped open map: snap to the nearest location within reach and open it.
+      var near = nearestPinTap(sx, sy, e && e.pointerType === 'mouse' ? 24 : 34);
+      if (near) {
+        if (near.t === 'mark') return openSel({ t: 'mark', key: AT.key, n: near.n });
+        if (near.mk.article_slug && articleBySlug(near.mk.article_slug)) openSel({ t: 'article', slug: near.mk.article_slug, marker: near.mk.id });
+        else openSel({ t: 'marker', id: near.mk.id });
+        revealPin(near.mk.x, near.mk.y);
+        return;
+      }
+    }
     if (!pin) { if (window.innerWidth < 900 && AT.sel) { AT.sheet = 'peek'; var p0 = document.getElementById('at-panel'); if (p0) p0.setAttribute('data-sheet', 'peek'); } return; }
     var kind = pin.getAttribute('data-pin');
     if (kind === 'mark') return openSel({ t: 'mark', key: AT.key, n: num(pin.getAttribute('data-n'), 0) });
@@ -11456,6 +11472,30 @@
     if (mk.article_slug && articleBySlug(mk.article_slug)) openSel({ t: 'article', slug: mk.article_slug, marker: mk.id });
     else openSel({ t: 'marker', id: mk.id });
     revealPin(mk.x, mk.y);
+  }
+  // The nearest tappable location to a screen point (within maxPx), honouring what the current view shows.
+  function nearestPinTap(sx, sy, maxPx) {
+    var best = null, bd = maxPx, L = AT.layers, c = cityOfKey(AT.key);
+    if (c) {
+      if (TABLE || !L.marks) return null;
+      (c.level.marks || []).forEach(function (mk) {
+        var p = worldToScreen(mk.x, mk.y), d = Math.hypot(p.x - sx, p.y - sy);
+        if (d < bd) { bd = d; best = { t: 'mark', n: mk.n, mk: mk }; }
+      });
+      return best;
+    }
+    var m = islesMap(); if (!m) return null;
+    (markers[m.id] || []).forEach(function (mk) {
+      if (mk.kind === 'party' || mk.kind === 'character') return;
+      if (!TABLE) {
+        if (mk.kind === 'stop' && !L.towns) return;
+        if (mk.kind === 'ruin' && !L.ruins) return;
+        if (mk.kind === 'toll' && !L.tolls) return;
+      }
+      var p = worldToScreen(mk.x, mk.y), d = Math.hypot(p.x - sx, p.y - sy);
+      if (d < bd) { bd = d; best = { t: 'marker', mk: mk }; }
+    });
+    return best;
   }
   // If the panel now covers the pin that was tapped, slide the map so it shows.
   function revealPin(nx, ny) {
@@ -11560,7 +11600,7 @@
       var pin = pinForArticle(a), isCity = CITIES && CITIES[a.slug];
       html = '<div class="at-acts">' +
         (pin ? '<button type="button" class="btn small" data-at="fly" data-x="' + pin.x + '" data-y="' + pin.y + '">Show on map</button>' : '') +
-        (isCity && AT.key.indexOf('city:' + a.slug + ':') !== 0 ? '<button type="button" class="btn small primary" data-at="enter" data-slug="' + esc(a.slug) + '">Open city map</button>' : '') +
+        (isCity && cityOpenable(a.slug) && AT.key.indexOf('city:' + a.slug + ':') !== 0 ? '<button type="button" class="btn small primary" data-at="enter" data-slug="' + esc(a.slug) + '">Open city map</button>' : '') +
         (pin && pin.article_slug === a.slug && camp && travel[camp.id] ? '<button type="button" class="btn small" data-at="dest-here" data-id="' + esc(pin.id) + '">Travel here</button><button type="button" class="btn small" data-at="party-here" data-id="' + esc(pin.id) + '">Party is here</button>' : '') +
         '</div><div id="at-art"></div>';
       body.innerHTML = html;
