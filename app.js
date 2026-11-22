@@ -1637,11 +1637,38 @@
       cd.features.filter(function (f) { return f[0] === 1; }).map(function (f) { return '<div class="tbl-row"><div class="main"><b>' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div></div>';
   }
 
+  // Which abilities matter most, best first, for the builder's ability step.
+  var CLASS_ABIL_ORDER = {
+    Barbarian: ['str', 'con', 'dex', 'wis', 'cha', 'int'], Bard: ['cha', 'dex', 'con', 'wis', 'int', 'str'],
+    Cleric: ['wis', 'con', 'str', 'dex', 'cha', 'int'], Druid: ['wis', 'con', 'dex', 'int', 'cha', 'str'],
+    Fighter: ['str', 'con', 'dex', 'wis', 'cha', 'int'], Monk: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
+    Paladin: ['str', 'cha', 'con', 'wis', 'dex', 'int'], Ranger: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
+    Rogue: ['dex', 'con', 'wis', 'int', 'cha', 'str'], Sorcerer: ['cha', 'con', 'dex', 'wis', 'int', 'str'],
+    Warlock: ['cha', 'con', 'dex', 'wis', 'int', 'str'], Wizard: ['int', 'con', 'dex', 'wis', 'cha', 'str'],
+    Artificer: ['int', 'con', 'dex', 'str', 'wis', 'cha'], 'Blood Hunter': ['dex', 'int', 'con', 'str', 'wis', 'cha']
+  };
+  var CLASS_ABIL_NOTE = { Fighter: 'Put Dexterity first instead for an archer or finesse build.', Cleric: 'Heavy-armor domains like War and Life like Strength; the rest can take Dexterity.', Ranger: 'Dexterity and Wisdom are both needed, so split the top picks.' };
+  // Abilities a species' traits and build lean on, if any. Humans and anything homebrew get no hint.
+  var SPECIES_LEAN = { Dwarf: ['con'], Elf: ['dex'], Halfling: ['dex'], Dragonborn: ['str', 'cha'], Kobold: ['dex'], Lizardfolk: ['con', 'str'], Gnome: ['int'], 'Half-Elf': ['cha'], 'Half-Orc': ['str', 'con'], Orc: ['str', 'con'], Goliath: ['str', 'con'], Tiefling: ['cha'] };
+  function abilName(k) { return (ABILITIES.filter(function (a) { return a[0] === k; })[0] || [k, k])[1]; }
+  function fitTag(b, k) {
+    var o = CLASS_ABIL_ORDER[b.cls], i = o ? o.indexOf(k) : -1;
+    return i >= 0 && i < 3 ? ' <small class="fit-tag">' + ['best', '2nd best', '3rd best'][i] + '</small>' : '';
+  }
+  function abilFitHtml(b) {
+    var o = CLASS_ABIL_ORDER[b.cls];
+    if (!o) return '';
+    var lean = (SPECIES_LEAN[b.species] || []).filter(function (k) { return o.indexOf(k) >= 0 && o.indexOf(k) < 4; });
+    var html = '<div class="bd-fit"><b>Best fit for a ' + esc(b.cls) + '</b><ol class="fit-order">' + o.map(function (k) { return '<li>' + esc(abilName(k)) + '</li>'; }).join('') + '</ol>' +
+      '<p class="note">Biggest score to ' + esc(abilName(o[0])) + ', then ' + esc(abilName(o[1])) + ', and so on down the list. For the bonuses, +2 to ' + esc(abilName(o[0])) + ' and +1 to ' + esc(abilName(o[1])) + ' is the safe pick.' + (CLASS_ABIL_NOTE[b.cls] ? ' ' + esc(CLASS_ABIL_NOTE[b.cls]) : '') + '</p>';
+    if (b.species && lean.length) html += '<p class="note">A ' + esc(b.species) + ' leans on ' + lean.map(function (k) { return esc(abilName(k)); }).join(' and ') + ', which ' + (lean.indexOf(o[0]) >= 0 || lean.indexOf(o[1]) >= 0 ? 'lines up with what your class wants.' : 'is a good spot for the +1 if you don’t mind trading a little class power for it.') + '</p>';
+    return html + '</div>';
+  }
   function buildAbilitiesHtml(b, cd) {
     var html = '<p class="guide">Your six abilities. ' + esc(b.cls) + 's lean on <b>' + esc(cd.primary) + '</b>, so put a high score there. Then add +2 to one ability and +1 to another.</p>' +
       '<div class="seg wide" role="group" aria-label="How to set scores">' + [['array', 'Standard array'], ['pointbuy', 'Point buy'], ['roll', 'Rolled at the table'], ['manual', 'Enter my own']].map(function (m) {
         return '<button type="button" data-act="bd-method" data-val="' + m[0] + '" aria-pressed="' + (b.method === m[0]) + '">' + m[1] + '</button>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' + abilFitHtml(b);
     if (b.method === 'array' || b.method === 'roll') {
       var rolledAll = b.method === 'roll' && b.rolls.length === 6 && b.rolls.every(function (v) { return v >= 3 && v <= 18; });
       var vals = b.method === 'roll' ? (rolledAll ? b.rolls : []) : RULES.standardArray;
@@ -1652,7 +1679,7 @@
       if (vals.length) {
         var used = {}; ABILITIES.forEach(function (a) { if (num(b.assign[a[0]], 0)) used[b.assign[a[0]]] = a[0]; });
         html += '<div class="ab-assign">' + ABILITIES.map(function (a) {
-          return '<div class="field"><label for="as-' + a[0] + '">' + a[1] + '</label><select id="as-' + a[0] + '" data-assign="' + a[0] + '"><option value="">—</option>' + vals.map(function (v, i) {
+          return '<div class="field"><label for="as-' + a[0] + '">' + a[1] + fitTag(b, a[0]) + '</label><select id="as-' + a[0] + '" data-assign="' + a[0] + '"><option value="">—</option>' + vals.map(function (v, i) {
             var key = String(i + 1), taken = used[key] && used[key] !== a[0];
             return '<option value="' + key + '"' + (String(b.assign[a[0]]) === key ? ' selected' : '') + (taken ? ' disabled' : '') + '>' + v + '</option>';
           }).join('') + '</select></div>';
@@ -1661,10 +1688,10 @@
     } else if (b.method === 'pointbuy') {
       html += '<p class="note">' + (RULES.pointBuyBudget - pointsSpent(b)) + ' of ' + RULES.pointBuyBudget + ' points left. Scores run from 8 to 15.</p><div class="tbl">' + ABILITIES.map(function (a) {
         var v = num(b.pb[a[0]], 8);
-        return '<div class="tbl-row"><div class="main"><b>' + a[1] + '</b></div><button type="button" class="btn small" data-act="bd-pb" data-ab="' + a[0] + '" data-dir="-1"' + (v <= 8 ? ' disabled' : '') + ' aria-label="Lower ' + a[1] + '">−</button><span class="num" style="min-width:28px;text-align:center">' + v + '</span><button type="button" class="btn small" data-act="bd-pb" data-ab="' + a[0] + '" data-dir="1"' + (v >= 15 ? ' disabled' : '') + ' aria-label="Raise ' + a[1] + '">+</button></div>';
+        return '<div class="tbl-row"><div class="main"><b>' + a[1] + fitTag(b, a[0]) + '</b></div><button type="button" class="btn small" data-act="bd-pb" data-ab="' + a[0] + '" data-dir="-1"' + (v <= 8 ? ' disabled' : '') + ' aria-label="Lower ' + a[1] + '">−</button><span class="num" style="min-width:28px;text-align:center">' + v + '</span><button type="button" class="btn small" data-act="bd-pb" data-ab="' + a[0] + '" data-dir="1"' + (v >= 15 ? ' disabled' : '') + ' aria-label="Raise ' + a[1] + '">+</button></div>';
       }).join('') + '</div>';
     } else {
-      html += '<div class="ab-assign">' + ABILITIES.map(function (a) { return '<div class="field"><label for="mn-' + a[0] + '">' + a[1] + '</label><input type="number" id="mn-' + a[0] + '" data-manual="' + a[0] + '" min="3" max="20" value="' + num(b.manual[a[0]], 10) + '" inputmode="numeric"></div>'; }).join('') + '</div>';
+      html += '<div class="ab-assign">' + ABILITIES.map(function (a) { return '<div class="field"><label for="mn-' + a[0] + '">' + a[1] + fitTag(b, a[0]) + '</label><input type="number" id="mn-' + a[0] + '" data-manual="' + a[0] + '" min="3" max="20" value="' + num(b.manual[a[0]], 10) + '" inputmode="numeric"></div>'; }).join('') + '</div>';
     }
     var opt = function (cur, other) { return '<option value="">—</option>' + ABILITIES.map(function (a) { return '<option value="' + a[0] + '"' + (cur === a[0] ? ' selected' : '') + (other === a[0] ? ' disabled' : '') + '>' + a[1] + '</option>'; }).join(''); };
     html += '<div class="two"><div class="field"><label for="bd-p2">+2 to</label><select id="bd-p2" data-build="plus2">' + opt(b.plus2, b.plus1) + '</select></div><div class="field"><label for="bd-p1">+1 to</label><select id="bd-p1" data-build="plus1">' + opt(b.plus1, b.plus2) + '</select></div></div>';

@@ -1408,3 +1408,10 @@ body:has(.m-sheet) { overflow: hidden; }
 .char-line { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--soft); }
 .char-line .row { flex: 1; min-width: 0; border-bottom: 0; }
 .char-line .btn { flex: none; }
+.bd-fit { margin: 10px 0 14px; padding: 10px 12px; border: 1px solid var(--soft); border-radius: 10px; }
+.bd-fit > b { font-family: var(--ui); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.fit-order { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; padding: 0; list-style: none; counter-reset: fit; }
+.fit-order li { counter-increment: fit; padding: 3px 9px; border: 1px solid var(--soft); border-radius: 999px; font-size: 14px; }
+.fit-order li::before { content: counter(fit) ". "; color: var(--muted); }
+.fit-order li:nth-child(-n+2) { font-weight: 600; border-color: currentColor; }
+.fit-tag { font-family: var(--ui); font-size: 11px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
