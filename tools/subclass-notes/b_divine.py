@@ -184,10 +184,10 @@ S["Warlock"] = {
  "The Bladebound": ("A pact with a sentient weapon from the shadows.", [
   [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
   [1, "Bladebound Curse", "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."],
-  [1, "Hex Warrior", "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."],
-  [6, "Accursed Specter", "Raise a slain humanoid as a specter that serves you until your next long rest."],
-  [10, "Armor of Hexes", "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."],
-  [14, "Master of Hexes", "When your cursed target dies, move the curse to another creature."]]),
+  [1, "Cursed Warrior", "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."],
+  [6, "Cursed Spirit", "Raise a slain humanoid as a specter that serves you until your next long rest."],
+  [10, "Armor of Curses", "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."],
+  [14, "Master of Curses", "When your cursed target dies, move the curse to another creature."]]),
  "The Fathomless": ("A pact with a power of the deep sea. In Avarenth, Thorum and Lull grant it.", [
   [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
   [1, "Tentacle of the Deeps", "Summon a spectral tentacle that lashes for cold damage and slows, as a bonus action. Uses per long rest equal to proficiency bonus."],
@@ -204,8 +204,8 @@ S["Warlock"] = {
   [14, "Limited Wish", "Once per long-ish rest (1d4 long rests), cast any 6th-level or lower spell with a casting time of one action, without needing a tome. Your patron will remember the favor."]]),
  "The Deathless": ("A pact with a deathless being.", [
   [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
-  [1, "Form of Dread", "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."],
-  [6, "Grave Touched", "No need to eat, drink or breathe; once per turn, an attack can deal necrotic and extra damage in your dread form."],
-  [10, "Necrotic Husk", "Resistance (immunity in dread form) to necrotic; once per long rest, burst back to 1 HP when you'd drop."],
-  [14, "Spirit Projection", "Project your spirit for an hour: fly, pass through objects and resist physical damage."]]),
+  [1, "Shape of Dread", "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."],
+  [6, "Grave Touch", "No need to eat, drink or breathe; once per turn, an attack can deal necrotic and extra damage in your dread form."],
+  [10, "Necrotic Shell", "Resistance (immunity in dread form) to necrotic; once per long rest, burst back to 1 HP when you'd drop."],
+  [14, "Spirit Sending", "Project your spirit for an hour: fly, pass through objects and resist physical damage."]]),
 }

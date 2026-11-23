@@ -382,33 +382,33 @@
       "features": [
         [
           3,
-          "Manifest Echo",
+          "Call the Echo",
           "Summon a translucent echo (AC 14 + proficiency, 1 HP). You can attack from its space, swap places with it, and it makes opportunity attacks."
         ],
         [
           3,
-          "Unleash Incarnation",
+          "Unleash the Twin",
           "When you take the Attack action, make one extra attack through your echo. Uses equal to Con modifier per long rest."
         ],
         [
           7,
-          "Echo Avatar",
+          "Twin Avatar",
           "See and hear through your echo, and send it up to 1,000 ft away."
         ],
         [
           10,
-          "Shadow Martyr",
+          "Shadow Shield",
           "Your echo throws itself in front of an attack meant for an ally, once per short rest."
         ],
         [
           15,
-          "Reclaim Potential",
+          "Reclaim the Echo",
           "When your echo is destroyed, gain temporary HP a few times per long rest."
         ],
         [
           18,
-          "Legion of One",
-          "Two echoes at once, and regain an Unleash Incarnation use when you roll initiative with none left."
+          "Twin Legion",
+          "Two echoes at once, and regain an Unleash the Twin use when you roll initiative with none left."
         ]
       ]
     },
@@ -417,27 +417,27 @@
       "features": [
         [
           3,
-          "Psionic Power",
+          "Mind Reserve",
           "Psionic Energy dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."
         ],
         [
           7,
-          "Telekinetic Adept",
-          "Psi-powered leap (fly for a turn) and Telekinetic Thrust (push or knock prone with your force strikes)."
+          "Mind Pusher",
+          "Psi-powered leap (fly for a turn) and Mind Thrust (push or knock prone with your force strikes)."
         ],
         [
           10,
-          "Guarded Mind",
+          "Shielded Mind",
           "Resistance to psychic damage; spend a die to end charm or fear on yourself."
         ],
         [
           15,
-          "Bulwark of Force",
+          "Force Bulwark",
           "Bonus action: give a few creatures half cover for a minute, once per long rest (or spend a die)."
         ],
         [
           18,
-          "Telekinetic Master",
+          "Master Pusher",
           "Cast Telekinesis without spending mana once per long rest (or spend a die), and attack as a bonus action while concentrating on it."
         ]
       ]
@@ -452,33 +452,33 @@
         ],
         [
           3,
-          "Rune Carver",
+          "Rune Scribe",
           "Know two runes (cloud, fire, frost, stone, hill, storm) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."
         ],
         [
           3,
-          "Giant's Might",
+          "Colossal Might",
           "Bonus action: become Large for a minute, with advantage on Strength checks and saves and an extra 1d6 damage once per turn. Uses per long rest equal to proficiency bonus."
         ],
         [
           7,
-          "Runic Shield",
+          "Rune Shield",
           "Reaction: force a creature to reroll an attack against an ally, a few times per long rest."
         ],
         [
           10,
-          "Great Stature",
-          "Grow a little taller permanently; Giant's Might damage rises to 1d8."
+          "Grand Stature",
+          "Grow a little taller permanently; Colossal Might damage rises to 1d8."
         ],
         [
           15,
-          "Master of Runes",
+          "Rune Master",
           "Use each rune's power twice per short rest."
         ],
         [
           18,
-          "Runic Juggernaut",
-          "Giant's Might makes you up to Huge, with 1d10 extra damage and more reach."
+          "Rune Juggernaut",
+          "Colossal Might makes you up to Huge, with 1d10 extra damage and more reach."
         ]
       ]
     }
@@ -711,22 +711,22 @@
         ],
         [
           3,
-          "Assassinate",
+          "Silent Kill",
           "Your trade requires specialist tools for disguise and poison. Advantage against creatures that haven't acted yet in combat, and any hit on a surprised creature is a critical hit."
         ],
         [
           9,
-          "Infiltration Expertise",
+          "Infiltrator's Skill",
           "You strike before your target can react and leave nothing behind. Spend a week and some gold to build a solid false identity."
         ],
         [
           13,
-          "Impostor",
+          "Mimic",
           "You are a master of the false face, and you can wear another life like a cloak. Copy someone's speech, writing and mannerisms after studying them for three hours."
         ],
         [
           17,
-          "Death Strike",
+          "Deathblow",
           "A surprised target has no time to save itself, and your blow lands cleanly. Hitting a surprised creature forces a Con save or doubles the damage."
         ]
       ]
@@ -741,22 +741,22 @@
         ],
         [
           3,
-          "Mage Hand Legerdemain",
+          "Hand Trickery",
           "Your Mage Hand is invisible and can pick locks, plant or lift objects at range."
         ],
         [
           9,
-          "Magical Ambush",
+          "Spell Ambush",
           "If you're hidden when you cast, the target has disadvantage on its save."
         ],
         [
           13,
-          "Versatile Trickster",
+          "Versatile Deceiver",
           "Bonus action: your mage hand distracts a creature, giving you advantage on attacks against it."
         ],
         [
           17,
-          "Spell Thief",
+          "Spell Stealer",
           "Reaction when a spell targets you: force a save to negate it and steal the spell for 8 hours, once per long rest."
         ]
       ]
@@ -766,32 +766,32 @@
       "features": [
         [
           3,
-          "Ear for Deceit",
+          "Ear for Lies",
           "Insight rolls to spot lies treat a die below 8 as an 8."
         ],
         [
           3,
-          "Eye for Detail",
+          "Sharp Eye",
           "Bonus action: Perception to spot hidden things or Investigation to find clues."
         ],
         [
           3,
-          "Insightful Fighting",
+          "Insightful Strike",
           "Bonus action: Insight against a target's Deception to gain Sneak Attack on it without advantage for a minute."
         ],
         [
           9,
-          "Steady Eye",
+          "Steadied Gaze",
           "Advantage on Perception and Investigation if you move half speed or less."
         ],
         [
           13,
-          "Unerring Eye",
+          "Unfailing Gaze",
           "Sense illusions, shapechangers and magic deception nearby, a few times per long rest."
         ],
         [
           17,
-          "Eye for Weakness",
+          "Eye for Flaws",
           "Sneak Attack deals an extra 3d6 against a target you've read with Insightful Fighting."
         ]
       ]
@@ -801,27 +801,27 @@
       "features": [
         [
           3,
-          "Master of Intrigue",
+          "Master of Schemes",
           "You learn the arts of intrigue, and a few tools of the trade help you deceive. A gaming set, a disguise kit, two languages, and the knack of mimicking accents."
         ],
         [
           3,
-          "Master of Tactics",
+          "Master of Plans",
           "You can aid your allies from the edge of a fight. Help as a bonus action, from up to 30 ft away."
         ],
         [
           9,
-          "Insightful Manipulator",
+          "Keen Manipulator",
           "You read others and learn what makes them tick. Study a creature for a minute to learn how it compares to you in mental abilities and other traits."
         ],
         [
           13,
-          "Misdirection",
+          "Misdirect",
           "You turn an attack aimed at you toward a creature that stands in your shadow. Reaction: redirect an attack aimed at you to a creature giving you cover."
         ],
         [
           17,
-          "Soul of Deceit",
+          "Heart of Deceit",
           "Your mind is a fortress against prying eyes, and your lies are hard to see through. Your thoughts can't be read; you can feed false thoughts, and magic can't force the truth out of you."
         ]
       ]
@@ -831,27 +831,27 @@
       "features": [
         [
           3,
-          "Skirmisher",
+          "Skirmish Step",
           "You move like a shadow through the wild, always ready to slip away. Reaction: move half your speed when an enemy ends its turn next to you, without provoking."
         ],
         [
           3,
-          "Survivalist",
+          "Wilderness Survivor",
           "You are at home in the wild and know how to live off the land. Proficiency and expertise in Nature and Survival."
         ],
         [
           9,
-          "Superior Mobility",
+          "Greater Speed",
           "Your steps are quick and sure, and you cover ground faster than most. +10 ft speed (walk, climb, swim)."
         ],
         [
           13,
-          "Ambush Master",
+          "Ambush Expert",
           "You are hard to spot in the first moments of battle, and you make the most of it. Advantage on initiative, and your first target in the first round is easier for everyone to hit."
         ],
         [
           17,
-          "Sudden Strike",
+          "Surprise Strike",
           "You can strike again the moment your first blow lands. A bonus action attack after the Attack action, which can Sneak Attack a different target."
         ]
       ]
@@ -861,27 +861,27 @@
       "features": [
         [
           3,
-          "Fancy Footwork",
+          "Dancing Feet",
           "A creature you attack in melee can't make opportunity attacks against you that turn."
         ],
         [
           3,
-          "Rakish Audacity",
+          "Rakish Nerve",
           "Add Charisma to initiative, and Sneak Attack a lone enemy in a one-on-one without advantage."
         ],
         [
           9,
-          "Panache",
+          "Flourish",
           "Persuasion against Insight: an enemy fixates on you (disadvantage on others) or a non-hostile creature is charmed."
         ],
         [
           13,
-          "Elegant Maneuver",
+          "Graceful Maneuver",
           "Bonus action: advantage on your next Acrobatics or Athletics check this turn."
         ],
         [
           17,
-          "Master Duelist",
+          "Master Blade",
           "Reroll a missed attack with advantage, once per short rest."
         ]
       ]
@@ -891,27 +891,27 @@
       "features": [
         [
           3,
-          "Whispers of the Dead",
+          "Murmurs of the Dead",
           "After a rest, gain proficiency in a skill or tool of your choice."
         ],
         [
           3,
-          "Wails from the Grave",
+          "Keening from the Grave",
           "After Sneak Attack, deal half the Sneak Attack dice as necrotic to another creature nearby. Uses per long rest equal to proficiency bonus."
         ],
         [
           9,
-          "Tokens of the Departed",
+          "Tokens of the Dead",
           "Catch a soul trinket when someone dies nearby; use them for advantage on saves, extra wails, or to ask a spirit a question."
         ],
         [
           13,
-          "Ghost Walk",
+          "Spectral Walk",
           "Become spectral for 10 minutes: fly slowly, pass through objects, attackers have disadvantage."
         ],
         [
           17,
-          "Death's Friend",
+          "Death's Companion",
           "Wails from the Grave hits both targets with necrotic, and you always find a token after a rest if you have none."
         ]
       ]
@@ -921,27 +921,27 @@
       "features": [
         [
           3,
-          "Psionic Power",
+          "Mind Power",
           "Psionic Energy dice (d6, rising with level); spend them to boost failed checks or speak telepathically."
         ],
         [
           3,
-          "Psychic Blades",
+          "Mind Blades",
           "Manifest blades of psychic energy to make melee or thrown attacks, with a bonus action second blade."
         ],
         [
           9,
-          "Soul Blades",
+          "Mind Edge",
           "Spend a die to turn a miss into a hit, or teleport with a thrown blade."
         ],
         [
           13,
-          "Psychic Veil",
+          "Mind Veil",
           "Become invisible for an hour, once per long rest (or spend a die)."
         ],
         [
           17,
-          "Rend Mind",
+          "Shatter Mind",
           "A Sneak Attack with your blades can stun the target (Wis save), once per long rest (or spend dice)."
         ]
       ]
@@ -1817,22 +1817,22 @@
         ],
         [
           1,
-          "Hex Warrior",
+          "Cursed Warrior",
           "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."
         ],
         [
           6,
-          "Accursed Specter",
+          "Cursed Spirit",
           "Raise a slain humanoid as a specter that serves you until your next long rest."
         ],
         [
           10,
-          "Armor of Hexes",
+          "Armor of Curses",
           "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."
         ],
         [
           14,
-          "Master of Hexes",
+          "Master of Curses",
           "When your cursed target dies, move the curse to another creature."
         ]
       ]
@@ -1917,22 +1917,22 @@
         ],
         [
           1,
-          "Form of Dread",
+          "Shape of Dread",
           "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."
         ],
         [
           6,
-          "Grave Touched",
+          "Grave Touch",
           "No need to eat, drink or breathe; once per turn, an attack can deal necrotic and extra damage in your dread form."
         ],
         [
           10,
-          "Necrotic Husk",
+          "Necrotic Shell",
           "Resistance (immunity in dread form) to necrotic; once per long rest, burst back to 1 HP when you'd drop."
         ],
         [
           14,
-          "Spirit Projection",
+          "Spirit Sending",
           "Project your spirit for an hour: fly, pass through objects and resist physical damage."
         ]
       ]
@@ -2318,23 +2318,23 @@
       "features": [
         [
           3,
-          "Ranger's Companion",
-          "Ranger's Companion: You bond with a beast that fights beside you and obeys your commands. You may choose a primal beast of land, sea or sky instead, keeping the bond you form in the wild."
+          "Beast Companion",
+          "Beast Companion: You bond with a beast that fights beside you and obeys your commands. You may choose a primal beast of land, sea or sky instead, keeping the bond you form in the wild."
         ],
         [
           7,
-          "Exceptional Training",
-          "Exceptional Training: Your companion learns to fight as a partner. As a bonus action, it can Dash, Disengage or Help, and its attacks count as magical."
+          "Beast Training",
+          "Beast Training: Your companion learns to fight as a partner. As a bonus action, it can Dash, Disengage or Help, and its attacks count as magical."
         ],
         [
           11,
-          "Bestial Fury",
-          "Bestial Fury: Your companion's wild strength takes over in a fight. It can attack twice whenever it takes the Attack action."
+          "Savage Fury",
+          "Savage Fury: Your companion's wild strength takes over in a fight. It can attack twice whenever it takes the Attack action."
         ],
         [
           15,
-          "Share Spells",
-          "Share Spells: Your companion shares the magic you cast on yourself. Spells you cast on yourself also affect the companion while it is within range of you."
+          "Share Magic",
+          "Share Magic: Your companion shares the magic you cast on yourself. Spells you cast on yourself also affect the companion while it is within range of you."
         ]
       ]
     },
@@ -2348,27 +2348,27 @@
         ],
         [
           3,
-          "Dread Ambusher",
+          "Shadow Ambusher",
           "Add Wisdom to initiative, and on your first turn move faster and make an extra attack with extra damage."
         ],
         [
           3,
-          "Umbral Sight",
+          "Shadow Sight",
           "Darkvision, and creatures relying on darkvision can't see you in darkness."
         ],
         [
           7,
-          "Iron Mind",
+          "Steel Mind",
           "Proficiency in Wisdom saves (or another save)."
         ],
         [
           11,
-          "Stalker's Flurry",
+          "Stalker's Onslaught",
           "Once per turn, when you miss, make another attack."
         ],
         [
           15,
-          "Shadowy Dodge",
+          "Shadow Dodge",
           "Reaction: impose disadvantage on an attack against you."
         ]
       ]
@@ -2383,27 +2383,27 @@
         ],
         [
           3,
-          "Detect Portal",
+          "Portal Sense",
           "Sense the nearest planar portal within a mile, once per short rest."
         ],
         [
           3,
-          "Planar Warrior",
+          "Otherworld Warrior",
           "Bonus action: your next hit on a creature deals force damage and an extra 1d8 (2d8 at 11th)."
         ],
         [
           7,
-          "Ethereal Step",
+          "Phase Step",
           "Step into the Ethereal Plane for a turn, once per short rest."
         ],
         [
           11,
-          "Distant Strike",
+          "Far Strike",
           "Teleport 10 ft before each attack, and attack a third target if you hit two."
         ],
         [
           15,
-          "Spectral Defense",
+          "Ghostly Defense",
           "Reaction: gain resistance to an attack's damage."
         ]
       ]
@@ -2418,27 +2418,27 @@
         ],
         [
           3,
-          "Hunter's Sense",
+          "Monster Sense",
           "Learn a creature's immunities, resistances and vulnerabilities, Wisdom-mod times per long rest."
         ],
         [
           3,
-          "Slayer's Prey",
+          "Slayer's Mark",
           "Mark a creature: your first hit on it each turn deals an extra 1d6."
         ],
         [
           7,
-          "Supernatural Defense",
+          "Unnatural Defense",
           "Add a d6 to saves and grapple escapes against your prey."
         ],
         [
           11,
-          "Magic-User's Nemesis",
+          "Caster's Nemesis",
           "Reaction: stop a creature casting a spell or teleporting (Wis save), once per short rest."
         ],
         [
           15,
-          "Slayer's Counter",
+          "Slayer's Riposte",
           "Reaction: when your prey forces a save, attack it; a hit makes you succeed."
         ]
       ]
@@ -2453,27 +2453,27 @@
         ],
         [
           3,
-          "Dreadful Strikes",
+          "Dread Strikes",
           "Once per turn, a weapon hit deals an extra 1d4 psychic (1d6 at 11th)."
         ],
         [
           3,
-          "Otherworldly Glamour",
+          "Fey Glamour",
           "Add Wisdom to Charisma checks, and gain one social skill."
         ],
         [
           7,
-          "Beguiling Twist",
+          "Charming Twist",
           "Advantage against charm and fear, and redirect those effects at others."
         ],
         [
           11,
-          "Fey Reinforcements",
+          "Fey Allies",
           "Cast Summon Fey without spending mana once per long rest, without concentration if you choose a shorter duration."
         ],
         [
           15,
-          "Misty Wanderer",
+          "Misty Walker",
           "Cast Misty Step without spending mana a few times, and take an ally with you."
         ]
       ]
@@ -2488,22 +2488,22 @@
         ],
         [
           3,
-          "Gathered Swarm",
+          "Swarm Gathering",
           "Once per turn on a hit, your swarm deals 1d6 extra piercing, pushes the target, or moves you."
         ],
         [
           7,
-          "Writhing Tide",
+          "Churning Tide",
           "Fly slowly on your swarm for a minute, a few times per long rest."
         ],
         [
           11,
-          "Mighty Swarm",
+          "Swarm Might",
           "Swarm damage grows to 1d8, and its push knocks prone or its move gives you half cover."
         ],
         [
           15,
-          "Swarming Dispersal",
+          "Scattering Swarm",
           "Reaction: gain resistance and teleport 30 ft as you scatter into the swarm."
         ]
       ]
@@ -2513,22 +2513,22 @@
       "features": [
         [
           3,
-          "Draconic Gift",
+          "Dragon Gift",
           "Your bond with dragons teaches you their tongue and a few of their tricks. Learn Thaumaturgy and Draconic."
         ],
         [
           3,
-          "Drake Companion",
+          "Drake Ally",
           "A young drake hatches for you and grows at your side. Summon a drake that fights beside you and grows with you."
         ],
         [
           7,
-          "Bond of Fang and Scale",
+          "Bond of Claw and Scale",
           "As your drake grows, you ride it into the sky and share its hide. Your drake grows, can carry you while flying, and you gain resistance to its damage type."
         ],
         [
           11,
-          "Drake's Breath",
+          "Drake Breath",
           "Your drake can breathe a cone of its own element on your command. Breathe a cone of your drake's element (or command the drake to), once per long rest (or spend 18 mana)."
         ],
         [
@@ -3007,27 +3007,27 @@
       "features": [
         [
           2,
-          "Chronal Shift",
+          "Time Shift",
           "You bend time to suit your will, and the past and future are your playground. Reaction: force a creature to reroll an attack, check or save, twice per long rest."
         ],
         [
           2,
-          "Temporal Awareness",
+          "Time Sense",
           "You sense the flow of time around you and react faster than others. Add Intelligence to initiative."
         ],
         [
           6,
-          "Momentary Stasis",
+          "Brief Stasis",
           "You can freeze a foe in the flow of time for a moment. Freeze a Large or smaller creature in time (Con save), a few times per long rest."
         ],
         [
           10,
-          "Arcane Abeyance",
+          "Arcane Pause",
           "You can store a spell in a bead for another to use later. Store a 4th-level or lower spell in a bead someone else can use, once per short rest."
         ],
         [
           14,
-          "Convergent Future",
+          "Converging Future",
           "You can see the future before it happens and choose which path to take. Decide whether a roll you can see succeeds or fails, at the cost of a level of exhaustion."
         ]
       ]
@@ -3037,23 +3037,23 @@
       "features": [
         [
           2,
-          "Adjust Density",
-          "Adjust Density: You bend the weight of a creature. As an action, make a creature heavier or lighter for one minute, changing how far it can move and how hard it hits the ground."
+          "Shift Weight",
+          "Shift Weight: You bend the weight of a creature. As an action, make a creature heavier or lighter for one minute, changing how far it can move and how hard it hits the ground."
         ],
         [
           6,
-          "Gravity Well",
-          "Gravity Well: Your spells pull their targets along with them. When a spell you cast hits or affects a creature, you can move that creature up to 5 ft."
+          "Weight Well",
+          "Weight Well: Your spells pull their targets along with them. When a spell you cast hits or affects a creature, you can move that creature up to 5 ft."
         ],
         [
           10,
-          "Violent Attraction",
-          "Violent Attraction: You can turn gravity into force. Reaction: add extra damage to an attack, or to falling damage, a few times per long rest."
+          "Forceful Pull",
+          "Forceful Pull: You can turn gravity into force. Reaction: add extra damage to an attack, or to falling damage, a few times per long rest."
         ],
         [
           14,
-          "Event Horizon",
-          "Event Horizon: You create a field that drags enemies toward you and holds them in place. Once per long rest, or by spending 18 mana, a creature in the field must move toward you and cannot move on its turn."
+          "Crushing Field",
+          "Crushing Field: You create a field that drags enemies toward you and holds them in place. Once per long rest, or by spending 18 mana, a creature in the field must move toward you and cannot move on its turn."
         ]
       ]
     },
@@ -3062,27 +3062,27 @@
       "features": [
         [
           2,
-          "Wizardly Quill",
+          "Inkwright's Quill",
           "Your spellbook is more than a book; it is a magical quill and an ink that writes itself. A magical quill that copies spells quickly and cheaply."
         ],
         [
           2,
-          "Awakened Spellbook",
+          "Living Spellbook",
           "Your spellbook awakens, and its pages answer your call. Swap a spell's damage type for another from your book, and cast rituals faster."
         ],
         [
           6,
-          "Manifest Mind",
+          "Inscribed Mind",
           "Your spellbook takes a shape of its own and can cast spells from where it rests. Make your book's spirit appear and cast spells from its location."
         ],
         [
           10,
-          "Master Scrivener",
+          "Master Inscriber",
           "You write scrolls of spells you know, and your hand strengthens each one you make. Make a magic scroll of a spell you know after a long rest, cast as one level higher."
         ],
         [
           14,
-          "One with the Word",
+          "Word-Bound",
           "You fuse yourself to your book's words, and you can turn its power to your defense. Advantage on Arcana checks, and let your book take damage for you by erasing spells temporarily."
         ]
       ]
