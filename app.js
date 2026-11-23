@@ -1586,6 +1586,33 @@
     }).join('') + '</div>';
   }
 
+  /* Ready-made starting characters for new players. Assign values are standard-array slots (1 = 15 ... 6 = 8).
+     Spells and gear are left for the player to pick in their steps. */
+  var PREMADES = [
+    { title: 'Kael Vorn, Soldier of the Isles', pitch: 'Human Fighter. Tough, simple to play, hits hard. Best first character.',
+      build: { name: 'Kael Vorn', cls: 'Fighter', species: 'Human', bg: 'Soldier', assign: { str: 1, con: 2, dex: 3, wis: 4, cha: 5, int: 6 }, plus2: 'str', plus1: 'con', skills: ['Perception', 'Survival'] } },
+    { title: 'Brother Halden, Voice of Akoron', pitch: 'Dwarf Cleric of the Life Domain. Heals the party and stands in the front line.',
+      build: { name: 'Brother Halden', cls: 'Cleric', species: 'Dwarf', bg: 'Acolyte', patron: 'Akoron', sub: 'Life Domain', assign: { wis: 1, con: 2, str: 3, cha: 4, dex: 5, int: 6 }, plus2: 'wis', plus1: 'con', skills: ['Medicine', 'Persuasion'] } },
+    { title: 'Pip Underbough, Quayside Cutpurse', pitch: 'Halfling Rogue. Sneaky, quick, and lands big hits from the shadows.',
+      build: { name: 'Pip Underbough', cls: 'Rogue', species: 'Halfling', bg: 'Criminal', assign: { dex: 1, con: 2, wis: 3, int: 4, cha: 5, str: 6 }, plus2: 'dex', plus1: 'con', skills: ['Acrobatics', 'Insight', 'Investigation', 'Sleight of Hand'] } },
+    { title: 'Seris Valewind, Scholar of Korinth', pitch: 'Elf Wizard. Fragile but the most spells and the most options. For players who like to plan.',
+      build: { name: 'Seris Valewind', cls: 'Wizard', species: 'Elf', bg: 'Sage', assign: { int: 1, con: 2, dex: 3, wis: 4, cha: 5, str: 6 }, plus2: 'int', plus1: 'con', skills: ['Investigation', 'Insight'] } }
+  ];
+  function newcomerHtml() {
+    var open = !characters.length;
+    return '<details class="group-box bd-tut"' + (open ? ' open' : '') + '><summary><b>New to Avarenth? Start here</b></summary>' +
+      '<p class="note">Building a character takes about 15 minutes. Go step by step; every choice can be changed until you save.</p><ol class="prose" style="margin:0 0 8px;padding-left:20px">' +
+      '<li><b>Class</b> is what you do: fight, heal, sneak or cast. If unsure, pick Fighter.</li>' +
+      '<li><b>Species</b> is your people, with a few traits. Tap any of them to read about it.</li>' +
+      '<li><b>Background</b> is your life before adventuring. It gives skills, a tool and a feature.</li>' +
+      '<li><b>Abilities</b> are your six scores. Put the 15 in your class’s main ability.</li>' +
+      '<li><b>Skills, spells and gear</b> come last. The app tells you how many to pick.</li></ol>' +
+      '<p class="note"><b>Magic works differently here.</b> There are no spell slots. Casters have a mana pool, and every spell shows its mana cost. Spend mana to cast, and get it back on a long rest. Bigger spells cost more.</p>' +
+      '<p class="note">Anything underlined or in a box can be tapped for more. Ask your DM about anything else.</p>' +
+      '<h3 class="act-h" style="margin-top:12px">Or start from a ready-made character</h3><div class="list">' +
+      PREMADES.map(function (p, i) { return '<button type="button" class="row" data-act="bd-premade" data-i="' + i + '" style="text-align:left;width:100%"><span class="row-main"><b>' + esc(p.title) + '</b><span>' + esc(p.pitch) + '</span></span></button>'; }).join('') +
+      '</div></details>';
+  }
   function renderBuild() {
     var b = ui.build || (ui.build = newBuild());
     if (spells === null && b.step >= 6) { loadSpells().then(render).catch(function (e) { fail(e); }); }
@@ -1598,7 +1625,7 @@
       }).join('') + '</ol></nav><div class="bd-grid"><div class="bd-main"><h2 class="bd-h">' + esc(step === 'Review' ? 'Review your character' : step) + '</h2>';
     var cd = RULES.classes[b.cls];
     if (step === 'Name') {
-      html += '<p class="guide">Start with who they are. You can change the name any time.</p>' +
+      html += newcomerHtml() + '<p class="guide">Start with who they are. You can change the name any time.</p>' +
         '<div class="field"><label for="bd-name">Character name</label><input type="text" id="bd-name" data-build="name" maxlength="80" value="' + esc(b.name) + '" placeholder="e.g. Kael Vorn"></div>' +
         '<div class="field"><label for="bd-camp">Campaign</label><select id="bd-camp" data-build="campaign">' + campaignOptions(b.campaign, true, 'No campaign yet') + '</select></div>';
     } else if (step === 'Class') {
@@ -10927,6 +10954,12 @@
         if (berr) return toast(berr);
         ui.build.step = Math.min(buildSteps(ui.build).length - 1, ui.build.step + 1); render(); window.scrollTo(0, 0); break;
       case 'bd-back': ui.build.step = Math.max(0, ui.build.step - 1); render(); window.scrollTo(0, 0); break;
+      case 'bd-premade':
+        var pm = PREMADES[num(el.getAttribute('data-i'), -1)]; if (!pm) break;
+        var keep = { name: ui.build.name, campaign: ui.build.campaign };
+        ui.build = Object.assign(newBuild(), JSON.parse(JSON.stringify(pm.build)));
+        if (keep.name) ui.build.name = keep.name; ui.build.campaign = keep.campaign;
+        toast(pm.title + ' loaded. Check each step, then pick spells and gear.'); render(); break;
       case 'bd-goto':
         var gi = num(el.getAttribute('data-i'), 0);
         if (gi > ui.build.step) { var gerr = buildStepError(ui.build); if (gerr) return toast(gerr); gi = ui.build.step + 1; }
