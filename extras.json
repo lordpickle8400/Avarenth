@@ -731,7 +731,7 @@
     {
       "name": "Terrible Glare",
       "category": "General",
-      "prereq": "Level 4+, Scalekin",
+      "prereq": "Level 4+, Drakonid",
       "book": "Avarenth",
       "text": [
         [
@@ -744,7 +744,7 @@
     {
       "name": "Scaled Hide",
       "category": "General",
-      "prereq": "Level 4+, Scalekin",
+      "prereq": "Level 4+, Drakonid",
       "book": "Avarenth",
       "text": [
         [

@@ -1747,7 +1747,7 @@
   };
   var CLASS_ABIL_NOTE = { Fighter: 'Put Dexterity first instead for an archer or finesse build.', Cleric: 'Heavy-armor domains like War and Life like Strength; the rest can take Dexterity.', Ranger: 'Dexterity and Wisdom are both needed, so split the top picks.' };
   // Abilities a species' traits and build lean on, if any. Humans and anything homebrew get no hint.
-  var SPECIES_LEAN = { Dwarf: ['con'], Elf: ['dex'], Halfling: ['dex'], Scalekin: ['str', 'cha'], Kobold: ['dex'], Lizardfolk: ['con', 'str'], Gnome: ['int'], 'Half-Elf': ['cha'], 'Half-Orc': ['str', 'con'], Orc: ['str', 'con'], Goliath: ['str', 'con'], Infernite: ['cha'] };
+  var SPECIES_LEAN = { Dwarf: ['con'], Elf: ['dex'], Halfling: ['dex'], Drakonid: ['str', 'cha'], Kobold: ['dex'], Lizardfolk: ['con', 'str'], Gnome: ['int'], 'Half-Elf': ['cha'], 'Half-Orc': ['str', 'con'], Orc: ['str', 'con'], Goliath: ['str', 'con'], Infernite: ['cha'] };
   function abilName(k) { return (ABILITIES.filter(function (a) { return a[0] === k; })[0] || [k, k])[1]; }
   function fitTag(b, k) {
     var o = CLASS_ABIL_ORDER[b.cls], i = o ? o.indexOf(k) : -1;
@@ -2846,7 +2846,7 @@
   /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
   var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep ?gnome/i, 'Deepgnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
-    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Mossborn'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Scalekin'], [/\bkobold/i, 'Kobold'],
+    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Mossborn'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Drakonid'], [/\bkobold/i, 'Kobold'],
     [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Shellback'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
     [/caspian|crisfey|golden coast|akorsrest|south/i, 'south'], [/vor'?nak|strait|straitwatch|mournfell/i, 'mournfells'], [/marloo|wildreach|hermitsbay|west/i, 'west'], [/\bsea\b|island|coralyn|ship|brinewolf|wreckholm/i, 'sea']];
@@ -2894,7 +2894,7 @@
   function renderNpcs() {
     if (!isDM()) { location.replace('#/map'); return; }
     var npc = ui.npc, dk = ui.npcDistrict || 'capital', D = NPCD.districts;
-    var html = '<div class="page narrow">' + dmTabs('npcs') + '' + helpNote('npcs', 'Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more scalekin and kobolds, the Greywall Holds mostly dwarves.') + '' +
+    var html = '<div class="page narrow">' + dmTabs('npcs') + '' + helpNote('npcs', 'Pick a district, then roll someone at random or describe them in a few words. The district sets the odds: the Emberwood turns up more drakonid and kobolds, the Greywall Holds mostly dwarves.') + '' +
       '<div class="field"><label for="npc-district">District</label><select id="npc-district">' + Object.keys(D).map(function (k) { return '<option value="' + k + '"' + (k === dk ? ' selected' : '') + '>' + esc(D[k].label) + '</option>'; }).join('') + '</select></div>' +
       '<p class="note npc-odds">' + Object.keys(D[dk].races).sort(function (a, b) { return D[dk].races[b] - D[dk].races[a]; }).slice(0, 6).map(function (r) { var tot = Object.keys(D[dk].races).reduce(function (t, k) { return t + D[dk].races[k]; }, 0); return esc(r) + ' ' + Math.round(100 * D[dk].races[r] / tot) + '%'; }).join(' · ') + '</p>' +
       '<form class="form" id="npc-form" novalidate><div class="field"><label for="npc-words">Describe them (optional)</label><input type="text" id="npc-words" maxlength="200" value="' + esc((npc && npc.words) || '') + '" placeholder="e.g. grumpy old dwarf smith in Stonehelm"></div>' +
@@ -8729,7 +8729,7 @@
   var BOSS_ORDERS = { econ: 'Focus on the economy', defense: 'Focus on defense', neutral: 'Stay neutral', pay: 'Just pay wages and clear debts' };
   var BOSS_WAGE = { steward: 20, captain: 30 };
   var SEND_METHODS = { caravan: { n: 'Our own caravan', fee: 0 }, carrier: { n: 'Hired carrier', fee: 0.05 }, bonded: { n: 'Bonded courier', fee: 0.1, safe: 1 } };
-  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Infernite', 6], ['Goliath', 5], ['Shellback', 4], ['Elf', 3], ['Scalekin', 3], ['Kobold', 2]];
+  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Infernite', 6], ['Goliath', 5], ['Shellback', 4], ['Elf', 3], ['Drakonid', 3], ['Kobold', 2]];
   var BOSS_NAMES = {
     Human: [['Alric', 'Bertram', 'Cedric', 'Dunstan', 'Edwin', 'Godric', 'Hamon', 'Ivo', 'Jory', 'Kendall', 'Leofric', 'Osric', 'Piers', 'Ranulf', 'Simon', 'Tobias', 'Walter', 'Wystan', 'Gareth', 'Oswin', 'Adela', 'Beatrix', 'Cecily', 'Edith', 'Elspeth', 'Godiva', 'Hawise', 'Ottilie', 'Joan', 'Lettice', 'Mabel', 'Matilda', 'Nest', 'Petronel', 'Rohese', 'Sabine', 'Wenna', 'Alys', 'Maud', 'Agnes'], ['Ashdown', 'Barrow', 'Cooper', 'Dunmore', 'Fletcher', 'Gale', 'Hartwell', 'Holt', 'Kemble', 'Larkin', 'Marsh', 'Northey', 'Pell', 'Reeve', 'Salter', 'Thatcher', 'Tolly', 'Underhill', 'Wainwright', 'Yarrow']],
     Dwarf: [['Bjarni', 'Asgaut', 'Gorm', 'Halvard', 'Ivar', 'Kolbjorn', 'Orm', 'Ragnvald', 'Sten', 'Thrain', 'Ulf', 'Arn', 'Egil', 'Haakon', 'Knut', 'Leif', 'Asta', 'Dagny', 'Freydis', 'Gudrun', 'Helga', 'Jorunn', 'Ragna', 'Solveig', 'Thora', 'Vigdis', 'Yrsa', 'Brynja', 'Sigrid'], ['Anvilborn', 'Slagfist', 'Frostmantle', 'Deepdelve', 'Ironvein', 'Coalbeard', 'Stonewright', 'Hammerfell']],
@@ -8740,7 +8740,7 @@
     Goliath: [['Thokar', 'Ulmeka', 'Raavik', 'Bhaltu', 'Kessra', 'Morga', 'Ruvak', 'Enneth', 'Tavu', 'Ilka', 'Orruk', 'Vashti', 'Gorrun', 'Halek', 'Maulo', 'Senna'], ['Rockcarrier', 'Longstride', 'Wolfwatcher', 'Stormwalker', 'Bearkiller', 'Highclimber', 'Fireheart', 'Threeblood', 'Ridgetaker', 'Snowfoot']],
     Shellback: [['Gnabu', 'Ojo', 'Quoba', 'Sheshi', 'Tibor', 'Ubok', 'Wuxa', 'Yoren', 'Shellsby', 'Old Ponder'], ['']],
     Elf: [['Aerindel', 'Calathae', 'Elowyn', 'Faelir', 'Ithrien', 'Lauriel', 'Mirathel', 'Nirilien', 'Quelassa', 'Sylvaen', 'Thalindor', 'Varethil'], ['']],
-    Scalekin: [['Arkath', 'Belaxin', 'Draveth', 'Grisax', 'Hyrrin', 'Kaldrath', 'Maruvax', 'Nythin', 'Orrath', 'Pyraxin', 'Rhovax', 'Sevrin', 'Thalrath', 'Zorvath'], ['Ignis']],
+    Drakonid: [['Arkath', 'Belaxin', 'Draveth', 'Grisax', 'Hyrrin', 'Kaldrath', 'Maruvax', 'Nythin', 'Orrath', 'Pyraxin', 'Rhovax', 'Sevrin', 'Thalrath', 'Zorvath'], ['Ignis']],
     Kobold: [['Brikki', 'Chizzik', 'Drekk', 'Fizzik', 'Gribbik', 'Hekka', 'Jikkit', 'Krizz', 'Mekkik', 'Nibbik', 'Pazzik', 'Rikkit', 'Skrik'], ['Ignis']]
   };
   function bossRole(h) { return hasPeople(h) || h.kind === 'workshop' ? 'steward' : (h.kind === 'ship' || h.kind === 'airship' || h.kind === 'caravan') ? 'captain' : ''; }
@@ -10257,10 +10257,10 @@
     ['lastfield', 'Lastfield', 'marloo', 0, 'Baroness Wenna Fairley']];
   // A Dornish name and title for a baron or knight nobody has named yet: dwarves in dwarf towns, Ignis blood in the Emberwood.
   function rollLord(kind, liege, dwarf) {
-    var race = dwarf || liege === 'anvilborn' && Math.random() < 0.7 ? 'Dwarf' : liege === 'ignis' && Math.random() < 0.7 ? 'Scalekin' : 'Human';
+    var race = dwarf || liege === 'anvilborn' && Math.random() < 0.7 ? 'Dwarf' : liege === 'ignis' && Math.random() < 0.7 ? 'Drakonid' : 'Human';
     var nm = BOSS_NAMES[race], first = nm[0], woman = Math.random() < 0.3, cut = race === 'Human' ? 20 : race === 'Dwarf' ? 16 : first.length;
-    var pool = race === 'Scalekin' ? first : woman ? first.slice(cut) : first.slice(0, cut);
-    var title = kind === 'knight' ? (woman && race !== 'Scalekin' ? 'Dame ' : 'Ser ') : (woman && race !== 'Scalekin' ? 'Baroness ' : 'Baron ');
+    var pool = race === 'Drakonid' ? first : woman ? first.slice(cut) : first.slice(0, cut);
+    var title = kind === 'knight' ? (woman && race !== 'Drakonid' ? 'Dame ' : 'Ser ') : (woman && race !== 'Drakonid' ? 'Baroness ' : 'Baron ');
     return title + pick(pool) + ' ' + pick(nm[1]);
   }
   var MINOR_REL = [['tidecutters', 'caspian', 1], ['tidecutters', 'salters', -2], ['forgers', 'anvilborn', -2], ['lamplighters', 'dorn', -1], ['highwaymen', 'dorn', -1],
