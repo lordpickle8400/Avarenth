@@ -96,7 +96,7 @@ NOTES = {
   "You trap a creature in an illusion it can't escape. It takes 5d10 psychic damage on a failed Intelligence save (half on a success, and the spell ends). On a failure it sees itself surrounded by danger: if it moves out, or reaches through the illusion, it takes 10d10 psychic damage and the spell ends.", ""),
 "Mighty Fortress": ("1 minute", "1 mile", "V, S, M (a diamond worth 500 gp, consumed)", "Instantaneous",
   "A stone fortress rises from the ground: a 120-foot-square keep with four towers, walls, a courtyard and furnished rooms. A hundred spectral servants attend it. It lasts 7 days, then crumbles; cast it in the same place every 7 days for a year and it's permanent.", ""),
-"Mind Sliver": ("1 action", "60 feet", "V", "1 round",
+"Mind Splinter": ("1 action", "60 feet", "V", "1 round",
   "You drive a spike of psychic energy into a creature. It makes an Intelligence save or takes 1d6 psychic damage and subtracts 1d4 from the next save it makes before the end of your next turn. Damage grows to 2d6 at 5th level, 3d6 at 11th and 4d6 at 17th.", ""),
 "Mold Earth": ("1 action", "30 feet", "S", "Instantaneous or 1 hour",
   "You shape dirt or sand in a 5-foot cube: dig it out and drop it within 5 feet, carve shapes or colors into it for an hour, or turn it into difficult terrain (or back) for an hour.", ""),

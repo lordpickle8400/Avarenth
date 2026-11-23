@@ -1017,7 +1017,7 @@
     "description": "A stone fortress rises from the ground: a 120-foot-square keep with four towers, walls, a courtyard and furnished rooms. A hundred spectral servants attend it. It lasts 7 days, then crumbles; cast it in the same place every 7 days for a year and it's permanent.",
     "more": ""
   },
-  "Mind Sliver": {
+  "Mind Splinter": {
     "casting_time": "1 action",
     "range": "60 feet",
     "components": "V",
@@ -1465,7 +1465,7 @@
     "description": "Your quiver produces an endless supply of nonmagical ammunition. As a bonus action on each of your turns, you can make two attacks with a weapon that uses it.",
     "more": ""
   },
-  "Sword Burst": {
+  "Blade Burst": {
     "casting_time": "1 action",
     "range": "Self (5-foot radius)",
     "components": "V",
@@ -1610,7 +1610,7 @@
     "description": "You age a creature you can see. It makes a Constitution save, taking 10d12 necrotic damage on a failure or half on a success. If it fails, it also ages to the brink of death: disadvantage on attacks, checks and saves, and its speed is halved. Only Wish or Greater Restoration cast with a 9th-level spell undoes it. Most creatures die of old age within 30 days.",
     "more": ""
   },
-  "Tiny Servant": {
+  "Tiny Helper": {
     "casting_time": "1 minute",
     "range": "Touch",
     "components": "V, S",

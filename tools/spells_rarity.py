@@ -12,7 +12,7 @@ Contingency; Magic Jar;
 Simulacrum; Resurrection; Forcecage; Plane Shift"""
 # Minor or utility magic: one tier more common.
 DOWN = """Continual Flame; Magic Mouth; Arcane Lock; Gentle Repose; Locate Object; Skywrite; Darkvision; Knock; Rope Trick; Augury; Animal Messenger;
-Feign Death; Meld into Stone; Water Breathing; Water Walk; Create Food and Water; Tongues; Sending; Speak with Dead; Speak with Plants; Catnap; Tiny Servant;
+Feign Death; Meld into Stone; Water Breathing; Water Walk; Create Food and Water; Tongues; Sending; Speak with Dead; Speak with Plants; Catnap; Tiny Helper;
 Locate Creature; Divination; Fabricate; Stone Shape; Mordenkainen's Private Sanctum; Leomund's Secret Chest; Mordenkainen's Faithful Hound;
 Commune; Commune with Nature; Rary's Telepathic Bond;
 Find the Path; Drawmij's Instant Summons; Guards and Wards; Move Earth; Create Homunculus;
