@@ -202,32 +202,32 @@
       "features": [
         [
           3,
-          "Combat Superiority",
+          "Combat Maneuvers",
           "Learn three maneuvers and gain four d8 superiority dice, back on a short rest. Spend a die to trip, disarm, push, feint, parry, rally an ally and more. More maneuvers at 7th, 10th and 15th."
         ],
         [
           3,
-          "Student of War",
+          "Tinker's Training",
           "Proficiency with one artisan's tool."
         ],
         [
           7,
-          "Know Your Enemy",
+          "Study the Foe",
           "Study a creature for a minute to learn how it compares to you in two traits (Strength, AC, HP, class levels and so on)."
         ],
         [
           10,
-          "Improved Combat Superiority",
+          "Greater Maneuvers",
           "Superiority dice become d10."
         ],
         [
           15,
-          "Relentless",
+          "Stubborn Will",
           "If you roll initiative with no superiority dice left, regain one."
         ],
         [
           18,
-          "Improved Combat Superiority",
+          "Masterful Maneuvers",
           "Superiority dice become d12."
         ]
       ]
@@ -237,7 +237,7 @@
       "features": [
         [
           3,
-          "Weapon Bond",
+          "Blade Bond",
           "Bond with up to two weapons: they can't be disarmed and you can summon one to your hand as a bonus action."
         ],
         [
@@ -247,22 +247,22 @@
         ],
         [
           7,
-          "War Magic",
+          "Battle Casting",
           "When you cast a cantrip as an action, make one weapon attack as a bonus action."
         ],
         [
           10,
-          "Eldritch Strike",
+          "Arcane Strike",
           "A creature you hit has disadvantage on its next save against your spell before the end of your next turn."
         ],
         [
           15,
-          "Arcane Charge",
+          "Arcane Dash",
           "When you Action Surge, teleport up to 30 ft."
         ],
         [
           18,
-          "Improved War Magic",
+          "Greater Battle Casting",
           "When you cast a spell as an action, make one weapon attack as a bonus action."
         ]
       ]
@@ -272,32 +272,32 @@
       "features": [
         [
           3,
-          "Arcane Archer Lore",
+          "Archer's Lore",
           "Learn Arcana or Nature, and Prestidigitation or Druidcraft."
         ],
         [
           3,
-          "Arcane Shot",
+          "Arcane Arrow",
           "Know two Arcane Shot options (banishing, beguiling, bursting, grasping, piercing, seeking, shadow, enfeebling) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."
         ],
         [
           7,
-          "Magic Arrow",
+          "Enchanted Arrow",
           "Your arrows count as magical."
         ],
         [
           7,
-          "Curving Shot",
+          "Curving Arrow",
           "When you miss with a magic arrow, use a bonus action to reroll the attack against a different target within 60 ft."
         ],
         [
           15,
-          "Ever-Ready Shot",
+          "Ready Shot",
           "If you roll initiative with no Arcane Shot uses left, regain one."
         ],
         [
           18,
-          "Improved Shots",
+          "Greater Arrows",
           "Your Arcane Shot damage increases."
         ]
       ]
@@ -312,32 +312,32 @@
         ],
         [
           3,
-          "Born to the Saddle",
+          "Mounted Born",
           "Advantage on saves against falling off your mount, land on your feet if you fall, and mount or dismount cheaply."
         ],
         [
           3,
-          "Unwavering Mark",
+          "Steadfast Mark",
           "Mark creatures you hit: they have disadvantage attacking anyone else, and if they do you can make a bonus action attack with extra damage."
         ],
         [
           7,
-          "Warding Maneuver",
+          "Ward Strike",
           "Reaction: add 1d8 to an ally's AC against an attack, and give them resistance if it still hits."
         ],
         [
           10,
-          "Hold the Line",
+          "Hold the Field",
           "Creatures that move within your reach provoke opportunity attacks, and a hit stops them in place."
         ],
         [
           15,
-          "Ferocious Charger",
+          "Fierce Charge",
           "Moving 10 ft straight before a hit can knock the target prone."
         ],
         [
           18,
-          "Vigilant Defender",
+          "Watchful Defender",
           "An extra reaction each round, only for opportunity attacks."
         ]
       ]
@@ -352,27 +352,27 @@
         ],
         [
           3,
-          "Fighting Spirit",
+          "Battle Spirit",
           "Bonus action, three times per long rest: advantage on attacks this turn and some temporary HP."
         ],
         [
           7,
-          "Elegant Courtier",
+          "Courtly Grace",
           "Add Wisdom to Persuasion and gain Wisdom save proficiency (or another save if you have it)."
         ],
         [
           10,
-          "Tireless Spirit",
+          "Endless Spirit",
           "If you roll initiative with no Fighting Spirit uses left, regain one."
         ],
         [
           15,
-          "Rapid Strike",
+          "Quick Strike",
           "Trade advantage on one attack for an extra attack."
         ],
         [
           18,
-          "Strength Before Death",
+          "Strength Unto Death",
           "When you drop to 0 HP, take an extra full turn before falling, once per long rest."
         ]
       ]
@@ -489,17 +489,17 @@
       "features": [
         [
           3,
-          "Shadow Arts",
+          "Shadow Craft",
           "You train in the shadows and learn the arts of darkness and silence. Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without spending mana; learn Minor Illusion."
         ],
         [
           6,
-          "Shadow Step",
+          "Shadow Stride",
           "You step out of the light and into the dark, appearing where the shadows fall. In dim light or darkness, teleport 60 ft to another dark spot as a bonus action and gain advantage on your next melee attack."
         ],
         [
           11,
-          "Cloak of Shadows",
+          "Shadow Cloak",
           "You disappear into the gloom and stay hidden until you choose to strike. Become invisible in dim light or darkness until you attack or cast."
         ],
         [
@@ -539,18 +539,18 @@
       "features": [
         [
           3,
-          "Touch of Death",
-          "Touch of Death: When you reduce a creature within 5 ft of you to 0 hit points, you gain temporary hit points equal to your monk level plus your Wisdom modifier."
+          "Killing Touch",
+          "Killing Touch: When you reduce a creature within 5 ft of you to 0 hit points, you gain temporary hit points equal to your monk level plus your Wisdom modifier."
         ],
         [
           6,
-          "Hour of Reaping",
-          "Hour of Reaping: As an action, a wave of dread sweeps out from you. Each creature within 30 ft must make a Wisdom save or become frightened of you until the end of your next turn."
+          "Hour of Harvest",
+          "Hour of Harvest: As an action, a wave of dread sweeps out from you. Each creature within 30 ft must make a Wisdom save or become frightened of you until the end of your next turn."
         ],
         [
           11,
-          "Mastery of Death",
-          "Mastery of Death: Death's grip loosens for you. When you drop to 0 hit points, you can spend 1 ki point to drop to 1 hit point instead."
+          "Deathly Mastery",
+          "Deathly Mastery: Death's grip loosens for you. When you drop to 0 hit points, you can spend 1 ki point to drop to 1 hit point instead."
         ],
         [
           17,
@@ -564,22 +564,22 @@
       "features": [
         [
           3,
-          "Radiant Sun Bolt",
+          "Sunbolt",
           "You channel the sun's light through your ki, and it burns out from your fists. A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."
         ],
         [
           6,
-          "Searing Arc Strike",
+          "Searing Arc",
           "You can hurl a bolt of radiant light at a distance. After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."
         ],
         [
           11,
-          "Searing Sunburst",
+          "Sunburst Blast",
           "Your light sears the air and burns those who stand near you. Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."
         ],
         [
           17,
-          "Sun Shield",
+          "Solar Ward",
           "Your body shines like the dawn, and foes who touch you get burned. Shed bright light, and creatures that hit you in melee take radiant damage."
         ]
       ]
@@ -594,22 +594,22 @@
         ],
         [
           3,
-          "Drunken Technique",
+          "Drunken Footwork",
           "Your staggering footwork makes you hard to pin down, and you keep moving as you strike. Flurry of Blows also gives you Disengage and +10 ft speed."
         ],
         [
           6,
-          "Tipsy Sway",
+          "Wobbling Dodge",
           "You sway and dodge in a way that makes an opponent's blow glance off. Stand up for 5 ft of movement, and redirect a missed melee attack to another creature."
         ],
         [
           11,
-          "Drunkard's Luck",
+          "Lucky Stumble",
           "Your luck is never wholly gone, and a little ki can turn a bad roll around. Spend 2 ki to cancel disadvantage on a check, attack or save."
         ],
         [
           17,
-          "Intoxicated Frenzy",
+          "Reckless Frenzy",
           "In your frenzy you can strike at a crowd, each blow finding a different foe. Flurry of Blows can make up to five attacks if each hits a different target."
         ]
       ]
@@ -619,22 +619,22 @@
       "features": [
         [
           3,
-          "Path of the Kensei",
+          "Path of the Blade",
           "You take up the weapons of the kensei and treat them as an extension of your body. Pick kensei weapons that count as monk weapons, gain an AC bonus when you skip an attack, and add extra damage to ranged hits as a bonus action."
         ],
         [
           6,
-          "One with the Blade",
+          "Blade Kin",
           "Your chosen weapon hums with power and cuts through what ordinary steel cannot. Your kensei weapons count as magical; spend ki for extra damage on a hit."
         ],
         [
           11,
-          "Sharpen the Blade",
+          "Honed Blade",
           "You can focus your ki into your blade to strike harder for a short while. Spend up to 3 ki to give a kensei weapon that bonus to attack and damage for a minute."
         ],
         [
           17,
-          "Unerring Accuracy",
+          "Unfailing Aim",
           "Your blade finds its mark when it counts most. Reroll a missed monk-weapon attack once per turn."
         ]
       ]
@@ -669,32 +669,32 @@
       "features": [
         [
           3,
-          "Implements of Mercy",
+          "Healer's Tools",
           "Insight and Medicine proficiency, and the herbalism kit."
         ],
         [
           3,
-          "Hand of Healing",
+          "Healing Hand",
           "Spend 1 ki to heal a creature with a martial arts die + Wisdom; can replace a Flurry strike."
         ],
         [
           3,
-          "Hand of Harm",
+          "Harmful Hand",
           "Once per turn, spend 1 ki on a hit for extra necrotic damage."
         ],
         [
           6,
-          "Physician's Touch",
+          "Healer's Touch",
           "Hand of Healing also cures a disease or condition; Hand of Harm can poison."
         ],
         [
           11,
-          "Flurry of Healing and Harm",
+          "Flurry of Mercy",
           "Replace each Flurry of Blows strike with Hand of Healing, and use Hand of Harm on one for free."
         ],
         [
           17,
-          "Hand of Ultimate Mercy",
+          "Hand of Final Mercy",
           "Spend 5 ki to bring back a creature that died in the last 24 hours, once per long rest."
         ]
       ]
@@ -1470,27 +1470,27 @@
         ],
         [
           3,
-          "Channel Divinity: Nature's Wrath",
+          "Channel Divinity: Verdant Wrath",
           "Spectral vines restrain a creature (Str or Dex save)."
         ],
         [
           3,
-          "Channel Divinity: Turn the Faithless",
+          "Channel Divinity: Turn the Unfaithful",
           "Turn fey and fiends, revealing their true forms."
         ],
         [
           7,
-          "Aura of Warding",
+          "Aura of Ward",
           "You and allies within 10 ft have resistance to spell damage (30 ft at 18th)."
         ],
         [
           15,
-          "Undying Sentinel",
+          "Undying Guardian",
           "Drop to 1 HP instead of 0 once per long rest, and you stop aging."
         ],
         [
           20,
-          "Elder Champion",
+          "Ancient Champion",
           "Transform for a minute, once per long rest: regain HP each turn, cast faster, and enemies nearby have disadvantage on saves against you."
         ]
       ]
@@ -1505,27 +1505,27 @@
         ],
         [
           3,
-          "Channel Divinity: Abjure Enemy",
+          "Channel Divinity: Banish Foe",
           "Frighten one creature and freeze its speed (Wis save)."
         ],
         [
           3,
-          "Channel Divinity: Vow of Enmity",
+          "Channel Divinity: Oath of Enmity",
           "Advantage on attacks against one creature for a minute."
         ],
         [
           7,
-          "Relentless Avenger",
+          "Tireless Avenger",
           "After an opportunity attack hit, move half your speed without provoking."
         ],
         [
           15,
-          "Soul of Vengeance",
-          "Reaction: attack the target of your Vow of Enmity when it attacks."
+          "Spirit of Vengeance",
+          "Reaction: attack the target of your Oath of Enmity when it attacks."
         ],
         [
           20,
-          "Avenging Angel",
+          "Avenging Spirit",
           "Grow wings and a menacing aura for an hour, once per long rest."
         ]
       ]
@@ -1540,27 +1540,27 @@
         ],
         [
           3,
-          "Channel Divinity: Control Undead",
+          "Channel Divinity: Command the Restless",
           "Take control of an undead creature (Wis save)."
         ],
         [
           3,
-          "Channel Divinity: Dreadful Aspect",
+          "Channel Divinity: Dreadful Visage",
           "Frighten creatures within 30 ft (Wis save)."
         ],
         [
           7,
-          "Aura of Hate",
+          "Aura of Malice",
           "You and undead or fiends within 10 ft add Charisma to melee damage (30 ft at 18th)."
         ],
         [
           15,
-          "Supernatural Resistance",
+          "Unnatural Resistance",
           "Resistance to nonmagical bludgeoning, piercing and slashing."
         ],
         [
           20,
-          "Dread Lord",
+          "Dread Sovereign",
           "A minute-long aura of gloom that frightens and damages enemies, once per long rest."
         ]
       ]
@@ -1575,27 +1575,27 @@
         ],
         [
           3,
-          "Channel Divinity: Conquering Presence",
+          "Channel Divinity: Commanding Presence",
           "Frighten creatures within 30 ft (Wis save)."
         ],
         [
           3,
-          "Channel Divinity: Guided Strike",
+          "Channel Divinity: Ruthless Aim",
           "+10 to an attack roll."
         ],
         [
           7,
-          "Aura of Conquest",
+          "Aura of Dread",
           "Frightened enemies within 10 ft can't move and take psychic damage (30 ft at 18th)."
         ],
         [
           15,
-          "Scornful Rebuke",
+          "Scornful Retort",
           "Creatures that hit you take psychic damage equal to your Charisma."
         ],
         [
           20,
-          "Invincible Conqueror",
+          "Unbroken Conqueror",
           "A minute of resistance to all damage, an extra attack and critical hits on 19–20, once per long rest."
         ]
       ]
@@ -1610,27 +1610,27 @@
         ],
         [
           3,
-          "Channel Divinity: Emissary of Peace",
+          "Channel Divinity: Envoy of Peace",
           "+5 to Persuasion for 10 minutes."
         ],
         [
           3,
-          "Channel Divinity: Rebuke the Violent",
+          "Channel Divinity: Rebuke the Aggressor",
           "Reaction: a creature that hurts another takes radiant damage equal to what it dealt (Wis save halves)."
         ],
         [
           7,
-          "Aura of the Guardian",
+          "Aura of the Shield",
           "Reaction: take the damage meant for an ally within 10 ft (30 ft at 18th)."
         ],
         [
           15,
-          "Protective Spirit",
+          "Shielding Spirit",
           "Regain HP at the end of your turn while below half."
         ],
         [
           20,
-          "Emissary of Redemption",
+          "Envoy of Redemption",
           "Resistance to all damage, and attackers take radiant damage back, unless you attack them."
         ]
       ]
@@ -1645,27 +1645,27 @@
         ],
         [
           3,
-          "Channel Divinity: Peerless Athlete",
+          "Channel Divinity: Unmatched Athlete",
           "Advantage on Athletics and Acrobatics, and bigger jumps and carrying, for 10 minutes."
         ],
         [
           3,
-          "Channel Divinity: Inspiring Smite",
+          "Channel Divinity: Stirring Smite",
           "After Divine Smite, share temporary HP among allies."
         ],
         [
           7,
-          "Aura of Alacrity",
+          "Aura of Swiftness",
           "+10 ft speed, and allies who start near you move faster (aura grows at 18th)."
         ],
         [
           15,
-          "Glorious Defense",
+          "Glorious Shield",
           "Reaction: add Charisma to AC against an attack and strike back if it misses."
         ],
         [
           20,
-          "Living Legend",
+          "Living Hero",
           "For a minute, once per long rest: advantage on Charisma checks, turn a miss into a hit once per turn, and reroll failed saves."
         ]
       ]
@@ -1680,27 +1680,27 @@
         ],
         [
           3,
-          "Channel Divinity: Watcher's Will",
+          "Channel Divinity: Sentinel's Will",
           "Allies gain advantage on Int, Wis and Cha saves for a minute."
         ],
         [
           3,
-          "Channel Divinity: Abjure the Extraplanar",
+          "Channel Divinity: Banish the Otherworldly",
           "Turn aberrations, celestials, elementals, fey and fiends."
         ],
         [
           7,
-          "Aura of the Sentinel",
+          "Aura of Vigilance",
           "You and allies add your proficiency bonus to initiative (aura grows at 18th)."
         ],
         [
           15,
-          "Vigilant Rebuke",
+          "Watchful Rebuke",
           "Reaction: when an ally succeeds on a mental save, deal force damage to the creature that forced it."
         ],
         [
           20,
-          "Mortal Bulwark",
+          "Mortal Rampart",
           "For a minute, once per long rest: truesight, advantage on attacks against extraplanar creatures, and banish them on a hit."
         ]
       ]
