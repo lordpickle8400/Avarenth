@@ -1826,7 +1826,7 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
-    var natural = { Lizardfolk: 13 + dex, Shellback: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Elephantra: 12 + con }[b.species] || 0;
+    var natural = { Lizardfolk: 13 + dex, Shellback: 17, Troglodyte: 12 + dex, Reefkin: 12 + dex, 'Thri-kreen': 13 + dex, Elephantra: 12 + con }[b.species] || 0;
     s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Ironcored' ? 1 : 0);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
