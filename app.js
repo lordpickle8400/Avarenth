@@ -11429,7 +11429,7 @@
     var ds = w.city.level.districts || [];
     var svg = '<svg aria-hidden="true" style="position:absolute;left:0;top:0;width:' + w.w + 'px;height:' + w.h + 'px;pointer-events:none;overflow:visible" viewBox="0 0 1 1" preserveAspectRatio="none">' +
       ds.map(function (d) { return '<polygon points="' + d.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' ') + '" fill="' + d.color + '" fill-opacity="0.16" stroke="' + d.color + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="6 4"/>'; }).join('') + '</svg>';
-    return svg + ds.map(function (d) { return '<span class="ap-dlabel" style="left:' + (d.label[0] * w.w) + 'px;top:' + (d.label[1] * w.h) + 'px">' + esc(d.name) + '</span>'; }).join('');
+    return svg;
   }
   function pinsHtml(w) {
     if (TABLE && !w.city) return tablePinsHtml(w);
@@ -11588,7 +11588,8 @@
   function layersHtml() {
     var w = atlasWorld(), L = AT.layers;
     var opts = w && w.city ? [['districts', 'Districts']] : [['labels', 'Names'], ['towns', 'Towns and villages'], ['shops', 'Shop counts'], ['ruins', 'Ruins'], ['tolls', 'Tolls'], ['party', 'Party, route and trail'], ['tpins', 'The party’s own pins'], ['grid', 'Travel roads (what the app uses)']];
-    document.getElementById('at-layers').innerHTML = '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('') + (isDM() && !TABLE && w && w.map && !w.city ? '<div class="actions" style="margin-top:8px"><a class="btn small" href="#/map-edit/' + encodeURIComponent(w.map.id) + '">Edit this map</a><a class="btn small quiet" href="#/pins/' + encodeURIComponent(w.map.id) + '">Edit pins</a></div>' : '');
+    var lg = w && w.city && w.city.level.districts ? '<p class="eyebrow">Legend</p><ul style="list-style:none;padding:0;margin:0 0 12px">' + w.city.level.districts.map(function (d) { return '<li style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:' + d.color + ';flex:none;margin-top:3px"></span><span><b>' + esc(d.name) + '</b>' + (d.elder ? ' · ' + esc(d.elder.name) : ' · no elder') + '<br><small>' + esc(d.theme || '') + '</small></span></li>'; }).join('') + '</ul>' : '';
+    document.getElementById('at-layers').innerHTML = lg + '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('') + (isDM() && !TABLE && w && w.map && !w.city ? '<div class="actions" style="margin-top:8px"><a class="btn small" href="#/map-edit/' + encodeURIComponent(w.map.id) + '">Edit this map</a><a class="btn small quiet" href="#/pins/' + encodeURIComponent(w.map.id) + '">Edit pins</a></div>' : '');
   }
 
   /* ---------- View math ---------- */
