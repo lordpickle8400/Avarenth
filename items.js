@@ -185,7 +185,7 @@
     'Tortle': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
     'Kenku': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
     'Goblin': ['Nix', 'Grib', 'Skreech', 'Toadbelly', 'Blix', 'Wort'],
-    'Tabaxi': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],
+    'Felari': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],
     'Firbolg': ['Moss', 'Oakhollow', 'Fernwhistle', 'Barrow'],
     'Bugbear': ['Klarg', 'Grumble', 'Hrud', 'Mog'],
     'Half-Elf': ['Ilvan', 'Seren', 'Tavian', 'Lirael'],
