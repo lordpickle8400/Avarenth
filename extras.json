@@ -27,10 +27,10 @@
       "own": true
     },
     {
-      "name": "Lucky",
+      "name": "Fortune Pool",
       "category": "Origin",
       "prereq": "",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -40,10 +40,10 @@
       "own": true
     },
     {
-      "name": "Musician",
+      "name": "Lyric Heart",
       "category": "Origin",
       "prereq": "",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -300,10 +300,10 @@
       "own": true
     },
     {
-      "name": "Mage Slayer",
+      "name": "Spellbreaker",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -313,10 +313,10 @@
       "own": true
     },
     {
-      "name": "Martial Weapon Training",
+      "name": "Weapon Drill",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -326,10 +326,10 @@
       "own": true
     },
     {
-      "name": "Medium Armor Master",
+      "name": "Scale Mastery",
       "category": "General",
       "prereq": "Level 4+, medium armor training",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -339,10 +339,10 @@
       "own": true
     },
     {
-      "name": "Moderately Armored",
+      "name": "Chain Training",
       "category": "General",
       "prereq": "Level 4+, light armor training",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -352,10 +352,10 @@
       "own": true
     },
     {
-      "name": "Mounted Combatant",
+      "name": "Saddle Fighter",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -365,10 +365,10 @@
       "own": true
     },
     {
-      "name": "Observant",
+      "name": "Keen Eye",
       "category": "General",
       "prereq": "Level 4+, Intelligence or Wisdom 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -612,10 +612,10 @@
       "own": true
     },
     {
-      "name": "Mobile",
+      "name": "Swift Footwork",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2014)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -703,10 +703,10 @@
       "own": true
     },
     {
-      "name": "Metamagic Adept",
+      "name": "Spell Tinkerer",
       "category": "General",
       "prereq": "Level 4+, a spell or mana",
-      "book": "Tasha's Cauldron of Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1127,7 +1127,7 @@
     "Entertainer": {
       "book": "Player's Handbook (2024)",
       "abilities": "Strength, Dexterity, Charisma",
-      "feat": "Musician",
+      "feat": "Lyric Heart",
       "skills": "Acrobatics and Performance",
       "skillList": [
         "Acrobatics",
@@ -1202,7 +1202,7 @@
     "Merchant": {
       "book": "Player's Handbook (2024)",
       "abilities": "Constitution, Intelligence, Charisma",
-      "feat": "Lucky",
+      "feat": "Fortune Pool",
       "skills": "Animal Handling and Persuasion",
       "skillList": [
         "Animal Handling",
@@ -1262,7 +1262,7 @@
     "Wayfarer": {
       "book": "Player's Handbook (2024)",
       "abilities": "Dexterity, Wisdom, Charisma",
-      "feat": "Lucky",
+      "feat": "Fortune Pool",
       "skills": "Insight and Stealth",
       "skillList": [
         "Insight",
@@ -1322,7 +1322,7 @@
     "Urchin": {
       "book": "Player's Handbook (2014)",
       "abilities": "Dexterity, Constitution, Wisdom",
-      "feat": "Lucky",
+      "feat": "Fortune Pool",
       "skills": "Sleight of Hand and Stealth",
       "skillList": [
         "Sleight of Hand",
@@ -1427,7 +1427,7 @@
     "Inheritor": {
       "book": "Sword Coast Adventurer's Guide",
       "abilities": "Constitution, Wisdom, Charisma",
-      "feat": "Lucky",
+      "feat": "Fortune Pool",
       "skills": "Survival and History",
       "skillList": [
         "Survival",
@@ -1592,7 +1592,7 @@
     "Smuggler": {
       "book": "Ghosts of Saltmarsh",
       "abilities": "Dexterity, Wisdom, Charisma",
-      "feat": "Lucky",
+      "feat": "Fortune Pool",
       "skills": "Athletics and Deception",
       "skillList": [
         "Athletics",
