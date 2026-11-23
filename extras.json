@@ -79,10 +79,10 @@
       "own": true
     },
     {
-      "name": "Actor",
+      "name": "Stagecraft",
       "category": "General",
       "prereq": "Level 4+, Charisma 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -92,10 +92,10 @@
       "own": true
     },
     {
-      "name": "Athlete",
+      "name": "Trailrunner",
       "category": "General",
       "prereq": "Level 4+, Strength or Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -105,10 +105,10 @@
       "own": true
     },
     {
-      "name": "Charger",
+      "name": "Rushing Strike",
       "category": "General",
       "prereq": "Level 4+, Strength or Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -716,10 +716,10 @@
       "own": true
     },
     {
-      "name": "Bountiful Luck",
+      "name": "Providence",
       "category": "General",
       "prereq": "Level 4+, Halfling",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -950,10 +950,10 @@
       "own": true
     },
     {
-      "name": "Blind Fighting",
+      "name": "Unseen Combat",
       "category": "Fighting Style",
       "prereq": "Fighting Style feature",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1028,10 +1028,10 @@
       "own": true
     },
     {
-      "name": "Boon of Energy Resistance",
+      "name": "Elemental Ward",
       "category": "Epic Boon",
       "prereq": "Level 19+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1041,10 +1041,10 @@
       "own": true
     },
     {
-      "name": "Boon of Fortitude",
+      "name": "Stoneheart",
       "category": "Epic Boon",
       "prereq": "Level 19+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1054,10 +1054,10 @@
       "own": true
     },
     {
-      "name": "Boon of Recovery",
+      "name": "Restful Mend",
       "category": "Epic Boon",
       "prereq": "Level 19+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1067,10 +1067,10 @@
       "own": true
     },
     {
-      "name": "Boon of Skill",
+      "name": "Quick Study",
       "category": "Epic Boon",
       "prereq": "Level 19+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1080,10 +1080,10 @@
       "own": true
     },
     {
-      "name": "Boon of Speed",
+      "name": "Swift Stride",
       "category": "Epic Boon",
       "prereq": "Level 19+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
