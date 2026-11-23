@@ -53,10 +53,10 @@
       "own": true
     },
     {
-      "name": "Tavern Brawler",
+      "name": "Alehouse Fists",
       "category": "Origin",
       "prereq": "",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -66,10 +66,10 @@
       "own": true
     },
     {
-      "name": "Tough",
+      "name": "Hardy Body",
       "category": "Origin",
       "prereq": "",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -456,10 +456,10 @@
       "own": true
     },
     {
-      "name": "Shadow Touched",
+      "name": "Dusk Touched",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -469,10 +469,10 @@
       "own": true
     },
     {
-      "name": "Sharpshooter",
+      "name": "Far Shot",
       "category": "General",
       "prereq": "Level 4+, Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -482,10 +482,10 @@
       "own": true
     },
     {
-      "name": "Shield Master",
+      "name": "Bulwark Strike",
       "category": "General",
       "prereq": "Level 4+, shield training",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -495,10 +495,10 @@
       "own": true
     },
     {
-      "name": "Skill Expert",
+      "name": "Well Rounded",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -508,10 +508,10 @@
       "own": true
     },
     {
-      "name": "Skulker",
+      "name": "Lurker",
       "category": "General",
       "prereq": "Level 4+, Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -521,10 +521,10 @@
       "own": true
     },
     {
-      "name": "Slasher",
+      "name": "Cutting Edge",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -534,10 +534,10 @@
       "own": true
     },
     {
-      "name": "Speedy",
+      "name": "Quickstep",
       "category": "General",
       "prereq": "Level 4+, Dexterity or Constitution 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -547,10 +547,10 @@
       "own": true
     },
     {
-      "name": "Spell Sniper",
+      "name": "Distant Spell",
       "category": "General",
       "prereq": "Level 4+, a spell or mana",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -560,10 +560,10 @@
       "own": true
     },
     {
-      "name": "Telekinetic",
+      "name": "Mind Shove",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -573,10 +573,10 @@
       "own": true
     },
     {
-      "name": "Telepathic",
+      "name": "Mind Link",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -586,10 +586,10 @@
       "own": true
     },
     {
-      "name": "War Caster",
+      "name": "Battle Mage",
       "category": "General",
       "prereq": "Level 4+, a spell or mana",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -599,10 +599,10 @@
       "own": true
     },
     {
-      "name": "Weapon Master",
+      "name": "Armory Expert",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -885,10 +885,10 @@
       "own": true
     },
     {
-      "name": "Squat Nimbleness",
+      "name": "Low Crawler",
       "category": "General",
       "prereq": "Level 4+, Dwarf or a Small species",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -898,10 +898,10 @@
       "own": true
     },
     {
-      "name": "Wood Elf Magic",
+      "name": "Greenwood Magic",
       "category": "General",
       "prereq": "Level 4+, Wood Elf",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1002,10 +1002,10 @@
       "own": true
     },
     {
-      "name": "Thrown Weapon Fighting",
+      "name": "Hurled Mastery",
       "category": "Fighting Style",
       "prereq": "Fighting Style feature",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1015,10 +1015,10 @@
       "own": true
     },
     {
-      "name": "Unarmed Fighting",
+      "name": "Brawler’s Grip",
       "category": "Fighting Style",
       "prereq": "Fighting Style feature",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1142,7 +1142,7 @@
     "Farmer": {
       "book": "Player's Handbook (2024)",
       "abilities": "Strength, Constitution, Wisdom",
-      "feat": "Tough",
+      "feat": "Hardy Body",
       "skills": "Animal Handling and Nature",
       "skillList": [
         "Animal Handling",
@@ -1232,7 +1232,7 @@
     "Sailor": {
       "book": "Player's Handbook (2024)",
       "abilities": "Strength, Dexterity, Wisdom",
-      "feat": "Tavern Brawler",
+      "feat": "Alehouse Fists",
       "skills": "Acrobatics and Perception",
       "skillList": [
         "Acrobatics",
@@ -1277,7 +1277,7 @@
     "Folk Hero": {
       "book": "Player's Handbook (2014)",
       "abilities": "Strength, Constitution, Wisdom",
-      "feat": "Tough",
+      "feat": "Hardy Body",
       "skills": "Animal Handling and Survival",
       "skillList": [
         "Animal Handling",
@@ -1307,7 +1307,7 @@
     "Outlander": {
       "book": "Player's Handbook (2014)",
       "abilities": "Strength, Constitution, Wisdom",
-      "feat": "Tough",
+      "feat": "Hardy Body",
       "skills": "Athletics and Survival",
       "skillList": [
         "Athletics",
@@ -1517,7 +1517,7 @@
     "Pirate": {
       "book": "Player's Handbook (2014)",
       "abilities": "Strength, Dexterity, Wisdom",
-      "feat": "Tavern Brawler",
+      "feat": "Alehouse Fists",
       "skills": "Athletics and Perception",
       "skillList": [
         "Athletics",
