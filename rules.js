@@ -7,6 +7,7 @@
   var C = {};
 
   C.Barbarian = {
+    about: 'Fierce warriors who fight in a trance of rage, drawing strength from the wild and from the fury in their blood.',
     hd: 12, primary: 'Strength', saves: ['str', 'con'],
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'] },
@@ -30,6 +31,7 @@
   };
 
   C.Bard = {
+    about: 'Performers whose songs and spells are one craft, inspiring allies and unsettling enemies alike.',
     hd: 8, primary: 'Charisma', saves: ['dex', 'cha'],
     armor: 'Light armor', weapons: 'Simple weapons, hand crossbows, longswords, rapiers, shortswords', tools: 'Three musical instruments',
     skills: { n: 3, from: 'any' },
@@ -52,6 +54,7 @@
   };
 
   C.Cleric = {
+    about: 'Priests who channel the power of their gods, healing the wounded and turning back the dead.',
     hd: 8, primary: 'Wisdom', saves: ['wis', 'cha'],
     armor: 'Light and medium armor, shields', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['History', 'Insight', 'Medicine', 'Persuasion', 'Religion'] },
@@ -68,6 +71,7 @@
   };
 
   C.Druid = {
+    about: 'Keepers of the old ways who draw their magic from the land, and who can take the shape of beasts.',
     hd: 8, primary: 'Wisdom', saves: ['int', 'wis'],
     armor: 'Light and medium armor, shields (not made of metal)', weapons: 'Clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, spears', tools: 'Herbalism kit',
     skills: { n: 2, from: ['Arcana', 'Animal Handling', 'Insight', 'Medicine', 'Nature', 'Perception', 'Religion', 'Survival'] },
@@ -85,6 +89,7 @@
   };
 
   C.Fighter = {
+    about: 'Trained soldiers who master every weapon and armor, and who are at home on any battlefield.',
     hd: 10, primary: 'Strength or Dexterity', saves: ['str', 'con'],
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Acrobatics', 'Animal Handling', 'Athletics', 'History', 'Insight', 'Intimidation', 'Perception', 'Survival'] },
@@ -102,6 +107,7 @@
   };
 
   C.Monk = {
+    about: 'Disciplined fighters who shape ki into blows, speed and endurance, and who train their bodies to be weapons.',
     hd: 8, primary: 'Dexterity and Wisdom', saves: ['str', 'dex'],
     armor: 'None', weapons: 'Simple weapons, shortswords', tools: 'One artisan\'s tool or musical instrument',
     skills: { n: 2, from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'] },
@@ -131,6 +137,7 @@
   };
 
   C.Paladin = {
+    about: 'Holy warriors bound by an oath, who guard the innocent and smite the wicked with divine might.',
     hd: 10, primary: 'Strength and Charisma', saves: ['wis', 'cha'],
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'] },
@@ -153,6 +160,7 @@
   };
 
   C.Ranger = {
+    about: 'Wilderness hunters and trackers who fight with blade and bow, and who walk the edges of the settled lands.',
     hd: 10, primary: 'Dexterity and Wisdom', saves: ['str', 'dex'],
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 3, from: ['Animal Handling', 'Athletics', 'Insight', 'Investigation', 'Nature', 'Perception', 'Stealth', 'Survival'] },
@@ -175,6 +183,7 @@
   };
 
   C.Rogue = {
+    about: 'Stealthy opportunists who strike from the shadows, pick locks and find the weak point in any defense.',
     hd: 8, primary: 'Dexterity', saves: ['dex', 'int'],
     armor: 'Light armor', weapons: 'Simple weapons, hand crossbows, longswords, rapiers, shortswords', tools: 'Thieves\' tools',
     skills: { n: 4, from: ['Acrobatics', 'Athletics', 'Deception', 'Insight', 'Intimidation', 'Investigation', 'Perception', 'Performance', 'Persuasion', 'Sleight of Hand', 'Stealth'] },
@@ -198,6 +207,7 @@
   };
 
   C.Sorcerer = {
+    about: 'Gifted casters whose magic is innate and wild, flowing out of a single source in their blood.',
     hd: 6, primary: 'Charisma', saves: ['con', 'cha'],
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'] },
@@ -213,6 +223,7 @@
   };
 
   C.Warlock = {
+    about: 'Spellcasters who strike a bargain with a powerful patron and channel its gifts into their magic.',
     hd: 8, primary: 'Charisma', saves: ['wis', 'cha'],
     armor: 'Light armor', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'] },
@@ -232,6 +243,7 @@
   };
 
   C.Wizard = {
+    about: 'Scholars of arcane lore who learn spells from their books and shape the world through careful study.',
     hd: 6, primary: 'Intelligence', saves: ['int', 'wis'],
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'] },
@@ -253,7 +265,7 @@
     skills: { n: 2, from: ['Arcana', 'History', 'Investigation', 'Medicine', 'Nature', 'Perception', 'Sleight of Hand'] },
     subclassLevel: 3, subclassLabel: 'Artificer Specialist', asi: [4, 8, 12, 16, 19],
     subclasses: ['Alchemist', 'Armorer', 'Artillerist', 'Battle Smith'],
-    about: 'Inventors who channel magic through tools and objects.',
+    about: 'Inventors who channel magic through tools and objects. They build gadgets, armor and magical contraptions, and they bring their creations to life with careful work and a steady hand.',
     features: [
       [1, 'Magical Tinkering', 'Put a small magical property into a tiny object: light, a recorded message, a smell or sound, or a moving image. A number at once equal to your Intelligence modifier.'],
       [1, 'Spellcasting', 'You cast with mana, through tools: you must hold thieves\' tools, an artisan\'s tool or an infused item as your focus. Intelligence is your spellcasting ability. See the Mana Guide.'],
