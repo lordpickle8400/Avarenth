@@ -1484,7 +1484,7 @@
       "feature": "Bounty Contacts: You know the bounty boards, the jailers and the watch sergeants of the big cities. They will tell you who is wanted and where, and they will pay you for finding them.",
       "own": true
     },
-    "Haunted One": {
+    "Haunted Survivor": {
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Alert",
@@ -1619,7 +1619,7 @@
       "feature": "Tomb Lore: You can identify the age and purpose of an old ruin or tomb from a glance at its stonework. You know how to find safe paths through ruins, and the scholars who value old finds will pay for what you bring back.",
       "own": true
     },
-    "Feylost": {
+    "Fey Stray": {
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Magic Initiate (Druid)",
