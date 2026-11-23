@@ -2314,7 +2314,7 @@
   },
   "Ranger": {
     "Beast Warden": {
-      "about": "A ranger who fights alongside a loyal beast, and who knows the wild as well as any animal does. Beast masters are often found on the edge of the settled lands, where their companions are needed most.",
+      "about": "A ranger who fights alongside a loyal beast, and who knows the wild as well as any animal does. Beast Wardens are often found on the edge of the settled lands, where their companions are needed most.",
       "features": [
         [
           3,
@@ -2339,7 +2339,7 @@
       ]
     },
     "Shadow Hunter": {
-      "about": "A ranger who hunts in the dark and strikes from the shadows, and who is most at home in the night. Gloom stalkers are the watchers at the edge of the dark places.",
+      "about": "A ranger who hunts in the dark and strikes from the shadows, and who is most at home in the night. Shadow Hunters are the watchers at the edge of the dark places.",
       "features": [
         [
           3,
@@ -2374,7 +2374,7 @@
       ]
     },
     "Planewalker": {
-      "about": "A ranger who guards the borders between the planes and the lands they know well. Horizon walkers see things that others do not, and they like it when others don’t ask about it.",
+      "about": "A ranger who guards the borders between the planes and the lands they know well. Planewalkers see things that others do not, and they like it when others don’t ask about it.",
       "features": [
         [
           3,
@@ -2409,7 +2409,7 @@
       ]
     },
     "Monster Bane": {
-      "about": "A ranger who hunts the dangerous creatures that prey on the living, and who has learned their weaknesses. Monster slayers are paid well by the villages and the great houses alike.",
+      "about": "A ranger who hunts the dangerous creatures that prey on the living, and who has learned their weaknesses. Monster Bane are paid well by the villages and the great houses alike.",
       "features": [
         [
           3,
@@ -2444,7 +2444,7 @@
       ]
     },
     "Feywalker": {
-      "about": "A ranger who walks in the fey woods and carries a little of their magic. Fey wanderers are welcome in the wild courts, and they are cautious about the bargains they make there.",
+      "about": "A ranger who walks in the fey woods and carries a little of their magic. Feywalkers are welcome in the wild courts, and they are cautious about the bargains they make there.",
       "features": [
         [
           3,
