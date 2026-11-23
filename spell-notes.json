@@ -1,5 +1,5 @@
 {
-  "Abi-Dalzim's Horrid Wilting": {
+  "Withering Gale": {
     "casting_time": "1 action",
     "range": "150 feet",
     "components": "V, S, M (a bit of sponge)",
@@ -15,7 +15,7 @@
     "description": "You catch some of the incoming energy. You have resistance to that damage type against the triggering hit and until the start of your next turn. The first time you hit with a melee attack on your next turn, it deals an extra 1d6 damage of that type.",
     "more": "The extra melee damage rises by 1d6 for each level above 1st."
   },
-  "Aganazzar's Scorcher": {
+  "Scorching Line": {
     "casting_time": "1 action",
     "range": "30 feet",
     "components": "V, S, M (a red dragon's scale)",
@@ -71,7 +71,7 @@
     "description": "Dark tendrils burst out of you. Each creature within 10 feet makes a Strength save. On a failure it takes 2d6 necrotic damage and can't take reactions until its next turn. On a success it takes half damage only.",
     "more": "Damage rises by 1d6 for each level above 1st."
   },
-  "Ashardalon's Stride": {
+  "Ashen Stride": {
     "casting_time": "1 bonus action",
     "range": "Self",
     "components": "V, S",
@@ -327,7 +327,7 @@
     "description": "Seven star-like motes orbit your head. As a bonus action you can fling one at a creature within 120 feet: a ranged spell attack dealing 4d12 radiant damage. While four or more remain, they shed bright light.",
     "more": "Two more motes for each level above 7th."
   },
-  "Crusader's Mantle": {
+  "Vanguard's Mantle": {
     "casting_time": "1 action",
     "range": "Self (30-foot radius)",
     "components": "V",
@@ -520,7 +520,7 @@
     "description": "You summon a loyal, intelligent spirit in the form of a griffon, pegasus, peryton, dire wolf, rhinoceros or saber-toothed tiger. It serves as your mount, can speak telepathically with you, and when you cast a spell targeting only yourself you can have it affect the steed too. Only one such steed at a time.",
     "more": ""
   },
-  "Fizban's Platinum Shield": {
+  "Platinum Ward": {
     "casting_time": "1 bonus action",
     "range": "60 feet",
     "components": "V, S, M (a platinum-plated dragon scale worth 500 gp)",
@@ -544,7 +544,7 @@
     "description": "You summon three spirits that take familiar forms of your choice, as if from Find Familiar. They obey you and can deliver touch spells. You share senses with one at a time.",
     "more": "One more familiar for each level above 2nd."
   },
-  "Fortune's Favor": {
+  "Favored Fortune": {
     "casting_time": "1 minute",
     "range": "60 feet",
     "components": "V, M (a white pearl worth 100 gp, consumed)",
@@ -593,7 +593,7 @@
     "description": "Frost forms on a creature you can see. It makes a Constitution save or takes 1d6 cold damage and has disadvantage on its next weapon attack before the end of its next turn. Damage grows to 2d6 at 5th level, 3d6 at 11th and 4d6 at 17th.",
     "more": ""
   },
-  "Galder's Speedy Courier": {
+  "Swift Courier": {
     "casting_time": "1 action",
     "range": "10 feet",
     "components": "V, S, M (25 gold pieces, consumed)",
@@ -601,7 +601,7 @@
     "description": "You summon a small air elemental beside a chest that opens for the duration. Put whatever fits inside, name a creature you've met on this plane, and when the spell ends the elemental carries the chest's contents straight to that creature (or back, if it can't be found).",
     "more": "The duration rises with more mana: 1 hour at 5th, 8 hours at 6th, 24 hours at 7th level."
   },
-  "Galder's Tower": {
+  "Tower of Walls": {
     "casting_time": "10 minutes",
     "range": "30 feet",
     "components": "V, S, M (a fragment of stone, wood or other building material)",
@@ -863,7 +863,7 @@
     "more": "",
     "idea": true
   },
-  "Jallarzi's Storm of Radiance": {
+  "Storm of Radiance": {
     "casting_time": "1 action",
     "range": "120 feet",
     "components": "V, S, M (a pinch of phosphorus)",
@@ -871,7 +871,7 @@
     "description": "Radiant hail and thunder fill a 10-foot-radius, 40-foot-high cylinder. Inside, creatures are blinded and deafened, and can't cast spells with verbal components. A creature that enters it for the first time on a turn or starts its turn there makes a Constitution save, taking 2d10 radiant and 2d10 thunder damage on a failure or half on a success.",
     "more": "Each damage type rises by 1d10 for each level above 5th."
   },
-  "Jim's Glowing Coin": {
+  "Glowing Coin": {
     "casting_time": "1 action",
     "range": "60 feet",
     "components": "V, S, M (a coin)",
@@ -879,7 +879,7 @@
     "description": "You throw a coin and it starts glowing and making noise. Each creature of your choice within 60 feet that can see it makes a Wisdom save or is distracted: it has disadvantage on Perception checks and initiative rolls until the spell ends. Disturbing the coin ends the spell.",
     "more": ""
   },
-  "Jim's Magic Missile": {
+  "Arcane Darts": {
     "casting_time": "1 action",
     "range": "120 feet",
     "components": "V, S",
@@ -895,7 +895,7 @@
     "description": "You magically empower your movement. Your walking speed rises by 10 feet, moving doesn't provoke opportunity attacks, and you can move through other creatures' spaces (as difficult terrain). You can't end your turn in another creature's space.",
     "more": ""
   },
-  "Laeral's Silver Lance": {
+  "Silver Lance": {
     "casting_time": "1 action",
     "range": "120 feet",
     "components": "V, S",
@@ -985,7 +985,7 @@
     "description": "Like Polymorph, but up to ten creatures. Each unwilling creature makes a Wisdom save. Each one you change becomes a beast of challenge rating no higher than its own (or half its level), keeping its hit points as a buffer.",
     "more": ""
   },
-  "Maximilian's Earthen Grasp": {
+  "Earthen Grasp": {
     "casting_time": "1 action",
     "range": "30 feet",
     "components": "V, S, M (a miniature hand sculpted from clay)",
@@ -993,7 +993,7 @@
     "description": "A Medium hand of compacted earth rises in a 5-foot square. When it appears, and as an action on later turns, it reaches for a creature within 5 feet of it: a Strength save or take 2d6 bludgeoning damage and be restrained. You can crush a restrained creature for 2d6 as an action, or move the hand 30 feet.",
     "more": ""
   },
-  "Melf's Minute Meteors": {
+  "Minute Meteors": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S, M (niter, sulfur and pine tar formed into a bead)",
@@ -1042,7 +1042,7 @@
     "more": "",
     "idea": true
   },
-  "Mordenkainen's Lucubration": {
+  "Deep Study": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S",
@@ -1059,7 +1059,7 @@
     "description": "Up to five creatures who listen to your speech gain 5 temporary hit points and advantage on Wisdom saves for the duration. When one is hit by an attack, it has advantage on the next attack roll it makes. When a creature loses all its temporary hit points, the spell ends for it.",
     "more": "Temporary hit points rise by 5 for each level above 3rd."
   },
-  "Nathair's Mischief": {
+  "Mischief Cascade": {
     "casting_time": "1 action",
     "range": "60 feet",
     "components": "S, M (a piece of crust from an apple pie)",
@@ -1131,7 +1131,7 @@
     "description": "Pick a nonmagical flame you can see. It goes out, and becomes either fireworks (each creature within 10 feet makes a Constitution save or is blinded until the end of your next turn) or thick smoke (a 20-foot cloud that blocks sight for a minute).",
     "more": ""
   },
-  "Raulothim's Psychic Lance": {
+  "Psychic Lance": {
     "casting_time": "1 action",
     "range": "120 feet",
     "components": "V",
@@ -1164,7 +1164,7 @@
     "more": "",
     "idea": true
   },
-  "Rime's Binding Ice": {
+  "Binding Ice": {
     "casting_time": "1 action",
     "range": "Self (30-foot cone)",
     "components": "S, M (a vial of meltwater)",
@@ -1252,7 +1252,7 @@
     "description": "You set a magical trap on a 5-foot circle on the ground. It's nearly invisible (Intelligence (Investigation) against your DC to spot). A Small or larger creature that steps in makes a Dexterity save or is restrained and hoisted upside down 3 feet in the air. It can try again on each of its turns, or others can free it.",
     "more": ""
   },
-  "Snilloc's Snowball Swarm": {
+  "Snowball Swarm": {
     "casting_time": "1 action",
     "range": "90 feet",
     "components": "V, S, M (a piece of ice or small white rock)",
@@ -1473,7 +1473,7 @@
     "description": "Spectral blades sweep around you. Each creature within 5 feet makes a Dexterity save or takes 1d6 force damage. Damage grows to 2d6 at 5th level, 3d6 at 11th and 4d6 at 17th.",
     "more": ""
   },
-  "Syluné's Viper": {
+  "Viper's Coil": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S",
@@ -1490,7 +1490,7 @@
     "description": "A psychic burst erupts at a point. Each creature in a 20-foot-radius sphere makes an Intelligence save, taking 8d6 psychic damage on a failure or half on a success. Those that fail are muddled for a minute: they subtract 1d6 from attacks, checks and concentration saves, repeating the save at the end of each turn.",
     "more": ""
   },
-  "Tasha's Bubbling Cauldron": {
+  "Bubbling Cauldron": {
     "casting_time": "1 action",
     "range": "5 feet",
     "components": "V, S, M (a gilded ladle worth 500 gp)",
@@ -1498,7 +1498,7 @@
     "description": "A claw-footed cauldron appears, filled with a potion of your choice of common or uncommon rarity that you've seen (DM approves). You can draw out a number of bottles equal to your spellcasting modifier; they vanish when you finish your next long rest if unused.",
     "more": ""
   },
-  "Tasha's Caustic Brew": {
+  "Caustic Brew": {
     "casting_time": "1 action",
     "range": "Self (30-foot line)",
     "components": "V, S, M (a bit of rotten food)",
@@ -1506,7 +1506,7 @@
     "description": "A 30-foot line of acid sprays from you. Each creature in it makes a Dexterity save or is covered in acid, taking 2d4 acid damage at the start of each of its turns. A creature can use its action to scrape it off.",
     "more": "Damage rises by 2d4 for each level above 1st."
   },
-  "Tasha's Mind Whip": {
+  "Mind Whip": {
     "casting_time": "1 action",
     "range": "90 feet",
     "components": "V",
@@ -1514,7 +1514,7 @@
     "description": "You lash a creature's mind. It makes an Intelligence save. On a failure it takes 3d6 psychic damage, can't take reactions until its next turn ends, and on that turn can take only one of: move, action or bonus action. On a success it takes half damage only.",
     "more": "One more creature for each level above 2nd."
   },
-  "Tasha's Otherworldly Guise": {
+  "Otherworldly Guise": {
     "casting_time": "1 bonus action",
     "range": "Self",
     "components": "V, S, M (an object engraved with a symbol of the Outer Planes, worth 500 gp)",
@@ -1546,7 +1546,7 @@
     "description": "You shunt a creature through time. It makes a Wisdom save or vanishes, and the attack or spell is wasted. It reappears at the start of its next turn, in the space it left (or nearest).",
     "more": "One more creature for each level above 5th."
   },
-  "Tenser's Transformation": {
+  "Mighty Transformation": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S, M (a few hairs from a bull)",
@@ -1801,7 +1801,7 @@
     "description": "You send an object you're holding (5 pounds or less) to a pocket dimension. As a bonus action you can bring it back to your hand, or send it away again. When the spell ends, the object returns to your hand.",
     "more": ""
   },
-  "Yolande's Regal Presence": {
+  "Regal Presence": {
     "casting_time": "1 action",
     "range": "Self (10-foot emanation)",
     "components": "V, S, M (a miniature tiara)",
@@ -1826,7 +1826,7 @@
     "more": "",
     "idea": true
   },
-  "Alustriel's Mooncloak": {
+  "Moonveil Cloak": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S",
@@ -1889,7 +1889,7 @@
     "more": "Necrotic damage rises.",
     "idea": true
   },
-  "Deryan's Helpful Homunculi": {
+  "Helpful Homunculi": {
     "casting_time": "1 action",
     "range": "30 feet",
     "components": "V, S",
@@ -1952,7 +1952,7 @@
     "more": "",
     "idea": true
   },
-  "Elminster's Effulgent Spheres": {
+  "Effulgent Spheres": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S",
@@ -1961,7 +1961,7 @@
     "more": "More spheres.",
     "idea": true
   },
-  "Elminster's Elusion": {
+  "Elusive Veil": {
     "casting_time": "1 reaction, when you're hit",
     "range": "Self",
     "components": "V",
@@ -1979,7 +1979,7 @@
     "more": "",
     "idea": true
   },
-  "Simbul's Synostodweomer": {
+  "Living Weave": {
     "casting_time": "1 bonus action",
     "range": "Self",
     "components": "V, S",
@@ -1988,7 +1988,7 @@
     "more": "",
     "idea": true
   },
-  "Songal's Elemental Suffusion": {
+  "Elemental Suffusion": {
     "casting_time": "1 action",
     "range": "Self",
     "components": "V, S",
