@@ -10,11 +10,11 @@
       jobs: ['clerk', 'city guard', 'merchant', 'priest of Akoron', 'tailor', 'baker', 'lamplighter', 'scribe', 'courtier', 'bridge toll keeper', 'street vendor', 'chandler', 'herald', 'cutpurse', 'innkeeper', 'stablehand', 'apothecary', 'washerwoman', 'goldsmith', 'royal messenger'] },
     north: { label: 'The Greywall Holds', races: { Dwarf: 72, Human: 11, Gnome: 7, Halfling: 4, Goliath: 3, 'Half-Orc': 2, 'Deepgnome': 1 },
       jobs: ['miner', 'smith', 'brewer', 'mason', 'carter', 'Craghorn herder', 'terrace farmer', 'gem cutter', 'shieldbrow guard', 'hall cook', 'tunnel surveyor', 'mead-hall keeper', 'assayer', 'lamp-keeper', 'stone carver', 'clan record keeper'] },
-    south: { label: 'The Golden Coast', races: { Human: 58, Halfling: 10, 'Half-Elf': 8, Gnome: 6, Dwarf: 6, Tiefling: 4, Tortle: 3, Elf: 2, Dragonborn: 2, 'Half-Orc': 1 },
+    south: { label: 'The Golden Coast', races: { Human: 58, Halfling: 10, 'Half-Elf': 8, Gnome: 6, Dwarf: 6, Tiefling: 4, Shellback: 3, Elf: 2, Dragonborn: 2, 'Half-Orc': 1 },
       jobs: ['merchant', 'sailor', 'dockhand', 'scholar at the university', 'moneylender', 'vintner', 'shipwright', 'fishwife', 'customs officer', 'priest', 'student', 'galley oarsman', 'cartographer', 'spice trader', 'harbour pilot', 'Caspian soldier', 'fishmonger'] },
     mournfells: { label: 'The Strait March', races: { Human: 45, Orc: 24, 'Half-Orc': 15, Goliath: 4, Dwarf: 4, Halfling: 3, Tiefling: 2, Hobgoblin: 2, 'Half-Elf': 1 },
       jobs: ['coast guard sailor', 'fort soldier', 'toll clerk', 'fisher', 'ferryman', 'shepherd', 'smith', 'signal-fire keeper', 'fog guide', 'scout', 'net mender', 'barracks cook', 'old war veteran', 'boatwright'] },
-    sea: { label: 'At sea and the islands', races: { Human: 50, 'Sea Elf': 15, Tortle: 8, 'Half-Elf': 8, Halfling: 6, Orc: 5, Dwarf: 3, Tiefling: 3, Lizardfolk: 2 },
+    sea: { label: 'At sea and the islands', races: { Human: 50, 'Sea Elf': 15, Shellback: 8, 'Half-Elf': 8, Halfling: 6, Orc: 5, Dwarf: 3, Tiefling: 3, Lizardfolk: 2 },
       jobs: ['sailor', 'fisher', 'smuggler', 'ship\'s cook', 'pearl diver', 'navigator', 'deckhand', 'harbour master', 'net mender', 'lighthouse keeper', 'pirate (says they aren\'t)', 'island trader'] }
   };
   // Given names (male, female) and family names by race.
@@ -37,7 +37,7 @@
     Dragonborn: [['Arjhan', 'Kriv', 'Medrash', 'Balasar', 'Ghesh', 'Torinn', 'Rhogar'], ['Sora', 'Thava', 'Nala', 'Akra', 'Biri', 'Harann', 'Kava'], ['Ignis', 'Ashvane', 'Kerrhylon', 'Myastan', 'Daardendrian', 'Clethtinthiallor']],
     Kobold: [['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Skivv', 'Krik'], ['Rikka', 'Tisk', 'Vexxa', 'Yip', 'Sskarra', 'Nib'], ['Ignis', 'of the Embers', 'Ashtail', 'Coalscale']],
     Lizardfolk: [['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'], ['Thessa', 'Ssirrka', 'Usha', 'Kessk', 'Aruk', 'Viss'], ['', 'Reedwalker', 'Mudscale', 'of Dragonsneck']],
-    Tortle: [['Gar', 'Tibor', 'Wollo', 'Xelbuk', 'Ukuru'], ['Nulka', 'Quee', 'Lop', 'Damu', 'Ilmu'], ['', 'Shellback', 'Tidewalker', 'Sandbar']],
+    Shellback: [['Gar', 'Tibor', 'Wollo', 'Xelbuk', 'Ukuru'], ['Nulka', 'Quee', 'Lop', 'Damu', 'Ilmu'], ['', 'Shellback', 'Tidewalker', 'Sandbar']],
     Hobgoblin: [['Krag', 'Morv', 'Zhek', 'Durgash'], ['Vira', 'Ghenna', 'Sorka', 'Tull'], ['Ironline', 'of the Strait', 'Redbanner']]
   };
   var LOOK = {

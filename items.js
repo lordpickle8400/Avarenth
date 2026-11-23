@@ -182,7 +182,7 @@
     'Dragonborn': ['Arjhan', 'Kriv', 'Sora', 'Thava', 'Medrash', 'Nala'],
     'Kobold': ['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Rikka', 'Skivv'],
     'Lizardfolk': ['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'],
-    'Tortle': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
+    'Shellback': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
     'Kenku': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
     'Goblin': ['Nix', 'Grib', 'Skreech', 'Toadbelly', 'Blix', 'Wort'],
     'Felari': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],

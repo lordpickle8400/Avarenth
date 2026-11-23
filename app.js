@@ -1826,7 +1826,7 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
-    var natural = { Lizardfolk: 13 + dex, Tortle: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Loxodon: 12 + con }[b.species] || 0;
+    var natural = { Lizardfolk: 13 + dex, Shellback: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Loxodon: 12 + con }[b.species] || 0;
     s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Ironcored' ? 1 : 0);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
@@ -2847,7 +2847,7 @@
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
   var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep ?gnome/i, 'Deepgnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
     [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Firbolg'], [/\btiefling/i, 'Tiefling'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
-    [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Tortle'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
+    [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Shellback'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
     [/caspian|crisfey|golden coast|akorsrest|south/i, 'south'], [/vor'?nak|strait|straitwatch|mournfell/i, 'mournfells'], [/marloo|wildreach|hermitsbay|west/i, 'west'], [/\bsea\b|island|coralyn|ship|brinewolf|wreckholm/i, 'sea']];
   function rweighted(map) { var keys = Object.keys(map), tot = keys.reduce(function (t, k) { return t + map[k]; }, 0), r = Math.random() * tot; for (var i = 0; i < keys.length; i++) { r -= map[keys[i]]; if (r < 0) return keys[i]; } return keys[0]; }
@@ -8729,7 +8729,7 @@
   var BOSS_ORDERS = { econ: 'Focus on the economy', defense: 'Focus on defense', neutral: 'Stay neutral', pay: 'Just pay wages and clear debts' };
   var BOSS_WAGE = { steward: 20, captain: 30 };
   var SEND_METHODS = { caravan: { n: 'Our own caravan', fee: 0 }, carrier: { n: 'Hired carrier', fee: 0.05 }, bonded: { n: 'Bonded courier', fee: 0.1, safe: 1 } };
-  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Tiefling', 6], ['Goliath', 5], ['Tortle', 4], ['Elf', 3], ['Dragonborn', 3], ['Kobold', 2]];
+  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Tiefling', 6], ['Goliath', 5], ['Shellback', 4], ['Elf', 3], ['Dragonborn', 3], ['Kobold', 2]];
   var BOSS_NAMES = {
     Human: [['Alric', 'Bertram', 'Cedric', 'Dunstan', 'Edwin', 'Godric', 'Hamon', 'Ivo', 'Jory', 'Kendall', 'Leofric', 'Osric', 'Piers', 'Ranulf', 'Simon', 'Tobias', 'Walter', 'Wystan', 'Gareth', 'Oswin', 'Adela', 'Beatrix', 'Cecily', 'Edith', 'Elspeth', 'Godiva', 'Hawise', 'Ottilie', 'Joan', 'Lettice', 'Mabel', 'Matilda', 'Nest', 'Petronel', 'Rohese', 'Sabine', 'Wenna', 'Alys', 'Maud', 'Agnes'], ['Ashdown', 'Barrow', 'Cooper', 'Dunmore', 'Fletcher', 'Gale', 'Hartwell', 'Holt', 'Kemble', 'Larkin', 'Marsh', 'Northey', 'Pell', 'Reeve', 'Salter', 'Thatcher', 'Tolly', 'Underhill', 'Wainwright', 'Yarrow']],
     Dwarf: [['Bjarni', 'Asgaut', 'Gorm', 'Halvard', 'Ivar', 'Kolbjorn', 'Orm', 'Ragnvald', 'Sten', 'Thrain', 'Ulf', 'Arn', 'Egil', 'Haakon', 'Knut', 'Leif', 'Asta', 'Dagny', 'Freydis', 'Gudrun', 'Helga', 'Jorunn', 'Ragna', 'Solveig', 'Thora', 'Vigdis', 'Yrsa', 'Brynja', 'Sigrid'], ['Anvilborn', 'Slagfist', 'Frostmantle', 'Deepdelve', 'Ironvein', 'Coalbeard', 'Stonewright', 'Hammerfell']],
@@ -8738,7 +8738,7 @@
     Orc: [['Grul', 'Krag', 'Mog', 'Ront', 'Thokk', 'Ugar', 'Vrak', 'Dush', 'Gorza', 'Hruna', 'Kesh', 'Murza', 'Ovak', 'Shagga', 'Tarsk', 'Yrga', 'Bolg', 'Garra', 'Nazka', 'Ruk'], ['Og’knack', 'Mor’tak', 'Gor’mul', 'Vra’zun', 'Tul’gash', 'Sha’dok', 'Kra’vek', 'Dur’nash']],
     Tiefling: [['Ash', 'Mercy', 'Patience', 'Hope', 'Ember', 'Temperance', 'Solace', 'Vigil', 'Penance', 'Sorrow', 'Grace', 'Quiet', 'Faith', 'Thorn', 'Wren'], ['']],
     Goliath: [['Thokar', 'Ulmeka', 'Raavik', 'Bhaltu', 'Kessra', 'Morga', 'Ruvak', 'Enneth', 'Tavu', 'Ilka', 'Orruk', 'Vashti', 'Gorrun', 'Halek', 'Maulo', 'Senna'], ['Rockcarrier', 'Longstride', 'Wolfwatcher', 'Stormwalker', 'Bearkiller', 'Highclimber', 'Fireheart', 'Threeblood', 'Ridgetaker', 'Snowfoot']],
-    Tortle: [['Gnabu', 'Ojo', 'Quoba', 'Sheshi', 'Tibor', 'Ubok', 'Wuxa', 'Yoren', 'Shellsby', 'Old Ponder'], ['']],
+    Shellback: [['Gnabu', 'Ojo', 'Quoba', 'Sheshi', 'Tibor', 'Ubok', 'Wuxa', 'Yoren', 'Shellsby', 'Old Ponder'], ['']],
     Elf: [['Aerindel', 'Calathae', 'Elowyn', 'Faelir', 'Ithrien', 'Lauriel', 'Mirathel', 'Nirilien', 'Quelassa', 'Sylvaen', 'Thalindor', 'Varethil'], ['']],
     Dragonborn: [['Arkath', 'Belaxin', 'Draveth', 'Grisax', 'Hyrrin', 'Kaldrath', 'Maruvax', 'Nythin', 'Orrath', 'Pyraxin', 'Rhovax', 'Sevrin', 'Thalrath', 'Zorvath'], ['Ignis']],
     Kobold: [['Brikki', 'Chizzik', 'Drekk', 'Fizzik', 'Gribbik', 'Hekka', 'Jikkit', 'Krizz', 'Mekkik', 'Nibbik', 'Pazzik', 'Rikkit', 'Skrik'], ['Ignis']]
