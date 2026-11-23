@@ -5548,7 +5548,7 @@
   var shops = [], places = [];
 
   function loadShops() {
-    if (!isDM()) { loaded.shops = true; return Promise.resolve(); }
+    if (!isDM()) return sb.from('shops_player').select('*').order('name').then(function (r) { if (r.error) throw r.error; shops = r.data || []; loaded.shops = true; }).catch(function () { shops = []; loaded.shops = true; });
     return Promise.all([
       sb.from('shops').select('*').order('name'),
       sb.from('places').select('article_id, size, tags, price_mod')
@@ -6425,10 +6425,19 @@
     $view.innerHTML = html + '</div>';
   }
 
+  // What the party sees at the counter: the shelves as they are, with no DM notes, orders or ledger.
+  function renderPlayerShop(shop) {
+    var place = shop.place_id ? articleById(shop.place_id) : null, rows = (shop.stock || []).filter(function (r) { return r.q !== 0; });
+    $view.innerHTML = '<div class="page narrow"><p class="eyebrow">' + esc(shop.kind) + (place ? ' · ' + esc(place.title) : '') + '</p><h2 class="at-h">' + esc(shop.name) + '</h2>' +
+      (shop.keeper ? '<p class="prose">' + esc(String(shop.keeper).replace(/\[\[|\]\]/g, '')) + '</p>' : '') + (shop.notes ? '<p class="prose">' + esc(shop.notes) + '</p>' : '') +
+      (shop.quirk ? '<p class="note">' + esc(shop.quirk) + '</p>' : '') +
+      (rows.length ? '<div class="tbl">' + rows.map(function (r) { return '<div class="tbl-row"><div class="main"><b>' + esc(r.n) + '</b></div><div class="side">' + (r.q == null ? 'Service' : esc(String(r.q)) + ' in stock') + ' · ' + money(toCp(r.p)) + '</div></div>'; }).join('') + '</div>' : '<div class="empty">Nothing on the shelves today.</div>') + '</div>';
+  }
   function renderShop(id) {
     if (!loaded.wiki || !loaded.shops || !loaded.chars) { $view.innerHTML = '<div class="page"><div class="empty">Opening the shop…</div></div>'; return; }
     var shop = shopById(id);
     if (!shop) { $view.innerHTML = '<div class="page narrow"><div class="empty">That shop is gone.</div></div>'; return; }
+    if (!isDM()) return renderPlayerShop(shop);
     if (ui.freshened !== shop.id) { ui.freshened = shop.id; if (ui.papersChk) Object.keys(ui.papersChk).forEach(function (k) { if (k.indexOf(shop.id + '|') === 0) delete ui.papersChk[k]; }); if (ui.marketNews) delete ui.marketNews[shop.id]; marketTick(shop.campaign_id); freshenShop(shop); }
     var place = shop.place_id ? articleById(shop.place_id) : null, camp = shop.campaign_id ? campaignById(shop.campaign_id) : null;
     var K = ITEMS.shopKinds[shop.kind] || {};
@@ -11439,7 +11448,7 @@
       html += '<button type="button" class="ap ap-' + mk.kind + ' t' + tier + (sel ? ' sel' : '') + (city ? ' has-city' : '') + '" style="left:' + (mk.x * w.w) + 'px;top:' + (mk.y * w.h) + 'px" data-pin="marker" data-id="' + esc(mk.id) + '" aria-label="' + esc(markerLabel(mk)) + '"><i></i>' +
         (L.labels ? '<span class="lbl">' + esc(markerLabel(mk)) + (n ? '<small>' + n + '</small>' : '') + '</span>' : '') + '</button>';
     });
-    if (L.shops && loaded.shops) shops.filter(function (sp) { return sp.map_id === m.id && sp.map_x != null; }).forEach(function (sp) {
+    if (isDM() && L.shops && loaded.shops) shops.filter(function (sp) { return sp.map_id === m.id && sp.map_x != null; }).forEach(function (sp) {
       html += '<button type="button" class="ap ap-shop t3' + (AT.sel && AT.sel.t === 'shop' && AT.sel.id === sp.id ? ' sel' : '') + '" style="left:' + (sp.map_x * w.w) + 'px;top:' + (sp.map_y * w.h) + 'px" data-pin="shop" data-id="' + esc(sp.id) + '" aria-label="Shop: ' + esc(sp.name) + '"><i></i><span class="lbl">' + esc(sp.name) + '</span></button>';
     });
     if (L.party && t && t.map_id === m.id) {
@@ -11498,6 +11507,7 @@
       (TABLE ? '<div class="at-tools"><button type="button" class="at-btn" data-at="party">Party</button><button type="button" class="at-btn" data-at="tpin-add" aria-pressed="' + (AT.placing === 'tpin') + '">+ Pin</button><button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '">Measure</button><button type="button" class="at-btn icon" data-at="full" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="at-btn icon" data-at="menu" aria-label="More">⋯</button></div></div>' : '') +
       (TABLE ? '' : '<div class="at-tools">' +
       '<button type="button" class="at-btn" data-at="party" title="The party">Party</button>' +
+      (cityOfKey(AT.key) ? '<button type="button" class="at-btn" data-at="cityshops" aria-pressed="' + (AT.sel && AT.sel.t === 'cityshops' ? 'true' : 'false') + '" title="Shops in this city">Shops</button>' : '') +
       '<button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '" title="Measure distance">Measure</button>' +
       '<button type="button" class="at-btn" data-at="layers" aria-expanded="false" title="Layers">Layers</button>' +
       '<button type="button" class="at-btn" data-at="link" aria-pressed="' + AT.linked + '" title="Link this screen to your other devices">' + (AT.linked ? 'Linked' : 'Link screens') + '</button>' +
@@ -11933,6 +11943,11 @@
         '</div><div id="at-art"></div>';
       body.innerHTML = html;
       intoPanel(document.getElementById('at-art'), function () { renderArticle(a.slug); });
+    } else if (sel.t === 'cityshops') {
+      var cs = cityOfKey(sel.key), csa = cs ? articleBySlug(cs.slug) : null;
+      var csl = csa ? shops.filter(function (x) { return x.place_id === csa.id && !isWanderer(x); }) : [];
+      title.textContent = 'Shops · ' + (cs ? cs.city.name : '');
+      body.innerHTML = !loaded.shops ? '<div class="empty">Opening the market…</div>' : csl.length ? '<div class="list">' + csl.map(function (x) { return '<button type="button" class="row cs-row" data-at="shop-open" data-id="' + esc(x.id) + '"><span class="row-main"><b>' + esc(x.name) + '</b><span>' + esc(x.kind + ' · ' + String(x.keeper || '').replace(/\[\[|\]\]/g, '')) + '</span></span></button>'; }).join('') + '</div>' : '<div class="empty">No shops here yet.</div>';
     } else if (sel.t === 'shop') {
       var sp = shopById(sel.id);
       title.textContent = sp ? sp.name : 'Shop';
@@ -12002,6 +12017,8 @@
     switch (a) {
       case 'hit': return pickHit((AT.hits || [])[num(el.getAttribute('data-i'), 0)]);
       case 'close': return closePanel();
+      case 'cityshops': if (AT.sel && AT.sel.t === 'cityshops') return closePanel(); return openSel({ t: 'cityshops', key: AT.key }, true);
+      case 'shop-open': return openSel({ t: 'shop', id: el.getAttribute('data-id') });
       case 'back': AT.sel = AT.hist.pop() || null; return refreshAtlas();
       case 'sheet': AT.sheet = AT.sheet === 'full' ? 'peek' : 'full'; document.getElementById('at-panel').setAttribute('data-sheet', AT.sheet); return;
       case 'fly': return goIsles(function () { animateTo(Number(el.getAttribute('data-x')), Number(el.getAttribute('data-y')), Math.max(AT.k, AT.fit * 3)); });
