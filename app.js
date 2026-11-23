@@ -1967,7 +1967,7 @@
     var picked = !other && L.featPick ? srdFeat(L.featPick) : null;
     return '<div class="field"><label for="lv-featpick">Feat</label><select id="lv-featpick" data-lv="featPick"><option value="">Choose…</option>' + list.map(function (f) { return '<option value="' + esc(f.name) + '"' + (L.featPick === f.name ? ' selected' : '') + '>' + esc(f.name) + (f.prereq ? ' (' + esc(f.prereq) + ')' : '') + '</option>'; }).join('') + '<option value="__other"' + (L.featPick === '__other' ? ' selected' : '') + '>Another feat (type its name)</option></select></div>' +
       (picked ? srdDetails(picked.text, 'What ' + picked.name + ' does', picked.meta) : '') +
-      (other ? '<div class="field"><label for="lv-feat">Feat name</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. War Caster"><span class="hint">Feats from the paid books: check with your DM, and type in what it does on your sheet.</span></div>' : '');
+      (other ? '<div class="field"><label for="lv-feat">Feat name</label><input type="text" id="lv-feat" data-lv="feat" maxlength="60" value="' + esc(L.feat) + '" placeholder="e.g. Battle Mage"><span class="hint">Feats from the paid books: check with your DM, and type in what it does on your sheet.</span></div>' : '');
   }
   function levelUpError(L, needSub, isAsi, needArc) {
     if (L.hp === 'roll' && !L.rolled) return 'Enter what your hit die rolled, or take the average.';
