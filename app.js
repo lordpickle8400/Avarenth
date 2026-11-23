@@ -2117,7 +2117,7 @@
     html += '<div class="cs-combat"><div class="cs-ac" aria-label="Armor class" title="' + esc(acNow.how) + '"><span class="k">Armor</span><span class="v">' + acNow.ac + '</span><span class="k">Class</span></div>' +
       csStat('Initiative', signed(init), '') + (sa ? csStat('Spell save', String(8 + pb + sa.mod), 'DC') + csStat('Spell attack', signed(pb + sa.mod), sa.key.toUpperCase()) : '') + '</div>';
     html += conditionHtml(s, can, true);
-    var tabs = (phone ? ['Abilities', 'Skills', 'Profs'] : []).concat(['Actions', 'Spells', 'Inventory', 'Workshop', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
+    var tabs = (phone ? ['Abilities', 'Skills', 'Profs'] : []).concat(['Actions', 'Spells', 'Inventory', 'Companions', 'Workshop', 'Features', 'Background', 'Reputation', 'Record', 'Notes']);
     if (tabs.indexOf(ui.sheetTab) < 0) ui.sheetTab = phone && ui.sheetTab === 'Skills' ? 'Skills' : 'Actions';
     var tabName = { Features: 'Features & Traits', Abilities: 'Abilities & Saves' };
     html += '<div class="subtabs cs-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-act="sheet-tab" data-tab="' + t + '" aria-selected="' + (ui.sheetTab === t) + '">' + (tabName[t] || t) + '</button>'; }).join('') + '</div>';
@@ -2141,12 +2141,13 @@
     Profs: '<circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/>',
     Background: '<path d="M4 20V6l8-3 8 3v14M9 20v-6h6v6"/>',
     Reputation: '<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>',
+    Companions: '<path d="M7 9c0-2 1.5-3 3-3s3 1 3 3-1.5 3-3 3-3-1-3-3zM4 20c0-3 3-5 6-5s6 2 6 5M17 7c1.5 0 3 1 3 3s-1 3-2.5 3"/>',
     Workshop: '<path d="M4 10h12l4-3M4 10v3h6l1 4h-4v3h10v-3h-4l1-4h3l1-3"/>',
     Record: '<path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"/>',
     Notes: '<path d="M5 19l1-4L16 5l3 3L9 18zM14 7l3 3"/>'
   };
-  var M_NAME = { Abilities: 'Stats & Saves', Actions: 'Combat', Inventory: 'Pack', Spells: 'Magic', Features: 'Traits', Profs: 'Training', Background: 'Story', Reputation: 'Standing', Notes: 'Journal' };
-  var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Workshop', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
+  var M_NAME = { Companions: 'Pets', Abilities: 'Stats & Saves', Actions: 'Combat', Inventory: 'Pack', Spells: 'Magic', Features: 'Traits', Profs: 'Training', Background: 'Story', Reputation: 'Standing', Notes: 'Journal' };
+  var M_ORDER = ['Abilities', 'Skills', 'Actions', 'Inventory', 'Companions', 'Workshop', 'Spells', 'Features', 'Profs', 'Background', 'Reputation', 'Record', 'Notes'];
   function mIcon(k) { return '<svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true">' + (M_ICON[k] || '') + '</svg>'; }
   function csPhone(c, s, full, o) {
     function cut(a, b) { var i = full.indexOf(a), j = b ? full.indexOf(b, i + 1) : -1; return i < 0 ? '' : full.slice(i, j < 0 ? undefined : j); }
@@ -4227,9 +4228,38 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') peekClose(); });
   window.addEventListener('hashchange', peekClose);
 
+  /* Companions: pets, mounts, familiars and animal companions. Each can be tied to a creature in the bestiary
+     for its stat block; AC, HP and speed come from it unless the player changes them. */
+  function petMon(p) { return p && p.mon ? monBySlug(p.mon) : null; }
+  function companionsTabHtml(c, s, can) {
+    if (!MONS) loadMonsters();
+    var pets = s.pets || [], beasts = (MONS || []).filter(function (m) { return /Beast|Monstrosity|Dragon|Construct|Celestial|Fey|Fiend|Elemental/.test(m.type || ''); });
+    var html = '<section class="block" style="margin-top:12px"><h2 class="sec-title">Companions<small>' + pets.length + '</small></h2>';
+    if (!pets.length) html += '<div class="empty">No pets, mounts or animal companions yet.</div>';
+    pets.forEach(function (p, i) {
+      var m = petMon(p), open = ui.petOpen === i;
+      var fld = function (k, label, type, w) { return can ? '<label class="sr" for="pet-' + k + '-' + i + '">' + label + '</label><input type="' + (type || 'text') + '" class="input mini" id="pet-' + k + '-' + i + '" data-pet="' + i + '" data-pfield="' + k + '" value="' + esc(p[k] == null ? '' : p[k]) + '" placeholder="' + label + '" style="width:' + (w || '5em') + '">' : '<span>' + esc(p[k] || '—') + '</span>'; };
+      html += '<div class="group-box pet-card"><div class="tbl-row"><div class="main"><b>' + esc(p.name || 'Unnamed') + '</b><small> ' + esc([p.kind || (m ? m.name : ''), m ? m.size + ' ' + m.type : ''].filter(Boolean).join(' · ')) + '</small></div>' +
+        (can ? '<button type="button" class="btn small quiet" data-act="pet-rm" data-i="' + i + '" aria-label="Remove ' + esc(p.name || 'companion') + '">✕</button>' : '') + '</div>' +
+        '<div class="vitals sum">' + vital('AC', p.ac || (m ? String(m.ac).split(' ')[0] : '—')) + vital('HP', num(p.hp, 0) + ' / ' + num(p.max, 0)) + vital('Speed', p.speed || (m ? m.speed : '—')) + '</div>' +
+        (can ? '<div class="actions"><button type="button" class="btn small" data-act="pet-hp" data-i="' + i + '" data-dir="-1">−1 HP</button><button type="button" class="btn small" data-act="pet-hp" data-i="' + i + '" data-dir="1">+1 HP</button><button type="button" class="btn small" data-act="pet-hp" data-i="' + i + '" data-dir="0">Full</button>' +
+          (m ? '<button type="button" class="btn small quiet" data-act="pet-stat" data-i="' + i + '">' + (open ? 'Hide stats' : 'Stat block') + '</button>' : '') + '</div>' : (m ? '<div class="actions"><button type="button" class="btn small quiet" data-act="pet-stat" data-i="' + i + '">' + (open ? 'Hide stats' : 'Stat block') + '</button></div>' : '')) +
+        (can ? '<div class="field-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' + fld('name', 'Name', 'text', '9em') + fld('max', 'Max HP', 'number') + fld('ac', 'AC', 'text') + fld('speed', 'Speed', 'text', '7em') + '</div>' : '') +
+        (can ? '<div class="field" style="margin-top:6px"><label for="pet-notes-' + i + '">Notes</label><input type="text" class="input" id="pet-notes-' + i + '" data-pet="' + i + '" data-pfield="notes" value="' + esc(p.notes || '') + '" placeholder="Tricks, temperament, where it came from"></div>' : (p.notes ? '<p class="note">' + esc(p.notes) + '</p>' : '')) +
+        (open && m ? monStatBlock(m) : '') + '</div>';
+    });
+    if (can) html += '<form class="form" id="pet-form" novalidate style="margin-top:12px"><h3 class="act-h">Add a companion</h3>' +
+      '<div class="field"><label for="pet-new-name">Name</label><input type="text" id="pet-new-name" maxlength="60" placeholder="e.g. Biscuit"></div>' +
+      '<div class="field"><label for="pet-new-mon">Creature</label><input type="text" id="pet-new-mon" list="pet-mons" placeholder="' + (MONS ? 'Start typing: Mastiff, Riding Horse, Owl…' : 'Loading the bestiary…') + '"><datalist id="pet-mons">' + beasts.map(function (m) { return '<option value="' + esc(m.name) + '">'; }).join('') + '</datalist>' +
+      '<p class="note">Pick from the list to pull its stats in, or type anything for a pet with no stats.</p></div>' +
+      '<div class="actions"><button type="button" class="btn primary" data-act="pet-add">Add companion</button></div></form>';
+    return html + '</section>';
+  }
   function sheetTab(c, s, edit, can, abil, pb, perc) {
     var html = '';
-    if (ui.sheetTab === 'Actions') {
+    if (ui.sheetTab === 'Companions') {
+      html += companionsTabHtml(c, s, can);
+    } else if (ui.sheetTab === 'Actions') {
       html += actionsTabHtml(c, s, edit, can, abil, pb);
     } else if (ui.sheetTab === 'Spells') {
       html += spellsTabHtml(c, s, edit, can);
@@ -10866,6 +10896,24 @@
           mp.cur = Math.max(0, Math.min(num(mp.max, 0), num(mp.cur, 0) + dir * amt));
         }
         render(); saveCharSoon(c); break;
+      case 'pet-add':
+        if (!c) return;
+        var pnm = (document.getElementById('pet-new-name') || {}).value || '', pmn = ((document.getElementById('pet-new-mon') || {}).value || '').trim();
+        var pmo = pmn ? allMonsters().filter(function (m) { return m.name.toLowerCase() === pmn.toLowerCase(); })[0] : null;
+        var php = pmo ? num(String(pmo.hp).split(' ')[0], 1) : 1;
+        c.sheet.pets = c.sheet.pets || [];
+        c.sheet.pets.push({ name: pnm.trim() || (pmo ? pmo.name : pmn) || 'Companion', kind: pmo ? pmo.name : pmn, mon: pmo ? monSlug(pmo.name) : '', hp: php, max: php, ac: '', speed: '', notes: '' });
+        render(); saveCharSoon(c); break;
+      case 'pet-rm':
+        if (!c) return; var pri = num(el.getAttribute('data-i'), -1), prp = (c.sheet.pets || [])[pri];
+        if (prp) { c.sheet.pets.splice(pri, 1); ui.petOpen = null; toast((prp.name || 'Companion') + ' removed'); render(); saveCharSoon(c); }
+        break;
+      case 'pet-hp':
+        if (!c) return; var phi = (c.sheet.pets || [])[num(el.getAttribute('data-i'), -1)]; if (!phi) return;
+        var pdir = num(el.getAttribute('data-dir'), 0);
+        phi.hp = pdir === 0 ? num(phi.max, 0) : Math.max(0, Math.min(num(phi.max, 0), num(phi.hp, 0) + pdir));
+        render(); saveCharSoon(c); break;
+      case 'pet-stat': var psi = num(el.getAttribute('data-i'), -1); ui.petOpen = ui.petOpen === psi ? null : psi; render(); break;
       case 'hp-full': if (!c) return; c.sheet.hp.cur = num(c.sheet.hp.max, 0); render(); saveCharSoon(c); break;
       case 'mp-full': if (!c) return; c.sheet.mana.cur = num(c.sheet.mana.max, 0); render(); saveCharSoon(c); break;
       case 'cast': if (c) castSpell(c, num(el.getAttribute('data-i'), -1)); break;
@@ -11220,6 +11268,12 @@
   document.addEventListener('input', function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute('data-dp')) dayPromptInput(t); });
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.hasAttribute && t.hasAttribute('data-pet')) {
+      var pc = currentChar(), pp = pc && (pc.sheet.pets || [])[num(t.getAttribute('data-pet'), -1)]; if (!pp) return;
+      var pk = t.getAttribute('data-pfield'); pp[pk] = pk === 'max' ? Math.max(0, num(t.value, 0)) : t.value.trim();
+      if (pk === 'max') pp.hp = Math.min(num(pp.hp, 0), pp.max);
+      render(); saveCharSoon(pc); return;
+    }
     if (t.hasAttribute && t.hasAttribute('data-wx-region')) { ui.wxRegion = ui.wxRegion || {}; ui.wxRegion[t.getAttribute('data-camp')] = t.value; return render(); }
     if (t.hasAttribute && t.hasAttribute('data-watch')) { watchState(t.getAttribute('data-camp'), t.getAttribute('data-watch'))[t.getAttribute('data-wfield')] = t.value; return; }
     if (t.hasAttribute && t.hasAttribute('data-dp')) { dayPromptInput(t); return; }
