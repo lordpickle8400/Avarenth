@@ -2845,7 +2845,7 @@
 
   /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
-  var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep gnome|\bsvirfneblin/i, 'Deep Gnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
+  var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep ?gnome/i, 'Deepgnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
     [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Firbolg'], [/\btiefling/i, 'Tiefling'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
     [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Tortle'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
