@@ -112,9 +112,9 @@ S["Monk"] = {
   [17, "Opportunist", "Reaction: attack a creature within 5 ft that just got hit by someone else."]]),
  "Way of the Four Winds": ("You channel ki into elemental disciplines.", [
   [3, "Disciple of the Elements", "Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."],
-  [6, "More disciplines", "Learn another discipline; you can swap one out when you gain a discipline."],
-  [11, "More disciplines", "Learn another discipline and spend more ki to empower them."],
-  [17, "More disciplines", "Learn another discipline."]]),
+  [6, "Elemental Discipline", "Learn another discipline; you can swap one out when you gain a discipline."],
+  [11, "Greater Discipline", "Learn another discipline and spend more ki to empower them."],
+  [17, "Mastered Discipline", "Learn another discipline."]]),
  "Way of the Last Breath": ("A monk who studies death and feeds on it.", [
   [3, "Killing Touch", "When you reduce a creature within 5 ft to 0 HP, gain temporary HP."],
   [6, "Hour of Harvest", "Action: creatures within 30 ft save (Wis) or are frightened of you."],
