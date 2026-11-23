@@ -1747,7 +1747,7 @@
   };
   var CLASS_ABIL_NOTE = { Fighter: 'Put Dexterity first instead for an archer or finesse build.', Cleric: 'Heavy-armor domains like War and Life like Strength; the rest can take Dexterity.', Ranger: 'Dexterity and Wisdom are both needed, so split the top picks.' };
   // Abilities a species' traits and build lean on, if any. Humans and anything homebrew get no hint.
-  var SPECIES_LEAN = { Dwarf: ['con'], Elf: ['dex'], Halfling: ['dex'], Dragonborn: ['str', 'cha'], Kobold: ['dex'], Lizardfolk: ['con', 'str'], Gnome: ['int'], 'Half-Elf': ['cha'], 'Half-Orc': ['str', 'con'], Orc: ['str', 'con'], Goliath: ['str', 'con'], Tiefling: ['cha'] };
+  var SPECIES_LEAN = { Dwarf: ['con'], Elf: ['dex'], Halfling: ['dex'], Dragonborn: ['str', 'cha'], Kobold: ['dex'], Lizardfolk: ['con', 'str'], Gnome: ['int'], 'Half-Elf': ['cha'], 'Half-Orc': ['str', 'con'], Orc: ['str', 'con'], Goliath: ['str', 'con'], Infernite: ['cha'] };
   function abilName(k) { return (ABILITIES.filter(function (a) { return a[0] === k; })[0] || [k, k])[1]; }
   function fitTag(b, k) {
     var o = CLASS_ABIL_ORDER[b.cls], i = o ? o.indexOf(k) : -1;
@@ -2846,14 +2846,14 @@
   /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
   var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep ?gnome/i, 'Deepgnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
-    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Mossborn'], [/\btiefling/i, 'Tiefling'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
+    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Mossborn'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
     [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Shellback'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
     [/caspian|crisfey|golden coast|akorsrest|south/i, 'south'], [/vor'?nak|strait|straitwatch|mournfell/i, 'mournfells'], [/marloo|wildreach|hermitsbay|west/i, 'west'], [/\bsea\b|island|coralyn|ship|brinewolf|wreckholm/i, 'sea']];
   function rweighted(map) { var keys = Object.keys(map), tot = keys.reduce(function (t, k) { return t + map[k]; }, 0), r = Math.random() * tot; for (var i = 0; i < keys.length; i++) { r -= map[keys[i]]; if (r < 0) return keys[i]; } return keys[0]; }
   function readNpcPrompt(text) {
     var t = String(text || ''), out = { words: t.trim() };
-    RACE_WORDS.some(function (r) { if (r[0].test(t) && !(r[1] === 'Human' && /\b(dwar|elf|orc|gnom|halfl|kobold|dragon|lizard|tortle|goliath|tiefling|firbolg)/i.test(t))) { out.race = r[1]; return true; } return false; });
+    RACE_WORDS.some(function (r) { if (r[0].test(t) && !(r[1] === 'Human' && /\b(dwar|elf|orc|gnom|halfl|kobold|dragon|lizard|tortle|goliath|infernite|firbolg)/i.test(t))) { out.race = r[1]; return true; } return false; });
     PLACE_WORDS.some(function (p) { if (p[0].test(t)) { out.district = p[1]; return true; } return false; });
     if (/\b(woman|female|she|her|girl|lady|wife|mother|widow|daughter|sister|maid|queen|duchess|priestess)\b/i.test(t)) out.sex = 'f';
     else if (/\b(man|male|he|his|boy|lord|husband|father|son|brother|king|duke|priest)\b/i.test(t)) out.sex = 'm';
@@ -3340,7 +3340,7 @@
     } else html += '<p class="note">The party isn’t at a named place right now. <a class="link" href="#/map">Open the map</a></p>';
     html += '</section>';
     // Quick names
-    var races = ['Human', 'Human', 'Dwarf', 'Elf', 'Halfling', 'Gnome', 'Half-Orc', 'Tiefling'];
+    var races = ['Human', 'Human', 'Dwarf', 'Elf', 'Halfling', 'Gnome', 'Half-Orc', 'Infernite'];
     html += '<section class="block"><h2 class="sec-title">Quick names<small><button type="button" class="linkish" data-act="now-names">New names</button></small></h2><ul class="recap-list">' +
       races.map(function (r) { return '<li><b>' + esc(standInName(r)) + '</b> <small class="note">' + esc(r) + '</small></li>'; }).join('') +
       '</ul><div class="actions"><a class="btn small" href="#/npcs">Make a full NPC</a><a class="btn small" href="#/combat">Start combat</a><a class="btn small" href="#/loot">Roll loot</a></div></section>';
@@ -8729,14 +8729,14 @@
   var BOSS_ORDERS = { econ: 'Focus on the economy', defense: 'Focus on defense', neutral: 'Stay neutral', pay: 'Just pay wages and clear debts' };
   var BOSS_WAGE = { steward: 20, captain: 30 };
   var SEND_METHODS = { caravan: { n: 'Our own caravan', fee: 0 }, carrier: { n: 'Hired carrier', fee: 0.05 }, bonded: { n: 'Bonded courier', fee: 0.1, safe: 1 } };
-  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Tiefling', 6], ['Goliath', 5], ['Shellback', 4], ['Elf', 3], ['Dragonborn', 3], ['Kobold', 2]];
+  var BOSS_RACES = [['Human', 40], ['Dwarf', 12], ['Halfling', 10], ['Gnome', 8], ['Orc', 7], ['Infernite', 6], ['Goliath', 5], ['Shellback', 4], ['Elf', 3], ['Dragonborn', 3], ['Kobold', 2]];
   var BOSS_NAMES = {
     Human: [['Alric', 'Bertram', 'Cedric', 'Dunstan', 'Edwin', 'Godric', 'Hamon', 'Ivo', 'Jory', 'Kendall', 'Leofric', 'Osric', 'Piers', 'Ranulf', 'Simon', 'Tobias', 'Walter', 'Wystan', 'Gareth', 'Oswin', 'Adela', 'Beatrix', 'Cecily', 'Edith', 'Elspeth', 'Godiva', 'Hawise', 'Ottilie', 'Joan', 'Lettice', 'Mabel', 'Matilda', 'Nest', 'Petronel', 'Rohese', 'Sabine', 'Wenna', 'Alys', 'Maud', 'Agnes'], ['Ashdown', 'Barrow', 'Cooper', 'Dunmore', 'Fletcher', 'Gale', 'Hartwell', 'Holt', 'Kemble', 'Larkin', 'Marsh', 'Northey', 'Pell', 'Reeve', 'Salter', 'Thatcher', 'Tolly', 'Underhill', 'Wainwright', 'Yarrow']],
     Dwarf: [['Bjarni', 'Asgaut', 'Gorm', 'Halvard', 'Ivar', 'Kolbjorn', 'Orm', 'Ragnvald', 'Sten', 'Thrain', 'Ulf', 'Arn', 'Egil', 'Haakon', 'Knut', 'Leif', 'Asta', 'Dagny', 'Freydis', 'Gudrun', 'Helga', 'Jorunn', 'Ragna', 'Solveig', 'Thora', 'Vigdis', 'Yrsa', 'Brynja', 'Sigrid'], ['Anvilborn', 'Slagfist', 'Frostmantle', 'Deepdelve', 'Ironvein', 'Coalbeard', 'Stonewright', 'Hammerfell']],
     Halfling: [['Alton', 'Cade', 'Eldon', 'Garret', 'Lyle', 'Milo', 'Osborn', 'Perrin', 'Roscoe', 'Wellby', 'Bree', 'Callie', 'Daisy', 'Jilly', 'Tansy', 'Posy', 'Merla', 'Nedda', 'Clover', 'Verna'], ['Reedmoor', 'Lakeside', 'Stiltwater', 'Eelbrook', 'Marshwell', 'Rushbank', 'Fenhollow', 'Willowdock', 'Mudfoot', 'Tallreed']],
     Gnome: [['Alvyn “Al”', 'Brocc “Bix”', 'Dimble “Dim”', 'Fonkin “Fonk”', 'Orryn “Rin”', 'Pellidrin “Pell”', 'Carlin “Carl”', 'Wennaflo “Wen”', 'Nissaberra “Niss”', 'Zannimel “Zan”'], ['of Tickwhistle Works', 'of the Brass Lantern', 'of Copperwheel', 'of Gearsprung', 'of Fiddlebolt', 'of the Ninth Spring', 'of Sparkwright’s', 'of Tumbler & Key', 'of Glasswing', 'of Clockmere']],
     Orc: [['Grul', 'Krag', 'Mog', 'Ront', 'Thokk', 'Ugar', 'Vrak', 'Dush', 'Gorza', 'Hruna', 'Kesh', 'Murza', 'Ovak', 'Shagga', 'Tarsk', 'Yrga', 'Bolg', 'Garra', 'Nazka', 'Ruk'], ['Og’knack', 'Mor’tak', 'Gor’mul', 'Vra’zun', 'Tul’gash', 'Sha’dok', 'Kra’vek', 'Dur’nash']],
-    Tiefling: [['Ash', 'Mercy', 'Patience', 'Hope', 'Ember', 'Temperance', 'Solace', 'Vigil', 'Penance', 'Sorrow', 'Grace', 'Quiet', 'Faith', 'Thorn', 'Wren'], ['']],
+    Infernite: [['Ash', 'Mercy', 'Patience', 'Hope', 'Ember', 'Temperance', 'Solace', 'Vigil', 'Penance', 'Sorrow', 'Grace', 'Quiet', 'Faith', 'Thorn', 'Wren'], ['']],
     Goliath: [['Thokar', 'Ulmeka', 'Raavik', 'Bhaltu', 'Kessra', 'Morga', 'Ruvak', 'Enneth', 'Tavu', 'Ilka', 'Orruk', 'Vashti', 'Gorrun', 'Halek', 'Maulo', 'Senna'], ['Rockcarrier', 'Longstride', 'Wolfwatcher', 'Stormwalker', 'Bearkiller', 'Highclimber', 'Fireheart', 'Threeblood', 'Ridgetaker', 'Snowfoot']],
     Shellback: [['Gnabu', 'Ojo', 'Quoba', 'Sheshi', 'Tibor', 'Ubok', 'Wuxa', 'Yoren', 'Shellsby', 'Old Ponder'], ['']],
     Elf: [['Aerindel', 'Calathae', 'Elowyn', 'Faelir', 'Ithrien', 'Lauriel', 'Mirathel', 'Nirilien', 'Quelassa', 'Sylvaen', 'Thalindor', 'Varethil'], ['']],

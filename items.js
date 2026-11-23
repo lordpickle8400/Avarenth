@@ -178,7 +178,7 @@
     'Orc': ['Grosh', 'Murga', 'Thokk', 'Ushna', 'Bazrak', 'Volga'],
     'Half-Orc': ['Dench', 'Krusk', 'Ovak', 'Sutha', 'Mhurren', 'Engong'],
     'Goliath': ['Aukan', 'Kuori', 'Maveith', 'Thalai', 'Gae-Al', 'Nalla'],
-    'Tiefling': ['Akmenos', 'Bryseis', 'Criella', 'Damakos', 'Orianna', 'Mordai', 'Rieta', 'Leucis'],
+    'Infernite': ['Akmenos', 'Bryseis', 'Criella', 'Damakos', 'Orianna', 'Mordai', 'Rieta', 'Leucis'],
     'Dragonborn': ['Arjhan', 'Kriv', 'Sora', 'Thava', 'Medrash', 'Nala'],
     'Kobold': ['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Rikka', 'Skivv'],
     'Lizardfolk': ['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'],

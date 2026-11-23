@@ -822,7 +822,7 @@
     {
       "name": "Flames of Phlegethos",
       "category": "General",
-      "prereq": "Level 4+, Tiefling",
+      "prereq": "Level 4+, Infernite",
       "book": "Xanathar's Guide to Everything",
       "text": [
         [
@@ -835,7 +835,7 @@
     {
       "name": "Infernal Constitution",
       "category": "General",
-      "prereq": "Level 4+, Tiefling",
+      "prereq": "Level 4+, Infernite",
       "book": "Xanathar's Guide to Everything",
       "text": [
         [
