@@ -1641,7 +1641,7 @@
       }
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
-      var sp = RULES.species[b.species], spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<p class="note" style="margin:0 0 8px">' + esc(sp.note) + '</p>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
+      var sp = RULES.species[b.species], spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<div class="note" style="margin:0 0 8px">' + rich(sp.note) + '</div>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
         sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>' : '';
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.'], ['homebrew', 'Homebrew', 'Made at your table and approved by the DM.']].map(function (g) {
@@ -1796,7 +1796,7 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
-    var natural = { Lizardfolk: 13 + dex, Tortle: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Autognome: 13 + dex, Loxodon: 12 + con }[b.species] || 0;
+    var natural = { Lizardfolk: 13 + dex, Tortle: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, Loxodon: 12 + con }[b.species] || 0;
     s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Warforged' ? 1 : 0);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
