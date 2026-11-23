@@ -59,7 +59,7 @@
     armor: 'Light and medium armor, shields', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['History', 'Insight', 'Medicine', 'Persuasion', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Divine Domain', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Lore Domain', 'Life Domain', 'Dawn Domain', 'Wildwood Domain', 'Thunder Domain', 'Mischief Domain', 'Battle Domain', 'Anvil Domain', 'Tomb Domain', 'Order Domain', 'Peace Domain', 'Twilight Domain', 'Arcana Domain', 'Death Domain'],
+    subclasses: ['Lore Domain', 'Life Domain', 'Dawn Domain', 'Wildwood Domain', 'Thunder Domain', 'Mischief Domain', 'Battle Domain', 'Anvil Domain', 'Tomb Domain', 'Law Domain', 'Harmony Domain', 'Dusk Domain', 'Sigil Domain', 'Grim Domain'],
     features: [
       [1, 'Spellcasting', 'Your faith is the wellspring of your mana, and your prayers shape each spell. You cast with mana drawn from your faith. Wisdom is your spellcasting ability. See the Mana Guide.'],
       [1, 'Divine Domain', 'Your domain is the part of your god that you carry into the world. Your god\'s nature shapes your magic. Choose the domain your god rules and the powers that come with it.'],
@@ -76,7 +76,7 @@
     armor: 'Light and medium armor, shields (not made of metal)', weapons: 'Clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, spears', tools: 'Herbalism kit',
     skills: { n: 2, from: ['Arcana', 'Animal Handling', 'Insight', 'Medicine', 'Nature', 'Perception', 'Religion', 'Survival'] },
     subclassLevel: 2, subclassLabel: 'Druid Circle', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Circle of the Land', 'Circle of the Moon', 'Circle of Dreams', 'Circle of the Shepherd', 'Circle of Spores', 'Circle of Stars', 'Circle of Wildfire'],
+    subclasses: ['Circle of the Land', 'Circle of Lunar Forms', 'Circle of Slumber', 'Circle of the Herder', 'Circle of Mycelia', 'Circle of the Heavens', 'Circle of Emberfire'],
     features: [
       [1, 'Druidic', 'The old tongue of the groves lets you speak with the land and its keepers. You know the secret language of druids, and you can leave messages that only other druids can read.'],
       [1, 'Spellcasting', 'The wild gives you power, and you draw on it with every spell. You cast with mana. Wisdom is your spellcasting ability. See the Mana Guide.'],
@@ -94,7 +94,7 @@
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Acrobatics', 'Animal Handling', 'Athletics', 'History', 'Insight', 'Intimidation', 'Perception', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Martial Archetype', asi: [4, 6, 8, 12, 14, 16, 19],
-    subclasses: ['Champion', 'Battle Master', 'Eldritch Knight', 'Arcane Archer', 'Cavalier', 'Samurai', 'Mirrorguard', 'Mindforged', 'Runebound'],
+    subclasses: ['Champion', 'Battle Tactician', 'Spellblade', 'Arcane Bowman', 'Rider Knight', 'Honor Blade', 'Mirrorguard', 'Mindforged', 'Runebound'],
     features: [
       [1, 'Avarenth Magic', 'Your magic is small and practical, the kind a soldier picks up on campaign. You have a small mana pool and a short martial spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Fighting Style', 'Every fighter develops a way of fighting that is unmistakably their own. Pick a fighting specialty that defines how you fight, like Archery, Defense, Dueling or Great Weapon Fighting.'],
@@ -112,7 +112,7 @@
     armor: 'None', weapons: 'Simple weapons, shortswords', tools: 'One artisan\'s tool or musical instrument',
     skills: { n: 2, from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'] },
     subclassLevel: 3, subclassLabel: 'Monastic Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Way of the Open Hand', 'Way of Shadow', 'Way of the Four Elements', 'Way of the Last Breath', 'Way of the Sun Soul', 'Way of the Drunken Master', 'Way of the Kensei', 'Way of the Spiritbound', 'Way of Mercy'],
+    subclasses: ['Way of the Open Hand', 'Way of Shade', 'Way of the Four Winds', 'Way of the Last Breath', 'Way of the Sunlit Spirit', 'Way of the Tipsy Fist', 'Way of the Swordmaster', 'Way of the Spiritbound', 'Way of Compassion'],
     features: [
       [1, 'Avarenth Magic', 'You have a mana pool and a spirit-magic spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Unarmored Defense', 'Without armor or a shield, your AC is 10 + Dexterity + Wisdom.'],
@@ -142,7 +142,7 @@
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'] },
     subclassLevel: 3, subclassLabel: 'Sacred Oath', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Oath of Devotion', 'Oath of the Ancients', 'Oath of Vengeance', 'Oathbreaker', 'Oath of Conquest', 'Oath of Redemption', 'Oath of Glory', 'Oath of the Nightwatch'],
+    subclasses: ['Oath of Devotion', 'Oath of the Elders', 'Oath of Reckoning', 'Oathbroken', 'Oath of Dominion', 'Oath of Mercy', 'Oath of Renown', 'Oath of the Nightwatch'],
     features: [
       [1, 'Divine Sense', 'Sense celestials, fiends and undead nearby. Uses equal 1 + your Charisma modifier per long rest.'],
       [1, 'Lay on Hands', 'A pool of healing equal to five times your paladin level, refilled on a long rest.'],
@@ -165,7 +165,7 @@
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 3, from: ['Animal Handling', 'Athletics', 'Insight', 'Investigation', 'Nature', 'Perception', 'Stealth', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Ranger Archetype', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Hunter', 'Beast Master', 'Gloom Stalker', 'Horizon Walker', 'Monster Slayer', 'Fey Wanderer', 'Swarmkeeper', 'Wyrmrider'],
+    subclasses: ['Hunter', 'Beast Warden', 'Shadow Hunter', 'Planewalker', 'Monster Bane', 'Feywalker', 'Swarm Warden', 'Wyrmrider'],
     features: [
       [1, 'Favored Enemy', 'Choose a type of creature you know well: advantage on tracking and recalling lore about them.'],
       [1, 'Natural Explorer', 'Choose a favored terrain where you travel and forage with ease.'],
@@ -188,7 +188,7 @@
     armor: 'Light armor', weapons: 'Simple weapons, hand crossbows, longswords, rapiers, shortswords', tools: 'Thieves\' tools',
     skills: { n: 4, from: ['Acrobatics', 'Athletics', 'Deception', 'Insight', 'Intimidation', 'Investigation', 'Perception', 'Performance', 'Persuasion', 'Sleight of Hand', 'Stealth'] },
     subclassLevel: 3, subclassLabel: 'Roguish Archetype', asi: [4, 8, 10, 12, 16, 19],
-    subclasses: ['Thief', 'Assassin', 'Arcane Trickster', 'Inquisitive', 'Mastermind', 'Scout', 'Swashbuckler', 'Deadwhisper', 'Thoughtblade'],
+    subclasses: ['Thief', 'Night Killer', 'Arcane Rogue', 'Seeker', 'Schemer', 'Pathfinder', 'Duelist', 'Deadwhisper', 'Thoughtblade'],
     features: [
       [1, 'Avarenth Magic', 'You have a small mana pool and a shadow-magic spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Expertise', 'Double your proficiency bonus for two skills, or one skill and thieves\' tools (two more at 6th).'],
@@ -212,7 +212,7 @@
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Sorcerous Origin', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Draconic Bloodline', 'Wild Magic', 'Divine Soul', 'Shadow Magic', 'Storm Sorcery', 'Aberrant Mind', 'Clockwork Soul'],
+    subclasses: ['Draconic Bloodline', 'Chaotic Origin', 'Heavenly Origin', 'Umbral Origin', 'Tempest Origin', 'Aberrant Origin', 'Clockwork Origin'],
     features: [
       [1, 'Spellcasting', 'The magic in your blood answers you without the long study that others need. You cast with mana, and your magic is part of who you are. Charisma is your spellcasting ability. See the Mana Guide.'],
       [1, 'Sorcerous Origin', 'Your magic came from somewhere, and that origin shapes every spell you cast. Choose where your magic comes from, whether a bloodline, a wild surge or a spark of the divine.'],
@@ -228,7 +228,7 @@
     armor: 'Light armor', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Otherworldly Patron', asi: [4, 8, 12, 16, 19],
-    subclasses: ['The Archfey', 'The Fiend', 'The Great Old One', 'The Celestial', 'The Bladebound', 'The Fathomless', 'The Genie', 'The Deathless'],
+    subclasses: ['The Fey Court', 'The Fiend', 'The Outer Horror', 'The Radiant Patron', 'The Bladebound', 'The Deep Patron', 'The Djinn Patron', 'The Deathless'],
     features: [
       [1, 'Otherworldly Patron', 'Choose the being you made your pact with.'],
       [1, 'Pact Magic', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
@@ -248,7 +248,7 @@
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'] },
     subclassLevel: 2, subclassLabel: 'Arcane Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['School of Abjuration', 'School of Conjuration', 'School of Divination', 'School of Enchantment', 'School of Evocation', 'School of Illusion', 'School of Necromancy', 'School of Transmutation', 'Bladesinging', 'War Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
+    subclasses: ['School of Warding', 'School of Summoning', 'School of Foresight', 'School of Charm', 'School of Evocation', 'School of Phantasms', 'School of Death', 'School of Alchemy', 'Bladechant', 'School of Battle Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
     features: [
       [1, 'Spellcasting', 'You study magic the way others study law or medicine, and you master it through careful work. You cast with mana and study magic as a discipline. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
       [1, 'Arcane Recovery', 'You can gather your scattered focus after a short rest and draw some mana back into yourself. Once per day after a short rest, regain mana equal to 5 × your wizard level.'],
@@ -323,7 +323,7 @@
 
     // More peoples (summaries in our own words). group: 'isles' lives in Avarenth, 'rare' is seldom seen, 'far' comes from beyond the empire. Ask the DM before playing a 'far' one. Innate spells cast without mana.
     'Sea Elf': { group: 'isles', speed: 30, swim: 30, size: 'Medium', dark: 60, skill: 'Perception', note: 'Sea elves are the last of the old elven seafolk, and most keep faith with Thorum. Many of them live in the city-state of [[The City-State of Coralyn]] and on the sea-chapels of [[Galecliff]].', traits: [['Sea-Born Swim', 'You have a swim speed of 30 ft, and you can breathe air and water.'], ['Tongue of Tides', 'You can speak simple ideas with sea beasts.'], ['Sharp Senses', 'Proficiency in Perception.'], ['Fey Blood', 'You have advantage against being charmed, and magic can’t put you to sleep.'], ['Dreamless Rest', 'You meditate for 4 hours instead of sleeping.']] },
-    'Dark Elf': { group: 'isles', speed: 30, size: 'Medium', dark: 120, skill: 'Perception', note: 'The dark elves of the deep places. Surface folk distrust them on sight, and the dark elves have long memories of being driven out of the light.', traits: [['Superior Darkvision', 'You can see 120 ft in darkness.'], ['Shadow Magic', 'Dancing Lights at will. Faerie Fire at 3rd level and Darkness at 5th, each once per long rest without mana.'], ['Keen Senses', 'Proficiency in Perception.'], ['Fey Blood', 'You have advantage against being charmed, and magic can’t put you to sleep.'], ['Dreamless Rest', 'You meditate for 4 hours instead of sleeping.']] },
+    'Dark Elf': { group: 'isles', speed: 30, size: 'Medium', dark: 120, skill: 'Perception', note: 'The dark elves of the deep places. Surface folk distrust them on sight, and the dark elves have long memories of being driven out of the light.', traits: [['Superior Darkvision', 'You can see 120 ft in darkness.'], ['Umbral Origin', 'Dancing Lights at will. Faerie Fire at 3rd level and Darkness at 5th, each once per long rest without mana.'], ['Keen Senses', 'Proficiency in Perception.'], ['Fey Blood', 'You have advantage against being charmed, and magic can’t put you to sleep.'], ['Dreamless Rest', 'You meditate for 4 hours instead of sleeping.']] },
     'Shellback': { group: 'isles', speed: 30, size: 'Medium', note: 'Shellbacks are slow-moving, patient folk who carry their homes on their backs. They trade and keep shop along the [[The Golden Coast]], and they are known for keeping their word.', traits: [['Shell Armor', 'Your shell gives you AC 17. You can’t wear armour, but a shield still adds its bonus.'], ['Shell Retreat', 'As an action, withdraw into your shell for +4 AC and advantage on Strength and Constitution saves, but you are prone and can’t move or act until you come out.'], ['Shell Claws', 'Your claws are natural weapons that deal 1d6 slashing damage.'], ['Deep Breath', 'You can hold your breath for an hour.'], ['Wild Instinct', 'Proficiency in one of Animal Handling, Medicine, Nature, Perception, Stealth or Survival.']], extraSkill: 1 },
     'Troglodyte': { group: 'isles', speed: 30, size: 'Medium', dark: 60, note: 'Avarenth’s own: a draconic people from the deep enclaves of the Greywalls. Many work the dwarves’ mines and the charcoal pits, and they like warm caves more than open sky.', traits: [['Rock Hide', 'Without armour, your AC is 12 + Dexterity.'], ['Rockblend', 'Advantage on Stealth checks to hide in rocky terrain.'], ['Foul Musk', 'As a bonus action, creatures of your choice within 5 ft make a Constitution save or have disadvantage on attacks until your next turn. Once per short or long rest.'], ['Fang and Claw', 'Your bite and claws are natural weapons that deal 1d6 piercing and slashing damage.'], ['Sun Weakness', 'Disadvantage on sight-based Perception checks and on attacks in direct sunlight.']] },
     'Celestite': { group: 'rare', speed: 30, size: 'Medium', dark: 60, note: 'Folk touched by the light of the gods, with a faint glow in their eyes when they are moved. In the isles they are often taken for saints, and some of the church’s bishops would like them kept close.', traits: [['Heaven’s Ward', 'Resistance to necrotic and radiant damage.'], ['Mending Light', 'As an action, touch a creature to heal it by a d4 per proficiency bonus. Once per long rest.'], ['Lantern Soul', 'You know the Light cantrip.'], ['Radiant Transformation', 'From 3rd level, transform for a minute once per long rest: radiant wings to fly, a searing aura, or a frightening shroud, each adding radiant or necrotic damage.']] },
@@ -406,25 +406,25 @@
     // Which subclasses each patron offers. Classes not listed for a patron (and Druids, Rangers, Monks) can take any.
     // Paladins sworn to their oath alone can take any oath. The DM's custom subclasses say for themselves which patrons grant them.
     patronSubclasses: {
-      'Akoron': { Cleric: ['Life Domain', 'Dawn Domain', 'Peace Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Redemption'] },
-      'Roselle': { Cleric: ['Wildwood Domain', 'Life Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Ancients', 'Oath of Redemption'] },
-      'Azrul': { Cleric: ['Death Domain', 'Tomb Domain', 'Twilight Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
-      'Korinth': { Cleric: ['Lore Domain', 'Arcana Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
-      'Thorum': { Cleric: ['Thunder Domain'], Warlock: ['The Celestial', 'The Fathomless'], Paladin: ['Oath of Vengeance', 'Oath of Glory'] },
-      'Florin': { Cleric: ['Mischief Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Glory', 'Oath of Redemption'] },
-      'Rook': { Cleric: ['Battle Domain', 'Order Domain', 'Anvil Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Conquest', 'Oath of Glory'] },
-      'The Hungering Head': { Cleric: ['Death Domain', 'Twilight Domain'], Warlock: ['The Great Old One'], Paladin: ['Oathbreaker', 'Oath of Conquest'] },
-      'Kharneth': { Cleric: ['Order Domain', 'Lore Domain'], Warlock: ['The Fiend'], Paladin: ['Oath of Conquest', 'Oath of Vengeance'] },
-      'Drakhar': { Cleric: ['Battle Domain', 'Order Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Conquest'] },
-      'The Pyre-Saint': { Cleric: ['Dawn Domain', 'Battle Domain'], Warlock: ['The Celestial', 'The Fiend'], Paladin: ['Oath of Vengeance', 'Oath of Conquest'] },
-      'Marrow': { Cleric: ['Death Domain', 'Wildwood Domain'], Warlock: ['The Deathless', 'The Great Old One'] },
-      'Velvet': { Cleric: ['Mischief Domain', 'Twilight Domain'], Warlock: ['The Archfey'] },
-      'Sytha': { Cleric: ['Mischief Domain', 'Wildwood Domain'], Warlock: ['The Archfey', 'The Great Old One'] },
-      'The Nine Below': { Cleric: ['Death Domain', 'Tomb Domain'], Warlock: ['The Deathless'], Paladin: ['Oathbreaker', 'Oath of Vengeance'] },
-      'The Mask': { Cleric: ['Mischief Domain'], Warlock: ['The Archfey', 'The Great Old One'] },
-      'Veyl': { Cleric: ['Lore Domain', 'Arcana Domain'], Warlock: ['The Great Old One'] },
-      'Vaunt and Ruin': { Cleric: ['Battle Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Glory', 'Oath of Conquest', 'Oathbreaker'] },
-      'Lull': { Cleric: ['Thunder Domain', 'Death Domain'], Warlock: ['The Fathomless'] }
+      'Akoron': { Cleric: ['Life Domain', 'Dawn Domain', 'Harmony Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of Devotion', 'Oath of Mercy'] },
+      'Roselle': { Cleric: ['Wildwood Domain', 'Life Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of the Elders', 'Oath of Mercy'] },
+      'Azrul': { Cleric: ['Grim Domain', 'Tomb Domain', 'Dusk Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
+      'Korinth': { Cleric: ['Lore Domain', 'Sigil Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
+      'Thorum': { Cleric: ['Thunder Domain'], Warlock: ['The Radiant Patron', 'The Deep Patron'], Paladin: ['Oath of Reckoning', 'Oath of Renown'] },
+      'Florin': { Cleric: ['Mischief Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of Renown', 'Oath of Mercy'] },
+      'Rook': { Cleric: ['Battle Domain', 'Law Domain', 'Anvil Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of Devotion', 'Oath of Dominion', 'Oath of Renown'] },
+      'The Hungering Head': { Cleric: ['Grim Domain', 'Dusk Domain'], Warlock: ['The Outer Horror'], Paladin: ['Oathbroken', 'Oath of Dominion'] },
+      'Kharneth': { Cleric: ['Law Domain', 'Lore Domain'], Warlock: ['The Fiend'], Paladin: ['Oath of Dominion', 'Oath of Reckoning'] },
+      'Drakhar': { Cleric: ['Battle Domain', 'Law Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Dominion'] },
+      'The Pyre-Saint': { Cleric: ['Dawn Domain', 'Battle Domain'], Warlock: ['The Radiant Patron', 'The Fiend'], Paladin: ['Oath of Reckoning', 'Oath of Dominion'] },
+      'Marrow': { Cleric: ['Grim Domain', 'Wildwood Domain'], Warlock: ['The Deathless', 'The Outer Horror'] },
+      'Velvet': { Cleric: ['Mischief Domain', 'Dusk Domain'], Warlock: ['The Fey Court'] },
+      'Sytha': { Cleric: ['Mischief Domain', 'Wildwood Domain'], Warlock: ['The Fey Court', 'The Outer Horror'] },
+      'The Nine Below': { Cleric: ['Grim Domain', 'Tomb Domain'], Warlock: ['The Deathless'], Paladin: ['Oathbroken', 'Oath of Reckoning'] },
+      'The Mask': { Cleric: ['Mischief Domain'], Warlock: ['The Fey Court', 'The Outer Horror'] },
+      'Veyl': { Cleric: ['Lore Domain', 'Sigil Domain'], Warlock: ['The Outer Horror'] },
+      'Vaunt and Ruin': { Cleric: ['Battle Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Renown', 'Oath of Dominion', 'Oathbroken'] },
+      'Lull': { Cleric: ['Thunder Domain', 'Grim Domain'], Warlock: ['The Deep Patron'] }
     },
     factionStart: {
       'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },

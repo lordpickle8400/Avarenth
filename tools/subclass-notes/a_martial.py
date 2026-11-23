@@ -32,10 +32,10 @@ S["Barbarian"] = {
   [14, "Hunting Cry", "When you rage, up to your Con modifier allies gain extra damage once per turn while you gain temporary HP. Uses equal to proficiency bonus per long rest."]]),
  "Path of the Wildborn": ("Wild magic surges out of you every time you rage.", [
   [3, "Surgesight", "Sense spells and magic items within 60 ft as an action, a few times per long rest."],
-  [3, "Chaos Pulse", "When you rage, roll on the Wild Magic table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."],
+  [3, "Chaos Pulse", "When you rage, roll on the Chaos table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."],
   [6, "Mana Lift", "Touch an ally to give them a d3 bonus to attacks and checks for 10 minutes, or to restore some of their mana: roll a d3 and they regain 5, 10 or 18 mana. Uses per long rest equal to proficiency bonus."],
   [10, "Backfire", "When you take damage or fail a save while raging, reroll your wild surge as a reaction."],
-  [14, "Steady Surge", "Roll twice on the Wild Magic table and pick the result you want."]]),
+  [14, "Steady Surge", "Roll twice on the Chaos table and pick the result you want."]]),
  "Path of the Titan": ("You grow with the strength of the giants and hurl your foes.", [
   [3, "Titan's Might", "Learn Druidcraft or Thaumaturgy and the Giant language."],
   [3, "Titan's Havoc", "While raging you count as Large (if space allows), your reach grows by 5 ft, and thrown or Strength-based hits add more damage."],
@@ -45,28 +45,28 @@ S["Barbarian"] = {
 }
 
 S["Fighter"] = {
- "Battle Master": ("A tactician who uses superiority dice to fuel combat maneuvers.", [
+ "Battle Tactician": ("A tactician who uses superiority dice to fuel combat maneuvers.", [
   [3, "Combat Maneuvers", "Learn three maneuvers and gain four d8 superiority dice, back on a short rest. Spend a die to trip, disarm, push, feint, parry, rally an ally and more. More maneuvers at 7th, 10th and 15th."],
   [3, "Tinker's Training", "Proficiency with one artisan's tool."],
   [7, "Study the Foe", "Study a creature for a minute to learn how it compares to you in two traits (Strength, AC, HP, class levels and so on)."],
   [10, "Greater Maneuvers", "Superiority dice become d10."],
   [15, "Stubborn Will", "If you roll initiative with no superiority dice left, regain one."],
   [18, "Masterful Maneuvers", "Superiority dice become d12."]]),
- "Eldritch Knight": ("A fighter who blends swordplay with abjuration and evocation magic.", [
+ "Spellblade": ("A fighter who blends swordplay with abjuration and evocation magic.", [
   [3, "Blade Bond", "Bond with up to two weapons: they can't be disarmed and you can summon one to your hand as a bonus action."],
   [3, "Spellcasting", "Your mana fuels a small wizard repertoire, mostly abjuration and evocation spells. Intelligence is your spellcasting ability. " + SP],
   [7, "Battle Casting", "When you cast a cantrip as an action, make one weapon attack as a bonus action."],
   [10, "Arcane Strike", "A creature you hit has disadvantage on its next save against your spell before the end of your next turn."],
   [15, "Arcane Dash", "When you Action Surge, teleport up to 30 ft."],
   [18, "Greater Battle Casting", "When you cast a spell as an action, make one weapon attack as a bonus action."]]),
- "Arcane Archer": ("An archer who weaves magic into arrows.", [
+ "Arcane Bowman": ("An archer who weaves magic into arrows.", [
   [3, "Archer's Lore", "Learn Arcana or Nature, and Prestidigitation or Druidcraft."],
   [3, "Arcane Arrow", "Know two Arcane Shot options (banishing, beguiling, bursting, grasping, piercing, seeking, shadow, enfeebling) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."],
   [7, "Enchanted Arrow", "Your arrows count as magical."],
   [7, "Curving Arrow", "When you miss with a magic arrow, use a bonus action to reroll the attack against a different target within 60 ft."],
   [15, "Ready Shot", "If you roll initiative with no Arcane Shot uses left, regain one."],
   [18, "Greater Arrows", "Your Arcane Shot damage increases."]]),
- "Cavalier": ("A mounted warrior and bodyguard who locks enemies down.", [
+ "Rider Knight": ("A mounted warrior and bodyguard who locks enemies down.", [
   [3, "Bonus Proficiency", "One skill (Animal Handling, History, Insight, Performance or Persuasion) or a language."],
   [3, "Mounted Born", "Advantage on saves against falling off your mount, land on your feet if you fall, and mount or dismount cheaply."],
   [3, "Steadfast Mark", "Mark creatures you hit: they have disadvantage attacking anyone else, and if they do you can make a bonus action attack with extra damage."],
@@ -74,7 +74,7 @@ S["Fighter"] = {
   [10, "Hold the Field", "Creatures that move within your reach provoke opportunity attacks, and a hit stops them in place."],
   [15, "Fierce Charge", "Moving 10 ft straight before a hit can knock the target prone."],
   [18, "Watchful Defender", "An extra reaction each round, only for opportunity attacks."]]),
- "Samurai": ("Unshakeable resolve that turns into precise, relentless strikes.", [
+ "Honor Blade": ("Unshakeable resolve that turns into precise, relentless strikes.", [
   [3, "Bonus Proficiency", "One skill (History, Insight, Performance or Persuasion) or a language."],
   [3, "Battle Spirit", "Bonus action, three times per long rest: advantage on attacks this turn and some temporary HP."],
   [7, "Courtly Grace", "Add Wisdom to Persuasion and gain Wisdom save proficiency (or another save if you have it)."],
@@ -105,12 +105,12 @@ S["Fighter"] = {
 }
 
 S["Monk"] = {
- "Way of Shadow": ("A ninja-like monk who moves between shadows.", [
+ "Way of Shade": ("A ninja-like monk who moves between shadows.", [
   [3, "Shadow Craft", "Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without spending mana; learn Minor Illusion."],
   [6, "Shadow Stride", "In dim light or darkness, teleport 60 ft to another dark spot as a bonus action and gain advantage on your next melee attack."],
   [11, "Shadow Cloak", "Become invisible in dim light or darkness until you attack or cast."],
   [17, "Opportunist", "Reaction: attack a creature within 5 ft that just got hit by someone else."]]),
- "Way of the Four Elements": ("You channel ki into elemental disciplines.", [
+ "Way of the Four Winds": ("You channel ki into elemental disciplines.", [
   [3, "Disciple of the Elements", "Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."],
   [6, "More disciplines", "Learn another discipline; you can swap one out when you gain a discipline."],
   [11, "More disciplines", "Learn another discipline and spend more ki to empower them."],
@@ -120,18 +120,18 @@ S["Monk"] = {
   [6, "Hour of Harvest", "Action: creatures within 30 ft save (Wis) or are frightened of you."],
   [11, "Deathly Mastery", "When you drop to 0 HP, spend 1 ki to stay at 1 HP instead."],
   [17, "Touch of the Last Breath", "Spend 1–10 ki to deal 2d10 necrotic per ki spent (Con save halves)."]]),
- "Way of the Sun Soul": ("You hurl ki as searing radiant light.", [
+ "Way of the Sunlit Spirit": ("You hurl ki as searing radiant light.", [
   [3, "Sunbolt", "A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."],
   [6, "Searing Arc", "After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."],
   [11, "Sunburst Blast", "Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."],
   [17, "Solar Ward", "Shed bright light, and creatures that hit you in melee take radiant damage."]]),
- "Way of the Drunken Master": ("Lurching, staggering moves that make you impossible to pin down.", [
+ "Way of the Tipsy Fist": ("Lurching, staggering moves that make you impossible to pin down.", [
   [3, "Bonus Proficiencies", "Performance and brewer's supplies."],
   [3, "Drunken Footwork", "Flurry of Blows also gives you Disengage and +10 ft speed."],
   [6, "Wobbling Dodge", "Stand up for 5 ft of movement, and redirect a missed melee attack to another creature."],
   [11, "Lucky Stumble", "Spend 2 ki to cancel disadvantage on a check, attack or save."],
   [17, "Reckless Frenzy", "Flurry of Blows can make up to five attacks if each hits a different target."]]),
- "Way of the Kensei": ("A weapon master whose chosen weapons are part of their martial arts.", [
+ "Way of the Swordmaster": ("A weapon master whose chosen weapons are part of their martial arts.", [
   [3, "Path of the Blade", "Pick kensei weapons that count as monk weapons, gain an AC bonus when you skip an attack, and add extra damage to ranged hits as a bonus action."],
   [6, "Blade Kin", "Your kensei weapons count as magical; spend ki for extra damage on a hit."],
   [11, "Honed Blade", "Spend up to 3 ki to give a kensei weapon that bonus to attack and damage for a minute."],
@@ -141,7 +141,7 @@ S["Monk"] = {
   [6, "Visage of the Spiritbound", "Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."],
   [11, "Body of the Spiritbound", "With arms and visage out, deflect energy damage and add extra damage on a hit."],
   [17, "Awakened Spiritbound", "Spend 5 ki to manifest everything at once: AC bonus and an extra attack."]]),
- "Way of Mercy": ("Healers and harbingers who carry both life and death in their hands.", [
+ "Way of Compassion": ("Healers and harbingers who carry both life and death in their hands.", [
   [3, "Healer's Tools", "Insight and Medicine proficiency, and the herbalism kit."],
   [3, "Healing Hand", "Spend 1 ki to heal a creature with a martial arts die + Wisdom; can replace a Flurry strike."],
   [3, "Harmful Hand", "Once per turn, spend 1 ki on a hit for extra necrotic damage."],
@@ -151,38 +151,38 @@ S["Monk"] = {
 }
 
 S["Rogue"] = {
- "Assassin": ("Killer who strikes first and from hiding.", [
+ "Night Killer": ("Killer who strikes first and from hiding.", [
   [3, "Bonus Proficiencies", "Disguise kit and poisoner's kit."],
   [3, "Silent Kill", "Advantage against creatures that haven't acted yet in combat, and any hit on a surprised creature is a critical hit."],
   [9, "Infiltrator's Skill", "Spend a week and some gold to build a solid false identity."],
   [13, "Mimic", "Copy someone's speech, writing and mannerisms after studying them for three hours."],
   [17, "Deathblow", "Hitting a surprised creature forces a Con save or doubles the damage."]]),
- "Arcane Trickster": ("A rogue with enchantment and illusion magic.", [
+ "Arcane Rogue": ("A rogue with enchantment and illusion magic.", [
   [3, "Spellcasting", "Your mana fuels a small wizard repertoire, mostly enchantment and illusion. Intelligence is your spellcasting ability. " + SP],
   [3, "Hand Trickery", "Your Mage Hand is invisible and can pick locks, plant or lift objects at range."],
   [9, "Spell Ambush", "If you're hidden when you cast, the target has disadvantage on its save."],
   [13, "Versatile Deceiver", "Bonus action: your mage hand distracts a creature, giving you advantage on attacks against it."],
   [17, "Spell Stealer", "Reaction when a spell targets you: force a save to negate it and steal the spell for 8 hours, once per long rest."]]),
- "Inquisitive": ("A detective who reads lies and finds weak points.", [
+ "Seeker": ("A detective who reads lies and finds weak points.", [
   [3, "Ear for Lies", "Insight rolls to spot lies treat a die below 8 as an 8."],
   [3, "Sharp Eye", "Bonus action: Perception to spot hidden things or Investigation to find clues."],
   [3, "Insightful Strike", "Bonus action: Insight against a target's Deception to gain Sneak Attack on it without advantage for a minute."],
   [9, "Steadied Gaze", "Advantage on Perception and Investigation if you move half speed or less."],
   [13, "Unfailing Gaze", "Sense illusions, shapechangers and magic deception nearby, a few times per long rest."],
   [17, "Eye for Flaws", "Sneak Attack deals an extra 3d6 against a target you've read with Insightful Fighting."]]),
- "Mastermind": ("A schemer who directs allies from the shadows.", [
+ "Schemer": ("A schemer who directs allies from the shadows.", [
   [3, "Master of Schemes", "A gaming set, a disguise kit, two languages, and the knack of mimicking accents."],
   [3, "Master of Plans", "Help as a bonus action, from up to 30 ft away."],
   [9, "Keen Manipulator", "Study a creature for a minute to learn how it compares to you in mental abilities and other traits."],
   [13, "Misdirect", "Reaction: redirect an attack aimed at you to a creature giving you cover."],
   [17, "Heart of Deceit", "Your thoughts can't be read; you can feed false thoughts, and magic can't force the truth out of you."]]),
- "Scout": ("A skirmisher and wilderness expert.", [
+ "Pathfinder": ("A skirmisher and wilderness expert.", [
   [3, "Skirmish Step", "Reaction: move half your speed when an enemy ends its turn next to you, without provoking."],
   [3, "Wilderness Survivor", "Proficiency and expertise in Nature and Survival."],
   [9, "Greater Speed", "+10 ft speed (walk, climb, swim)."],
   [13, "Ambush Expert", "Advantage on initiative, and your first target in the first round is easier for everyone to hit."],
   [17, "Surprise Strike", "A bonus action attack after the Attack action, which can Sneak Attack a different target."]]),
- "Swashbuckler": ("A flashy duelist who darts in and out of combat.", [
+ "Duelist": ("A flashy duelist who darts in and out of combat.", [
   [3, "Dancing Feet", "A creature you attack in melee can't make opportunity attacks against you that turn."],
   [3, "Rakish Nerve", "Add Charisma to initiative, and Sneak Attack a lone enemy in a one-on-one without advantage."],
   [9, "Flourish", "Persuasion against Insight: an enemy fixates on you (disadvantage on others) or a non-hostile creature is charmed."],

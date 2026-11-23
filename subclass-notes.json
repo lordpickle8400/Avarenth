@@ -146,7 +146,7 @@
         [
           3,
           "Chaos Pulse",
-          "When you rage, roll on the Wild Magic table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."
+          "When you rage, roll on the Chaos table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."
         ],
         [
           6,
@@ -161,7 +161,7 @@
         [
           14,
           "Steady Surge",
-          "Roll twice on the Wild Magic table and pick the result you want."
+          "Roll twice on the Chaos table and pick the result you want."
         ]
       ]
     },
@@ -197,7 +197,7 @@
     }
   },
   "Fighter": {
-    "Battle Master": {
+    "Battle Tactician": {
       "about": "A tactician who fuels combat maneuvers with superiority dice, and who wins fights by thinking three moves ahead. Captains of the Dornish Army train their officers in these techniques before they lead a single charge.",
       "features": [
         [
@@ -232,7 +232,7 @@
         ]
       ]
     },
-    "Eldritch Knight": {
+    "Spellblade": {
       "about": "A fighter who blends swordplay with abjuration and evocation magic. Knights who serve the great houses often take this path, learning enough magic to win a duel without giving up the sword.",
       "features": [
         [
@@ -267,7 +267,7 @@
         ]
       ]
     },
-    "Arcane Archer": {
+    "Arcane Bowman": {
       "about": "An archer who weaves magic into arrows, and who can bend a shot around a shield or drop a monster with a single fletched bolt. The archers of the Garrison are famous for it.",
       "features": [
         [
@@ -302,8 +302,8 @@
         ]
       ]
     },
-    "Cavalier": {
-      "about": "A mounted warrior and bodyguard who locks enemies in place and keeps the people beside them safe. Cavaliers guard the roads into [[Loreaon]] and ride with the nobles who pay for their steel.",
+    "Rider Knight": {
+      "about": "A mounted warrior and bodyguard who locks enemies in place and keeps the people beside them safe. Rider Knights guard the roads into [[Loreaon]] and ride with the nobles who pay for their steel.",
       "features": [
         [
           3,
@@ -342,7 +342,7 @@
         ]
       ]
     },
-    "Samurai": {
+    "Honor Blade": {
       "about": "Unshakeable resolve turns into precise, relentless strikes, and the samurai’s honor is the first thing they protect. Their courtly manners hide a deadly edge that few enemies see coming.",
       "features": [
         [
@@ -484,7 +484,7 @@
     }
   },
   "Monk": {
-    "Way of Shadow": {
+    "Way of Shade": {
       "about": "A ninja-like monk who moves between shadows and strikes from places no one expects. Shadow monks in the cities are often hired for jobs that never reach the watch.",
       "features": [
         [
@@ -509,7 +509,7 @@
         ]
       ]
     },
-    "Way of the Four Elements": {
+    "Way of the Four Winds": {
       "about": "You channel ki into elemental disciplines, bending fire, water, earth and air to your will. Monks of the Four Elements are welcome in most temples, and most of them prefer the open road.",
       "features": [
         [
@@ -559,7 +559,7 @@
         ]
       ]
     },
-    "Way of the Sun Soul": {
+    "Way of the Sunlit Spirit": {
       "about": "You hurl ki as searing radiant light, and your strikes burn with the brightness of the dawn. Monks of the Sun Soul are often sent to the front of a holy war, and they count the days until they can rest.",
       "features": [
         [
@@ -584,7 +584,7 @@
         ]
       ]
     },
-    "Way of the Drunken Master": {
+    "Way of the Tipsy Fist": {
       "about": "Lurching, staggering moves make you impossible to pin down, and your wine is never far from hand. The taverns of the port towns have a soft spot for these monks, and they always know who is buying the next round.",
       "features": [
         [
@@ -614,7 +614,7 @@
         ]
       ]
     },
-    "Way of the Kensei": {
+    "Way of the Swordmaster": {
       "about": "A weapon master whose chosen weapons become part of their martial arts. A kensei treats a blade as a sacred bond, and few are ever parted from theirs.",
       "features": [
         [
@@ -664,7 +664,7 @@
         ]
       ]
     },
-    "Way of Mercy": {
+    "Way of Compassion": {
       "about": "Healers and harbingers who carry both life and death in their hands. Mercy monks are the ones called to tend the wounded after a battle, and they are also the ones who end the suffering of the dying.",
       "features": [
         [
@@ -701,7 +701,7 @@
     }
   },
   "Rogue": {
-    "Assassin": {
+    "Night Killer": {
       "about": "A killer who strikes first and from hiding, and who can vanish after a job without a trace. The guilds of the big cities pay assassins well, and the watch pays them even more to stay quiet.",
       "features": [
         [
@@ -731,7 +731,7 @@
         ]
       ]
     },
-    "Arcane Trickster": {
+    "Arcane Rogue": {
       "about": "A rogue with enchantment and illusion magic, who makes a crowd forget what it saw. Arcane tricksters are welcome in the courts and feared in the taverns, and they can be both on the same night.",
       "features": [
         [
@@ -761,8 +761,8 @@
         ]
       ]
     },
-    "Inquisitive": {
-      "about": "A detective who reads lies and finds the weak point in every story. Inquisitives serve the watch, the courts and private clients who cannot trust the official answer.",
+    "Seeker": {
+      "about": "A detective who reads lies and finds the weak point in every story. Seekers serve the watch, the courts and private clients who cannot trust the official answer.",
       "features": [
         [
           3,
@@ -796,8 +796,8 @@
         ]
       ]
     },
-    "Mastermind": {
-      "about": "A schemer who directs allies from the shadows, and who turns other people’s strengths into their own. Masterminds are rarely seen in the same room as the crime they planned.",
+    "Schemer": {
+      "about": "A schemer who directs allies from the shadows, and who turns other people’s strengths into their own. Schemers are rarely seen in the same room as the crime they planned.",
       "features": [
         [
           3,
@@ -826,8 +826,8 @@
         ]
       ]
     },
-    "Scout": {
-      "about": "A skirmisher and wilderness expert who moves quickly, sees everything and strikes when the enemy least expects it. Scouts guard the borders of [[Doresmere]] and the roads between the great houses.",
+    "Pathfinder": {
+      "about": "A skirmisher and wilderness expert who moves quickly, sees everything and strikes when the enemy least expects it. Pathfinders guard the borders of [[Doresmere]] and the roads between the great houses.",
       "features": [
         [
           3,
@@ -856,8 +856,8 @@
         ]
       ]
     },
-    "Swashbuckler": {
-      "about": "A flashy duelist who darts in and out of combat with a grin and a flourish. Swashbucklers are the favorites of the taverns and the tavern-keepers’ daughters, and they are rarely short of a wager.",
+    "Duelist": {
+      "about": "A flashy duelist who darts in and out of combat with a grin and a flourish. Duelists are the favorites of the taverns and the tavern-keepers’ daughters, and they are rarely short of a wager.",
       "features": [
         [
           3,
@@ -1258,7 +1258,7 @@
         ]
       ]
     },
-    "Order Domain": {
+    "Law Domain": {
       "about": "Enforcers of law who command allies and punish disobedience. Order clerics serve the church’s courts and the king’s peace, and they expect obedience from everyone.",
       "features": [
         [
@@ -1298,7 +1298,7 @@
         ]
       ]
     },
-    "Peace Domain": {
+    "Harmony Domain": {
       "about": "Peacemakers who bind allies together and calm the rage of a crowd. Peace clerics are often sent to settle disputes between the great houses.",
       "features": [
         [
@@ -1338,7 +1338,7 @@
         ]
       ]
     },
-    "Twilight Domain": {
+    "Dusk Domain": {
       "about": "Guardians of the in-between hours, who shield travellers from the dark and the things that walk in it. Twilight clerics keep the night watches at the gates of the isles.",
       "features": [
         [
@@ -1383,7 +1383,7 @@
         ]
       ]
     },
-    "Arcana Domain": {
+    "Sigil Domain": {
       "about": "Scholars of magic who study the workings of the arcane and the divine together. Arcana clerics are sought out by mages who want a god’s blessing on their spells.",
       "features": [
         [
@@ -1418,7 +1418,7 @@
         ]
       ]
     },
-    "Death Domain": {
+    "Grim Domain": {
       "about": "Priests of the end of life who see death as a guide, not an enemy. Death clerics of Azrul keep the Bone Hall beneath [[Akorsrest]] and answer questions from the dead.",
       "features": [
         [
@@ -1460,7 +1460,7 @@
     }
   },
   "Paladin": {
-    "Oath of the Ancients": {
+    "Oath of the Elders": {
       "about": "You keep the old oaths to the forests, the rivers and the gods of the land, and you protect the living world from those who would burn it. Druids and paladins of the Ancients speak to each other as old friends.",
       "features": [
         [
@@ -1495,7 +1495,7 @@
         ]
       ]
     },
-    "Oath of Vengeance": {
+    "Oath of Reckoning": {
       "about": "You swear to hunt down those who have done great wrong, and you do not stop until the debt is paid. Vengeful paladins are welcome in the courts of justice and feared in the taverns of the guilty.",
       "features": [
         [
@@ -1530,8 +1530,8 @@
         ]
       ]
     },
-    "Oathbreaker": {
-      "about": "A paladin who has broken their oath and now serves a darker cause. Oathbreakers are hunted by their old orders, and they have their own reasons for everything they do.",
+    "Oathbroken": {
+      "about": "A paladin who has broken their oath and now serves a darker cause. Oathbroken are hunted by their old orders, and they have their own reasons for everything they do.",
       "features": [
         [
           3,
@@ -1565,7 +1565,7 @@
         ]
       ]
     },
-    "Oath of Conquest": {
+    "Oath of Dominion": {
       "about": "You swear to bring the enemy to heel and rule the lands you take. Conquest paladins are the iron fist of the great houses, and they remember every castle they ever took.",
       "features": [
         [
@@ -1600,7 +1600,7 @@
         ]
       ]
     },
-    "Oath of Redemption": {
+    "Oath of Mercy": {
       "about": "You swear to end fights without bloodshed where you can, and to give a second chance to those who have fallen. Redemption paladins are often sent to talk with rebels and bandits before the swords come out.",
       "features": [
         [
@@ -1635,7 +1635,7 @@
         ]
       ]
     },
-    "Oath of Glory": {
+    "Oath of Renown": {
       "about": "You swear to live and die by deeds worth singing about. Glory paladins are the heroes of the taverns, and they are rarely careful about the cost of a good song.",
       "features": [
         [
@@ -1707,7 +1707,7 @@
     }
   },
   "Warlock": {
-    "The Archfey": {
+    "The Fey Court": {
       "about": "Your patron is a powerful creature of the fey, who gives you gifts and asks for favors in return. Fey bargains are binding, and an archfey’s price is always higher than it first seems.",
       "features": [
         [
@@ -1737,7 +1737,7 @@
         ]
       ]
     },
-    "The Great Old One": {
+    "The Outer Horror": {
       "about": "Your patron is an alien mind from beyond the stars, and its knowledge fills your head like a flood. Few mortals survive long enough to learn what it truly wants.",
       "features": [
         [
@@ -1767,7 +1767,7 @@
         ]
       ]
     },
-    "The Celestial": {
+    "The Radiant Patron": {
       "about": "Your patron is a being of light, and its favors pour through you like sunshine. Celestial pact-holders are welcome in the churches, though the Akorian bishops watch them closely.",
       "features": [
         [
@@ -1837,7 +1837,7 @@
         ]
       ]
     },
-    "The Fathomless": {
+    "The Deep Patron": {
       "about": "Your patron is a creature of the deep sea, and its tentacles and currents answer your call. Fathomless warlocks are most often found in the port towns of the coast, and the sailors are not sure whether to thank them or pray against them.",
       "features": [
         [
@@ -1877,7 +1877,7 @@
         ]
       ]
     },
-    "The Genie": {
+    "The Djinn Patron": {
       "about": "Your patron is a genie of the elemental planes, bound to you by a bargain of wishes and words. Genie-pact warlocks make fine merchants and worse guests.",
       "features": [
         [
@@ -2131,7 +2131,7 @@
     }
   },
   "Druid": {
-    "Circle of the Moon": {
+    "Circle of Lunar Forms": {
       "about": "Druids who take on the forms of beasts under the light of the moon, and who fight as fiercely as any animal. Moon druids are respected by the hunters and feared by the herders.",
       "features": [
         [
@@ -2161,7 +2161,7 @@
         ]
       ]
     },
-    "Circle of Dreams": {
+    "Circle of Slumber": {
       "about": "Druids who walk the dreams of the forest and speak to the fey in their sleep. Dream druids are welcome in the fey woods, and they sometimes forget to come back.",
       "features": [
         [
@@ -2186,7 +2186,7 @@
         ]
       ]
     },
-    "Circle of the Shepherd": {
+    "Circle of the Herder": {
       "about": "Druids who call on the spirits of the land and its beasts to guard their people. Shepherds keep the herds safe on the high pastures and the roads.",
       "features": [
         [
@@ -2216,7 +2216,7 @@
         ]
       ]
     },
-    "Circle of Spores": {
+    "Circle of Mycelia": {
       "about": "Druids who work with fungi and rot, turning death into a new kind of life. Spore druids are unwelcome in most villages, and they like it that way.",
       "features": [
         [
@@ -2251,7 +2251,7 @@
         ]
       ]
     },
-    "Circle of Stars": {
+    "Circle of the Heavens": {
       "about": "Druids who read the constellations and draw their power from the night sky. Star druids are the astrologers of the wild, and they are often consulted before a voyage.",
       "features": [
         [
@@ -2281,7 +2281,7 @@
         ]
       ]
     },
-    "Circle of Wildfire": {
+    "Circle of Emberfire": {
       "about": "Druids who work with flame and ash, and who believe fire renews the land. Wildfire druids are welcome in the burned country and avoided in the dry woods.",
       "features": [
         [
@@ -2313,7 +2313,7 @@
     }
   },
   "Ranger": {
-    "Beast Master": {
+    "Beast Warden": {
       "about": "A ranger who fights alongside a loyal beast, and who knows the wild as well as any animal does. Beast masters are often found on the edge of the settled lands, where their companions are needed most.",
       "features": [
         [
@@ -2338,12 +2338,12 @@
         ]
       ]
     },
-    "Gloom Stalker": {
+    "Shadow Hunter": {
       "about": "A ranger who hunts in the dark and strikes from the shadows, and who is most at home in the night. Gloom stalkers are the watchers at the edge of the dark places.",
       "features": [
         [
           3,
-          "Gloom Stalker spells",
+          "Shadow Hunter spells",
           "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
         ],
         [
@@ -2373,12 +2373,12 @@
         ]
       ]
     },
-    "Horizon Walker": {
+    "Planewalker": {
       "about": "A ranger who guards the borders between the planes and the lands they know well. Horizon walkers see things that others do not, and they like it when others don’t ask about it.",
       "features": [
         [
           3,
-          "Horizon Walker spells",
+          "Planewalker spells",
           "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
         ],
         [
@@ -2408,12 +2408,12 @@
         ]
       ]
     },
-    "Monster Slayer": {
+    "Monster Bane": {
       "about": "A ranger who hunts the dangerous creatures that prey on the living, and who has learned their weaknesses. Monster slayers are paid well by the villages and the great houses alike.",
       "features": [
         [
           3,
-          "Monster Slayer spells",
+          "Monster Bane spells",
           "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
         ],
         [
@@ -2443,12 +2443,12 @@
         ]
       ]
     },
-    "Fey Wanderer": {
+    "Feywalker": {
       "about": "A ranger who walks in the fey woods and carries a little of their magic. Fey wanderers are welcome in the wild courts, and they are cautious about the bargains they make there.",
       "features": [
         [
           3,
-          "Fey Wanderer spells",
+          "Feywalker spells",
           "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
         ],
         [
@@ -2478,12 +2478,12 @@
         ]
       ]
     },
-    "Swarmkeeper": {
-      "about": "A ranger who commands a swarm of tiny creatures, and who hears them whisper what they have seen. Swarmkeepers are easy to find in the marshes and hard to surprise anywhere.",
+    "Swarm Warden": {
+      "about": "A ranger who commands a swarm of tiny creatures, and who hears them whisper what they have seen. Swarm Wardens are easy to find in the marshes and hard to surprise anywhere.",
       "features": [
         [
           3,
-          "Swarmkeeper spells",
+          "Swarm Warden spells",
           "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
         ],
         [
@@ -2540,7 +2540,7 @@
     }
   },
   "Sorcerer": {
-    "Wild Magic": {
+    "Chaotic Origin": {
       "about": "Your magic is unstable and surges out of you in strange ways. Wild mages are watched by the churches and the mage-guilds, who cannot agree on whether they are a blessing or a danger.",
       "features": [
         [
@@ -2570,7 +2570,7 @@
         ]
       ]
     },
-    "Divine Soul": {
+    "Heavenly Origin": {
       "about": "Your magic comes from the gods, and you carry a spark of the divine in your blood. Divine souls are welcome in the temples, though not always in the councils.",
       "features": [
         [
@@ -2600,7 +2600,7 @@
         ]
       ]
     },
-    "Shadow Magic": {
+    "Umbral Origin": {
       "about": "Your magic draws on the darkness and the things that live in it. Shadow sorcerers are feared in the cities and useful in the places the watch cannot reach.",
       "features": [
         [
@@ -2630,7 +2630,7 @@
         ]
       ]
     },
-    "Storm Sorcery": {
+    "Tempest Origin": {
       "about": "Your magic is the storm itself, and the wind and waves answer your call. Storm sorcerers are sought out by sailors and avoided by the captains who want their ships to stay afloat.",
       "features": [
         [
@@ -2665,7 +2665,7 @@
         ]
       ]
     },
-    "Aberrant Mind": {
+    "Aberrant Origin": {
       "about": "Your magic comes from an alien mind that has touched your own, and its thoughts leak into yours. Aberrant sorcerers are unsettling company, and the scholars want to study them.",
       "features": [
         [
@@ -2700,7 +2700,7 @@
         ]
       ]
     },
-    "Clockwork Soul": {
+    "Clockwork Origin": {
       "about": "Your magic comes from the order of the cosmos, and you feel the gears of the world turning. Clockwork sorcerers keep the balance of the isles, and they dislike disorder of any kind.",
       "features": [
         [
@@ -2732,7 +2732,7 @@
     }
   },
   "Wizard": {
-    "School of Abjuration": {
+    "School of Warding": {
       "about": "Wizards who learn to protect, banish and shield, and who build wards that keep the dangerous out. Abjurers are the first hired to guard the great houses.",
       "features": [
         [
@@ -2762,7 +2762,7 @@
         ]
       ]
     },
-    "School of Conjuration": {
+    "School of Summoning": {
       "about": "Wizards who summon and transport things across the world, and who can bring a friend or a foe to their side in a heartbeat. Conjurers are the couriers of the mage-guilds.",
       "features": [
         [
@@ -2792,7 +2792,7 @@
         ]
       ]
     },
-    "School of Divination": {
+    "School of Foresight": {
       "about": "Wizards who see the future and the hidden truth, and who read the signs that others miss. Diviners are consulted by lords before they make a choice.",
       "features": [
         [
@@ -2822,7 +2822,7 @@
         ]
       ]
     },
-    "School of Enchantment": {
+    "School of Charm": {
       "about": "Wizards who bend minds and charm people, and who can make a crowd agree with them. Enchanters are welcome at court and watched closely by the church.",
       "features": [
         [
@@ -2852,7 +2852,7 @@
         ]
       ]
     },
-    "School of Illusion": {
+    "School of Phantasms": {
       "about": "Wizards who make the world look like something it is not, and who can hide an army in a single room. Illusionists are the best liars in the isles.",
       "features": [
         [
@@ -2882,7 +2882,7 @@
         ]
       ]
     },
-    "School of Necromancy": {
+    "School of Death": {
       "about": "Wizards who study death and bring the dead back for a time. Necromancers are hunted by the church and sought by the desperate.",
       "features": [
         [
@@ -2912,7 +2912,7 @@
         ]
       ]
     },
-    "School of Transmutation": {
+    "School of Alchemy": {
       "about": "Wizards who change one thing into another, and who believe any substance can be reshaped with the right words. Transmuters are the alchemists of the mage-guilds.",
       "features": [
         [
@@ -2942,7 +2942,7 @@
         ]
       ]
     },
-    "Bladesinging": {
+    "Bladechant": {
       "about": "Wizards who fight with a blade and a spell at once, dancing through combat with a song of their own. Bladesingers are the duellists of the elven courts and the wizard schools.",
       "features": [
         [
@@ -2972,7 +2972,7 @@
         ]
       ]
     },
-    "War Magic": {
+    "School of Battle Magic": {
       "about": "Wizards who fight in the front lines and cast their spells with the blade. War mages serve the armies of the great houses, and they are the first to be wounded.",
       "features": [
         [
