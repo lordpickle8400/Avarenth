@@ -1290,7 +1290,7 @@
     return label + (art ? '<a class="link" href="#/a/' + encodeURIComponent(art.slug) + '">' + esc(s.patron) + '</a>' : esc(s.patron));
   }
   function isFullCaster(cls) { return RULES.magic.fullCasters.indexOf(cls) >= 0; }
-  function casterKind(cls) { var hc = (RULES.classes[cls] || {}).caster; return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger' || cls === 'Artificer' || hc === 'half') ? 'half' : 'martial'; }
+  function casterKind(cls) { var hc = (RULES.classes[cls] || {}).caster; return isFullCaster(cls) ? 'full' : (cls === 'Paladin' || cls === 'Ranger' || cls === 'Cogwright' || hc === 'half') ? 'half' : 'martial'; }
   function listCap(cls) { return isFullCaster(cls) ? 5 : 4; }
   function autoMana(cls, level) { var m = RULES.magic.mana[cls]; return m ? m[0] + m[1] * (Math.max(1, num(level, 1)) - 1) : null; }
   function manaMax(s) { var a = autoMana(s.cls, s.level); return (s.mana.override || a === null) ? num(s.mana.max, 0) : a; }
@@ -1567,11 +1567,13 @@
     return '<details class="bd-sum"' + (isPhoneSheet() ? '' : ' open') + '><summary><span>Your character</span><span class="note">' + esc([b.name, b.species, b.cls].filter(Boolean).join(' · ') || 'Nothing chosen yet') + '</span></summary>' + html + '</div></details>';
   }
   // A list of choices; the chosen one opens up in place to show what it gives you.
+  // [[Link]] or [[Link|words]] as plain words, for places a link can't go (inside a button).
+  function plainLinks(s) { return String(s || '').replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, function (m, a, b) { return b || a; }); }
   function choiceList(items, selected, act, detail) {
     return '<div class="choice-list">' + items.map(function (it) {
       var on = it[0] === selected;
       return '<div class="cl-item' + (on ? ' on' : '') + '"><button type="button" class="cl-row" data-act="' + act + '" data-val="' + esc(it[0]) + '" aria-pressed="' + on + '" aria-expanded="' + on + '">' +
-        '<span class="cl-badge" aria-hidden="true">' + esc(initials(it[0])) + '</span><span class="cl-txt"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</span><span class="cl-chev" aria-hidden="true">' + (on ? '✓' : '›') + '</span></button>' +
+        '<span class="cl-badge" aria-hidden="true">' + esc(initials(it[0])) + '</span><span class="cl-txt"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(plainLinks(it[1])) + '</span>' : '') + '</span><span class="cl-chev" aria-hidden="true">' + (on ? '✓' : '›') + '</span></button>' +
         (on && detail ? '<div class="cl-detail">' + detail + '</div>' : '') + '</div>';
     }).join('') + '</div>';
   }
@@ -1583,7 +1585,7 @@
   }
   function choiceGrid(items, selected, act) {
     return '<div class="choice-grid">' + items.map(function (it) {
-      return '<button type="button" class="choice" data-act="' + act + '" data-val="' + esc(it[0]) + '" aria-pressed="' + (it[0] === selected) + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(it[1]) + '</span>' : '') + '</button>';
+      return '<button type="button" class="choice" data-act="' + act + '" data-val="' + esc(it[0]) + '" aria-pressed="' + (it[0] === selected) + '"><b>' + esc(it[0]) + '</b>' + (it[1] ? '<span>' + esc(plainLinks(it[1])) + '</span>' : '') + '</button>';
     }).join('') + '</div>';
   }
 
@@ -1640,7 +1642,7 @@
         choiceGrid(sopts.map(function (o) { var nt = subNote(b.cls, o.name), ss = srdSub(b.cls, o.name); return [o.name, o.custom ? (o.about || 'Avarenth') : nt ? nt.about : ss ? ss.tagline || ss.about : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the D&D rules']; }), b.sub, 'bd-sub');
       var csel = b.sub ? customSub(b.cls, b.sub) : null, nsel = !csel && b.sub ? subNote(b.cls, b.sub) : null, ssel = !csel && !nsel && b.sub ? srdSub(b.cls, b.sub) : null;
       if (nsel || ssel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(b.sub) + '</h2><div class="tbl">' + (nsel ? nsel.features : ssel.features.map(function (f) { return [f[0], f[1], srdFirst(f[2])]; })).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div>' + (nsel ? '<p class="note" style="margin:6px 0 0">' + SUMMARY_NOTE + '</p>' : '') + '</div>';
-      if (csel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(csel.name) + '</h2>' + (csel.about ? '<p class="note" style="margin-top:0">' + esc(csel.about) + '</p>' : '') +
+      if (csel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(csel.name) + '</h2>' + (csel.about ? '<p class="note" style="margin-top:0">' + rich(csel.about) + '</p>' : '') +
         '<div class="tbl">' + (csel.features || []).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + num(f.level, 1) + ': ' + esc(f.name) + '</b><span>' + esc(f.text || '') + '</span></div></div>'; }).join('') + '</div></div>';
       if (b.patron && scd && sopts.length < scd.subclasses.length) html += '<p class="note">Only the ones ' + esc(b.patron) + ' grants are shown.</p>';
     } else if (step === 'Deity' || step === 'Patron') {
@@ -1725,7 +1727,7 @@
   function classCard(cls) {
     var cd = RULES.classes[cls], m = RULES.magic.mana[cls], ch = RULES.magic.charges[cls] || [[], 0];
     var saves = cd.saves.map(function (k) { return ABILITIES.filter(function (a) { return a[0] === k; })[0][1]; }).join(', ');
-    return '<div class="group-box"><h2>' + esc(cls) + '</h2>' + (cd.about ? '<p class="note" style="margin:0 0 8px">' + esc(cd.about) + '</p>' : '') + '<div class="vitals sum">' + vital('Hit die', 'd' + cd.hd) + vital('Mana', m ? m[0] + ' +' + m[1] + '/lvl' : '—') + vital('Class list', 'to ' + ordinal(listCap(cls))) + vital(cd.subclassLabel, 'Level ' + cd.subclassLevel) + '</div>' +
+    return '<div class="group-box"><h2>' + esc(cls) + '</h2>' + (cd.about ? '<p class="note" style="margin:0 0 8px">' + rich(cd.about) + '</p>' : '') + '<div class="vitals sum">' + vital('Hit die', 'd' + cd.hd) + vital('Mana', m ? m[0] + ' +' + m[1] + '/lvl' : '—') + vital('Class list', 'to ' + ordinal(listCap(cls))) + vital(cd.subclassLabel, 'Level ' + cd.subclassLevel) + '</div>' +
       '<div class="tbl" style="margin-top:10px">' +
       '<div class="tbl-row"><div class="main"><b>Saving throws</b><span>' + esc(saves) + '</span></div></div>' +
       '<div class="tbl-row"><div class="main"><b>Armor and weapons</b><span>' + esc(cd.armor + '. ' + cd.weapons + '.' + (cd.tools ? ' ' + cd.tools + '.' : '')) + '</span></div></div>' +
@@ -1741,7 +1743,7 @@
     Paladin: ['str', 'cha', 'con', 'wis', 'dex', 'int'], Ranger: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
     Rogue: ['dex', 'con', 'wis', 'int', 'cha', 'str'], Sorcerer: ['cha', 'con', 'dex', 'wis', 'int', 'str'],
     Warlock: ['cha', 'con', 'dex', 'wis', 'int', 'str'], Wizard: ['int', 'con', 'dex', 'wis', 'cha', 'str'],
-    Artificer: ['int', 'con', 'dex', 'str', 'wis', 'cha']
+    Cogwright: ['int', 'con', 'dex', 'str', 'wis', 'cha']
   };
   var CLASS_ABIL_NOTE = { Fighter: 'Put Dexterity first instead for an archer or finesse build.', Cleric: 'Heavy-armor domains like War and Life like Strength; the rest can take Dexterity.', Ranger: 'Dexterity and Wisdom are both needed, so split the top picks.' };
   // Abilities a species' traits and build lean on, if any. Humans and anything homebrew get no hint.
@@ -2326,9 +2328,11 @@
         add('sense', 'Divine Sense', Math.max(1, 1 + cha), 'long');
         add('cd', 'Channel Divinity', L >= 3 ? 1 : 0, 'short'); break;
       case 'Rogue': add('luck', 'Stroke of Luck', L >= 20 ? 1 : 0, 'short'); break;
-      case 'Artificer':
-        add('flash', 'Flash of Genius', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
-        if (s.subclass === 'Artillerist') add('cannon', 'Eldritch Cannon', L >= 3 ? 1 : 0, 'long', { note: 'another costs 5 mana' });
+      case 'Cogwright':
+        add('flash', 'Spring-Loaded Wits', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
+        if (s.subclass === 'Siege-Wright') add('cannon', 'Siege Turret', L >= 3 ? 1 : 0, 'long', { note: 'another costs 5 mana' });
+        if (s.subclass === 'Automaton-Wright') add('overclock', 'Overclock', L >= 9 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
+        if (s.subclass === 'Tonic-Wright') add('restore', 'Restoring Steam (Lesser Restoration)', L >= 9 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
         break;
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
@@ -2879,7 +2883,7 @@
   function npcClock(job, race) {
     var j = String(job || '').toLowerCase(), ch;
     if (/knight|man-at-arms|guard|soldier|warden|sergeant|mercenar|sellsword/.test(j)) return '';
-    if (/wizard|mage|sorcer|alchemist|scholar|astrolog|sage|tinker|clock|artificer|magist/.test(j)) ch = 0.35;
+    if (/wizard|mage|sorcer|alchemist|scholar|astrolog|sage|tinker|clock|artificer|cogwright|magist/.test(j)) ch = 0.35;
     else if (/lord|lady|baron|noble|courtier|steward|count/.test(j)) ch = 0.25;
     else if (/merchant|guild|banker|jewel|goldsmith/.test(j)) ch = 0.1;
     else ch = 0.02;
@@ -3059,7 +3063,7 @@
     Monstrosity: { coin: 0, list: 'nest', listChance: 0.35, magic: 0.03, parts: [['{n} trophy', 6, 1, 'a horn, claw or eye; hunters and collectors buy them']], about: 'A trophy, and maybe something from its nest.' },
     Fiend: { coin: 0.5, magic: 0.1, parts: [['a vial of {n} ichor', 15, 0.8, 'smokes in the light'], ['{n} horn', 10, 0.5]], about: 'Ichor and horns; some carry coin.' },
     Undead: { coin: 0.4, list: 'grave', listChance: 0.7, magic: 0.08, parts: [['a pouch of bone dust', 1, 0.4, 'necromancers and hedge witches buy it']], about: 'Grave goods and old coin.' },
-    Construct: { coin: 0, parts: [['scrap metal', 2, 1, 'a sackful'], ['a cracked {n} core', 20, 0.5, 'artificers want these']], about: 'Scrap, and maybe its core.' },
+    Construct: { coin: 0, parts: [['scrap metal', 2, 1, 'a sackful'], ['a cracked {n} core', 20, 0.5, 'cogwrights want these']], about: 'Scrap, and maybe its core.' },
     Elemental: { coin: 0, gems: 1, parts: [['a mote of {e} essence', 20, 0.6, 'in a sealed jar, it keeps']], about: 'Essence and stones.' },
     Fey: { coin: 0.3, list: 'fey', listChance: 0.7, parts: [['a pinch of {n} dust', 10, 0.5, 'glitters in the dark']], about: 'Fey trinkets. Their coin may be leaves by morning.' },
     Celestial: { coin: 0, parts: [['a feather of light', 25, 0.7, 'glows faintly']], about: 'Little that can be sold without trouble.' },
@@ -4910,7 +4914,7 @@
 
   /* ================= Spell tomes ================= */
   var RARITIES = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
-  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
+  var SPELL_CLASSES = ['Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard', 'Cogwright'];
   var SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
   var SPELL_COLS = 'name, level, school, classes, book, ritual, concentration, rarity, notes, homebrew, status, submitted_by, casting_time, spell_range, components, duration, description, dm_note, created_at';
   function loadSpells() {
@@ -12305,8 +12309,8 @@
   var SRD = null, SUBNOTES = null;
   var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
   var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
-  // Pick a feat, invocation, metamagic, infusion or blood curse from the lists instead of typing it in.
-  var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Artificer: 'Artificer Infusion' };
+  // Pick a feat, invocation, metamagic or Tinkering from the lists instead of typing it in.
+  var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Cogwright: 'Tinkering' };
   function blocksText(b) { return (b || []).map(function (x) { return x[0] === 'ul' ? x[1].map(function (li) { return '• ' + li; }).join('\n') : x[0] === 'p' || x[0] === 'h' ? x[1] : ''; }).filter(Boolean).join('\n\n').replace(/_/g, '').replace(/\*\*/g, ''); }
   function featurePickHtml(s) {
     if (!SRD) return '';
@@ -12339,7 +12343,7 @@
     document.getElementById('ft-name').value = o.name;
     document.getElementById('ft-text').value = blocksText(o.text);
   });
-  // extras.json: our own summaries of feats, backgrounds, infusions and blood curses from outside the SRD.
+  // extras.json: our own summaries of feats and backgrounds from outside the SRD, and the Cogwright's Tinkerings.
   function mergeExtras(ex) {
     var have = {}; SRD.feats.forEach(function (f) { have[f.name] = 1; });
     (ex.feats || []).forEach(function (f) { if (!have[f.name]) SRD.feats.push(f); });
@@ -12494,7 +12498,7 @@
   }
 
   // The rules reference: everything in the free SRD, for players and the DM.
-  // A class from outside the SRD (Artificer): our own summaries from rules.js.
+  // Avarenth's own class (Cogwright): our own summaries from rules.js.
   function extraClassHtml(cls) {
     var cd = RULES.classes[cls], m = RULES.magic.mana[cls], ch = RULES.magic.charges[cls] || [[], 0];
     var facts = [['Hit die', 'd' + cd.hd], ['Main ability', cd.primary], ['Saves', cd.saves.map(function (x) { return x.toUpperCase(); }).join(', ')], ['Armor', cd.armor], ['Weapons', cd.weapons], ['Tools', cd.tools || 'None'],
@@ -12503,7 +12507,7 @@
       ['High magic', ch[0].length ? 'High Magic Charges at ' + ch[0].join(' and ') + (ch[1] ? ', a Reality Channel at ' + ch[1] : ', never a Reality Channel') : 'None'],
       ['Class list', 'Stops at ' + ordinal(listCap(cls)) + ' level']];
     return '<section class="block"><h2 class="sec-title">' + esc(cls) + '<small>' + esc(cd.book || '') + '</small></h2>' +
-      (cd.about ? '<p class="prose">' + esc(cd.about) + '</p>' : '') +
+      (cd.about ? '<p class="prose">' + rich(cd.about) + '</p>' : '') +
       '<dl class="tbl-facts">' + facts.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd>'; }).join('') + '</dl>' +
       '<p class="note">' + esc(SUMMARY_NOTE) + ' The mana numbers are the DM’s call.</p>' +
       cd.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body"><p>' + esc(f[2]) + '</p></div></section>'; }).join('') + '</section>';
@@ -12511,7 +12515,7 @@
   function renderRules(arg) {
     document.body.classList.remove('atlas-mode');
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
-    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Infusions']];
+    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Tinkerings']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
     var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1>' + helpNote('rules', 'The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.') + '</div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
@@ -12529,7 +12533,7 @@
           sb2.features.map(function (f) { return '<section class="section feat"><h2>' + esc(f[1]) + (f[3] && f[3].ruling ? ' <span class="tag" style="font-size:10px">DM’s call</span>' : '') + '<small>Level ' + f[0] + '</small></h2><div class="prose srd-body">' + srdBlocks(f[2]) + '</div>' + srdOrig(f[3]) + '</section>'; }).join('') + '</section>';
         var others = SUBNOTES && SUBNOTES[cls] ? Object.keys(SUBNOTES[cls]) : [];
         if (others.length) html += '<section class="block"><h2 class="sec-title">From the other books<small>' + others.length + ' summaries</small></h2><p class="note" style="margin:0">' + SUMMARY_NOTE + ' Levels follow the 2014 books, like the rest of the app.</p>' +
-          others.map(function (n) { var x = SUBNOTES[cls][n]; return '<details class="srd sub-sum"><summary>' + esc(n) + '</summary><div class="prose srd-body"><p><i>' + esc(x.about) + '</i></p>' + srdPatrons(cls, n) + '<div class="tbl">' + x.features.map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
+          others.map(function (n) { var x = SUBNOTES[cls][n]; return '<details class="srd sub-sum"><summary>' + esc(n) + '</summary><div class="prose srd-body"><p><i>' + rich(x.about) + '</i></p>' + srdPatrons(cls, n) + '<div class="tbl">' + x.features.map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
       }
     } else if (tab === 'feats') {
       var cats = []; SRD.feats.forEach(function (f) { if (cats.indexOf(f.category) < 0) cats.push(f.category); });
@@ -12548,8 +12552,8 @@
       html += '<p class="note">Backgrounds with a book name are summaries in our own words; for the older books, the abilities and feat are suggestions in the 2024 style.</p>';
       Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Feature</dt><dd>' + esc(b.feature) + '</dd>' : '') + '</dl></section>'; });
     } else {
-      var key = { metamagic: 'Metamagic', infusions: 'Artificer Infusion' }[tab] || 'Eldritch Invocation';
-      if (key === 'Artificer Infusion') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
+      var key = { metamagic: 'Metamagic', infusions: 'Tinkering' }[tab] || 'Eldritch Invocation';
+      if (key === 'Tinkering') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
       html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + (o.prereq ? '<small>' + esc(o.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div>' + srdOrig(o.meta) + '</section>'; }).join('');
     }
     html += '<p class="note srd-credit">' + esc(SRD_CREDIT) + '</p></div>';

@@ -651,14 +651,14 @@
       "own": true
     },
     {
-      "name": "Artificer Initiate",
+      "name": "Cogwright Initiate",
       "category": "General",
       "prereq": "Level 4+",
       "book": "Tasha's Cauldron of Everything",
       "text": [
         [
           "p",
-          "Learn one artificer cantrip and one 1st-level artificer spell (cast once per long rest without mana), and gain proficiency with one artisan's tool."
+          "Learn one Cogwright cantrip and one 1st-level Cogwright spell (cast once per long rest without mana), and gain proficiency with one artisan's tool."
         ]
       ],
       "own": true
@@ -1636,179 +1636,179 @@
     }
   },
   "options": {
-    "Artificer Infusion": [
+    "Tinkering": [
       {
-        "name": "Armor of Magical Strength",
+        "name": "Brawn Springs",
         "prereq": "",
         "text": [
           [
             "p",
-            "Armor that adds your Intelligence modifier to Strength checks and saves, and lets you refuse to be knocked prone a few times per day."
+            "Armor fitted with tensioned springs. Add your Intelligence modifier to Strength checks and saves, and a few times per day you can refuse to be knocked prone."
           ]
         ],
         "own": true
       },
       {
-        "name": "Boots of the Winding Path",
+        "name": "Backstep Gears",
         "prereq": "6th level",
         "text": [
           [
             "p",
-            "Boots that let you teleport back to a spot you stood on in the last turn (up to 15 feet) as a bonus action."
+            "Boots with a ticking heel-wheel that remembers your steps. As a bonus action, snap back to a spot you stood on since your last turn, up to 15 feet away."
           ]
         ],
         "own": true
       },
       {
-        "name": "Enhanced Arcane Focus",
+        "name": "Tuned Focus",
         "prereq": "",
         "text": [
           [
             "p",
-            "A rod, staff or wand gives +1 to spell attack rolls and lets your spells ignore half cover. +2 at 10th level."
+            "A rod, staff or wand with a brass tuning coil. +1 to spell attack rolls, and your spells ignore half cover. +2 at 10th level."
           ]
         ],
         "own": true
       },
       {
-        "name": "Enhanced Defense",
+        "name": "Riveted Guard",
         "prereq": "",
         "text": [
           [
             "p",
-            "Armor or a shield gives +1 AC (+2 at 10th level)."
+            "Armor or a shield with clockwork plating. +1 AC (+2 at 10th level)."
           ]
         ],
         "own": true
       },
       {
-        "name": "Enhanced Weapon",
+        "name": "Balanced Blade",
         "prereq": "",
         "text": [
           [
             "p",
-            "A simple or martial weapon becomes a +1 weapon (+2 at 10th level)."
+            "A simple or martial weapon with a weighted gear in the hilt becomes a +1 weapon (+2 at 10th level)."
           ]
         ],
         "own": true
       },
       {
-        "name": "Helm of Awareness",
+        "name": "Ticking Helm",
         "prereq": "10th level",
         "text": [
           [
             "p",
-            "A helmet gives advantage on initiative, and you can't be surprised while awake."
+            "A helmet with a quiet alarm-spring. You have advantage on initiative and can't be surprised while awake."
           ]
         ],
         "own": true
       },
       {
-        "name": "Homunculus Servant",
+        "name": "Brass Familiar",
         "prereq": "",
         "text": [
           [
             "p",
-            "Build a tiny mechanical homunculus that obeys you, fights alongside you and can deliver your touch spells."
+            "A tiny clockwork creature, a beetle, finch or rat, that obeys you, scouts, fights beside you, and can deliver your touch spells."
           ]
         ],
         "own": true
       },
       {
-        "name": "Mind Sharpener",
+        "name": "Steadying Weights",
         "prereq": "",
         "text": [
           [
             "p",
-            "Armor or robes that can turn a failed concentration save into a success a few times per day."
+            "Armor or robes with a gyroscope sewn in. A few times per day, turn a failed concentration save into a success."
           ]
         ],
         "own": true
       },
       {
-        "name": "Radiant Weapon",
+        "name": "Lantern Blade",
         "prereq": "6th level",
         "text": [
           [
             "p",
-            "A +1 weapon that sheds light on command, and can blind a creature that hits you as a reaction a few times per day."
+            "A +1 weapon with a shuttered lamp in the guard. It sheds light on command, and as a reaction a few times per day it flashes to blind a creature that hits you."
           ]
         ],
         "own": true
       },
       {
-        "name": "Repeating Shot",
+        "name": "Self-Loading Crossbow",
         "prereq": "",
         "text": [
           [
             "p",
-            "A ranged weapon becomes +1, ignores the loading property, and makes its own ammunition."
+            "A ranged weapon with a winding magazine. It becomes +1, ignores the loading property, and forges its own bolts or bullets."
           ]
         ],
         "own": true
       },
       {
-        "name": "Replicate Magic Item",
+        "name": "Guild Pattern",
         "prereq": "",
         "text": [
           [
             "p",
-            "Make a copy of a common or uncommon magic item from the artificer's list (bag of holding, goggles of night, rope of climbing, and many more, with better ones at higher levels)."
+            "Build a common or uncommon magic item from the Guild's pattern books, such as a bag of holding, goggles of night or a rope of climbing, with finer patterns at higher levels."
           ]
         ],
         "own": true
       },
       {
-        "name": "Repulsion Shield",
+        "name": "Spring Shield",
         "prereq": "6th level",
         "text": [
           [
             "p",
-            "A +1 shield that can push an attacker 15 feet away as a reaction a few times per day."
+            "A +1 shield with a coiled ram. As a reaction a few times per day, it punches an attacker 15 feet away."
           ]
         ],
         "own": true
       },
       {
-        "name": "Resistant Armor",
+        "name": "Insulated Plating",
         "prereq": "6th level",
         "text": [
           [
             "p",
-            "Armor that gives resistance to one damage type: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder."
+            "Armor lined with treated copper. Resistance to one damage type: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder."
           ]
         ],
         "own": true
       },
       {
-        "name": "Returning Weapon",
+        "name": "Recoil Chain",
         "prereq": "",
         "text": [
           [
             "p",
-            "A thrown weapon becomes +1 and flies back to your hand after the attack."
+            "A thrown weapon with a retracting chain becomes +1 and snaps back to your hand after the attack."
           ]
         ],
         "own": true
       },
       {
-        "name": "Spell-Refueling Ring",
+        "name": "Mana Coil",
         "prereq": "6th level",
         "text": [
           [
             "p",
-            "A ring that, once per day, gives you back the mana of a spell of 3rd level or lower (up to 18 mana)."
+            "A ring with a wound copper coil. Once per day, it gives back the mana of a spell of 3rd level or lower (up to 18 mana)."
           ]
         ],
         "own": true
       },
       {
-        "name": "Arcane Propulsion Armor",
+        "name": "Piston Armor",
         "prereq": "14th level",
         "text": [
           [
             "p",
-            "Armor that adds 5 feet of speed, gives you powered gauntlets as weapons (1d8 force, thrown 20/60 that return), and replaces missing limbs."
+            "Armor with leg pistons and powered gauntlets: +5 feet of speed, gauntlets that strike for 1d8 force and can be thrown 20/60 feet and return, and clockwork that replaces missing limbs."
           ]
         ],
         "own": true

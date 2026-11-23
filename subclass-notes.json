@@ -3088,137 +3088,122 @@
       ]
     }
   },
-  "Artificer": {
-    "Alchemist": {
-      "about": "You brew potions and elixirs, and you can heal and restore with the right mixture. Alchemists work in the apothecaries of [[Loreaon]] and the sea-chapels of the coast.",
+  "_note": "Short summaries written for Avarenth in our own words, not the book text. Check the exact wording in your copy of the book. Spell-slot costs are given in mana.",
+  "Cogwright": {
+    "Automaton-Wright": {
+      "about": "Builders of clockwork companions. An Automaton-Wright's first masterwork is a brass automaton that fights at their side, and most of them talk to it more than to people. Guild halls in [[Stonehelm]] keep rows of retired automatons standing in honor.",
       "features": [
         [
           3,
-          "Tool Proficiency",
-          "Proficiency with alchemist's supplies (or another artisan's tool if you have it)."
+          "Wright's Tools",
+          "You gain proficiency with smith's tools. If you already have it, pick another artisan's tool."
         ],
         [
           3,
-          "Experimental Elixir",
-          "After a long rest, make a random magic elixir in an empty flask: healing, swiftness, resilience, boldness, flight or transformation. Spend 5 mana to brew one you choose (10 for a second, and so on by spell cost). More free elixirs at 6th and 15th."
+          "Clockwork Companion",
+          "You build a Medium brass automaton. It acts on your turn and does what you command with a bonus action; otherwise it defends itself and you. It has AC 15, hit points equal to 2 + your Intelligence modifier + five times your Cogwright level, and a slam that deals 1d8 + your proficiency bonus force damage. As a reaction it can raise an arm to give an attacker within 5 feet disadvantage. You can repair it with tinker's tools during a rest, or rebuild it after a long rest if it is destroyed."
+        ],
+        [
+          3,
+          "Geared Strikes",
+          "When you attack with a weapon fitted with one of your Tinkerings, you can use your Intelligence modifier instead of Strength or Dexterity."
         ],
         [
           5,
-          "Alchemical Savant",
-          "When you cast a spell through alchemist's supplies, add your Intelligence modifier to one roll of its acid, fire, necrotic or poison damage or its healing."
+          "Extra Attack",
+          "You can attack twice when you take the Attack action."
         ],
         [
           9,
-          "Restorative Reagents",
-          "Your elixirs also give temporary hit points, and you can cast Lesser Restoration without mana a few times per long rest."
+          "Overclock",
+          "When you or your automaton hits a creature, you can push the gears past their limit: deal an extra 2d6 force damage, or instead let a creature within 30 feet of the automaton regain 2d6 + your Intelligence modifier hit points. You can do this a number of times equal to your Intelligence modifier per long rest."
         ],
         [
           15,
-          "Chemical Mastery",
-          "Resistance to acid and poison, immune to being poisoned, and once per long rest each cast Greater Restoration and Heal without mana or materials."
+          "Perfected Automaton",
+          "Overclock now deals or heals 4d6. Your automaton's defending arm also strikes back, dealing 1d4 + your Intelligence modifier force damage to the attacker."
         ]
       ]
     },
-    "Armorer": {
-      "about": "You build armor that fights beside you, and you can turn a suit of steel into a second body. Armorers serve the knights and the garrisons who need their gear to hold.",
+    "Ironclad": {
+      "about": "Cogwrights who build themselves a second body of plate and pistons. Ironclads stand at the front of dwarven shield walls, and every suit is fitted to its wearer over years of work.",
       "features": [
         [
           3,
           "Tools of the Trade",
-          "Proficiency with heavy armor and smith's tools."
+          "You gain proficiency with heavy armor and smith's tools."
         ],
         [
           3,
-          "Arcane Armor",
-          "Your armor becomes your spell focus, can't be removed against your will, covers your whole body and can be donned in an action."
-        ],
-        [
-          3,
-          "Armor Model",
-          "Guardian (thunder gauntlets that draw enemies to you, and temporary hit points as a bonus action) or Infiltrator (a lightning launcher, +5 speed and advantage on Stealth). Swap after a rest."
+          "Clockwork Plate",
+          "You can turn a suit of armor you wear into a clockwork engine. It covers your whole body, ignores any Strength requirement, can't be removed against your will, and lets you use your Intelligence modifier for attacks with its built-in weapons. Choose a pattern after a long rest: Bulwark, with thunder gauntlets (1d8 thunder) that give a struck creature disadvantage against anyone but you, and a defensive spring that grants temporary hit points; or Shade, with a lightning bolt-caster (1d6 lightning, 90 feet) that adds 1d6 once per turn, quieter joints, and advantage on Stealth checks."
         ],
         [
           5,
           "Extra Attack",
-          "Attack twice when you take the Attack action."
+          "You can attack twice when you take the Attack action."
         ],
         [
           9,
-          "Armor Modifications",
-          "Your armor counts as separate items for infusions (armor, helmet, boots, weapon), so you can infuse more of it."
+          "Geared Plating",
+          "Your Clockwork Plate can hold more upgrades. It counts as up to four separate items for your Tinkerings, and those Tinkerings don't count against your limit."
         ],
         [
           15,
-          "Perfected Armor",
-          "Guardian: pull a Huge or smaller creature 30 feet toward you as a reaction and attack it. Infiltrator: creatures you hit glow and take extra lightning damage."
+          "Perfected Plate",
+          "Bulwark: as a reaction, a creature you can see within 30 feet that fails a Strength save is dragged up to 25 feet toward you, and you can strike it if it ends next to you. Shade: a creature hit by your bolt-caster glows until your next turn, and the next attack against it has advantage and deals an extra 1d6 lightning."
         ]
       ]
     },
-    "Artillerist": {
-      "about": "You build cannons, catapults and other engines of war, and you can turn a workshop into a battery. Artillerists are paid well by the armies and avoided by the cities they defend.",
+    "Siege-Wright": {
+      "about": "Engineers of turrets, bolt throwers and things that explode on purpose. Siege-Wrights man the walls of every dwarven hold, and the Guild keeps a careful list of who has blown up what.",
       "features": [
         [
           3,
-          "Tool Proficiency",
-          "Proficiency with woodcarver's tools."
-        ],
-        [
-          3,
-          "Eldritch Cannon",
-          "Build a small or tiny magical cannon once per long rest (or spend 5 mana for another): a flamethrower, force ballista or protector (temporary hit points for allies). Fire it as a bonus action."
+          "Siege Turret",
+          "As an action you set down a small clockwork turret within 5 feet. Choose its mechanism: Bolt Thrower (ranged attack, 2d8 force, 120 feet), Flame Jet (a 15-foot cone, Dexterity save, 2d8 fire), or Shield Spring (a creature within 10 feet gains 1d8 + your Intelligence modifier temporary hit points). Trigger it with a bonus action. It lasts an hour. You can set one for free once per long rest; another costs 5 mana."
         ],
         [
           5,
-          "Arcane Firearm",
-          "Carve a wand, staff or rod into a firearm; spells cast through it deal an extra 1d8 damage."
+          "Brass Focus",
+          "You make a rod or wand of brass and crystal. While you cast through it, add 1d8 to one damage roll of your spells each turn."
         ],
         [
           9,
-          "Explosive Cannon",
-          "Your cannons hit harder (+1d8), and you can detonate one as an action."
+          "Explosive Release",
+          "As an action, you can detonate your turret: each creature within 20 feet of it makes a Dexterity save, taking 3d10 force damage on a failure or half on a success. Your turrets' damage and healing rise by 1d8."
         ],
         [
           15,
-          "Fortified Position",
-          "You can have two cannons at once, and allies near a cannon have half cover."
+          "Twin Turrets",
+          "You can keep two turrets running at once and trigger both with one bonus action. Allies within 10 feet of a turret have half cover."
         ]
       ]
     },
-    "Battle Smith": {
-      "about": "You build a steel companion that fights at your side, and you keep it running in the thick of combat. Battle smiths are the mechanics of the knightly orders.",
+    "Tonic-Wright": {
+      "about": "Steam alchemists who brew tonics in brass stills and pressure vials. Tonic-Wrights are the Guild's healers and its quiet poisoners, and a few of the oldest stills in [[Stonehelm]] have been running for a hundred years.",
       "features": [
         [
           3,
-          "Tool Proficiency",
-          "Proficiency with smith's tools."
-        ],
-        [
-          3,
-          "Battle Ready",
-          "Proficiency with martial weapons, and use Intelligence for attacks and damage with magic weapons."
-        ],
-        [
-          3,
-          "Steel Defender",
-          "A loyal construct companion that fights on your turn, protects allies with its reaction and repairs itself. It grows with your level."
+          "Pressure Still",
+          "After a long rest you brew one steam tonic in a sealed vial, and more at higher levels. You can brew another by spending mana. A creature that drinks or breathes a tonic gets one effect: Mending (regain 2d4 + your Intelligence modifier hit points), Quickening (+10 feet of speed for an hour), Hardening (+1 AC for 10 minutes), Clearing (see in darkness to 60 feet for an hour), or Lightening (fall slowly and jump twice as far for 10 minutes)."
         ],
         [
           5,
-          "Extra Attack",
-          "Attack twice when you take the Attack action."
+          "Scalding Craft",
+          "When you cast a spell through your alchemist's tools, add your Intelligence modifier to one roll of its acid, fire or poison damage, or to the hit points it restores."
         ],
         [
           9,
-          "Arcane Jolt",
-          "When you or your defender hit, deal an extra 2d6 force damage or heal a creature within 30 feet for 2d6, a few times per long rest."
+          "Restoring Steam",
+          "Your tonics also grant 2d6 + your Intelligence modifier temporary hit points. You can cast Lesser Restoration a number of times equal to your Intelligence modifier per long rest without spending mana."
         ],
         [
           15,
-          "Improved Defender",
-          "Arcane Jolt grows to 4d6, your defender gets +2 AC, and its deflections deal force damage back."
+          "Master Chemist",
+          "You resist acid and poison damage and can't be poisoned. Once per long rest you can cast Greater Restoration or Heal without spending mana or using components."
         ]
       ]
     }
-  },
-  "_note": "Short summaries written for Avarenth in our own words, not the book text. Check the exact wording in your copy of the book. Spell-slot costs are given in mana."
+  }
 }

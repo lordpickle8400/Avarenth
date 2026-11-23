@@ -259,45 +259,45 @@
   };
 
   // The two classes from outside the Player's Handbook (summaries in our own words). Their mana numbers are DM's calls.
-  C.Artificer = {
-    hd: 8, primary: 'Intelligence', saves: ['con', 'int'], book: 'Tasha\'s Cauldron of Everything',
-    armor: 'Light and medium armor, shields', weapons: 'Simple weapons', tools: 'Thieves\' tools, tinker\'s tools, one artisan\'s tool',
+  C.Cogwright = {
+    hd: 8, primary: 'Intelligence', saves: ['con', 'int'], book: 'Avarenth',
+    armor: 'Light and medium armor, shields', weapons: 'Simple weapons', tools: 'Tinker\'s tools, smith\'s tools, one other artisan\'s tool',
     skills: { n: 2, from: ['Arcana', 'History', 'Investigation', 'Medicine', 'Nature', 'Perception', 'Sleight of Hand'] },
-    subclassLevel: 3, subclassLabel: 'Artificer Specialist', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Alchemist', 'Armorer', 'Artillerist', 'Battle Smith'],
-    about: 'Inventors who channel magic through tools and objects. They build gadgets, armor and magical contraptions, and they bring their creations to life with careful work and a steady hand.',
+    subclassLevel: 3, subclassLabel: 'Guild Trade', asi: [4, 8, 12, 16, 19],
+    subclasses: ['Automaton-Wright', 'Ironclad', 'Siege-Wright', 'Tonic-Wright'],
+    about: 'Makers who wind magic into springs, gears and brass. The Cogwrights\' Guild takes anyone who passes its trials, but its masters are nearly all dwarves, its great halls are in [[Stonehelm]], and its marks are on the best clockwork in the isles.',
     features: [
-      [1, 'Magical Tinkering', 'Put a small magical property into a tiny object: light, a recorded message, a smell or sound, or a moving image. A number at once equal to your Intelligence modifier.'],
-      [1, 'Spellcasting', 'You cast with mana, through tools: you must hold thieves\' tools, an artisan\'s tool or an infused item as your focus. Intelligence is your spellcasting ability. See the Mana Guide.'],
-      [2, 'Infuse Item', 'After a long rest, turn ordinary objects into magic items with infusions (for example a +1 weapon, armor that boosts your AC, a bag of holding, goggles of night). You know four infusions at 2nd level and can keep two active, more as you level.'],
-      [3, 'Artificer Specialist', 'Choose your specialty.'],
-      [3, 'The Right Tool for the Job', 'Spend an hour to make one set of artisan\'s tools out of nothing.'],
-      [6, 'Tool Expertise', 'Double your proficiency bonus with any tool you\'re proficient with.'],
-      [7, 'Flash of Genius', 'As a reaction, add your Intelligence modifier to an ability check or save made by you or a creature you can see within 30 feet. Uses equal to your Intelligence modifier per long rest.'],
-      [10, 'Magic Item Adept', 'Attune to up to four magic items, and craft common or uncommon magic items in a quarter of the time for half the gold.'],
-      [11, 'Spell-Storing Item', 'After a long rest, store a 1st or 2nd-level spell you know in a weapon or focus. Anyone holding it can cast the stored spell a number of times equal to twice your Intelligence modifier, using your spellcasting modifier, without spending mana.'],
-      [14, 'Magic Item Savant', 'Attune to up to five magic items, and ignore all class, species, spell and level requirements for using them.'],
-      [18, 'Magic Item Master', 'Attune to up to six magic items.'],
-      [20, 'Soul of Artifice', '+1 to all saving throws for each magic item you\'re attuned to. When you drop to 0 hit points, you can end one of your infusions to drop to 1 hit point instead.']
+      [1, 'Clockwork Knack', 'You can build a tiny clockwork trinket in a few minutes: a wind-up bird that sings, a brass mouse that carries a note, a spinning lamp, a music box that plays a message you hum into it. You can keep a number of them running equal to your Intelligence modifier; they wind down after a long rest.'],
+      [1, 'Spellcasting', 'Your spells run through a device in your hand: tinker\'s tools, a winding key, or an item carrying one of your Tinkerings. You cast with mana. Intelligence is your spellcasting ability. See the Mana Guide.'],
+      [2, 'Tinkerings', 'After a long rest you can fit clockwork upgrades to ordinary gear, turning it into a magic item: a self-loading crossbow, a shield that springs open, plating that hums against blows. You know four Tinkerings at 2nd level and can keep two fitted at once, more as you level.'],
+      [3, 'Guild Trade', 'Choose the trade the Guild trained you in.'],
+      [3, 'Pocket Workshop', 'Spend an hour with scrap and spare parts to put together one set of artisan\'s tools. It lasts until you build another.'],
+      [6, 'Master\'s Hand', 'Double your proficiency bonus with any tool you\'re proficient with.'],
+      [7, 'Spring-Loaded Wits', 'As a reaction, add your Intelligence modifier to an ability check or saving throw made by you or a creature you can see within 30 feet. You can do this a number of times equal to your Intelligence modifier per long rest.'],
+      [10, 'Brass Attunement', 'You can attune to up to four magic items, and you craft common and uncommon magic items and clockwork in a quarter of the time for half the gold.'],
+      [11, 'Wound Charge', 'After a long rest, wind a 1st or 2nd-level spell you know into a weapon or device. Whoever holds it can release the spell a number of times equal to twice your Intelligence modifier, using your spellcasting modifier and spending no mana.'],
+      [14, 'Grand Tinker', 'You can attune to up to five magic items, and you ignore every class, species, spell and level requirement for using one.'],
+      [18, 'Guildmaster\'s Mark', 'You can attune to up to six magic items.'],
+      [20, 'Heart of Brass', 'You gain +1 to all saving throws for each magic item you\'re attuned to. When you drop to 0 hit points, you can shut down one of your Tinkerings to drop to 1 hit point instead.']
     ]
   };
 
   // Subclass feature levels (the features themselves depend on the subclass).
-  var SUB_LEVELS = { Artificer: [3, 5, 9, 15], Barbarian: [3, 6, 10, 14], Bard: [3, 6, 14], Cleric: [1, 2, 6, 8, 17], Druid: [2, 6, 10, 14], Fighter: [3, 7, 10, 15, 18],
+  var SUB_LEVELS = { Cogwright: [3, 5, 9, 15], Barbarian: [3, 6, 10, 14], Bard: [3, 6, 14], Cleric: [1, 2, 6, 8, 17], Druid: [2, 6, 10, 14], Fighter: [3, 7, 10, 15, 18],
     Monk: [3, 6, 11, 17], Paladin: [3, 7, 15, 20], Ranger: [3, 7, 11, 15], Rogue: [3, 9, 13, 17], Sorcerer: [1, 6, 14, 18], Warlock: [1, 6, 10, 14], Wizard: [2, 6, 10, 14] };
 
   // Avarenth magic, from the Mana Guide.
   var MAGIC = {
     manaCost: [0, 5, 10, 18, 28, 40, 60, 85, 110, 150],
-    mana: { Wizard: [25, 15], Sorcerer: [35, 17], Cleric: [25, 14], Druid: [25, 14], Bard: [30, 13], Warlock: [30, 12], Paladin: [20, 9], Ranger: [20, 9], Monk: [20, 8], Fighter: [15, 7], Rogue: [15, 6], Barbarian: [10, 6], Artificer: [20, 9] },
+    mana: { Wizard: [25, 15], Sorcerer: [35, 17], Cleric: [25, 14], Druid: [25, 14], Bard: [30, 13], Warlock: [30, 12], Paladin: [20, 9], Ranger: [20, 9], Monk: [20, 8], Fighter: [15, 7], Rogue: [15, 6], Barbarian: [10, 6], Cogwright: [20, 9] },
     // Levels at which each High Magic Charge is gained, and when the Reality Channel arrives (0 = never).
     charges: { Wizard: [[11, 13, 15, 17, 19], 17], Sorcerer: [[11, 13, 15, 17, 19], 17], Cleric: [[11, 13, 15, 19], 17], Druid: [[11, 13, 15, 19], 17],
-      Bard: [[11, 15, 19], 19], Warlock: [[11, 15, 19], 19], Paladin: [[15, 19], 0], Ranger: [[15, 19], 0], Monk: [[17], 0], Fighter: [[19], 0], Rogue: [[19], 0], Barbarian: [[], 0], Artificer: [[15, 19], 0] },
+      Bard: [[11, 15, 19], 19], Warlock: [[11, 15, 19], 19], Paladin: [[15, 19], 0], Ranger: [[15, 19], 0], Monk: [[17], 0], Fighter: [[19], 0], Rogue: [[19], 0], Barbarian: [[], 0], Cogwright: [[15, 19], 0] },
     fullCasters: ['Wizard', 'Sorcerer', 'Cleric', 'Druid', 'Bard', 'Warlock'],
     learnLevel: [1, 1, 3, 5, 7, 9, 11, 13, 15, 17],          // character level needed for each spell level
     learnCost: [5, 10, 25, 50, 100, 200, 400, 750, 1250, 2500], // gp
     studyHours: [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-    spellAbility: { Wizard: 'int', Sorcerer: 'cha', Cleric: 'wis', Druid: 'wis', Bard: 'cha', Warlock: 'cha', Paladin: 'cha', Ranger: 'wis', Monk: 'wis', Fighter: 'int', Rogue: 'int', Barbarian: 'wis', Artificer: 'int' },
+    spellAbility: { Wizard: 'int', Sorcerer: 'cha', Cleric: 'wis', Druid: 'wis', Bard: 'cha', Warlock: 'cha', Paladin: 'cha', Ranger: 'wis', Monk: 'wis', Fighter: 'int', Rogue: 'int', Barbarian: 'wis', Cogwright: 'int' },
     // Starting spell picks from the class list, and free picks gained at later levels.
     // A DM-tunable default: Avarenth's class spells are learned at levels 1, 3 and 5+.
     startPicks: { full: [3, 2], half: [2, 2], martial: [1, 1] },
