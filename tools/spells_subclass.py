@@ -13,7 +13,7 @@ def match_filter(f):
         if 'school' in parts and s['school'] not in [SCH.get(x.upper(), x) for x in parts['school'].split(';')]: continue
         out.append(s['name'])
     return out
-WHOLE_LISTS = {'Fighter', 'Rogue'}  # Eldritch Knight and Arcane Trickster cast from the wizard list
+WHOLE_LISTS = {'Fighter', 'Rogue'}  # subclasses that cast from the wizard list
 def collect(node, acc, cls=''):
     if isinstance(node, str):
         n = re.sub(r'#.*$', '', node.split('|')[0]).strip().lower()
