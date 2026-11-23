@@ -535,7 +535,7 @@
       ]
     },
     "Way of the Last Breath": {
-      "about": "A monk who studies death and feeds on it, and who finds strength in the last breath of an enemy. Other monks keep their distance from them, and the Grave Domain priests have their own opinions.",
+      "about": "A monk who studies death and feeds on it, and who finds strength in the last breath of an enemy. Other monks keep their distance from them, and the Tomb Domain priests have their own opinions.",
       "features": [
         [
           3,
@@ -887,7 +887,7 @@
       ]
     },
     "Deadwhisper": {
-      "about": "A rogue touched by death, who steals the knowledge and the last words of the dead. Deadwhispers are shunned by the church and tolerated by the Grave Domain, and they do not much care who approves.",
+      "about": "A rogue touched by death, who steals the knowledge and the last words of the dead. Deadwhispers are shunned by the church and tolerated by the Tomb Domain, and they do not much care who approves.",
       "features": [
         [
           3,
@@ -948,7 +948,7 @@
     }
   },
   "Cleric": {
-    "Knowledge Domain": {
+    "Lore Domain": {
       "about": "Priests of learning who know secrets, read minds and keep the old records. Knowledge clerics serve Korinth and are often found in the libraries of [[Akorsrest]].",
       "features": [
         [
@@ -983,7 +983,7 @@
         ]
       ]
     },
-    "Light Domain": {
+    "Dawn Domain": {
       "about": "Bearers of fire and dawn who burn away darkness and the things that hide in it. Light clerics are the first to be sent when the night gets dangerous.",
       "features": [
         [
@@ -1023,7 +1023,7 @@
         ]
       ]
     },
-    "Nature Domain": {
+    "Wildwood Domain": {
       "about": "Servants of the wild who charm beasts, shape plants and speak for the forests. Nature clerics are welcome in the villages and feared by the lumbermen.",
       "features": [
         [
@@ -1063,7 +1063,7 @@
         ]
       ]
     },
-    "Tempest Domain": {
+    "Thunder Domain": {
       "about": "Storm priests who answer blows with thunder and lightning, and who see the sea as a holy thing. Thorum’s followers in the port towns speak of them with awe.",
       "features": [
         [
@@ -1103,7 +1103,7 @@
         ]
       ]
     },
-    "Trickery Domain": {
+    "Mischief Domain": {
       "about": "Tricksters who deceive with illusions and doubles, and who serve the god of mischief when the rules get in the way. Trickery clerics are good company until they are not.",
       "features": [
         [
@@ -1138,7 +1138,7 @@
         ]
       ]
     },
-    "War Domain": {
+    "Battle Domain": {
       "about": "Champions of battle who strike with divine force and who believe every fight is a test of faith. War clerics ride with the knightly orders and fight in the front lines of every holy war.",
       "features": [
         [
@@ -1178,7 +1178,7 @@
         ]
       ]
     },
-    "Forge Domain": {
+    "Anvil Domain": {
       "about": "Smith-priests who craft and wear the finest armor, and who believe the work of the hand is a prayer. Forge clerics are welcome in the great smithies of the isles.",
       "features": [
         [
@@ -1218,7 +1218,7 @@
         ]
       ]
     },
-    "Grave Domain": {
+    "Tomb Domain": {
       "about": "Guardians against undeath who keep the dying alive and finish the doomed with mercy. Grave clerics walk the cemeteries of the old cities and keep watch over the dead.",
       "features": [
         [
@@ -1939,8 +1939,8 @@
     }
   },
   "Bard": {
-    "College of Valor": {
-      "about": "Bards who sing of battle and stand beside the people they celebrate. The College of Valor sends its members to the front lines with a song in their throat and a shield on their arm.",
+    "College of Courage": {
+      "about": "Bards who sing of battle and stand beside the people they celebrate. The College of Courage sends its members to the front lines with a song in their throat and a shield on their arm.",
       "features": [
         [
           3,
@@ -2019,7 +2019,7 @@
         ]
       ]
     },
-    "College of Whispers": {
+    "College of Secrets": {
       "about": "Bards who trade in secrets, rumours and quiet threats. Whisper bards are the spies of the bardic world, and they know which songs to sing to get a man to talk.",
       "features": [
         [

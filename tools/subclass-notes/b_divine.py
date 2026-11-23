@@ -5,14 +5,14 @@ OS = "Avarenth: subclasses add no spells. Your oath's spells suit your vows; lea
 CD = "Channel Divinity"
 
 S["Cleric"] = {
- "Knowledge Domain": ("Priests of learning who know secrets and read minds.", [
+ "Lore Domain": ("Priests of learning who know secrets and read minds.", [
   [1, "Domain spells", DS],
   [1, "Keen Lore", "Two extra languages, and proficiency with double bonus in two of Arcana, History, Nature or Religion."],
   [2, CD + ": Ageless Lore", "Gain proficiency in any skill or tool for 10 minutes."],
   [6, CD + ": Mind Read", "Read a creature's surface thoughts (Wis save), then cast Suggestion on it without spending mana."],
   [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
   [17, "Glimpse of the Past", "Meditate to see recent events around an object you hold or the area you're in."]]),
- "Light Domain": ("Bearers of fire and dawn who burn away darkness.", [
+ "Dawn Domain": ("Bearers of fire and dawn who burn away darkness.", [
   [1, "Domain spells", DS],
   [1, "Bonus Cantrip", "Learn Light."],
   [1, "Warding Glare", "Reaction: impose disadvantage on an attack against you, Wisdom-mod times per long rest."],
@@ -20,7 +20,7 @@ S["Cleric"] = {
   [6, "Greater Glare", "Warding Flare can protect allies too."],
   [8, "Potent Spellcasting", "Add Wisdom to cleric cantrip damage."],
   [17, "Halo of Light", "Shed sunlight; enemies in it have disadvantage on saves against fire and radiant spells."]]),
- "Nature Domain": ("Servants of the wild who charm beasts and shape plants.", [
+ "Wildwood Domain": ("Servants of the wild who charm beasts and shape plants.", [
   [1, "Domain spells", DS],
   [1, "Greenward Acolyte", "Learn a druid cantrip and one of Animal Handling, Nature or Survival."],
   [1, "Bonus Proficiency", "Heavy armor."],
@@ -28,7 +28,7 @@ S["Cleric"] = {
   [6, "Element Ward", "Reaction: give resistance to acid, cold, fire, lightning or thunder damage to a creature within 30 ft."],
   [8, "Divine Strike", "Once per turn, a weapon hit deals extra cold, fire or lightning damage (1d8, 2d8 at 14th)."],
   [17, "Lord of the Wild", "Command charmed beasts and plants with a bonus action."]]),
- "Tempest Domain": ("Storm priests who answer blows with thunder.", [
+ "Thunder Domain": ("Storm priests who answer blows with thunder.", [
   [1, "Domain spells", DS],
   [1, "Bonus Proficiencies", "Martial weapons and heavy armor."],
   [1, "Storm's Wrath", "Reaction: a creature that hits you takes lightning or thunder damage (Dex save halves), Wisdom-mod times per long rest."],
@@ -36,14 +36,14 @@ S["Cleric"] = {
   [6, "Thunder Strike", "Your lightning damage can push Large or smaller creatures 10 ft."],
   [8, "Divine Strike", "Once per turn, a weapon hit deals extra thunder damage (1d8, 2d8 at 14th)."],
   [17, "Stormblessed", "Fly at your walking speed when outdoors and not underground."]]),
- "Trickery Domain": ("Tricksters who deceive with illusions and doubles.", [
+ "Mischief Domain": ("Tricksters who deceive with illusions and doubles.", [
   [1, "Domain spells", DS],
   [1, "Trickster's Gift", "Give a creature advantage on Stealth for an hour."],
   [2, CD + ": Mirror Self", "Create an illusory duplicate you can cast through, and gain advantage when you and it flank a creature."],
   [6, CD + ": Dim Cloak", "Become invisible until the end of your next turn."],
   [8, "Divine Strike", "Once per turn, a weapon hit deals extra poison damage (1d8, 2d8 at 14th)."],
   [17, "Greater Mirror", "Create up to four duplicates."]]),
- "War Domain": ("Champions of battle who strike with divine force.", [
+ "Battle Domain": ("Champions of battle who strike with divine force.", [
   [1, "Domain spells", DS],
   [1, "Bonus Proficiencies", "Martial weapons and heavy armor."],
   [1, "Battle Chaplain", "Make a weapon attack as a bonus action after the Attack action, Wisdom-mod times per long rest."],
@@ -51,7 +51,7 @@ S["Cleric"] = {
   [6, CD + ": Champion's Blessing", "Reaction: give an ally +10 to an attack roll."],
   [8, "Divine Strike", "Once per turn, a weapon hit deals extra damage of the weapon's type (1d8, 2d8 at 14th)."],
   [17, "Battle Avatar", "Resistance to bludgeoning, piercing and slashing from nonmagical attacks."]]),
- "Forge Domain": ("Smith-priests who craft and wear the finest armor.", [
+ "Anvil Domain": ("Smith-priests who craft and wear the finest armor.", [
   [1, "Domain spells", DS],
   [1, "Bonus Proficiencies", "Heavy armor and smith's tools."],
   [1, "Forge Blessing", "After a long rest, give a weapon or armor +1 until your next long rest."],
@@ -59,7 +59,7 @@ S["Cleric"] = {
   [6, "Forged Spirit", "Resistance to fire, and +1 AC in heavy armor."],
   [8, "Divine Strike", "Once per turn, a weapon hit deals extra fire damage (1d8, 2d8 at 14th)."],
   [17, "Saint of the Anvil", "Immunity to fire, and resistance to nonmagical weapon damage in heavy armor."]]),
- "Grave Domain": ("Guardians against undeath who keep the dying alive and finish the doomed.", [
+ "Tomb Domain": ("Guardians against undeath who keep the dying alive and finish the doomed.", [
   [1, "Domain spells", DS],
   [1, "Circle of the Dead", "Healing a creature at 0 HP uses maximum dice; Spare the Dying works at 30 ft as a bonus action."],
   [1, "Grave Sight", "Sense undead within 60 ft, Wisdom-mod times per long rest."],

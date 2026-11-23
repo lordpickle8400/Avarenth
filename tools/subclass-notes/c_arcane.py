@@ -3,7 +3,7 @@ S = {}
 SP = "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
 
 S["Bard"] = {
- "College of Valor": ("Skalds who inspire courage in battle and fight on the front line.", [
+ "College of Courage": ("Skalds who inspire courage in battle and fight on the front line.", [
   [3, "Bonus Proficiencies", "Medium armor, shields and martial weapons."],
   [3, "Battle Verse", "Allies can add your Bardic Inspiration die to damage or to their AC against one attack."],
   [6, "Extra Attack", "Attack twice when you take the Attack action."],
@@ -19,7 +19,7 @@ S["Bard"] = {
   [3, "Flourish of Steel", "+10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Defensive (add to AC), Slashing (hit a second creature) or Mobile (push the target)."],
   [6, "Extra Attack", "Attack twice when you take the Attack action."],
   [14, "Master's Riposte", "Use a d6 for a flourish instead of spending Bardic Inspiration."]]),
- "College of Whispers": ("Spies who trade in secrets and fear.", [
+ "College of Secrets": ("Spies who trade in secrets and fear.", [
   [3, "Shadow Blades", "Spend Bardic Inspiration on a hit for extra psychic damage (2d6, more at higher levels)."],
   [3, "Dread Words", "Talk to someone alone for a minute and frighten them for an hour (Wis save)."],
   [6, "Veil of Whispers", "Capture the shadow of a humanoid who dies near you and wear its persona as a disguise."],
