@@ -475,6 +475,7 @@ body.at-full::before { display: none; }
 .at-stage.dragging { cursor: grabbing; }
 .at-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; --inv: 1; }
 .at-img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; display: block; pointer-events: none; image-rendering: auto; }
+.at-bg { position: absolute; left: -15%; top: -15%; width: 130%; height: 130%; max-width: none; display: block; pointer-events: none; }
 .at-grid { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .8; image-rendering: pixelated; }
 .at-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .at-route { fill: none; stroke: var(--secret); stroke-width: calc(3.5px * var(--inv)); stroke-dasharray: calc(10px * var(--inv)) calc(7px * var(--inv)); stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 2px rgba(0,0,0,.6)); }

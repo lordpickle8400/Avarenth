@@ -11512,7 +11512,7 @@
   function atlasShell() {
     return '<div class="atlas" id="atlas">' +
       '<div class="at-stage" id="at-stage" tabindex="0" aria-label="Map. Drag to move, pinch or scroll to zoom.">' +
-      '<div class="at-world" id="at-world"><img class="at-img" id="at-img" alt="" draggable="false"><canvas class="at-grid" id="at-grid" hidden></canvas><div id="at-svg"></div><div class="at-pins" id="at-pins"></div></div></div>' +
+      '<div class="at-world" id="at-world"><img class="at-bg" id="at-bg" alt="" draggable="false" hidden><img class="at-img" id="at-img" alt="" draggable="false"><canvas class="at-grid" id="at-grid" hidden></canvas><div id="at-svg"></div><div class="at-pins" id="at-pins"></div></div></div>' +
       '<div class="at-fade" id="at-fade"></div>' +
       '<div class="at-top">' +
       '<div class="at-search"><label class="sr" for="at-q">Search places, people and shops</label>' + SEARCH_ICON + '<input id="at-q" type="search" placeholder="' + (TABLE ? 'Find a place or person you know…' : 'Find a place, person or shop…') + '" autocomplete="off" value="' + esc(AT.q) + '"><div class="at-results" id="at-results" hidden></div></div>' +
@@ -11564,6 +11564,10 @@
       AT.loadedKey = AT.key; AT.W = w.w; AT.H = w.h;
       world.style.width = w.w + 'px'; world.style.height = w.h + 'px';
       img.removeAttribute('src');
+      // Surrounding land or sea, drawn past the map's edges (cities/<slug>-bg.jpg). Pan stops at its edge.
+      var bgEl = document.getElementById('at-bg'), bgSlug = w.city && cityOfKey(AT.key) ? cityOfKey(AT.key).slug : null;
+      AT.bg = false; bgEl.hidden = true;
+      if (bgSlug) { bgEl.onload = function () { if (AT.loadedKey === AT.key) { AT.bg = true; bgEl.hidden = false; applyView(); } }; bgEl.onerror = function () { AT.bg = false; bgEl.hidden = true; }; bgEl.src = 'cities/' + bgSlug + '-bg.jpg'; }
       if (w.city) img.src = w.src;
       else mapImageUrl(w.map.image_path).then(function (u) { if (AT.loadedKey === AT.key) img.src = u; }).catch(function (e) { fail(e, 'Could not load the map image.'); });
       document.getElementById('at-grid').removeAttribute('data-for');
@@ -11614,6 +11618,13 @@
   function clampView() {
     var s = stageSize(), mk = maxK(), mn = AT.fit * (cityOfKey(AT.key) ? 0.6 : 0.8);
     AT.k = Math.max(mn, Math.min(mk, AT.k));
+    if (AT.bg) {
+      // The padded background is the limit: pan only across its 15% margin, never past it.
+      var pd = 0.15, ox = pd * AT.W * AT.k, oy = pd * AT.H * AT.k, bw = AT.W * (1 + 2 * pd) * AT.k, bh = AT.H * (1 + 2 * pd) * AT.k;
+      AT.x = bw >= s.w ? Math.min(ox, Math.max(s.w - bw + ox, AT.x)) : (s.w - AT.W * AT.k) / 2;
+      AT.y = bh >= s.h ? Math.min(oy, Math.max(s.h - bh + oy, AT.y)) : (s.h - AT.H * AT.k) / 2;
+      return;
+    }
     // Keep at least a good piece of the map on screen, wherever it is dragged.
     var w = AT.W * AT.k, h = AT.H * AT.k, keepX = Math.min(w, s.w) * 0.35, keepY = Math.min(h, s.h) * 0.35;
     AT.x = Math.min(s.w - keepX, Math.max(keepX - w, AT.x));
