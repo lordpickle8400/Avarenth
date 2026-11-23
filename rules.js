@@ -58,11 +58,11 @@
     subclassLevel: 1, subclassLabel: 'Divine Domain', asi: [4, 8, 12, 16, 19],
     subclasses: ['Knowledge Domain', 'Life Domain', 'Light Domain', 'Nature Domain', 'Tempest Domain', 'Trickery Domain', 'War Domain', 'Forge Domain', 'Grave Domain', 'Order Domain', 'Peace Domain', 'Twilight Domain', 'Arcana Domain', 'Death Domain'],
     features: [
-      [1, 'Spellcasting', 'You cast with mana. Wisdom is your spellcasting ability. See the Mana Guide.'],
-      [1, 'Divine Domain', 'Choose the domain of your god.'],
-      [2, 'Channel Divinity', 'Channel divine power for effects like Turn Undead and your domain\'s ability. Once per short or long rest (twice at 6th, three times at 18th).'],
-      [5, 'Destroy Undead', 'Undead that fail against your Turn Undead are destroyed outright if weak enough. The threshold rises as you level.'],
-      [10, 'Divine Intervention', 'Call on your god for help. If you roll your cleric level or lower on a d100, they answer.'],
+      [1, 'Spellcasting', 'You cast with mana drawn from your faith. Wisdom is your spellcasting ability. See the Mana Guide.'],
+      [1, 'Divine Domain', 'Your god\'s nature shapes your magic. Choose the domain your god rules and the powers that come with it.'],
+      [2, 'Channel Divinity', 'You channel divine power into effects like Turn Undead and your domain\'s ability. Once per short or long rest (twice at 6th, three times at 18th).'],
+      [5, 'Destroy Undead', 'Undead that fail against your Turn Undead are destroyed outright if they are weak enough. The threshold rises as you level.'],
+      [10, 'Divine Intervention', 'You call on your god for help in a dire moment. Roll a d100; if the result is your cleric level or lower, your god answers.'],
       [20, 'Divine Intervention Improvement', 'Your god always answers your call for intervention.']
     ]
   };
@@ -74,13 +74,13 @@
     subclassLevel: 2, subclassLabel: 'Druid Circle', asi: [4, 8, 12, 16, 19],
     subclasses: ['Circle of the Land', 'Circle of the Moon', 'Circle of Dreams', 'Circle of the Shepherd', 'Circle of Spores', 'Circle of Stars', 'Circle of Wildfire'],
     features: [
-      [1, 'Druidic', 'You know the secret language of druids.'],
+      [1, 'Druidic', 'You know the secret language of druids, and you can leave messages that only other druids can read.'],
       [1, 'Spellcasting', 'You cast with mana. Wisdom is your spellcasting ability. See the Mana Guide.'],
-      [2, 'Wild Shape', 'Turn into a beast you have seen, twice per short or long rest. Stronger forms open up at 4th and 8th level.'],
-      [2, 'Druid Circle', 'Choose your circle.'],
-      [18, 'Timeless Body', 'You age ten times slower.'],
-      [18, 'Beast Spells', 'You can cast many of your spells while in beast form.'],
-      [20, 'Archdruid', 'Unlimited Wild Shape, and you can ignore minor components of druid spells.']
+      [2, 'Wild Shape', 'You turn into a beast you have seen, twice per short or long rest. Stronger forms open up at 4th and 8th level.'],
+      [2, 'Druid Circle', 'Choose the circle you learn your magic from, which shapes the spells and features you gain.'],
+      [18, 'Timeless Body', 'You age ten times slower than ordinary folk, and the years pass lightly on you.'],
+      [18, 'Beast Spells', 'You can cast many of your spells while in beast form, even without the words and gestures you would normally use.'],
+      [20, 'Archdruid', 'Unlimited Wild Shape, and you can ignore minor components of druid spells, the small gestures and materials that others need.']
     ]
   };
 
@@ -92,12 +92,12 @@
     subclasses: ['Champion', 'Battle Master', 'Eldritch Knight', 'Arcane Archer', 'Cavalier', 'Samurai', 'Echo Knight', 'Psi Warrior', 'Rune Knight'],
     features: [
       [1, 'Avarenth Magic', 'You have a small mana pool and a short martial spell list. Bigger magic comes from tomes. See the Mana Guide.'],
-      [1, 'Fighting Style', 'Pick a fighting specialty, like Archery, Defense, Dueling or Great Weapon Fighting.'],
-      [1, 'Second Wind', 'As a bonus action, regain 1d10 + your fighter level in hit points. Once per short or long rest.'],
-      [2, 'Action Surge', 'Take one extra action on your turn. Once per short or long rest (twice at 17th).'],
-      [3, 'Martial Archetype', 'Choose your archetype.'],
-      [5, 'Extra Attack', 'Attack twice when you take the Attack action (three times at 11th, four at 20th).'],
-      [9, 'Indomitable', 'Reroll a failed saving throw. Once per long rest (twice at 13th, three times at 17th).']
+      [1, 'Fighting Style', 'Pick a fighting specialty that defines how you fight, like Archery, Defense, Dueling or Great Weapon Fighting.'],
+      [1, 'Second Wind', 'As a bonus action, you catch your breath and regain 1d10 + your fighter level in hit points. Once per short or long rest.'],
+      [2, 'Action Surge', 'For a moment you push past your limits and take one extra action on your turn. Once per short or long rest (twice at 17th).'],
+      [3, 'Martial Archetype', 'Choose the archetype that shapes how you master your craft.'],
+      [5, 'Extra Attack', 'You strike with a practiced hand. Attack twice when you take the Attack action (three times at 11th, four at 20th).'],
+      [9, 'Indomitable', 'You refuse to be beaten by magic or fear. Reroll a failed saving throw. Once per long rest (twice at 13th, three times at 17th).']
     ]
   };
 
@@ -204,11 +204,11 @@
     subclassLevel: 1, subclassLabel: 'Sorcerous Origin', asi: [4, 8, 12, 16, 19],
     subclasses: ['Draconic Bloodline', 'Wild Magic', 'Divine Soul', 'Shadow Magic', 'Storm Sorcery', 'Aberrant Mind', 'Clockwork Soul'],
     features: [
-      [1, 'Spellcasting', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
-      [1, 'Sorcerous Origin', 'Choose where your magic comes from.'],
-      [2, 'Font of Magic', 'Sorcery points equal to your sorcerer level fuel Metamagic. As a bonus action, trade 1 point for 5 mana or 5 mana for 1 point. You can\'t go over your max.'],
-      [3, 'Metamagic', 'Twist your spells with sorcery points: farther, faster, twinned, quieter. Two options at 3rd, more at 10th and 17th.'],
-      [20, 'Sorcerous Restoration', 'Regain 4 sorcery points on a short rest.']
+      [1, 'Spellcasting', 'You cast with mana, and your magic is part of who you are. Charisma is your spellcasting ability. See the Mana Guide.'],
+      [1, 'Sorcerous Origin', 'Choose where your magic comes from, whether a bloodline, a wild surge or a spark of the divine.'],
+      [2, 'Font of Magic', 'Your sorcery points come from within and fuel Metamagic. You have sorcery points equal to your sorcerer level. As a bonus action, trade 1 point for 5 mana or 5 mana for 1 point. You can\'t go over your max.'],
+      [3, 'Metamagic', 'Twist your spells with sorcery points: make them farther, faster, twinned or quieter. Two options at 3rd, more at 10th and 17th.'],
+      [20, 'Sorcerous Restoration', 'You draw the power back into yourself. Regain 4 sorcery points on a short rest.']
     ]
   };
 
@@ -238,11 +238,11 @@
     subclassLevel: 2, subclassLabel: 'Arcane Tradition', asi: [4, 8, 12, 16, 19],
     subclasses: ['School of Abjuration', 'School of Conjuration', 'School of Divination', 'School of Enchantment', 'School of Evocation', 'School of Illusion', 'School of Necromancy', 'School of Transmutation', 'Bladesinging', 'War Magic', 'Chronurgy Magic', 'Graviturgy Magic', 'Order of Scribes'],
     features: [
-      [1, 'Spellcasting', 'You cast with mana. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
+      [1, 'Spellcasting', 'You cast with mana and study magic as a discipline. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
       [1, 'Arcane Recovery', 'Once per day after a short rest, regain mana equal to 5 × your wizard level.'],
-      [2, 'Arcane Tradition', 'Choose your school.'],
-      [18, 'Spell Mastery', 'Pick one 1st-level and one 2nd-level spell you know. They cost you no mana.'],
-      [20, 'Signature Spells', 'Pick two 3rd-level spells you know. Each can be cast once per short rest without spending mana.']
+      [2, 'Arcane Tradition', 'Choose the school you specialize in, which shapes the spells and features you gain.'],
+      [18, 'Spell Mastery', 'You have mastered two spells so well that they hardly tax you. Pick one 1st-level and one 2nd-level spell you know. They cost you no mana.'],
+      [20, 'Signature Spells', 'Your signature spells are the ones you have made your own. Pick two 3rd-level spells you know. Each can be cast once per short rest without spending mana.']
     ]
   };
 

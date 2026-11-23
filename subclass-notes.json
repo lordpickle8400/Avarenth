@@ -198,7 +198,7 @@
   },
   "Fighter": {
     "Battle Master": {
-      "about": "A tactician who fuels combat manoeuvres with superiority dice, and who wins fights by thinking three moves ahead. Captains of the Dornish Army train their officers in these techniques before they lead a single charge.",
+      "about": "A tactician who fuels combat maneuvers with superiority dice, and who wins fights by thinking three moves ahead. Captains of the Dornish Army train their officers in these techniques before they lead a single charge.",
       "features": [
         [
           3,
@@ -343,7 +343,7 @@
       ]
     },
     "Samurai": {
-      "about": "Unshakeable resolve turns into precise, relentless strikes, and the samurai’s honour is the first thing they protect. Their courtly manners hide a deadly edge that few enemies see coming.",
+      "about": "Unshakeable resolve turns into precise, relentless strikes, and the samurai’s honor is the first thing they protect. Their courtly manners hide a deadly edge that few enemies see coming.",
       "features": [
         [
           3,
@@ -857,7 +857,7 @@
       ]
     },
     "Swashbuckler": {
-      "about": "A flashy duelist who darts in and out of combat with a grin and a flourish. Swashbucklers are the favourites of the taverns and the tavern-keepers’ daughters, and they are rarely short of a wager.",
+      "about": "A flashy duelist who darts in and out of combat with a grin and a flourish. Swashbucklers are the favorites of the taverns and the tavern-keepers’ daughters, and they are rarely short of a wager.",
       "features": [
         [
           3,
@@ -917,7 +917,7 @@
       ]
     },
     "Soulknife": {
-      "about": "Psionic blades formed from your mind cut through armour and thought alike. Soulknives are rare, and the few in the isles tend to keep to themselves.",
+      "about": "Psionic blades formed from your mind cut through armor and thought alike. Soulknives are rare, and the few in the isles tend to keep to themselves.",
       "features": [
         [
           3,
@@ -1179,7 +1179,7 @@
       ]
     },
     "Forge Domain": {
-      "about": "Smith-priests who craft and wear the finest armour, and who believe the work of the hand is a prayer. Forge clerics are welcome in the great smithies of the isles.",
+      "about": "Smith-priests who craft and wear the finest armor, and who believe the work of the hand is a prayer. Forge clerics are welcome in the great smithies of the isles.",
       "features": [
         [
           1,
@@ -1708,7 +1708,7 @@
   },
   "Warlock": {
     "The Archfey": {
-      "about": "Your patron is a powerful creature of the fey, who gives you gifts and asks for favours in return. Fey bargains are binding, and an archfey’s price is always higher than it first seems.",
+      "about": "Your patron is a powerful creature of the fey, who gives you gifts and asks for favors in return. Fey bargains are binding, and an archfey’s price is always higher than it first seems.",
       "features": [
         [
           1,
@@ -1768,7 +1768,7 @@
       ]
     },
     "The Celestial": {
-      "about": "Your patron is a being of light, and its favours pour through you like sunshine. Celestial pact-holders are welcome in the churches, though the Akorian bishops watch them closely.",
+      "about": "Your patron is a being of light, and its favors pour through you like sunshine. Celestial pact-holders are welcome in the churches, though the Akorian bishops watch them closely.",
       "features": [
         [
           1,
@@ -3120,7 +3120,7 @@
       ]
     },
     "Armorer": {
-      "about": "You build armour that fights beside you, and you can turn a suit of steel into a second body. Armorers serve the knights and the garrisons who need their gear to hold.",
+      "about": "You build armor that fights beside you, and you can turn a suit of steel into a second body. Armorers serve the knights and the garrisons who need their gear to hold.",
       "features": [
         [
           3,
@@ -3257,7 +3257,7 @@
       ]
     },
     "Order of the Lycan": {
-      "about": "Hunters who take the wolf’s blood into themselves to fight the beasts of the night. Lycan hunters keep to the edges of the villages and serve as the last line of defence.",
+      "about": "Hunters who take the wolf’s blood into themselves to fight the beasts of the night. Lycan hunters keep to the edges of the villages and serve as the last line of defense.",
       "features": [
         [
           3,
