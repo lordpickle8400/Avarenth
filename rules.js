@@ -12,7 +12,7 @@
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Primal Path', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Path of the Berserker', 'Path of the Totem Warrior', 'Path of the Ancestral Guardian', 'Path of the Storm Herald', 'Path of the Zealot', 'Path of the Beast', 'Path of Wild Magic', 'Path of the Giant'],
+    subclasses: ['Path of the Berserker', 'Path of the Totem Warrior', 'Path of the Kinwarden', 'Path of the Stormcaller', 'Path of the Zealot', 'Path of the Beast', 'Path of Wild Magic', 'Path of the Giant'],
     features: [
       [1, 'Rage', 'As a bonus action, rage for a minute: advantage on Strength checks and saves, extra melee damage, and resistance to bludgeoning, piercing and slashing damage. Limited uses per long rest.'],
       [1, 'Unarmored Defense', 'Without armor, your AC is 10 + Dexterity + Constitution. A shield still counts.'],

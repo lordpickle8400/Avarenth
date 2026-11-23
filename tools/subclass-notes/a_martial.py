@@ -9,12 +9,12 @@ S["Barbarian"] = {
   [6, "Beast Gift", "A lasting gift: Bear (double carrying capacity), Eagle (see a mile clearly, no penalty in dim light), Wolf (track at fast pace, stealth at normal pace), Elk or Tiger."],
   [10, "Ghost Path", "Cast Commune with Nature as a ritual."],
   [14, "Spirit Attunement", "A raging power: Bear (adjacent enemies have disadvantage attacking anyone but you), Eagle (fly while raging), Wolf (knock a Large or smaller creature prone with a bonus action after a hit), Elk or Tiger."]]),
- "Path of the Ancestral Guardian": ("Your ancestors' spirits fight beside you and shield your friends.", [
+ "Path of the Kinwarden": ("Your ancestors' spirits fight beside you and shield your friends.", [
   [3, "Ancestor Wards", "The first creature you hit each turn while raging has disadvantage on attacks against anyone but you, and anyone else it hits takes half damage, until your next turn."],
   [6, "Ancestral Shield", "While raging, use your reaction when an ally within 30 ft takes damage to reduce it by 2d6 (3d6 at 10th, 4d6 at 14th)."],
   [10, "Ask the Dead", "Cast Augury or Clairvoyance without spending mana, once per short or long rest."],
   [14, "Vengeful Dead", "Whatever Spirit Shield prevents is dealt back as force damage to the attacker."]]),
- "Path of the Storm Herald": ("Your rage becomes a storm of desert heat, sea gales or tundra cold around you.", [
+ "Path of the Stormcaller": ("Your rage becomes a storm of desert heat, sea gales or tundra cold around you.", [
   [3, "Storm Halo", "While raging, a 10 ft aura: Desert (fire damage to creatures around you), Sea (lightning to one creature, Dex save half) or Tundra (temp HP to you and allies). Use it again with a bonus action each turn."],
   [6, "Stormborn", "Resistance to your storm's damage type plus a small utility gift (no extreme heat or cold trouble, breathe and swim underwater, or freeze water)."],
   [10, "Storm Ward", "Allies in your aura gain resistance to your storm's damage type."],
