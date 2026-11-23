@@ -540,22 +540,22 @@
         [
           3,
           "Touch of Death",
-          "When you reduce a creature within 5 ft to 0 HP, gain temporary HP."
+          "Touch of Death: When you reduce a creature within 5 ft of you to 0 hit points, you gain temporary hit points equal to your monk level plus your Wisdom modifier."
         ],
         [
           6,
           "Hour of Reaping",
-          "Action: creatures within 30 ft save (Wis) or are frightened of you."
+          "Hour of Reaping: As an action, a wave of dread sweeps out from you. Each creature within 30 ft must make a Wisdom save or become frightened of you until the end of your next turn."
         ],
         [
           11,
           "Mastery of Death",
-          "When you drop to 0 HP, spend 1 ki to stay at 1 HP instead."
+          "Mastery of Death: Death's grip loosens for you. When you drop to 0 hit points, you can spend 1 ki point to drop to 1 hit point instead."
         ],
         [
           17,
           "Touch of the Long Death",
-          "Spend 1–10 ki to deal 2d10 necrotic per ki spent (Con save halves)."
+          "Touch of the Long Death: You can channel your ki into a killing touch. Spend 1 to 10 ki points, and a creature you touch takes 2d10 necrotic damage per ki point spent. It makes a Constitution save for half damage."
         ]
       ]
     },
@@ -1945,22 +1945,22 @@
         [
           3,
           "Bonus Proficiencies",
-          "Medium armor, shields and martial weapons."
+          "Bonus Proficiencies: You train for the battlefield. You gain proficiency with medium armor, shields and martial weapons."
         ],
         [
           3,
           "Combat Inspiration",
-          "Allies can add your Bardic Inspiration die to damage or to their AC against one attack."
+          "Combat Inspiration: Your Bardic Inspiration now lifts your allies in battle. An ally who has your Bardic Inspiration die can add it to a damage roll, or to its AC against one attack."
         ],
         [
           6,
           "Extra Attack",
-          "Attack twice when you take the Attack action."
+          "Extra Attack: You can strike twice in one turn. Attack twice whenever you take the Attack action."
         ],
         [
           14,
           "Battle Magic",
-          "When you cast a spell as an action, make one weapon attack as a bonus action."
+          "Battle Magic: You weave spells into your strikes. When you cast a spell as an action, you can make one weapon attack as a bonus action."
         ]
       ]
     },
@@ -2319,22 +2319,22 @@
         [
           3,
           "Ranger's Companion",
-          "A beast companion that obeys you and fights beside you (or a primal beast of land, sea or sky)."
+          "Ranger's Companion: You bond with a beast that fights beside you and obeys your commands. You may choose a primal beast of land, sea or sky instead, keeping the bond you form in the wild."
         ],
         [
           7,
           "Exceptional Training",
-          "Your companion can Dash, Disengage or Help as a bonus action, and its attacks count as magical."
+          "Exceptional Training: Your companion learns to fight as a partner. As a bonus action, it can Dash, Disengage or Help, and its attacks count as magical."
         ],
         [
           11,
           "Bestial Fury",
-          "Your companion attacks twice."
+          "Bestial Fury: Your companion's wild strength takes over in a fight. It can attack twice whenever it takes the Attack action."
         ],
         [
           15,
           "Share Spells",
-          "Spells you cast on yourself also affect your companion nearby."
+          "Share Spells: Your companion shares the magic you cast on yourself. Spells you cast on yourself also affect the companion while it is within range of you."
         ]
       ]
     },
@@ -2858,27 +2858,27 @@
         [
           2,
           "Illusion Savant",
-          "Copying illusion spells costs half the gold and time."
+          "Illusion Savant: You have a gift for copying illusion spells. Copying an illusion spell into your spellbook costs half the usual gold and time."
         ],
         [
           2,
           "Improved Minor Illusion",
-          "Minor Illusion makes both a sound and an image."
+          "Improved Minor Illusion: Your Minor Illusion now makes both a sound and an image, so one cantrip can fool more than one sense."
         ],
         [
           6,
           "Malleable Illusions",
-          "Change an illusion you're maintaining as an action."
+          "Malleable Illusions: You can reshape an illusion you are maintaining. As an action, change the appearance of an illusion you have created and are concentrating on."
         ],
         [
           10,
           "Illusory Self",
-          "Reaction: an illusory double makes an attack miss, once per short rest."
+          "Illusory Self: Reaction: when a creature attacks you, an illusory double appears and makes the attack miss. You can use this once per short rest."
         ],
         [
           14,
           "Illusory Reality",
-          "Make one object in your illusion real for a minute."
+          "Illusory Reality: You can make a piece of your illusion real. Choose one non-living object within your illusion; it becomes real for one minute."
         ]
       ]
     },
@@ -2888,27 +2888,27 @@
         [
           2,
           "Necromancy Savant",
-          "Copying necromancy spells costs half the gold and time."
+          "Necromancy Savant: You copy necromancy spells with ease. Copying a necromancy spell into your spellbook costs half the usual gold and time."
         ],
         [
           2,
           "Grim Harvest",
-          "When you kill with a spell, regain HP based on the spell's level."
+          "Grim Harvest: You feed on the death you cause. When you kill a creature with a spell, regain hit points equal to twice the spell's level, or three times if the spell is a necromancy spell of 1st level or higher."
         ],
         [
           6,
           "Undead Thralls",
-          "Animate Dead raises one extra creature, and your undead are tougher."
+          "Undead Thralls: Your dead serve you better. Animate Dead raises one extra creature, and the undead you create gain bonus hit points."
         ],
         [
           10,
           "Inured to Undeath",
-          "Resistance to necrotic, and your maximum HP can't be lowered."
+          "Inured to Undeath: Death no longer frightens you. You gain resistance to necrotic damage, and your hit point maximum can't be reduced."
         ],
         [
           14,
           "Command Undead",
-          "Take control of an undead creature (Cha save)."
+          "Command Undead: You take command of the dead. As an action, choose an undead creature you can see within 60 ft; it must make a Charisma save or become your ally until you lose control of it."
         ]
       ]
     },
@@ -2978,27 +2978,27 @@
         [
           2,
           "Arcane Deflection",
-          "Reaction: +2 AC or +4 to a save, but only cantrips on your next turn."
+          "Arcane Deflection: Reaction: when a creature you can see hits you or a creature within 10 ft, gain +2 AC or +4 to a save. You can only cast cantrips on your next turn."
         ],
         [
           2,
           "Tactical Wit",
-          "Add Intelligence to initiative."
+          "Tactical Wit: You read the field the moment a fight starts. Add your Intelligence modifier to your initiative."
         ],
         [
           6,
           "Power Surge",
-          "Store power surges when you counter or dispel magic, and spend them for extra force damage."
+          "Power Surge: When you counter or dispel a spell, you store a surge of raw force. Spend stored surges to add extra force damage to your spells, and the surges fade at the end of a long rest."
         ],
         [
           10,
           "Durable Magic",
-          "+2 AC and saves while concentrating."
+          "Durable Magic: Your concentration is hardened by years of fighting while casting. You gain +2 AC and +2 to saving throws while you concentrate on a spell."
         ],
         [
           14,
           "Deflecting Shroud",
-          "Arcane Deflection also blasts nearby creatures with force damage."
+          "Deflecting Shroud: Arcane Deflection now also bursts outward. Creatures within 10 ft of you take force damage when you use it, so your deflection becomes a counterattack."
         ]
       ]
     },
@@ -3038,22 +3038,22 @@
         [
           2,
           "Adjust Density",
-          "Make a creature heavier or lighter for a minute."
+          "Adjust Density: You bend the weight of a creature. As an action, make a creature heavier or lighter for one minute, changing how far it can move and how hard it hits the ground."
         ],
         [
           6,
           "Gravity Well",
-          "When your spell hits or affects a creature, move it 5 ft."
+          "Gravity Well: Your spells pull their targets along with them. When a spell you cast hits or affects a creature, you can move that creature up to 5 ft."
         ],
         [
           10,
           "Violent Attraction",
-          "Reaction: add damage to an attack, or to falling damage, a few times per long rest."
+          "Violent Attraction: You can turn gravity into force. Reaction: add extra damage to an attack, or to falling damage, a few times per long rest."
         ],
         [
           14,
           "Event Horizon",
-          "A field that drags enemies toward you and stops their movement, once per long rest (or spend 18 mana)."
+          "Event Horizon: You create a field that drags enemies toward you and holds them in place. Once per long rest, or by spending 18 mana, a creature in the field must move toward you and cannot move on its turn."
         ]
       ]
     },
