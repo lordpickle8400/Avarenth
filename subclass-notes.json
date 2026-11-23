@@ -2141,22 +2141,22 @@
         ],
         [
           2,
-          "Circle Forms",
+          "Circle Shapes",
           "Turn into tougher beasts: up to CR 1 at 2nd, then CR equal to a third of your druid level from 6th."
         ],
         [
           6,
-          "Primal Strike",
+          "Primal Blow",
           "Your beast attacks count as magical."
         ],
         [
           10,
-          "Elemental Wild Shape",
+          "Elemental Shape",
           "Spend two Wild Shape uses to become an air, earth, fire or water elemental."
         ],
         [
           14,
-          "Thousand Forms",
+          "Countless Forms",
           "Cast Alter Self at will, without spending mana."
         ]
       ]
@@ -2166,22 +2166,22 @@
       "features": [
         [
           2,
-          "Balm of the Summer Court",
+          "Summer Balm",
           "Your circle walks the dreams of the Summer Court, and you carry its healing into waking life. A pool of d6s (equal to druid level) to heal and give temporary HP with a bonus action."
         ],
         [
           6,
-          "Hearth of Moonlight and Shadow",
+          "Hearth of Moonlight",
           "You shelter your companions under a veil of moonlight and shadow during rest. During a rest, make a 30 ft sphere that hides and shelters your group."
         ],
         [
           10,
-          "Hidden Paths",
+          "Hidden Trails",
           "You step between the paths of the fey woods as easily as crossing a room. Teleport 60 ft as a bonus action (or teleport a willing ally 30 ft), Wisdom-mod times per long rest."
         ],
         [
           14,
-          "Walker in Dreams",
+          "Dreamwalker",
           "You can slip into the dream-realm to scry, teleport or open a path to a distant place. After a short rest, cast Dream, Scrying or Teleportation Circle without spending mana, once per long rest."
         ]
       ]
@@ -2191,27 +2191,27 @@
       "features": [
         [
           2,
-          "Speech of the Woods",
+          "Woodland Tongue",
           "Speak with beasts and learn Sylvan."
         ],
         [
           2,
-          "Spirit Totem",
+          "Spirit Idol",
           "Summon a spirit for a minute: Bear (temporary HP, advantage on Strength), Hawk (advantage on attacks with your reaction) or Unicorn (better healing and finding creatures). Once per short rest."
         ],
         [
           6,
-          "Mighty Summoner",
+          "Greater Summoner",
           "Beasts and fey you summon have extra HP and magical attacks."
         ],
         [
           10,
-          "Guardian Spirit",
+          "Guardian Wisp",
           "Your summoned creatures heal at the end of their turns in your totem's aura."
         ],
         [
           14,
-          "Faithful Summons",
+          "Loyal Summons",
           "When you drop to 0 HP, four beasts appear to protect you, once per long rest."
         ]
       ]
@@ -2226,27 +2226,27 @@
         ],
         [
           2,
-          "Halo of Spores",
+          "Spore Halo",
           "Reaction: deal necrotic damage to a creature that moves near you or starts its turn there (Con save)."
         ],
         [
           2,
-          "Symbiotic Entity",
+          "Symbiotic Bond",
           "Spend a Wild Shape use for temporary HP and stronger spores and melee necrotic damage."
         ],
         [
           6,
-          "Fungal Infestation",
+          "Spore Infestation",
           "Raise a beast or humanoid that dies near you as a zombie for an hour."
         ],
         [
           10,
-          "Spreading Spores",
+          "Spore Burst",
           "Throw your spore cloud into an area instead."
         ],
         [
           14,
-          "Fungal Body",
+          "Mycelial Body",
           "Immune to blinded, deafened, frightened and poisoned, and critical hits become normal hits."
         ]
       ]
@@ -2256,27 +2256,27 @@
       "features": [
         [
           2,
-          "Star Map",
+          "Star Chart",
           "Learn Guidance, and cast Guiding Bolt without spending mana a few times per long rest."
         ],
         [
           2,
-          "Starry Form",
+          "Starfall Form",
           "Spend a Wild Shape use to become a constellation: Archer (radiant bolt), Chalice (heal extra when you heal), or Dragon (rolls below 10 on Int/Wis checks and concentration count as 10)."
         ],
         [
           6,
-          "Cosmic Omen",
+          "Cosmic Sign",
           "After a rest, gain weal or woe: add or subtract a d6 to others' rolls a few times."
         ],
         [
           10,
-          "Twinkling Constellations",
+          "Shifting Constellations",
           "Starry Form gets stronger, and you can switch constellations each turn."
         ],
         [
           14,
-          "Full of Stars",
+          "Starlit Shape",
           "In Starry Form, resistance to bludgeoning, piercing and slashing."
         ]
       ]
@@ -2291,22 +2291,22 @@
         ],
         [
           2,
-          "Summon Wildfire Spirit",
+          "Summon Fire Spirit",
           "Spend a Wild Shape use to summon a fiery spirit that fights and can teleport you and allies."
         ],
         [
           6,
-          "Enhanced Bond",
+          "Fiery Bond",
           "Add a d8 to fire damage or healing spells while your spirit is out, and cast through it."
         ],
         [
           10,
-          "Cauterizing Flames",
+          "Mending Flames",
           "When a creature dies near your spirit, leave a flame you can use to heal or burn."
         ],
         [
           14,
-          "Blazing Revival",
+          "Ember Revival",
           "If you drop to 0 HP, your spirit sacrifices itself to bring you back to half HP."
         ]
       ]
