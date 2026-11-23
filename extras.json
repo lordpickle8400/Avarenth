@@ -378,10 +378,10 @@
       "own": true
     },
     {
-      "name": "Piercer",
+      "name": "Pinpoint Strike",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -391,10 +391,10 @@
       "own": true
     },
     {
-      "name": "Poisoner",
+      "name": "Venomcraft",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -404,10 +404,10 @@
       "own": true
     },
     {
-      "name": "Polearm Master",
+      "name": "Spearwarden",
       "category": "General",
       "prereq": "Level 4+, Strength or Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -417,10 +417,10 @@
       "own": true
     },
     {
-      "name": "Resilient",
+      "name": "Steadfast",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -430,10 +430,10 @@
       "own": true
     },
     {
-      "name": "Ritual Caster",
+      "name": "Rite Keeper",
       "category": "General",
       "prereq": "Level 4+, Intelligence, Wisdom or Charisma 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -443,10 +443,10 @@
       "own": true
     },
     {
-      "name": "Sentinel",
+      "name": "Watchman",
       "category": "General",
       "prereq": "Level 4+, Strength or Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -846,10 +846,10 @@
       "own": true
     },
     {
-      "name": "Orcish Fury",
+      "name": "Warband Fury",
       "category": "General",
       "prereq": "Level 4+, Half-Orc or Orc",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -859,10 +859,10 @@
       "own": true
     },
     {
-      "name": "Prodigy",
+      "name": "Savant",
       "category": "General",
       "prereq": "Level 4+, Half-Elf, Half-Orc or Human",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -872,10 +872,10 @@
       "own": true
     },
     {
-      "name": "Second Chance",
+      "name": "Last Hope",
       "category": "General",
       "prereq": "Level 4+, Halfling",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -989,10 +989,10 @@
       "own": true
     },
     {
-      "name": "Protection",
+      "name": "Shield Guard",
       "category": "Fighting Style",
       "prereq": "Fighting Style feature",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
