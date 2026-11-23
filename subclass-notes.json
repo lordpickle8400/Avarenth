@@ -490,22 +490,22 @@
         [
           3,
           "Shadow Arts",
-          "Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without spending mana; learn Minor Illusion."
+          "You train in the shadows and learn the arts of darkness and silence. Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without spending mana; learn Minor Illusion."
         ],
         [
           6,
           "Shadow Step",
-          "In dim light or darkness, teleport 60 ft to another dark spot as a bonus action and gain advantage on your next melee attack."
+          "You step out of the light and into the dark, appearing where the shadows fall. In dim light or darkness, teleport 60 ft to another dark spot as a bonus action and gain advantage on your next melee attack."
         ],
         [
           11,
           "Cloak of Shadows",
-          "Become invisible in dim light or darkness until you attack or cast."
+          "You disappear into the gloom and stay hidden until you choose to strike. Become invisible in dim light or darkness until you attack or cast."
         ],
         [
           17,
           "Opportunist",
-          "Reaction: attack a creature within 5 ft that just got hit by someone else."
+          "You strike at the enemy as it falls to another's blow. Reaction: attack a creature within 5 ft that just got hit by someone else."
         ]
       ]
     },
@@ -515,22 +515,22 @@
         [
           3,
           "Disciple of the Elements",
-          "Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."
+          "You learn to draw the elements through your ki and shape them into disciplines. Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."
         ],
         [
           6,
           "More disciplines",
-          "Learn another discipline; you can swap one out when you gain a discipline."
+          "Your disciplines grow with you, and each one gives you a new elemental power. Learn another discipline; you can swap one out when you gain a discipline."
         ],
         [
           11,
           "More disciplines",
-          "Learn another discipline and spend more ki to empower them."
+          "Your disciplines grow stronger as you spend more ki on them. Learn another discipline and spend more ki to empower them."
         ],
         [
           17,
           "More disciplines",
-          "Learn another discipline."
+          "Your mastery of the elements lets you learn one more discipline. Learn another discipline."
         ]
       ]
     },
@@ -565,22 +565,22 @@
         [
           3,
           "Radiant Sun Bolt",
-          "A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."
+          "You channel the sun's light through your ki, and it burns out from your fists. A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."
         ],
         [
           6,
           "Searing Arc Strike",
-          "After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."
+          "You can hurl a bolt of radiant light at a distance. After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."
         ],
         [
           11,
           "Searing Sunburst",
-          "Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."
+          "Your light sears the air and burns those who stand near you. Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."
         ],
         [
           17,
           "Sun Shield",
-          "Shed bright light, and creatures that hit you in melee take radiant damage."
+          "Your body shines like the dawn, and foes who touch you get burned. Shed bright light, and creatures that hit you in melee take radiant damage."
         ]
       ]
     },
@@ -590,27 +590,27 @@
         [
           3,
           "Bonus Proficiencies",
-          "Performance and brewer's supplies."
+          "Years of tavern nights taught you a few things you can use in a fight. Performance and brewer's supplies."
         ],
         [
           3,
           "Drunken Technique",
-          "Flurry of Blows also gives you Disengage and +10 ft speed."
+          "Your staggering footwork makes you hard to pin down, and you keep moving as you strike. Flurry of Blows also gives you Disengage and +10 ft speed."
         ],
         [
           6,
           "Tipsy Sway",
-          "Stand up for 5 ft of movement, and redirect a missed melee attack to another creature."
+          "You sway and dodge in a way that makes an opponent's blow glance off. Stand up for 5 ft of movement, and redirect a missed melee attack to another creature."
         ],
         [
           11,
           "Drunkard's Luck",
-          "Spend 2 ki to cancel disadvantage on a check, attack or save."
+          "Your luck is never wholly gone, and a little ki can turn a bad roll around. Spend 2 ki to cancel disadvantage on a check, attack or save."
         ],
         [
           17,
           "Intoxicated Frenzy",
-          "Flurry of Blows can make up to five attacks if each hits a different target."
+          "In your frenzy you can strike at a crowd, each blow finding a different foe. Flurry of Blows can make up to five attacks if each hits a different target."
         ]
       ]
     },
@@ -620,22 +620,22 @@
         [
           3,
           "Path of the Kensei",
-          "Pick kensei weapons that count as monk weapons, gain an AC bonus when you skip an attack, and add extra damage to ranged hits as a bonus action."
+          "You take up the weapons of the kensei and treat them as an extension of your body. Pick kensei weapons that count as monk weapons, gain an AC bonus when you skip an attack, and add extra damage to ranged hits as a bonus action."
         ],
         [
           6,
           "One with the Blade",
-          "Your kensei weapons count as magical; spend ki for extra damage on a hit."
+          "Your chosen weapon hums with power and cuts through what ordinary steel cannot. Your kensei weapons count as magical; spend ki for extra damage on a hit."
         ],
         [
           11,
           "Sharpen the Blade",
-          "Spend up to 3 ki to give a kensei weapon that bonus to attack and damage for a minute."
+          "You can focus your ki into your blade to strike harder for a short while. Spend up to 3 ki to give a kensei weapon that bonus to attack and damage for a minute."
         ],
         [
           17,
           "Unerring Accuracy",
-          "Reroll a missed monk-weapon attack once per turn."
+          "Your blade finds its mark when it counts most. Reroll a missed monk-weapon attack once per turn."
         ]
       ]
     },
@@ -645,22 +645,22 @@
         [
           3,
           "Arms of the Astral Self",
-          "Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."
+          "You call forth your astral self, a spirit that answers your will. Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."
         ],
         [
           6,
           "Visage of the Astral Self",
-          "Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."
+          "Your astral face shows you the hidden and speaks with a voice that commands attention. Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."
         ],
         [
           11,
           "Body of the Astral Self",
-          "With arms and visage out, deflect energy damage and add extra damage on a hit."
+          "Your astral body is a shield as well as a weapon. With arms and visage out, deflect energy damage and add extra damage on a hit."
         ],
         [
           17,
           "Awakened Astral Self",
-          "Spend 5 ki to manifest everything at once: AC bonus and an extra attack."
+          "Your astral self becomes a full spirit for a moment, and you fight as one. Spend 5 ki to manifest everything at once: AC bonus and an extra attack."
         ]
       ]
     },
@@ -707,27 +707,27 @@
         [
           3,
           "Bonus Proficiencies",
-          "Disguise kit and poisoner's kit."
+          "You study the art of the killing blow and learn how to disappear afterward. Disguise kit and poisoner's kit."
         ],
         [
           3,
           "Assassinate",
-          "Advantage against creatures that haven't acted yet in combat, and any hit on a surprised creature is a critical hit."
+          "Your trade requires specialist tools for disguise and poison. Advantage against creatures that haven't acted yet in combat, and any hit on a surprised creature is a critical hit."
         ],
         [
           9,
           "Infiltration Expertise",
-          "Spend a week and some gold to build a solid false identity."
+          "You strike before your target can react and leave nothing behind. Spend a week and some gold to build a solid false identity."
         ],
         [
           13,
           "Impostor",
-          "Copy someone's speech, writing and mannerisms after studying them for three hours."
+          "You are a master of the false face, and you can wear another life like a cloak. Copy someone's speech, writing and mannerisms after studying them for three hours."
         ],
         [
           17,
           "Death Strike",
-          "Hitting a surprised creature forces a Con save or doubles the damage."
+          "A surprised target has no time to save itself, and your blow lands cleanly. Hitting a surprised creature forces a Con save or doubles the damage."
         ]
       ]
     },
@@ -802,27 +802,27 @@
         [
           3,
           "Master of Intrigue",
-          "A gaming set, a disguise kit, two languages, and the knack of mimicking accents."
+          "You learn the arts of intrigue, and a few tools of the trade help you deceive. A gaming set, a disguise kit, two languages, and the knack of mimicking accents."
         ],
         [
           3,
           "Master of Tactics",
-          "Help as a bonus action, from up to 30 ft away."
+          "You can aid your allies from the edge of a fight. Help as a bonus action, from up to 30 ft away."
         ],
         [
           9,
           "Insightful Manipulator",
-          "Study a creature for a minute to learn how it compares to you in mental abilities and other traits."
+          "You read others and learn what makes them tick. Study a creature for a minute to learn how it compares to you in mental abilities and other traits."
         ],
         [
           13,
           "Misdirection",
-          "Reaction: redirect an attack aimed at you to a creature giving you cover."
+          "You turn an attack aimed at you toward a creature that stands in your shadow. Reaction: redirect an attack aimed at you to a creature giving you cover."
         ],
         [
           17,
           "Soul of Deceit",
-          "Your thoughts can't be read; you can feed false thoughts, and magic can't force the truth out of you."
+          "Your mind is a fortress against prying eyes, and your lies are hard to see through. Your thoughts can't be read; you can feed false thoughts, and magic can't force the truth out of you."
         ]
       ]
     },
@@ -832,27 +832,27 @@
         [
           3,
           "Skirmisher",
-          "Reaction: move half your speed when an enemy ends its turn next to you, without provoking."
+          "You move like a shadow through the wild, always ready to slip away. Reaction: move half your speed when an enemy ends its turn next to you, without provoking."
         ],
         [
           3,
           "Survivalist",
-          "Proficiency and expertise in Nature and Survival."
+          "You are at home in the wild and know how to live off the land. Proficiency and expertise in Nature and Survival."
         ],
         [
           9,
           "Superior Mobility",
-          "+10 ft speed (walk, climb, swim)."
+          "Your steps are quick and sure, and you cover ground faster than most. +10 ft speed (walk, climb, swim)."
         ],
         [
           13,
           "Ambush Master",
-          "Advantage on initiative, and your first target in the first round is easier for everyone to hit."
+          "You are hard to spot in the first moments of battle, and you make the most of it. Advantage on initiative, and your first target in the first round is easier for everyone to hit."
         ],
         [
           17,
           "Sudden Strike",
-          "A bonus action attack after the Attack action, which can Sneak Attack a different target."
+          "You can strike again the moment your first blow lands. A bonus action attack after the Attack action, which can Sneak Attack a different target."
         ]
       ]
     },
@@ -1713,27 +1713,27 @@
         [
           1,
           "Expanded spells",
-          "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."
+          "Your patron's fey nature gives you spells tied to its court. Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."
         ],
         [
           1,
           "Fey Presence",
-          "Charm or frighten creatures in a 10 ft cube (Wis save), once per short rest."
+          "You can enchant the minds of foes and send them fleeing. Charm or frighten creatures in a 10 ft cube (Wis save), once per short rest."
         ],
         [
           6,
           "Misty Escape",
-          "When you take damage, turn invisible and teleport 60 ft, once per short rest."
+          "When you are struck, you slip into a veil of mist and vanish. When you take damage, turn invisible and teleport 60 ft, once per short rest."
         ],
         [
           10,
           "Beguiling Defenses",
-          "Immune to charm, and turn charm attempts back on the caster."
+          "You turn your patron's gift into a shield against the charms of others. Immune to charm, and turn charm attempts back on the caster."
         ],
         [
           14,
           "Dark Delirium",
-          "Trap a creature in an illusory realm for a minute, once per short rest."
+          "You trap a foe inside an illusion of its own making. Trap a creature in an illusory realm for a minute, once per short rest."
         ]
       ]
     },
@@ -1970,22 +1970,22 @@
         [
           3,
           "Mantle of Inspiration",
-          "Spend Bardic Inspiration to give allies temporary HP and a free move without provoking."
+          "Your songs carry the glamour of the fey courts, and your listeners feel their pull. Spend Bardic Inspiration to give allies temporary HP and a free move without provoking."
         ],
         [
           3,
           "Enthralling Performance",
-          "After performing for a minute, charm a few listeners for an hour (Wis save)."
+          "Your performance can lift the spirits of those who hear it, and it can hold a few listeners spellbound. After performing for a minute, charm a few listeners for an hour (Wis save)."
         ],
         [
           6,
           "Mantle of Majesty",
-          "For a minute, cast Command as a bonus action each turn without spending mana. Once per long rest."
+          "Your presence is so commanding that the whole court seems to bend toward you. For a minute, cast Command as a bonus action each turn without spending mana. Once per long rest."
         ],
         [
           14,
           "Unbreakable Majesty",
-          "Attackers must save (Cha) or choose a new target, once per short rest."
+          "Your majesty becomes a shield, and foes are compelled to turn toward you. Attackers must save (Cha) or choose a new target, once per short rest."
         ]
       ]
     },
@@ -1995,27 +1995,27 @@
         [
           3,
           "Bonus Proficiencies",
-          "Medium armor and the scimitar; use a weapon as your focus."
+          "You dance with a blade and wear your performance on your sleeve. Medium armor and the scimitar; use a weapon as your focus."
         ],
         [
           3,
           "Fighting Style",
-          "Dueling or Two-Weapon Fighting."
+          "Your steel is sharp, and you know how to fight with a partner or alone. Dueling or Two-Weapon Fighting."
         ],
         [
           3,
           "Blade Flourish",
-          "+10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Defensive (add to AC), Slashing (hit a second creature) or Mobile (push the target)."
+          "Your flourishes set your enemies off balance and turn each strike into a show. +10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Defensive (add to AC), Slashing (hit a second creature) or Mobile (push the target)."
         ],
         [
           6,
           "Extra Attack",
-          "Attack twice when you take the Attack action."
+          "You strike twice whenever you take the Attack action. Attack twice when you take the Attack action."
         ],
         [
           14,
           "Master's Flourish",
-          "Use a d6 for a flourish instead of spending Bardic Inspiration."
+          "You perform your flourishes with a flick of your blade, and the crowd roars. Use a d6 for a flourish instead of spending Bardic Inspiration."
         ]
       ]
     },
@@ -2025,22 +2025,22 @@
         [
           3,
           "Psychic Blades",
-          "Spend Bardic Inspiration on a hit for extra psychic damage (2d6, more at higher levels)."
+          "Your inspiration sharpens into psychic blades that bite through the mind as much as the flesh. Spend Bardic Inspiration on a hit for extra psychic damage (2d6, more at higher levels)."
         ],
         [
           3,
           "Words of Terror",
-          "Talk to someone alone for a minute and frighten them for an hour (Wis save)."
+          "Your words can turn a face pale in the space of a conversation. Talk to someone alone for a minute and frighten them for an hour (Wis save)."
         ],
         [
           6,
           "Mantle of Whispers",
-          "Capture the shadow of a humanoid who dies near you and wear its persona as a disguise."
+          "You can take the shadow of a fallen foe and wear its face for a while. Capture the shadow of a humanoid who dies near you and wear its persona as a disguise."
         ],
         [
           14,
           "Shadow Lore",
-          "Whisper to a creature to charm it into obeying you for 8 hours (Wis save), once per long rest."
+          "A whisper in the right ear can bend a person to your will. Whisper to a creature to charm it into obeying you for 8 hours (Wis save), once per long rest."
         ]
       ]
     },
@@ -2050,22 +2050,22 @@
         [
           3,
           "Mote of Potential",
-          "Your Bardic Inspiration carries a mote with an extra effect on checks, attacks or saves."
+          "Your songs carry a spark of creation, and every inspiration holds a little potential. Your Bardic Inspiration carries a mote with an extra effect on checks, attacks or saves."
         ],
         [
           3,
           "Performance of Creation",
-          "Create a nonmagical object worth up to 20 gp × bard level, once per long rest (or spend 10 mana to do it again)."
+          "You shape objects out of song and performance, and they hold their form for a while. Create a nonmagical object worth up to 20 gp × bard level, once per long rest (or spend 10 mana to do it again)."
         ],
         [
           6,
           "Animating Performance",
-          "Animate a Large or smaller object as a dancing companion, once per long rest (or spend 18 mana)."
+          "Your performances can animate the objects you create into dancing companions. Animate a Large or smaller object as a dancing companion, once per long rest (or spend 18 mana)."
         ],
         [
           14,
           "Creative Crescendo",
-          "Create several objects at once with Performance of Creation, with no gold limit."
+          "Your creations flow out of you without limit, bounded only by your skill. Create several objects at once with Performance of Creation, with no gold limit."
         ]
       ]
     },
@@ -2075,27 +2075,27 @@
         [
           3,
           "Silver Tongue",
-          "Persuasion and Deception rolls below 10 count as 10."
+          "You speak with a grace that makes people listen and trust you. Persuasion and Deception rolls below 10 count as 10."
         ],
         [
           3,
           "Unsettling Words",
-          "Spend Bardic Inspiration to subtract the roll from a creature's next save."
+          "Your inspiration breaks a creature's concentration when it is most vulnerable. Spend Bardic Inspiration to subtract the roll from a creature's next save."
         ],
         [
           6,
           "Unfailing Inspiration",
-          "A creature keeps your Bardic Inspiration die if the roll fails."
+          "Your words linger in a listener's mind and keep working after you finish. A creature keeps your Bardic Inspiration die if the roll fails."
         ],
         [
           6,
           "Universal Speech",
-          "Make a few creatures understand you for an hour, once per long rest (or spend 5 mana)."
+          "A few listeners understand your speech as though it were their own tongue. Make a few creatures understand you for an hour, once per long rest (or spend 5 mana)."
         ],
         [
           14,
           "Infectious Inspiration",
-          "When a creature succeeds with your inspiration, give another creature a free die."
+          "Your inspiration spreads, and your allies carry it forward. When a creature succeeds with your inspiration, give another creature a free die."
         ]
       ]
     },
@@ -2105,27 +2105,27 @@
         [
           3,
           "Guiding Whispers",
-          "Learn Guidance, which reaches 60 ft."
+          "You sing with the voices of the dead, and their wisdom comes to you as whispers. Learn Guidance, which reaches 60 ft."
         ],
         [
           3,
           "Spiritual Focus",
-          "Use a candle, crystal ball, skull or tarot deck as your focus, and later add a d6 to spell damage or healing."
+          "Your focus is a token of the otherworld, and it carries your power. Use a candle, crystal ball, skull or tarot deck as your focus, and later add a d6 to spell damage or healing."
         ],
         [
           3,
           "Tales from Beyond",
-          "Spend Bardic Inspiration to draw a spirit tale with a random effect you can use later."
+          "You can call a spirit's tale into your song, and its power will wait for you. Spend Bardic Inspiration to draw a spirit tale with a random effect you can use later."
         ],
         [
           6,
           "Spirit Session",
-          "An hour-long ritual with allies to learn a divination or necromancy spell temporarily."
+          "A shared ritual brings the dead's knowledge to your companions. An hour-long ritual with allies to learn a divination or necromancy spell temporarily."
         ],
         [
           14,
           "Mystical Connection",
-          "Roll twice for Tales from Beyond and choose."
+          "Your tales from beyond now come to you more reliably. Roll twice for Tales from Beyond and choose."
         ]
       ]
     }
@@ -2167,22 +2167,22 @@
         [
           2,
           "Balm of the Summer Court",
-          "A pool of d6s (equal to druid level) to heal and give temporary HP with a bonus action."
+          "Your circle walks the dreams of the Summer Court, and you carry its healing into waking life. A pool of d6s (equal to druid level) to heal and give temporary HP with a bonus action."
         ],
         [
           6,
           "Hearth of Moonlight and Shadow",
-          "During a rest, make a 30 ft sphere that hides and shelters your group."
+          "You shelter your companions under a veil of moonlight and shadow during rest. During a rest, make a 30 ft sphere that hides and shelters your group."
         ],
         [
           10,
           "Hidden Paths",
-          "Teleport 60 ft as a bonus action (or teleport a willing ally 30 ft), Wisdom-mod times per long rest."
+          "You step between the paths of the fey woods as easily as crossing a room. Teleport 60 ft as a bonus action (or teleport a willing ally 30 ft), Wisdom-mod times per long rest."
         ],
         [
           14,
           "Walker in Dreams",
-          "After a short rest, cast Dream, Scrying or Teleportation Circle without spending mana, once per long rest."
+          "You can slip into the dream-realm to scry, teleport or open a path to a distant place. After a short rest, cast Dream, Scrying or Teleportation Circle without spending mana, once per long rest."
         ]
       ]
     },
@@ -2514,27 +2514,27 @@
         [
           3,
           "Draconic Gift",
-          "Learn Thaumaturgy and Draconic."
+          "Your bond with dragons teaches you their tongue and a few of their tricks. Learn Thaumaturgy and Draconic."
         ],
         [
           3,
           "Drake Companion",
-          "Summon a drake that fights beside you and grows with you."
+          "A young drake hatches for you and grows at your side. Summon a drake that fights beside you and grows with you."
         ],
         [
           7,
           "Bond of Fang and Scale",
-          "Your drake grows, can carry you while flying, and you gain resistance to its damage type."
+          "As your drake grows, you ride it into the sky and share its hide. Your drake grows, can carry you while flying, and you gain resistance to its damage type."
         ],
         [
           11,
           "Drake's Breath",
-          "Breathe a cone of your drake's element (or command the drake to), once per long rest (or spend 18 mana)."
+          "Your drake can breathe a cone of its own element on your command. Breathe a cone of your drake's element (or command the drake to), once per long rest (or spend 18 mana)."
         ],
         [
           15,
           "Perfected Bond",
-          "The drake grows to Large, hits harder, and can shield you from damage."
+          "Your drake reaches full size and fights with you like a true partner. The drake grows to Large, hits harder, and can shield you from damage."
         ]
       ]
     }
@@ -2546,27 +2546,27 @@
         [
           1,
           "Wild Magic Surge",
-          "After casting a spell with mana, the DM can have you roll for a random wild magic effect."
+          "Your magic is wild and unpredictable, and it sometimes surges out of control. After casting a spell with mana, the DM can have you roll for a random wild magic effect."
         ],
         [
           1,
           "Tides of Chaos",
-          "Gain advantage on one roll; regain it on a long rest or when the DM triggers a surge."
+          "Chaos leans toward you, and you can tip the scale of a roll in your favor. Gain advantage on one roll; regain it on a long rest or when the DM triggers a surge."
         ],
         [
           6,
           "Bend Luck",
-          "Spend 2 sorcery points to add or subtract a d4 from someone else's roll."
+          "You can nudge a roll by a little, bending luck toward an ally or an enemy. Spend 2 sorcery points to add or subtract a d4 from someone else's roll."
         ],
         [
           14,
           "Controlled Chaos",
-          "Roll twice on the surge table and choose."
+          "Your surges become a weapon you can aim at will. Roll twice on the surge table and choose."
         ],
         [
           18,
           "Spell Bombardment",
-          "When you roll maximum on a damage die, roll it again and add it, once per turn."
+          "Your wild magic can strike harder when you roll the highest damage. When you roll maximum on a damage die, roll it again and add it, once per turn."
         ]
       ]
     },
@@ -2576,27 +2576,27 @@
         [
           1,
           "Divine Magic",
-          "Learn spells from the cleric list as well as the sorcerer list, and gain one affinity spell (good, evil, law, chaos or neutrality)."
+          "A spark of the divine burns in your blood, and it lends you knowledge of the gods' own spells. Learn spells from the cleric list as well as the sorcerer list, and gain one affinity spell (good, evil, law, chaos or neutrality)."
         ],
         [
           1,
           "Favored by the Gods",
-          "Add 2d4 to a failed save or missed attack, once per short rest."
+          "Fortune smiles on you when you need it most. Add 2d4 to a failed save or missed attack, once per short rest."
         ],
         [
           6,
           "Empowered Healing",
-          "Spend 1 sorcery point to reroll healing dice."
+          "Your magic can knit wounds and turn healing into a cascade of renewed strength. Spend 1 sorcery point to reroll healing dice."
         ],
         [
           14,
           "Otherworldly Wings",
-          "Sprout spectral wings and fly."
+          "Spectral wings unfurl from your back, and the sky opens to you. Sprout spectral wings and fly."
         ],
         [
           18,
           "Unearthly Recovery",
-          "Regain half your HP as a bonus action when below half, once per long rest."
+          "Even as you fall, the gods' favor pulls you back from the brink. Regain half your HP as a bonus action when below half, once per long rest."
         ]
       ]
     },
@@ -2636,32 +2636,32 @@
         [
           1,
           "Wind Speaker",
-          "Speak Primordial and its dialects."
+          "You learn the speech of the storm and the wind that carries it. Speak Primordial and its dialects."
         ],
         [
           1,
           "Tempestuous Magic",
-          "Fly 10 ft without provoking after casting a spell with mana."
+          "Your magic lifts you on the wind and lets you float a little while the storm rages. Fly 10 ft without provoking after casting a spell with mana."
         ],
         [
           6,
           "Heart of the Storm",
-          "Resistance to lightning and thunder, and a burst of storm damage when you cast those spells."
+          "Lightning and thunder cannot easily harm you, and they strengthen your spells. Resistance to lightning and thunder, and a burst of storm damage when you cast those spells."
         ],
         [
           6,
           "Storm Guide",
-          "Control rain and wind around you."
+          "You command the rain and wind near you, and they answer your call. Control rain and wind around you."
         ],
         [
           14,
           "Storm's Fury",
-          "Reaction: lightning damage and a push against a creature that hits you in melee."
+          "When a foe strikes you in melee, a surge of lightning answers. Reaction: lightning damage and a push against a creature that hits you in melee."
         ],
         [
           18,
           "Wind Soul",
-          "Immune to lightning and thunder, fly 60 ft, and share flight with allies for an hour."
+          "In time, you become a creature of the wind, able to fly and share the sky with others. Immune to lightning and thunder, fly 60 ft, and share flight with allies for an hour."
         ]
       ]
     },
@@ -2738,27 +2738,27 @@
         [
           2,
           "Abjuration Savant",
-          "Copying abjuration spells costs half the gold and time."
+          "You study the arts of warding and protection, and you learn to shield the innocent. Copying abjuration spells costs half the gold and time."
         ],
         [
           2,
           "Arcane Ward",
-          "When you cast an abjuration spell with mana, you make a ward that absorbs damage, recharged by more abjuration spells."
+          "You weave a ward around yourself that soaks up harm as you cast. When you cast an abjuration spell with mana, you make a ward that absorbs damage, recharged by more abjuration spells."
         ],
         [
           6,
           "Projected Ward",
-          "Use your ward to absorb damage for an ally nearby."
+          "Your ward can guard an ally who stands near you. Use your ward to absorb damage for an ally nearby."
         ],
         [
           10,
           "Improved Abjuration",
-          "Add your proficiency bonus to ability checks made with abjuration spells (like Counterspell and Dispel Magic)."
+          "Your knowledge of wards makes you sharper at the abjuration arts. Add your proficiency bonus to ability checks made with abjuration spells (like Counterspell and Dispel Magic)."
         ],
         [
           14,
           "Spell Resistance",
-          "Advantage on saves against spells and resistance to spell damage."
+          "You become resistant to magic, and spells lose their hold on you. Advantage on saves against spells and resistance to spell damage."
         ]
       ]
     },
@@ -2768,27 +2768,27 @@
         [
           2,
           "Conjuration Savant",
-          "Copying conjuration spells costs half the gold and time."
+          "Your spellbook holds the knowledge of summoning and of the quick step between places. Copying conjuration spells costs half the gold and time."
         ],
         [
           2,
           "Minor Conjuration",
-          "Conjure a small nonmagical object for an hour."
+          "You can pull a small, ordinary object out of thin air to use for a while. Conjure a small nonmagical object for an hour."
         ],
         [
           6,
           "Benign Transposition",
-          "Teleport 30 ft, or swap places with an ally, once per long rest (or after casting a conjuration spell)."
+          "You slip across short distances, trading places with a friend when a fight turns bad. Teleport 30 ft, or swap places with an ally, once per long rest (or after casting a conjuration spell)."
         ],
         [
           10,
           "Focused Conjuration",
-          "Damage can't break your concentration on conjuration spells."
+          "Your summons hold steady even when you are struck while calling them. Damage can't break your concentration on conjuration spells."
         ],
         [
           14,
           "Durable Summons",
-          "Creatures you summon get 30 temporary HP."
+          "The creatures you call arrive with a bit of extra strength to hold the line. Creatures you summon get 30 temporary HP."
         ]
       ]
     },
@@ -2828,27 +2828,27 @@
         [
           2,
           "Enchantment Savant",
-          "Copying enchantment spells costs half the gold and time."
+          "You study the mind's soft places and learn how to bend a will with a few words. Copying enchantment spells costs half the gold and time."
         ],
         [
           2,
           "Hypnotic Gaze",
-          "Charm a creature next to you and leave it dazed while you hold its gaze."
+          "A gentle word and a steady gaze can soften a stranger into a willing listener. Charm a creature next to you and leave it dazed while you hold its gaze."
         ],
         [
           6,
           "Instinctive Charm",
-          "Reaction: force an attacker to target someone else (Wis save)."
+          "Your charm slips into a creature's thoughts and turns them away from their target. Reaction: force an attacker to target someone else (Wis save)."
         ],
         [
           10,
           "Split Enchantment",
-          "Single-target enchantment spells can target a second creature."
+          "Your enchantments can bind a second creature alongside the first. Single-target enchantment spells can target a second creature."
         ],
         [
           14,
           "Alter Memories",
-          "Make a creature you charmed forget it was charmed and lose some hours of memory."
+          "You can rewrite a creature's recent memories so the charm leaves no trace. Make a creature you charmed forget it was charmed and lose some hours of memory."
         ]
       ]
     },
@@ -2918,27 +2918,27 @@
         [
           2,
           "Transmutation Savant",
-          "Copying transmutation spells costs half the gold and time."
+          "You learn to change matter into new forms, and you believe any substance can be reshaped. Copying transmutation spells costs half the gold and time."
         ],
         [
           2,
           "Minor Alchemy",
-          "Change one material into another (wood, stone, iron, copper or silver) for an hour."
+          "You alter the nature of common materials for a short while. Change one material into another (wood, stone, iron, copper or silver) for an hour."
         ],
         [
           6,
           "Transmuter's Stone",
-          "Make a stone that gives darkvision, speed, a save proficiency or a resistance."
+          "You shape a magic stone that holds a transmutation of your choosing. Make a stone that gives darkvision, speed, a save proficiency or a resistance."
         ],
         [
           10,
           "Shapechanger",
-          "Cast Polymorph on yourself without spending mana, once per short rest."
+          "You can reshape your own body with a spell cast at will. Cast Polymorph on yourself without spending mana, once per short rest."
         ],
         [
           14,
           "Master Transmuter",
-          "Destroy your stone for a big effect: transform an object, cure everything, cast Raise Dead, or restore youth."
+          "You unlock the stone's full power to reshape the world around you. Destroy your stone for a big effect: transform an object, cure everything, cast Raise Dead, or restore youth."
         ]
       ]
     },
@@ -3008,27 +3008,27 @@
         [
           2,
           "Chronal Shift",
-          "Reaction: force a creature to reroll an attack, check or save, twice per long rest."
+          "You bend time to suit your will, and the past and future are your playground. Reaction: force a creature to reroll an attack, check or save, twice per long rest."
         ],
         [
           2,
           "Temporal Awareness",
-          "Add Intelligence to initiative."
+          "You sense the flow of time around you and react faster than others. Add Intelligence to initiative."
         ],
         [
           6,
           "Momentary Stasis",
-          "Freeze a Large or smaller creature in time (Con save), a few times per long rest."
+          "You can freeze a foe in the flow of time for a moment. Freeze a Large or smaller creature in time (Con save), a few times per long rest."
         ],
         [
           10,
           "Arcane Abeyance",
-          "Store a 4th-level or lower spell in a bead someone else can use, once per short rest."
+          "You can store a spell in a bead for another to use later. Store a 4th-level or lower spell in a bead someone else can use, once per short rest."
         ],
         [
           14,
           "Convergent Future",
-          "Decide whether a roll you can see succeeds or fails, at the cost of a level of exhaustion."
+          "You can see the future before it happens and choose which path to take. Decide whether a roll you can see succeeds or fails, at the cost of a level of exhaustion."
         ]
       ]
     },
@@ -3063,27 +3063,27 @@
         [
           2,
           "Wizardly Quill",
-          "A magical quill that copies spells quickly and cheaply."
+          "Your spellbook is more than a book; it is a magical quill and an ink that writes itself. A magical quill that copies spells quickly and cheaply."
         ],
         [
           2,
           "Awakened Spellbook",
-          "Swap a spell's damage type for another from your book, and cast rituals faster."
+          "Your spellbook awakens, and its pages answer your call. Swap a spell's damage type for another from your book, and cast rituals faster."
         ],
         [
           6,
           "Manifest Mind",
-          "Make your book's spirit appear and cast spells from its location."
+          "Your spellbook takes a shape of its own and can cast spells from where it rests. Make your book's spirit appear and cast spells from its location."
         ],
         [
           10,
           "Master Scrivener",
-          "Make a magic scroll of a spell you know after a long rest, cast as one level higher."
+          "You write scrolls of spells you know, and your hand strengthens each one you make. Make a magic scroll of a spell you know after a long rest, cast as one level higher."
         ],
         [
           14,
           "One with the Word",
-          "Advantage on Arcana checks, and let your book take damage for you by erasing spells temporarily."
+          "You fuse yourself to your book's words, and you can turn its power to your defense. Advantage on Arcana checks, and let your book take damage for you by erasing spells temporarily."
         ]
       ]
     }
