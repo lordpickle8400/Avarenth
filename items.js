@@ -31,7 +31,7 @@
     'Sledgehammer|g|2|0|metal,mining', 'Healer\'s kit|g|5|0|survival', 'Hourglass|g|25|2|luxury', 'Hunting trap|g|5|0|survival,metal,farm',
     'Ink (1 ounce bottle)|g|10|1|', 'Ink pen|g|0.02|1|', 'Jug or pitcher|g|0.02|0|', 'Ladder (10 feet)|g|0.1|0|farm', 'Lamp|g|0.5|0|mining',
     'Bullseye lantern|g|10|1|mining', 'Hooded lantern|g|5|0|mining', 'Lock|g|10|1|metal', 'Magnifying glass|g|100|3|luxury', 'Manacles|g|2|1|metal',
-    'Mess kit|g|0.2|0|survival', 'Steel mirror|g|5|1|metal', 'Oil (flask)|g|0.1|0|mining', 'Paper (one sheet)|g|0.2|1|', 'Parchment (one sheet)|g|0.1|0|',
+    'Mess kit|g|0.2|0|survival', 'Steel mirror|g|5|1|luxury', 'Oil (flask)|g|0.1|0|mining', 'Paper (one sheet)|g|0.2|1|', 'Parchment (one sheet)|g|0.1|0|',
     'Perfume (vial)|g|5|2|luxury', 'Miner\'s pick|g|2|0|metal,mining', 'Piton|g|0.05|0|metal,mining', 'Pole (10 feet)|g|0.05|0|', 'Iron pot|g|2|0|metal',
     'Pouch|g|0.5|0|', 'Quiver|g|1|0|survival', 'Portable ram|g|4|1|', 'Hempen rope (50 feet)|g|1|0|mining,nautical,survival', 'Silk rope (50 feet)|g|10|2|luxury,nautical',
     'Sack|g|0.01|0|farm,mining', 'Merchant\'s scale|g|5|1|', 'Sealing wax|g|0.5|1|', 'Shovel|g|2|0|metal,mining,farm', 'Signal whistle|g|0.05|0|nautical',
@@ -123,11 +123,13 @@
     'Magic shop': { kinds: ['fo'], tags: ['magic'], extra: ['Ink (1 ounce bottle)', 'Ink pen', 'Parchment (one sheet)', 'Book'], about: 'Foci, components and potions.' },
     'Tinker & toolmaker': { kinds: ['t', 'k', 'gm', 'i'], extra: ['Lock', 'Abacus', 'Hourglass', 'Magnifying glass', 'Merchant\'s scale'], about: 'Tools, kits, locks and instruments.' },
     'Wandering merchant': { wander: true, about: 'On the road with whatever he picked up: oddities, curiosities and a few useful things. Different every time you meet him.' },
-    'Fence': { kinds: ['x', 'k', 'sw', 'mw', 'rw', 'g', 'p', 'la'], fence: true, about: 'Stolen goods and things the law won\'t sell. Never asks your name.' },
+    'Fence': { kinds: ['x', 'sw', 'mw', 'rw', 'la', 'ma', 'ha', 'sh'], fence: true, about: 'Stolen goods and things the law won\'t sell. Never asks your name.' },
     'Bookseller': { kinds: [], special: 'books', about: 'Books, sets of books to collect, and shelves to keep them on.' },
     'Trophy hall': { kinds: [], special: 'trophies', about: 'Monster trophies, mounted heads, old coins and cases to show them off.' },
     'Cheesemaker': { kinds: [], special: 'cheese', about: 'Cheese from any milk you can name.' },
     'Artist\'s studio': { kinds: [], special: 'art', about: 'Paintings, sculptures and portraits to order.' },
+    'Jeweller': { kinds: [], special: 'jewel', about: 'Rings, chains and gems. Gold and silver are worked only under the royal licence.' },
+    'Enchanter': { kinds: [], special: 'enchant', about: 'Enchanting, identifying and mending magic, with scroll-making supplies.' },
     'Clockworks': { kinds: [], special: 'clockwork', about: 'Clockwork things that each do one job, plus winding, mending and building to order.' }
   };
 

@@ -5791,7 +5791,7 @@
       'a jar of eye of newt (actual newt eyes)', 0.5, 'a blank spellbook', 2, 'a skull with a candle in it', 1],
     'Tinker & toolmaker': ['a bag of springs', 0.1, 'a bag of gear wheels', 0.2, 'a music box that plays one sad tune', 3, 'a pocket watch', 15,
       'a tin soldier', 0.1, 'a jack-in-the-box', 0.5, 'a whirligig', 0.2, ],
-    Fence: ['a signet ring, owner unknown', 3, 'mismatched silver spoons', 1, 'a fine feathered hat', 0.5, 'a dog collar with a noble crest', 2, 'a box of other people’s letters', 0.5, 'a wooden leg', 0.5, 'a lock of someone’s hair in a locket', 2]
+    Fence: ['a signet ring, owner unknown', 3, 'mismatched silver spoons', 1, 'a fine feathered hat', 0.5, 'a dog collar with a noble crest', 2, 'a box of other people’s letters', 0.5, 'a lock of someone’s hair in a locket', 2, 'a forged letter of passage, sealed', 6, 'a stolen royal livery coat, cut down', 12]
   };
   // Things that are actually handy, for anyone who asks.
   var HANDY = ['a hand-drawn map of the area', 1, 'a whetstone', 0.01, 'bug-bite salve', 0.2, 'a fishing line and hooks', 0.1, 'a traveller’s blanket', 0.5, 'dry socks', 0.05,
@@ -5862,7 +5862,7 @@
     'General store': [['kitchen', 1, 2], ['home', 0, 2], ['travel', 0, 1], ['games', 0, 1]], 'Tavern & inn': [['kitchen', 1, 2], ['games', 0, 1]],
     'Tinker & toolmaker': [['kitchen', 0, 1], ['desk', 0, 2], ['travel', 1, 2], ['games', 0, 2]], 'Tailor & outfitter': [['home', 1, 3]], Temple: [['holy', 1, 2], ['desk', 0, 1]],
     'Magic shop': [['desk', 1, 2], ['home', 1, 2], ['kitchen', 0, 2], ['games', 0, 2], ['travel', 0, 1]], Stables: [['travel', 0, 2]], 'Shipwright & chandler': [['travel', 0, 2]],
-    Bookseller: [['desk', 1, 3]], Alchemist: [['kitchen', 0, 1], ['desk', 0, 1]], Blacksmith: [['kitchen', 0, 1]], 'Bowyer & fletcher': [['travel', 0, 1]], Fence: [['home', 0, 1], ['games', 0, 1]]
+    Bookseller: [['desk', 1, 3]], Alchemist: [['kitchen', 0, 1], ['desk', 0, 1]], Blacksmith: [['kitchen', 0, 1]], 'Bowyer & fletcher': [['travel', 0, 1]]
   };
   // Eggs of every kind. Plain ones were already on the list; these are the ones a fantasy world sells.
   var EGGS = {
@@ -5925,7 +5925,7 @@
     'General store': [['tableware', 1, 3], ['hides', 0, 2], ['materials', 1, 3], ['children', 0, 2], ['jars', 0, 1], ['parts', 0, 1]],
     Blacksmith: [['materials', 3, 5], ['parts', 0, 1]], Armorer: [['materials', 1, 3], ['hides', 1, 2]], 'Bowyer & fletcher': [['hides', 1, 3], ['parts', 1, 2]],
     Alchemist: [['parts', 2, 4], ['jars', 1, 2]], 'Tailor & outfitter': [['hides', 1, 3], ['children', 0, 2], ['materials', 0, 1]], Stables: [['hides', 0, 2], ['materials', 0, 1], ['parts', 0, 1]],
-    'Tavern & inn': [['tableware', 1, 2]], Temple: [['statues', 0, 2], ['tableware', 0, 1]], Fence: [['tableware', 1, 3], ['statues', 0, 2], ['materials', 0, 1]],
+    Temple: [['statues', 0, 2], ['tableware', 0, 1]], Fence: [['materials', 1, 2], ['statues', 0, 1]],
     'Tinker & toolmaker': [['materials', 1, 3], ['children', 0, 1]], 'Shipwright & chandler': [['materials', 1, 2], ['hides', 0, 1]], 'Magic shop': [['jars', 0, 1], ['parts', 1, 2], ['statues', 0, 1]]
   };
   function skyRows(shopKind, size, pm) {
@@ -5963,13 +5963,14 @@
     if (!K.fence) pickPairs(HANDY, rint(1, 3)).forEach(function (p) { add(p, 'j', rint(1, 6)); });
     if (shop.kind === 'Stables') pickPairs(CRITTERS.stable, rint(2, 4)).forEach(function (p) { add(p, 'an', rint(1, 2)); });
     else if (shop.kind === 'General store' || shop.kind === 'Tavern & inn') pickPairs(CRITTERS.plain, rint(1, 3)).forEach(function (p) { add(p, 'an', rint(1, 4)); });
-    if (q || K.fence || shop.kind === 'Magic shop' || size >= 3 && Math.random() < 0.4) pickPairs(CURIOS, q ? rint(2, 4) : rint(1, 2)).forEach(function (p) { add(p, 'cu', 1); });
+    if (!K.fence && shop.kind !== 'Tavern & inn' && (q || shop.kind === 'Magic shop' || size >= 3 && Math.random() < 0.4)) pickPairs(CURIOS, q ? rint(2, 4) : rint(1, 2)).forEach(function (p) { add(p, 'cu', 1); });
     if (q && Math.random() < 0.6) pickPairs(CRITTERS.odd, rint(1, 2)).forEach(function (p) { add(p, 'an', 1); });
     if (q) pairs(q[2]).forEach(function (p) { add(p, q[0] === 'cats' || q[0] === 'birds' ? 'an' : 'cu', rint(1, 3)); });
     rows = rows.concat(everydayRows(shop.kind, size, pm), skyRows(shop.kind, size, pm));
     // Household poisons on the shelf; restricted ones behind an alchemist's counter.
     if (/^(Alchemist|Herbalist|General store)$/.test(shop.kind)) pickPairs([].concat.apply([], POISON_HOUSEHOLD), rint(1, shop.kind === 'Alchemist' ? 4 : 2)).forEach(function (p) { rows.push({ n: craftItemName(p[0]), k: 'p', p: niceCp(p[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: rint(1, 6) }); });
     if (shop.kind === 'Alchemist' && size >= 2) pickPairs([].concat.apply([], POISON_RESTRICTED), rint(0, size >= 3 ? 2 : 1)).forEach(function (p) { rows.push({ n: p[0], k: 'p', p: niceCp(p[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: 1, restr: true }); });
+    if (shop.kind === 'Alchemist' && hasTag(shop.place_id ? placeOf(shop.place_id) : { tags: [] }, 'port')) pickPairs(SEA_REMEDIES, rint(3, 5)).forEach(function (p) { rows.push({ n: p[0], k: 'p', p: niceCp(p[1] * 100 * pm * (0.9 + Math.random() * 0.2)) / 100, q: rint(2, 8) }); });
     // A clockwork servant turns up now and then at a big-town tinker or magic shop (wizards like them for fetching scrolls).
     if ((shop.kind === 'Tinker & toolmaker' || shop.kind === 'Magic shop') && size >= 3 && Math.random() < 0.4) rows.push(labourerRow(pm));
     if (q && q[0] === 'eggs') pickPairs(EGGS.mount.concat(EGGS.odd, EGGS.farm), rint(2, 4)).forEach(function (p) { add(p, 'an', 1); });
@@ -6032,7 +6033,7 @@
   // Where collectibles turn up in ordinary shops.
   var COLLECT_IN = {
     'General store': [['books', 0, 2], ['figure', 0, 1]], Temple: [['books', 0, 2]], 'Magic shop': [['books', 1, 3], ['trophy', 1, 2], ['natural', 0, 2]],
-    Fence: [['trophy', 1, 2], ['coin', 1, 2], ['books', 0, 1]], 'Tavern & inn': [['trophy', 0, 1]], Blacksmith: [['coin', 0, 1]], Armorer: [['coin', 0, 1], ['trophy', 0, 1]],
+    Fence: [['trophy', 1, 2], ['coin', 1, 2]], Blacksmith: [['coin', 0, 1]], Armorer: [['coin', 0, 1], ['trophy', 0, 1]],
     'Bowyer & fletcher': [['trophy', 0, 2]], 'Tinker & toolmaker': [['figure', 0, 2], ['natural', 0, 1]], 'Shipwright & chandler': [['natural', 0, 2], ['coin', 0, 1]],
     'Tailor & outfitter': [['coin', 0, 1]], Alchemist: [['natural', 0, 1], ['books', 0, 1]]
   };
@@ -6054,11 +6055,30 @@
     'a plaster cast of the artist’s own face', 10, 'a statue of a weeping maiden, knee-high', 90, 'a tapestry of a hunt', 140];
   var ART_JOBS = ['Sketch while you wait', 1, 'Paint a crest on a shield', 5, 'Miniature portrait in a locket (2 days)', 25, 'Portrait sitting (ready in 3 days)', 50,
     'Group portrait of the party (a week)', 150, 'Marble bust (a month)', 400, 'Life-size statue (a season)', 2500];
+  var SEA_REMEDIES = ['Sea-sickness draught', 2, 'Salt cure (a tin, for fish and sailors)', 0.5, 'Brine-soaked bandage roll', 0.5, 'Seawater ointment for rope burns', 1,
+    'Ginger root for the belly', 0.3, 'Scurvy tonic (lime and vinegar, mostly)', 1.5, 'Tarred eye salve for sea glare', 1, 'Storm-calm draught (dubious)', 15];
+  // Jewellery: gold and silver need the royal licence to work, so the jeweller's stock is all made under it.
+  var JEWEL = ['Silver ring, plain', 5, 'Silver ring with a crest', 15, 'Gold signet ring, blank seal', 20, 'Gold ring set with garnet', 75, 'Silver brooch shaped like a gull', 12,
+    'Silver necklace with a moonstone', 40, 'Gold hoop earrings', 30, 'Silver hair pins (set of six)', 6, 'Gold circlet', 120, 'Garnet, cut', 25, 'Amethyst, cut', 50,
+    'Sapphire, small', 250, 'Crownmere pearl (royal stamp)', 60, 'Jade carving of a dragon', 90];
+  var JEWEL_JOBS = ['Assay a metal or gem (royal assayer’s fee)', 2, 'Resetting a stone', 5, 'Mending a clasp', 3];
+  // Enchanting: services are sold by the job; the rows carry no stock count.
+  var ENCHANT_JOBS = ['Enchant a weapon, +1 (you bring the weapon)', 200, 'Enchant armour or a shield, +1 (you bring it)', 250, 'Enchant a wand or focus with charges', 150,
+    'Identify a magic item (one day)', 30, 'Recharge a magic item', 100, 'Scribe a spell into a scroll (you bring the tome)', 75, 'Lift a curse (ask your patron first)', 500];
+  var ENCHANT_STOCK = ['Enchanter’s ink (1 oz)', 25, 'Silver dust (1 oz)', 40, 'Blank scroll', 3, 'Runed chalk (one stick)', 6, 'Wand blank, ash', 10];
   var SPECIAL = {
     clockwork: function (shop, size, pm) {
       var out = [], i, n; for (i = 0, n = rint(2, 4); i < n; i++) out.push(labourerRow(pm)); for (i = 0, n = rint(1, 2); i < n; i++) out.push(companionRow(pm));
       return out
         .concat(pairs(CLOCK_SUPPLIES).map(function (c) { return { n: c[0], k: 'cw', p: c[1], q: rint(4, 12) }; }), pairs(CLOCK_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
+    },
+    jewel: function (shop, size, pm) {
+      return pickPairs(JEWEL, rint(7, 10) + size).map(function (j) { return { n: j[0], k: 'jw', p: niceCp(j[1] * 100 * pm * (0.85 + Math.random() * 0.3)) / 100, q: rint(1, 2) }; })
+        .concat(pairs(JEWEL_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
+    },
+    enchant: function (shop, size, pm) {
+      return pickPairs(ENCHANT_STOCK, rint(3, 5)).map(function (c) { return { n: c[0], k: 'mg', p: niceCp(c[1] * 100 * pm) / 100, q: rint(1, 4) }; })
+        .concat(pairs(ENCHANT_JOBS).map(function (j) { return { n: j[0], k: 's', p: niceCp(j[1] * 100 * pm) / 100, q: null }; }));
     },
     books: function (shop, size, pm) { var rows = collectRows('books', rint(8, 12) + size * 2, pm); return rows.concat(collectRows('display', 1, pm)); },
     trophies: function (shop, size, pm) { return collectRows('trophy', rint(5, 8) + size, pm).concat(collectRows('display', rint(2, 3), pm), collectRows('coin', rint(1, 2), pm)); },
