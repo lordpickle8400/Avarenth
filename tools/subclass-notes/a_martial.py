@@ -3,7 +3,7 @@ S = {}
 SP = "Avarenth: subclasses add no spells. These suit the path; learn them from tomes or teachers at the usual cost."
 
 S["Barbarian"] = {
- "Path of the Totem Warrior": ("Draws on animal spirits for gifts that change by the animal you pick at each step.", [
+ "Path of the Animal Spirit": ("Draws on animal spirits for gifts that change by the animal you pick at each step.", [
   [3, "Spirit Sight", "Cast Beast Sense and Speak with Animals as rituals."],
   [3, "Spirit Animal", "Pick an animal for your rage: Bear (resist all damage but psychic), Eagle (enemies have disadvantage on opportunity attacks; Dash as a bonus action), Wolf (allies have advantage on melee attacks against enemies within 5 ft of you), Elk or Tiger."],
   [6, "Beast Gift", "A lasting gift: Bear (double carrying capacity), Eagle (see a mile clearly, no penalty in dim light), Wolf (track at fast pace, stealth at normal pace), Elk or Tiger."],
@@ -19,24 +19,24 @@ S["Barbarian"] = {
   [6, "Stormborn", "Resistance to your storm's damage type plus a small utility gift (no extreme heat or cold trouble, breathe and swim underwater, or freeze water)."],
   [10, "Storm Ward", "Allies in your aura gain resistance to your storm's damage type."],
   [14, "Tempest Rage", "Your aura bites back: Desert burns attackers, Sea knocks enemies prone, Tundra slows creatures to 0 speed."]]),
- "Path of the Zealot": ("A god's fury burns through you, and death struggles to hold you.", [
+ "Path of the Fervent": ("A god's fury burns through you, and death struggles to hold you.", [
   [3, "Holy Fury", "While raging, your first hit each turn deals extra radiant or necrotic damage: 1d6 + half your barbarian level."],
   [3, "Blessed Warrior", "Spells that bring you back to life need no material components."],
   [6, "Zealous Focus", "Once per rage, reroll a failed saving throw."],
   [10, "Zealous Aura", "Bonus action, once per long rest: up to ten creatures gain advantage on attacks and saves until your next turn."],
   [14, "Undying Rage", "While raging, you don't die at 0 HP; you fall only when the rage ends, if you're still at 0."]]),
- "Path of the Beast": ("Your rage changes your body: claws, jaws or a lashing tail.", [
+ "Path of the Feral Shape": ("Your rage changes your body: claws, jaws or a lashing tail.", [
   [3, "Beastform", "When you rage, grow a natural weapon: bite (heal a little when you hit while under half HP), claws (an extra claw attack), or tail (reaction to add to your AC against a hit)."],
   [6, "Feral Soul", "Your natural weapons count as magical, and you choose a gift each rest: swim speed, climb speed, or a jumping boost."],
   [10, "Spreading Rage", "When your natural weapon hits, the target saves (Wis) or must attack someone else or take psychic damage. A few times per long rest."],
   [14, "Hunting Cry", "When you rage, up to your Con modifier allies gain extra damage once per turn while you gain temporary HP. Uses equal to proficiency bonus per long rest."]]),
- "Path of Wild Magic": ("Wild magic surges out of you every time you rage.", [
+ "Path of the Wildborn": ("Wild magic surges out of you every time you rage.", [
   [3, "Surgesight", "Sense spells and magic items within 60 ft as an action, a few times per long rest."],
   [3, "Chaos Pulse", "When you rage, roll on the Wild Magic table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."],
   [6, "Mana Lift", "Touch an ally to give them a d3 bonus to attacks and checks for 10 minutes, or to restore some of their mana: roll a d3 and they regain 5, 10 or 18 mana. Uses per long rest equal to proficiency bonus."],
   [10, "Backfire", "When you take damage or fail a save while raging, reroll your wild surge as a reaction."],
   [14, "Steady Surge", "Roll twice on the Wild Magic table and pick the result you want."]]),
- "Path of the Giant": ("You grow with the strength of the giants and hurl your foes.", [
+ "Path of the Titan": ("You grow with the strength of the giants and hurl your foes.", [
   [3, "Titan's Might", "Learn Druidcraft or Thaumaturgy and the Giant language."],
   [3, "Titan's Havoc", "While raging you count as Large (if space allows), your reach grows by 5 ft, and thrown or Strength-based hits add more damage."],
   [6, "Elemental Cleave", "When you rage, infuse a weapon with acid, cold, fire, thunder or lightning; it deals an extra 1d6 of that type and returns to your hand when thrown."],

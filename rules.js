@@ -12,7 +12,7 @@
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Animal Handling', 'Athletics', 'Intimidation', 'Nature', 'Perception', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Primal Path', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Path of the Berserker', 'Path of the Totem Warrior', 'Path of the Kinwarden', 'Path of the Stormcaller', 'Path of the Zealot', 'Path of the Beast', 'Path of Wild Magic', 'Path of the Giant'],
+    subclasses: ['Path of the Berserker', 'Path of the Animal Spirit', 'Path of the Kinwarden', 'Path of the Stormcaller', 'Path of the Fervent', 'Path of the Feral Shape', 'Path of the Wildborn', 'Path of the Titan'],
     features: [
       [1, 'Rage', 'As a bonus action, rage for a minute: advantage on Strength checks and saves, extra melee damage, and resistance to bludgeoning, piercing and slashing damage. Limited uses per long rest.'],
       [1, 'Unarmored Defense', 'Without armor, your AC is 10 + Dexterity + Constitution. A shield still counts.'],
@@ -36,7 +36,7 @@
     armor: 'Light armor', weapons: 'Simple weapons, hand crossbows, longswords, rapiers, shortswords', tools: 'Three musical instruments',
     skills: { n: 3, from: 'any' },
     subclassLevel: 3, subclassLabel: 'Bard College', asi: [4, 8, 12, 16, 19],
-    subclasses: ['College of Lore', 'College of Valor', 'College of Glamour', 'College of Swords', 'College of Whispers', 'College of Creation', 'College of Eloquence', 'College of Spirits'],
+    subclasses: ['College of Lore', 'College of Valor', 'College of Veils', 'College of Blades', 'College of Whispers', 'College of Making', 'College of Oratory', 'College of Ghosts'],
     features: [
       [1, 'Spellcasting', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
       [1, 'Bardic Inspiration', 'As a bonus action, give a creature an inspiration die (d6, growing to d8 at 5th, d10 at 10th, d12 at 15th) to add to one roll. Uses equal your Charisma modifier per long rest.'],

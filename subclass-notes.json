@@ -1,6 +1,6 @@
 {
   "Barbarian": {
-    "Path of the Totem Warrior": {
+    "Path of the Animal Spirit": {
       "about": "Your rage calls on the spirit of an animal, and you take on its strength and its ways. The hunters of the Emberwood and the high moors all tell stories about the spirit that walks with them.",
       "features": [
         [
@@ -80,7 +80,7 @@
         ]
       ]
     },
-    "Path of the Zealot": {
+    "Path of the Fervent": {
       "about": "A god’s fury burns through you when you rage, and death itself struggles to hold you. Zealots of the church speak of the moment they came back from the dead, and the bishops are never quite sure what to make of it.",
       "features": [
         [
@@ -110,7 +110,7 @@
         ]
       ]
     },
-    "Path of the Beast": {
+    "Path of the Feral Shape": {
       "about": "Your rage changes your body into something more animal: claws, jaws or a lashing tail. Those who fight beside you learn to keep their distance until the fight is over.",
       "features": [
         [
@@ -135,7 +135,7 @@
         ]
       ]
     },
-    "Path of Wild Magic": {
+    "Path of the Wildborn": {
       "about": "Wild magic surges out of you every time you rage, and no two surges are quite alike. Mages in [[Dragonsneck]] would pay a fortune to study you, and few of them would survive the study.",
       "features": [
         [
@@ -165,7 +165,7 @@
         ]
       ]
     },
-    "Path of the Giant": {
+    "Path of the Titan": {
       "about": "You grow with the strength of the giants when you rage, and you hurl your foes like stones. The quarry-folk of the high hills tell tales of barbarians who could throw a boulder over a river.",
       "features": [
         [
@@ -1964,7 +1964,7 @@
         ]
       ]
     },
-    "College of Glamour": {
+    "College of Veils": {
       "about": "Bards of fey enchantment, who sing of the wild courts and the beauty that hides their cruelty. Glamour bards are welcome at the balls of the great houses, and they leave every guest wanting more.",
       "features": [
         [
@@ -1989,7 +1989,7 @@
         ]
       ]
     },
-    "College of Swords": {
+    "College of Blades": {
       "about": "Bards who dance with a blade, combining swordplay with the rhythm of a song. Sword bards hold the stage in the taverns and the arenas.",
       "features": [
         [
@@ -2044,7 +2044,7 @@
         ]
       ]
     },
-    "College of Creation": {
+    "College of Making": {
       "about": "Bards who sing the world into being, and who believe a good song can change the shape of a room. Creation bards are often sought out by the craftsmen of the cities.",
       "features": [
         [
@@ -2069,7 +2069,7 @@
         ]
       ]
     },
-    "College of Eloquence": {
+    "College of Oratory": {
       "about": "Bards who speak with perfect words and perfect timing, and who can talk a crowd out of anger or into a fight. Eloquent bards are rare, and the courts love them.",
       "features": [
         [
@@ -2099,7 +2099,7 @@
         ]
       ]
     },
-    "College of Spirits": {
+    "College of Ghosts": {
       "about": "Bards who call up the spirits of the dead through their song, and who listen to what the dead have to say. Spirit bards often find work in the cemeteries and the old battlefields.",
       "features": [
         [
