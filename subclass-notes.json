@@ -958,17 +958,17 @@
         ],
         [
           1,
-          "Blessings of Knowledge",
+          "Keen Lore",
           "Two extra languages, and proficiency with double bonus in two of Arcana, History, Nature or Religion."
         ],
         [
           2,
-          "Channel Divinity: Knowledge of the Ages",
+          "Channel Divinity: Ageless Lore",
           "Gain proficiency in any skill or tool for 10 minutes."
         ],
         [
           6,
-          "Channel Divinity: Read Thoughts",
+          "Channel Divinity: Mind Read",
           "Read a creature's surface thoughts (Wis save), then cast Suggestion on it without spending mana."
         ],
         [
@@ -978,7 +978,7 @@
         ],
         [
           17,
-          "Visions of the Past",
+          "Glimpse of the Past",
           "Meditate to see recent events around an object you hold or the area you're in."
         ]
       ]
@@ -998,17 +998,17 @@
         ],
         [
           1,
-          "Warding Flare",
+          "Warding Glare",
           "Reaction: impose disadvantage on an attack against you, Wisdom-mod times per long rest."
         ],
         [
           2,
-          "Channel Divinity: Radiance of the Dawn",
+          "Channel Divinity: Dawnburst",
           "Dispel magical darkness and deal radiant damage to hostile creatures within 30 ft (Con save halves)."
         ],
         [
           6,
-          "Improved Flare",
+          "Greater Glare",
           "Warding Flare can protect allies too."
         ],
         [
@@ -1018,7 +1018,7 @@
         ],
         [
           17,
-          "Corona of Light",
+          "Halo of Light",
           "Shed sunlight; enemies in it have disadvantage on saves against fire and radiant spells."
         ]
       ]
@@ -1033,7 +1033,7 @@
         ],
         [
           1,
-          "Acolyte of Nature",
+          "Greenward Acolyte",
           "Learn a druid cantrip and one of Animal Handling, Nature or Survival."
         ],
         [
@@ -1043,12 +1043,12 @@
         ],
         [
           2,
-          "Channel Divinity: Charm Animals and Plants",
+          "Channel Divinity: Charm of the Wild",
           "Charm beasts and plant creatures within 30 ft for a minute (Wis save)."
         ],
         [
           6,
-          "Dampen Elements",
+          "Element Ward",
           "Reaction: give resistance to acid, cold, fire, lightning or thunder damage to a creature within 30 ft."
         ],
         [
@@ -1058,7 +1058,7 @@
         ],
         [
           17,
-          "Master of Nature",
+          "Lord of the Wild",
           "Command charmed beasts and plants with a bonus action."
         ]
       ]
@@ -1078,17 +1078,17 @@
         ],
         [
           1,
-          "Wrath of the Storm",
+          "Storm's Wrath",
           "Reaction: a creature that hits you takes lightning or thunder damage (Dex save halves), Wisdom-mod times per long rest."
         ],
         [
           2,
-          "Channel Divinity: Destructive Wrath",
+          "Channel Divinity: Ruinous Gale",
           "Make a lightning or thunder spell deal maximum damage."
         ],
         [
           6,
-          "Thunderbolt Strike",
+          "Thunder Strike",
           "Your lightning damage can push Large or smaller creatures 10 ft."
         ],
         [
@@ -1098,7 +1098,7 @@
         ],
         [
           17,
-          "Stormborn",
+          "Stormblessed",
           "Fly at your walking speed when outdoors and not underground."
         ]
       ]
@@ -1113,17 +1113,17 @@
         ],
         [
           1,
-          "Blessing of the Trickster",
+          "Trickster's Gift",
           "Give a creature advantage on Stealth for an hour."
         ],
         [
           2,
-          "Channel Divinity: Invoke Duplicity",
+          "Channel Divinity: Mirror Self",
           "Create an illusory duplicate you can cast through, and gain advantage when you and it flank a creature."
         ],
         [
           6,
-          "Channel Divinity: Cloak of Shadows",
+          "Channel Divinity: Dim Cloak",
           "Become invisible until the end of your next turn."
         ],
         [
@@ -1133,7 +1133,7 @@
         ],
         [
           17,
-          "Improved Duplicity",
+          "Greater Mirror",
           "Create up to four duplicates."
         ]
       ]
@@ -1153,17 +1153,17 @@
         ],
         [
           1,
-          "War Priest",
+          "Battle Chaplain",
           "Make a weapon attack as a bonus action after the Attack action, Wisdom-mod times per long rest."
         ],
         [
           2,
-          "Channel Divinity: Guided Strike",
+          "Channel Divinity: Aimed Strike",
           "+10 to an attack roll after you see the roll."
         ],
         [
           6,
-          "Channel Divinity: War God's Blessing",
+          "Channel Divinity: Champion's Blessing",
           "Reaction: give an ally +10 to an attack roll."
         ],
         [
@@ -1173,7 +1173,7 @@
         ],
         [
           17,
-          "Avatar of Battle",
+          "Battle Avatar",
           "Resistance to bludgeoning, piercing and slashing from nonmagical attacks."
         ]
       ]
@@ -1193,17 +1193,17 @@
         ],
         [
           1,
-          "Blessing of the Forge",
+          "Forge Blessing",
           "After a long rest, give a weapon or armor +1 until your next long rest."
         ],
         [
           2,
-          "Channel Divinity: Artisan's Blessing",
+          "Channel Divinity: Smith's Blessing",
           "An hour-long ritual to create a simple metal item worth up to 100 gp."
         ],
         [
           6,
-          "Soul of the Forge",
+          "Forged Spirit",
           "Resistance to fire, and +1 AC in heavy armor."
         ],
         [
@@ -1213,7 +1213,7 @@
         ],
         [
           17,
-          "Saint of Forge and Fire",
+          "Saint of the Anvil",
           "Immunity to fire, and resistance to nonmagical weapon damage in heavy armor."
         ]
       ]
@@ -1228,22 +1228,22 @@
         ],
         [
           1,
-          "Circle of Mortality",
+          "Circle of the Dead",
           "Healing a creature at 0 HP uses maximum dice; Spare the Dying works at 30 ft as a bonus action."
         ],
         [
           1,
-          "Eyes of the Grave",
+          "Grave Sight",
           "Sense undead within 60 ft, Wisdom-mod times per long rest."
         ],
         [
           2,
-          "Channel Divinity: Path to the Grave",
+          "Channel Divinity: Grave Mark",
           "Curse a creature so the next attack against it deals double damage."
         ],
         [
           6,
-          "Sentinel at Death's Door",
+          "Guardian at the Gate",
           "Reaction: turn a critical hit on you or an ally into a normal hit, Wisdom-mod times per long rest."
         ],
         [
@@ -1253,7 +1253,7 @@
         ],
         [
           17,
-          "Keeper of Souls",
+          "Soul Keeper",
           "When an enemy dies nearby, you or an ally regains HP equal to its Hit Dice."
         ]
       ]
@@ -1273,17 +1273,17 @@
         ],
         [
           1,
-          "Voice of Authority",
+          "Commanding Voice",
           "When you cast a spell with mana on an ally, they can make one attack as a reaction."
         ],
         [
           2,
-          "Channel Divinity: Order's Demand",
+          "Channel Divinity: Lawful Demand",
           "Charm creatures of your choice within 30 ft until your next turn and make them drop what they hold (Wis save)."
         ],
         [
           6,
-          "Embodiment of the Law",
+          "Living Law",
           "Cast enchantment spells as a bonus action, Wisdom-mod times per long rest."
         ],
         [
@@ -1293,7 +1293,7 @@
         ],
         [
           17,
-          "Order's Wrath",
+          "Lawful Wrath",
           "Mark a creature you hit; the next ally hit on it adds psychic damage."
         ]
       ]
@@ -1308,22 +1308,22 @@
         ],
         [
           1,
-          "Implement of Peace",
+          "Peacekeeper's Token",
           "Insight, Performance or Persuasion."
         ],
         [
           1,
-          "Emboldening Bond",
+          "Bond of Courage",
           "Bond a few creatures: once per turn each can add a d4 to an attack, check or save while near another bonded creature."
         ],
         [
           2,
-          "Channel Divinity: Balm of Peace",
+          "Channel Divinity: Soothing Balm",
           "Move without provoking and heal each creature you pass."
         ],
         [
           6,
-          "Protective Bond",
+          "Guardian Bond",
           "Bonded creatures can teleport to each other to take damage for one another."
         ],
         [
@@ -1333,7 +1333,7 @@
         ],
         [
           17,
-          "Expansive Bond",
+          "Wide Bond",
           "The bond reaches 60 ft, and the creature that takes the hit gains resistance."
         ]
       ]
@@ -1353,22 +1353,22 @@
         ],
         [
           1,
-          "Eyes of Night",
+          "Night Sight",
           "Darkvision 300 ft, which you can share."
         ],
         [
           1,
-          "Vigilant Blessing",
+          "Watchful Blessing",
           "Give a creature advantage on its next initiative roll."
         ],
         [
           2,
-          "Channel Divinity: Twilight Sanctuary",
+          "Channel Divinity: Dusk Sanctuary",
           "A sphere of dim light around you for a minute: each turn allies in it gain temporary HP or shake off charm or fear."
         ],
         [
           6,
-          "Steps of Night",
+          "Night Steps",
           "Fly in dim light or darkness for a minute, a few times per long rest."
         ],
         [
@@ -1378,7 +1378,7 @@
         ],
         [
           17,
-          "Twilight Shroud",
+          "Dusk Shroud",
           "Your sanctuary also gives half cover."
         ]
       ]
@@ -1393,17 +1393,17 @@
         ],
         [
           1,
-          "Arcane Initiate",
+          "Arcane Apprentice",
           "Arcana proficiency and two wizard cantrips."
         ],
         [
           2,
-          "Channel Divinity: Arcane Abjuration",
+          "Channel Divinity: Spell Ward",
           "Turn (and later banish) celestials, elementals, fey and fiends."
         ],
         [
           6,
-          "Spell Breaker",
+          "Counterspell Touch",
           "When you heal an ally with a spell, also end one spell on them."
         ],
         [
@@ -1413,7 +1413,7 @@
         ],
         [
           17,
-          "Arcane Mastery",
+          "Arcane Command",
           "Add wizard spells of 6th to 9th level to your list (you still need the charges or channel to cast them)."
         ]
       ]
@@ -1433,17 +1433,17 @@
         ],
         [
           1,
-          "Reaper",
+          "Harvester",
           "Learn a necromancy cantrip that can target two creatures next to each other."
         ],
         [
           2,
-          "Channel Divinity: Touch of Death",
+          "Channel Divinity: Deathly Touch",
           "Melee hit deals extra necrotic damage: 5 + twice your cleric level."
         ],
         [
           6,
-          "Inescapable Destruction",
+          "Inescapable Doom",
           "Your necrotic damage ignores resistance."
         ],
         [
@@ -1453,7 +1453,7 @@
         ],
         [
           17,
-          "Improved Reaper",
+          "Greater Harvester",
           "Single-target necromancy spells of 1st to 5th level can target a second creature."
         ]
       ]
