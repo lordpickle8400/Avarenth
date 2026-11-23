@@ -94,7 +94,7 @@
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Acrobatics', 'Animal Handling', 'Athletics', 'History', 'Insight', 'Intimidation', 'Perception', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Martial Archetype', asi: [4, 6, 8, 12, 14, 16, 19],
-    subclasses: ['Champion', 'Battle Master', 'Eldritch Knight', 'Arcane Archer', 'Cavalier', 'Samurai', 'Echo Knight', 'Psi Warrior', 'Rune Knight'],
+    subclasses: ['Champion', 'Battle Master', 'Eldritch Knight', 'Arcane Archer', 'Cavalier', 'Samurai', 'Mirrorguard', 'Mindforged', 'Runebound'],
     features: [
       [1, 'Avarenth Magic', 'Your magic is small and practical, the kind a soldier picks up on campaign. You have a small mana pool and a short martial spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Fighting Style', 'Every fighter develops a way of fighting that is unmistakably their own. Pick a fighting specialty that defines how you fight, like Archery, Defense, Dueling or Great Weapon Fighting.'],
@@ -112,7 +112,7 @@
     armor: 'None', weapons: 'Simple weapons, shortswords', tools: 'One artisan\'s tool or musical instrument',
     skills: { n: 2, from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'] },
     subclassLevel: 3, subclassLabel: 'Monastic Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Way of the Open Hand', 'Way of Shadow', 'Way of the Four Elements', 'Way of the Long Death', 'Way of the Sun Soul', 'Way of the Drunken Master', 'Way of the Kensei', 'Way of the Astral Self', 'Way of Mercy'],
+    subclasses: ['Way of the Open Hand', 'Way of Shadow', 'Way of the Four Elements', 'Way of the Last Breath', 'Way of the Sun Soul', 'Way of the Drunken Master', 'Way of the Kensei', 'Way of the Spiritbound', 'Way of Mercy'],
     features: [
       [1, 'Avarenth Magic', 'You have a mana pool and a spirit-magic spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Unarmored Defense', 'Without armor or a shield, your AC is 10 + Dexterity + Wisdom.'],
@@ -142,7 +142,7 @@
     armor: 'All armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 2, from: ['Athletics', 'Insight', 'Intimidation', 'Medicine', 'Persuasion', 'Religion'] },
     subclassLevel: 3, subclassLabel: 'Sacred Oath', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Oath of Devotion', 'Oath of the Ancients', 'Oath of Vengeance', 'Oathbreaker', 'Oath of Conquest', 'Oath of Redemption', 'Oath of Glory', 'Oath of the Watchers'],
+    subclasses: ['Oath of Devotion', 'Oath of the Ancients', 'Oath of Vengeance', 'Oathbreaker', 'Oath of Conquest', 'Oath of Redemption', 'Oath of Glory', 'Oath of the Nightwatch'],
     features: [
       [1, 'Divine Sense', 'Sense celestials, fiends and undead nearby. Uses equal 1 + your Charisma modifier per long rest.'],
       [1, 'Lay on Hands', 'A pool of healing equal to five times your paladin level, refilled on a long rest.'],
@@ -165,7 +165,7 @@
     armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: '',
     skills: { n: 3, from: ['Animal Handling', 'Athletics', 'Insight', 'Investigation', 'Nature', 'Perception', 'Stealth', 'Survival'] },
     subclassLevel: 3, subclassLabel: 'Ranger Archetype', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Hunter', 'Beast Master', 'Gloom Stalker', 'Horizon Walker', 'Monster Slayer', 'Fey Wanderer', 'Swarmkeeper', 'Drakewarden'],
+    subclasses: ['Hunter', 'Beast Master', 'Gloom Stalker', 'Horizon Walker', 'Monster Slayer', 'Fey Wanderer', 'Swarmkeeper', 'Wyrmrider'],
     features: [
       [1, 'Favored Enemy', 'Choose a type of creature you know well: advantage on tracking and recalling lore about them.'],
       [1, 'Natural Explorer', 'Choose a favored terrain where you travel and forage with ease.'],
@@ -188,7 +188,7 @@
     armor: 'Light armor', weapons: 'Simple weapons, hand crossbows, longswords, rapiers, shortswords', tools: 'Thieves\' tools',
     skills: { n: 4, from: ['Acrobatics', 'Athletics', 'Deception', 'Insight', 'Intimidation', 'Investigation', 'Perception', 'Performance', 'Persuasion', 'Sleight of Hand', 'Stealth'] },
     subclassLevel: 3, subclassLabel: 'Roguish Archetype', asi: [4, 8, 10, 12, 16, 19],
-    subclasses: ['Thief', 'Assassin', 'Arcane Trickster', 'Inquisitive', 'Mastermind', 'Scout', 'Swashbuckler', 'Phantom', 'Soulknife'],
+    subclasses: ['Thief', 'Assassin', 'Arcane Trickster', 'Inquisitive', 'Mastermind', 'Scout', 'Swashbuckler', 'Deadwhisper', 'Thoughtblade'],
     features: [
       [1, 'Avarenth Magic', 'You have a small mana pool and a shadow-magic spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Expertise', 'Double your proficiency bonus for two skills, or one skill and thieves\' tools (two more at 6th).'],
@@ -228,7 +228,7 @@
     armor: 'Light armor', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Otherworldly Patron', asi: [4, 8, 12, 16, 19],
-    subclasses: ['The Archfey', 'The Fiend', 'The Great Old One', 'The Celestial', 'The Hexblade', 'The Fathomless', 'The Genie', 'The Undead'],
+    subclasses: ['The Archfey', 'The Fiend', 'The Great Old One', 'The Celestial', 'The Bladebound', 'The Fathomless', 'The Genie', 'The Undead'],
     features: [
       [1, 'Otherworldly Patron', 'Choose the being you made your pact with.'],
       [1, 'Pact Magic', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
@@ -408,14 +408,14 @@
     patronSubclasses: {
       'Akoron': { Cleric: ['Life Domain', 'Light Domain', 'Peace Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Redemption'] },
       'Roselle': { Cleric: ['Nature Domain', 'Life Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Ancients', 'Oath of Redemption'] },
-      'Azrul': { Cleric: ['Death Domain', 'Grave Domain', 'Twilight Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Watchers', 'Oath of Devotion'] },
-      'Korinth': { Cleric: ['Knowledge Domain', 'Arcana Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Watchers', 'Oath of Devotion'] },
+      'Azrul': { Cleric: ['Death Domain', 'Grave Domain', 'Twilight Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
+      'Korinth': { Cleric: ['Knowledge Domain', 'Arcana Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of the Nightwatch', 'Oath of Devotion'] },
       'Thorum': { Cleric: ['Tempest Domain'], Warlock: ['The Celestial', 'The Fathomless'], Paladin: ['Oath of Vengeance', 'Oath of Glory'] },
       'Florin': { Cleric: ['Trickery Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Glory', 'Oath of Redemption'] },
       'Rook': { Cleric: ['War Domain', 'Order Domain', 'Forge Domain'], Warlock: ['The Celestial'], Paladin: ['Oath of Devotion', 'Oath of Conquest', 'Oath of Glory'] },
       'The Hungering Head': { Cleric: ['Death Domain', 'Twilight Domain'], Warlock: ['The Great Old One'], Paladin: ['Oathbreaker', 'Oath of Conquest'] },
       'Kharneth': { Cleric: ['Order Domain', 'Knowledge Domain'], Warlock: ['The Fiend'], Paladin: ['Oath of Conquest', 'Oath of Vengeance'] },
-      'Drakhar': { Cleric: ['War Domain', 'Order Domain'], Warlock: ['The Hexblade', 'The Fiend'], Paladin: ['Oath of Conquest'] },
+      'Drakhar': { Cleric: ['War Domain', 'Order Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Conquest'] },
       'The Pyre-Saint': { Cleric: ['Light Domain', 'War Domain'], Warlock: ['The Celestial', 'The Fiend'], Paladin: ['Oath of Vengeance', 'Oath of Conquest'] },
       'Marrow': { Cleric: ['Death Domain', 'Nature Domain'], Warlock: ['The Undead', 'The Great Old One'] },
       'Velvet': { Cleric: ['Trickery Domain', 'Twilight Domain'], Warlock: ['The Archfey'] },
@@ -423,7 +423,7 @@
       'The Nine Below': { Cleric: ['Death Domain', 'Grave Domain'], Warlock: ['The Undead'], Paladin: ['Oathbreaker', 'Oath of Vengeance'] },
       'The Mask': { Cleric: ['Trickery Domain'], Warlock: ['The Archfey', 'The Great Old One'] },
       'Veyl': { Cleric: ['Knowledge Domain', 'Arcana Domain'], Warlock: ['The Great Old One'] },
-      'Vaunt and Ruin': { Cleric: ['War Domain'], Warlock: ['The Hexblade', 'The Fiend'], Paladin: ['Oath of Glory', 'Oath of Conquest', 'Oathbreaker'] },
+      'Vaunt and Ruin': { Cleric: ['War Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Glory', 'Oath of Conquest', 'Oathbreaker'] },
       'Lull': { Cleric: ['Tempest Domain', 'Death Domain'], Warlock: ['The Fathomless'] }
     },
     factionStart: {

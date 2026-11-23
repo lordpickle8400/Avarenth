@@ -122,7 +122,7 @@ S["Ranger"] = {
   [7, "Writhing Tide", "Fly slowly on your swarm for a minute, a few times per long rest."],
   [11, "Mighty Swarm", "Swarm damage grows to 1d8, and its push knocks prone or its move gives you half cover."],
   [15, "Swarming Dispersal", "Reaction: gain resistance and teleport 30 ft as you scatter into the swarm."]]),
- "Drakewarden": ("A ranger with a young drake companion.", [
+ "Wyrmrider": ("A ranger with a young drake companion.", [
   [3, "Draconic Gift", "Learn Thaumaturgy and Draconic."],
   [3, "Drake Companion", "Summon a drake that fights beside you and grows with you."],
   [7, "Bond of Fang and Scale", "Your drake grows, can carry you while flying, and you gain resistance to its damage type."],

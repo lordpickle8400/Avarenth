@@ -377,7 +377,7 @@
         ]
       ]
     },
-    "Echo Knight": {
+    "Mirrorguard": {
       "about": "You fight alongside an echo of yourself from another possible timeline, one that can attack, swap places with you and take blows meant for you. Some in the isles say the echo is simply the knight’s better self.",
       "features": [
         [
@@ -412,8 +412,8 @@
         ]
       ]
     },
-    "Psi Warrior": {
-      "about": "Psionic power adds force to your blows and shields your allies from harm. Psi warriors are rare in the isles, and most of them keep their talents to themselves.",
+    "Mindforged": {
+      "about": "Psionic power adds force to your blows and shields your allies from harm. Mindforged are rare in the isles, and most of them keep their talents to themselves.",
       "features": [
         [
           3,
@@ -442,7 +442,7 @@
         ]
       ]
     },
-    "Rune Knight": {
+    "Runebound": {
       "about": "Giant runes are carved into your gear, and you can grow huge when the fight calls for it. The smiths of [[Dragonsneck]] carve these runes for their best defenders.",
       "features": [
         [
@@ -534,7 +534,7 @@
         ]
       ]
     },
-    "Way of the Long Death": {
+    "Way of the Last Breath": {
       "about": "A monk who studies death and feeds on it, and who finds strength in the last breath of an enemy. Other monks keep their distance from them, and the Grave Domain priests have their own opinions.",
       "features": [
         [
@@ -554,8 +554,8 @@
         ],
         [
           17,
-          "Touch of the Long Death",
-          "Touch of the Long Death: You can channel your ki into a killing touch. Spend 1 to 10 ki points, and a creature you touch takes 2d10 necrotic damage per ki point spent. It makes a Constitution save for half damage."
+          "Touch of the Last Breath",
+          "Touch of the Last Breath: You can channel your ki into a killing touch. Spend 1 to 10 ki points, and a creature you touch takes 2d10 necrotic damage per ki point spent. It makes a Constitution save for half damage."
         ]
       ]
     },
@@ -639,28 +639,28 @@
         ]
       ]
     },
-    "Way of the Astral Self": {
-      "about": "You summon your astral self: first spectral arms, then a visage, and finally a full spirit body that fights beside you. Astral monks say their guide comes from another plane, though few have seen it.",
+    "Way of the Spiritbound": {
+      "about": "You summon your spirit self: first spectral arms, then a visage, and finally a full spirit body that fights beside you. Astral monks say their guide comes from another plane, though few have seen it.",
       "features": [
         [
           3,
-          "Arms of the Astral Self",
-          "You call forth your astral self, a spirit that answers your will. Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."
+          "Arms of the Spiritbound",
+          "You call forth your spirit self, a spirit that answers your will. Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."
         ],
         [
           6,
-          "Visage of the Astral Self",
+          "Visage of the Spiritbound",
           "Your astral face shows you the hidden and speaks with a voice that commands attention. Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."
         ],
         [
           11,
-          "Body of the Astral Self",
+          "Body of the Spiritbound",
           "Your astral body is a shield as well as a weapon. With arms and visage out, deflect energy damage and add extra damage on a hit."
         ],
         [
           17,
-          "Awakened Astral Self",
-          "Your astral self becomes a full spirit for a moment, and you fight as one. Spend 5 ki to manifest everything at once: AC bonus and an extra attack."
+          "Awakened Spiritbound",
+          "Your spirit self becomes a full spirit for a moment, and you fight as one. Spend 5 ki to manifest everything at once: AC bonus and an extra attack."
         ]
       ]
     },
@@ -886,8 +886,8 @@
         ]
       ]
     },
-    "Phantom": {
-      "about": "A rogue touched by death, who steals the knowledge and the last words of the dead. Phantoms are shunned by the church and tolerated by the Grave Domain, and they do not much care who approves.",
+    "Deadwhisper": {
+      "about": "A rogue touched by death, who steals the knowledge and the last words of the dead. Deadwhispers are shunned by the church and tolerated by the Grave Domain, and they do not much care who approves.",
       "features": [
         [
           3,
@@ -916,8 +916,8 @@
         ]
       ]
     },
-    "Soulknife": {
-      "about": "Psionic blades formed from your mind cut through armor and thought alike. Soulknives are rare, and the few in the isles tend to keep to themselves.",
+    "Thoughtblade": {
+      "about": "Psionic blades formed from your mind cut through armor and thought alike. Thoughtblades are rare, and the few in the isles tend to keep to themselves.",
       "features": [
         [
           3,
@@ -1670,8 +1670,8 @@
         ]
       ]
     },
-    "Oath of the Watchers": {
-      "about": "You swear to guard the people against the unnatural and the things that come out of the dark. Watchers keep the night patrols at the walls of [[Loreaon]] and at the lonely watchtowers beyond.",
+    "Oath of the Nightwatch": {
+      "about": "You swear to guard the people against the unnatural and the things that come out of the dark. Nightwatch keep the night patrols at the walls of [[Loreaon]] and at the lonely watchtowers beyond.",
       "features": [
         [
           3,
@@ -1802,8 +1802,8 @@
         ]
       ]
     },
-    "The Hexblade": {
-      "about": "Your patron is a blade of ancient power, and the steel you carry answers to your will. Hexblades are sought out by the knightly orders and avoided by everyone who has seen one fight.",
+    "The Bladebound": {
+      "about": "Your patron is a blade of ancient power, and the steel you carry answers to your will. Bladebounds are sought out by the knightly orders and avoided by everyone who has seen one fight.",
       "features": [
         [
           1,
@@ -1812,7 +1812,7 @@
         ],
         [
           1,
-          "Hexblade's Curse",
+          "Bladebound Curse",
           "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."
         ],
         [
@@ -2508,8 +2508,8 @@
         ]
       ]
     },
-    "Drakewarden": {
-      "about": "A ranger who raises and rides a young dragon, and who has bonded with it for life. Drakewardens are rare, and the lords of [[Dragonsneck]] would like to know how they do it.",
+    "Wyrmrider": {
+      "about": "A ranger who raises and rides a young dragon, and who has bonded with it for life. Wyrmriders are rare, and the lords of [[Dragonsneck]] would like to know how they do it.",
       "features": [
         [
           3,

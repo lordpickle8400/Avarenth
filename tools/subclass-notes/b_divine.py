@@ -152,7 +152,7 @@ S["Paladin"] = {
   [7, "Aura of Alacrity", "+10 ft speed, and allies who start near you move faster (aura grows at 18th)."],
   [15, "Glorious Defense", "Reaction: add Charisma to AC against an attack and strike back if it misses."],
   [20, "Living Legend", "For a minute, once per long rest: advantage on Charisma checks, turn a miss into a hit once per turn, and reroll failed saves."]]),
- "Oath of the Watchers": ("Guardians against invaders from other planes.", [
+ "Oath of the Nightwatch": ("Guardians against invaders from other planes.", [
   [3, "Oath spells", OS],
   [3, CD + ": Watcher's Will", "Allies gain advantage on Int, Wis and Cha saves for a minute."],
   [3, CD + ": Abjure the Extraplanar", "Turn aberrations, celestials, elementals, fey and fiends."],
@@ -181,9 +181,9 @@ S["Warlock"] = {
   [6, "Radiant Soul", "Resistance to radiant damage; add Charisma to one fire or radiant spell damage roll."],
   [10, "Celestial Resilience", "Gain temporary HP after each rest, and give some to allies."],
   [14, "Searing Vengeance", "When you'd make a death save, spring back to half HP and blind nearby enemies with radiant light, once per long rest."]]),
- "The Hexblade": ("A pact with a sentient weapon from the shadows.", [
+ "The Bladebound": ("A pact with a sentient weapon from the shadows.", [
   [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
-  [1, "Hexblade's Curse", "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."],
+  [1, "Bladebound Curse", "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."],
   [1, "Hex Warrior", "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."],
   [6, "Accursed Specter", "Raise a slain humanoid as a specter that serves you until your next long rest."],
   [10, "Armor of Hexes", "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."],

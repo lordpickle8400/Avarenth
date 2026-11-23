@@ -81,20 +81,20 @@ S["Fighter"] = {
   [10, "Tireless Spirit", "If you roll initiative with no Fighting Spirit uses left, regain one."],
   [15, "Rapid Strike", "Trade advantage on one attack for an extra attack."],
   [18, "Strength Before Death", "When you drop to 0 HP, take an extra full turn before falling, once per long rest."]]),
- "Echo Knight": ("You fight alongside an echo of yourself from another possible timeline.", [
+ "Mirrorguard": ("You fight alongside an echo of yourself from another possible timeline.", [
   [3, "Manifest Echo", "Summon a translucent echo (AC 14 + proficiency, 1 HP). You can attack from its space, swap places with it, and it makes opportunity attacks."],
   [3, "Unleash Incarnation", "When you take the Attack action, make one extra attack through your echo. Uses equal to Con modifier per long rest."],
   [7, "Echo Avatar", "See and hear through your echo, and send it up to 1,000 ft away."],
   [10, "Shadow Martyr", "Your echo throws itself in front of an attack meant for an ally, once per short rest."],
   [15, "Reclaim Potential", "When your echo is destroyed, gain temporary HP a few times per long rest."],
   [18, "Legion of One", "Two echoes at once, and regain an Unleash Incarnation use when you roll initiative with none left."]]),
- "Psi Warrior": ("Psionic power adds force to your blows and shields your allies.", [
+ "Mindforged": ("Psionic power adds force to your blows and shields your allies.", [
   [3, "Psionic Power", "Psionic Energy dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."],
   [7, "Telekinetic Adept", "Psi-powered leap (fly for a turn) and Telekinetic Thrust (push or knock prone with your force strikes)."],
   [10, "Guarded Mind", "Resistance to psychic damage; spend a die to end charm or fear on yourself."],
   [15, "Bulwark of Force", "Bonus action: give a few creatures half cover for a minute, once per long rest (or spend a die)."],
   [18, "Telekinetic Master", "Cast Telekinesis without spending mana once per long rest (or spend a die), and attack as a bonus action while concentrating on it."]]),
- "Rune Knight": ("Giant runes carved into your gear, and the power to grow huge.", [
+ "Runebound": ("Giant runes carved into your gear, and the power to grow huge.", [
   [3, "Bonus Proficiencies", "Smith's tools and the Giant language."],
   [3, "Rune Carver", "Know two runes (cloud, fire, frost, stone, hill, storm) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."],
   [3, "Giant's Might", "Bonus action: become Large for a minute, with advantage on Strength checks and saves and an extra 1d6 damage once per turn. Uses per long rest equal to proficiency bonus."],
@@ -115,11 +115,11 @@ S["Monk"] = {
   [6, "More disciplines", "Learn another discipline; you can swap one out when you gain a discipline."],
   [11, "More disciplines", "Learn another discipline and spend more ki to empower them."],
   [17, "More disciplines", "Learn another discipline."]]),
- "Way of the Long Death": ("A monk who studies death and feeds on it.", [
+ "Way of the Last Breath": ("A monk who studies death and feeds on it.", [
   [3, "Touch of Death", "When you reduce a creature within 5 ft to 0 HP, gain temporary HP."],
   [6, "Hour of Reaping", "Action: creatures within 30 ft save (Wis) or are frightened of you."],
   [11, "Mastery of Death", "When you drop to 0 HP, spend 1 ki to stay at 1 HP instead."],
-  [17, "Touch of the Long Death", "Spend 1–10 ki to deal 2d10 necrotic per ki spent (Con save halves)."]]),
+  [17, "Touch of the Last Breath", "Spend 1–10 ki to deal 2d10 necrotic per ki spent (Con save halves)."]]),
  "Way of the Sun Soul": ("You hurl ki as searing radiant light.", [
   [3, "Radiant Sun Bolt", "A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."],
   [6, "Searing Arc Strike", "After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."],
@@ -136,11 +136,11 @@ S["Monk"] = {
   [6, "One with the Blade", "Your kensei weapons count as magical; spend ki for extra damage on a hit."],
   [11, "Sharpen the Blade", "Spend up to 3 ki to give a kensei weapon that bonus to attack and damage for a minute."],
   [17, "Unerring Accuracy", "Reroll a missed monk-weapon attack once per turn."]]),
- "Way of the Astral Self": ("You summon your astral self: spectral arms, a visage, then a full body.", [
-  [3, "Arms of the Astral Self", "Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."],
-  [6, "Visage of the Astral Self", "Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."],
-  [11, "Body of the Astral Self", "With arms and visage out, deflect energy damage and add extra damage on a hit."],
-  [17, "Awakened Astral Self", "Spend 5 ki to manifest everything at once: AC bonus and an extra attack."]]),
+ "Way of the Spiritbound": ("You summon your spirit self: spectral arms, a visage, then a full body.", [
+  [3, "Arms of the Spiritbound", "Spend 1 ki to summon spectral arms that strike using Wisdom with longer reach, and push enemies away when they appear."],
+  [6, "Visage of the Spiritbound", "Your astral face lets you see in magical darkness and speak with intimidating or quiet clarity."],
+  [11, "Body of the Spiritbound", "With arms and visage out, deflect energy damage and add extra damage on a hit."],
+  [17, "Awakened Spiritbound", "Spend 5 ki to manifest everything at once: AC bonus and an extra attack."]]),
  "Way of Mercy": ("Healers and harbingers who carry both life and death in their hands.", [
   [3, "Implements of Mercy", "Insight and Medicine proficiency, and the herbalism kit."],
   [3, "Hand of Healing", "Spend 1 ki to heal a creature with a martial arts die + Wisdom; can replace a Flurry strike."],
@@ -188,13 +188,13 @@ S["Rogue"] = {
   [9, "Panache", "Persuasion against Insight: an enemy fixates on you (disadvantage on others) or a non-hostile creature is charmed."],
   [13, "Elegant Maneuver", "Bonus action: advantage on your next Acrobatics or Athletics check this turn."],
   [17, "Master Duelist", "Reroll a missed attack with advantage, once per short rest."]]),
- "Phantom": ("A rogue touched by death who steals knowledge from the dead.", [
+ "Deadwhisper": ("A rogue touched by death who steals knowledge from the dead.", [
   [3, "Whispers of the Dead", "After a rest, gain proficiency in a skill or tool of your choice."],
   [3, "Wails from the Grave", "After Sneak Attack, deal half the Sneak Attack dice as necrotic to another creature nearby. Uses per long rest equal to proficiency bonus."],
   [9, "Tokens of the Departed", "Catch a soul trinket when someone dies nearby; use them for advantage on saves, extra wails, or to ask a spirit a question."],
   [13, "Ghost Walk", "Become spectral for 10 minutes: fly slowly, pass through objects, attackers have disadvantage."],
   [17, "Death's Friend", "Wails from the Grave hits both targets with necrotic, and you always find a token after a rest if you have none."]]),
- "Soulknife": ("Psionic blades formed from your mind.", [
+ "Thoughtblade": ("Psionic blades formed from your mind.", [
   [3, "Psionic Power", "Psionic Energy dice (d6, rising with level); spend them to boost failed checks or speak telepathically."],
   [3, "Psychic Blades", "Manifest blades of psychic energy to make melee or thrown attacks, with a bonus action second blade."],
   [9, "Soul Blades", "Spend a die to turn a miss into a hit, or teleport with a thrown blade."],
