@@ -11506,11 +11506,11 @@
       '<div class="at-search"><label class="sr" for="at-q">Search places, people and shops</label>' + SEARCH_ICON + '<input id="at-q" type="search" placeholder="' + (TABLE ? 'Find a place or person you know…' : 'Find a place, person or shop…') + '" autocomplete="off" value="' + esc(AT.q) + '"><div class="at-results" id="at-results" hidden></div></div>' +
       (TABLE ? '<div class="at-tools"><button type="button" class="at-btn" data-at="party">Party</button><button type="button" class="at-btn" data-at="tpin-add" aria-pressed="' + (AT.placing === 'tpin') + '">+ Pin</button><button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '">Measure</button><button type="button" class="at-btn icon" data-at="full" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><button type="button" class="at-btn icon" data-at="menu" aria-label="More">⋯</button></div></div>' : '') +
       (TABLE ? '' : '<div class="at-tools">' +
-      '<button type="button" class="at-btn" data-at="party" title="The party">Party</button>' +
+      (cityOfKey(AT.key) ? '' : '<button type="button" class="at-btn" data-at="party" title="The party">Party</button>') +
       (cityOfKey(AT.key) ? '<button type="button" class="at-btn" data-at="cityshops" aria-pressed="' + (AT.sel && AT.sel.t === 'cityshops' ? 'true' : 'false') + '" title="Shops in this city">Shops</button>' : '') +
-      '<button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '" title="Measure distance">Measure</button>' +
+      (cityOfKey(AT.key) ? '' : '<button type="button" class="at-btn" data-at="measure" aria-pressed="' + !!AT.measure + '" title="Measure distance">Measure</button>') +
       '<button type="button" class="at-btn" data-at="layers" aria-expanded="false" title="Layers">Layers</button>' +
-      '<button type="button" class="at-btn" data-at="link" aria-pressed="' + AT.linked + '" title="Link this screen to your other devices">' + (AT.linked ? 'Linked' : 'Link screens') + '</button>' +
+      (cityOfKey(AT.key) ? '' : '<button type="button" class="at-btn" data-at="link" aria-pressed="' + AT.linked + '" title="Link this screen to your other devices">' + (AT.linked ? 'Linked' : 'Link screens') + '</button>') +
       '<button type="button" class="at-btn icon" data-at="full" title="Full screen (F)" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>' +
       '</div></div>') +
       '<div class="at-crumbs" id="at-crumbs"></div>' +
