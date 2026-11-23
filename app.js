@@ -3803,10 +3803,6 @@
     });
   }
 
-  /* Plain-language descriptions for catalog items that have no SRD gear entry (item-notes.json). */
-  var ITEM_NOTES = {};
-  fetch('item-notes.json').then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { ITEM_NOTES = j || {}; }).catch(function () {});
-
   /* ---------- Gear from the SRD 5.2.1 (gear.json): equipped items, armor class, weapon attacks ---------- */
   var GEAR = null, GEAR_IDX = {};
   function loadGear() {
@@ -3903,7 +3899,7 @@
   }
   function itemKind(it) {
     var r = itemRef(it), g = gearItem(r);
-    if (!g) return { k: 'other', label: ITEM_NOTES[it.name] || it.notes || 'Item' };
+    if (!g) return { k: 'other', label: it.notes || 'Item' };
     if (r.k === 'weapons') return { k: 'weapon', label: g.cat + ' weapon · ' + g.dmg + ' ' + g.type };
     if (r.k === 'armor') return { k: 'armor', label: g.shield ? 'Shield · +2 AC' : g.cat + ' armor · AC ' + g.acText.replace(' modifier', '') };
     if (r.k === 'magic') return { k: 'magic', label: g.head };
