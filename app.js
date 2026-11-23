@@ -445,7 +445,7 @@
       return;
     }
     $barRight.innerHTML = barClockHtml() + '<a class="icon-btn" href="#/account" aria-label="Account">' + USER_ICON + '</a>';
-    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', weather: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
+    var section = ({ '': 'map', map: 'map', pins: 'map', 'map-edit': 'map', wiki: 'wiki', a: 'wiki', 'new': 'wiki', edit: 'wiki', builder: 'wiki', customize: 'wiki', campaign: 'wiki', 'campaign-edit': 'wiki', party: 'party', travel: 'map', 'journey-rules': 'journey-rules', shops: 'shops', shop: 'shops', 'shop-edit': 'shops', holdings: 'holdings', realm: 'realm', battles: 'battles', reputation: 'reputation', crimes: 'crimes', spells: 'spells', 'spell-new': 'spells', 'spell-edit': 'spells', homebrew: 'homebrew', monsters: 'monsters', npcs: 'npcs', calendar: 'map', weather: 'map', subclasses: 'party', characters: 'party', c: 'party', build: 'party', 'level-up': 'party', rules: 'rules', members: 'members', support: 'support', now: 'screen', recap: 'screen', combat: 'screen', loot: 'screen', quests: 'screen', npcs: 'screen', monsters: 'screen', screen: 'screen'})[r.name] || '';
     var camp = activeCamp(), cs = camp ? '/' + encodeURIComponent(camp.slug) : '';
     $tabs.innerHTML = tabsHtml(NAV, section, function (k) { return '#/' + k + (CAMP_ROUTES[k] ? cs : ''); });
     $tabs.hidden = false;
@@ -506,7 +506,8 @@
       case 'homebrew': return renderHomebrew(r.arg);
       case 'monsters': return renderMonsters(r.arg);
       case 'npcs': return renderNpcs();
-      case 'screen': var lastTool = 'recap'; try { lastTool = localStorage.getItem('av-dm-tool') || 'recap'; } catch (e) { } location.replace('#/' + lastTool); return;
+      case 'screen': var lastTool = 'now'; try { lastTool = localStorage.getItem('av-dm-tool') || 'now'; } catch (e) { } location.replace('#/' + lastTool); return;
+      case 'now': return renderTableNow();
       case 'recap': return renderRecap();
       case 'combat': return renderCombat();
       case 'loot': return renderLoot();
@@ -3290,9 +3291,59 @@
   }
   function dmTabs(cur) {
     try { localStorage.setItem('av-dm-tool', cur); } catch (e) { }
-    return '<nav class="subtabs dm-tabs" role="tablist" aria-label="DM screen">' + [['recap', 'Since last time'], ['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['npcs', 'NPCs'], ['monsters', 'Monsters']].map(function (t) {
+    return '<nav class="subtabs dm-tabs" role="tablist" aria-label="DM screen">' + [['now', 'At the table'], ['recap', 'Since last time'], ['combat', 'Combat'], ['loot', 'Loot'], ['quests', 'Quests'], ['npcs', 'NPCs'], ['monsters', 'Monsters']].map(function (t) {
       return '<a role="tab" href="#/' + t[0] + '" aria-selected="' + (cur === t[0]) + '">' + t[1] + '</a>';
     }).join('') + '</nav>';
+  }
+  /* At the table: one page with what the DM needs mid-session. Date and weather, where the party is, who and what is there,
+     quick names, and the open quests. Everything links to its full page. */
+  function partyPlace(camp) {
+    var m = islesMap(); if (!m || !markers[m.id]) return null;
+    var pm = partyMarker(m.id); if (!pm) return null;
+    var asp = (m.height || 1536) / (m.width || 2048), best = null;
+    markers[m.id].forEach(function (mk) {
+      if (mk.kind !== 'place' && mk.kind !== 'stop') return;
+      var a = mk.article_slug && articleBySlug(mk.article_slug); if (!a) return;
+      var d = Math.hypot(pm.x - mk.x, (pm.y - mk.y) * asp);
+      if (d < 0.012 && (!best || d < best.d)) best = { d: d, a: a };
+    });
+    return best ? best.a : null;
+  }
+  function linksTo(a, title) { var f = JSON.stringify(a.fields || {}); return f.indexOf('[[' + title + ']]') >= 0 || f.indexOf('[[' + title + '|') >= 0; }
+  function renderTableNow() {
+    if (!isDM()) { location.replace('#/map'); return; }
+    var camp = activeCamp();
+    var html = '<div class="page narrow">' + dmTabs('now');
+    if (!camp || !loaded.wiki) { $view.innerHTML = html + '<div class="empty">' + (camp ? 'Opening the archive…' : 'Pick a campaign first.') + '</div></div>'; return; }
+    var t = travel[camp.id];
+    // Today
+    html += '<section class="block"><h2 class="sec-title">Today</h2>';
+    if (t) {
+      var abs = calAbs(t, t.day), cur = wxStore(t)[abs];
+      html += '<p class="hero-date">' + esc(dayLine(t)) + '</p>' + (cur ? wxCard(cur, calDate(abs)) : '<p class="note">No weather rolled yet. <a class="link" href="#/weather/' + encodeURIComponent(camp.slug) + '">Roll it</a></p>');
+    } else html += '<p class="note">Loading the journey…</p>';
+    html += '</section>';
+    // Where the party is
+    var here = partyPlace(camp);
+    html += '<section class="block"><h2 class="sec-title">Where the party is</h2>';
+    if (here) {
+      html += '<p><a class="link" href="#/a/' + encodeURIComponent(here.slug) + '"><b>' + esc(here.title) + '</b></a>' + (here.summary ? ' — ' + rich(here.summary) : '') + '</p>';
+      var people = articles.filter(function (a) { return a.template === 'Character' && a.campaign_id === here.campaign_id && linksTo(a, here.title); });
+      var groups = articles.filter(function (a) { return a.template === 'Organization' && a.campaign_id === here.campaign_id && linksTo(a, here.title); });
+      if (people.length) html += '<h3 class="act-h">People here</h3><div class="list">' + people.slice(0, 12).map(function (a) { return '<a class="row" href="#/a/' + encodeURIComponent(a.slug) + '"><span class="row-main"><b>' + esc(a.title) + '</b><span>' + esc(String((a.fields || {}).Status || (a.fields || {}).Title || '').replace(/\[\[|\]\]/g, '')) + '</span></span></a>'; }).join('') + '</div>';
+      if (groups.length) html += '<h3 class="act-h">Factions here</h3><div class="list">' + groups.slice(0, 8).map(function (a) { return '<a class="row" href="#/a/' + encodeURIComponent(a.slug) + '"><span class="row-main"><b>' + esc(a.title) + '</b><span>' + esc(String((a.fields || {}).Type || '')) + '</span></span></a>'; }).join('') + '</div>';
+      var sh = shopsAt(here.id);
+      html += '<h3 class="act-h">Shops</h3>' + (sh.length ? shopRows(sh) : '<p class="note">No shops set up here.</p>');
+    } else html += '<p class="note">The party isn’t at a named place right now. <a class="link" href="#/map">Open the map</a></p>';
+    html += '</section>';
+    // Quick names
+    var races = ['Human', 'Human', 'Dwarf', 'Elf', 'Halfling', 'Gnome', 'Half-Orc', 'Tiefling'];
+    html += '<section class="block"><h2 class="sec-title">Quick names<small><button type="button" class="linkish" data-act="now-names">New names</button></small></h2><ul class="recap-list">' +
+      races.map(function (r) { return '<li><b>' + esc(standInName(r)) + '</b> <small class="note">' + esc(r) + '</small></li>'; }).join('') +
+      '</ul><div class="actions"><a class="btn small" href="#/npcs">Make a full NPC</a><a class="btn small" href="#/combat">Start combat</a><a class="btn small" href="#/loot">Roll loot</a></div></section>';
+    // Quests
+    html += '<section class="block"><h2 class="sec-title">Quests</h2><p class="note"><a class="link" href="#/quests">Open the quest board</a></p></section>';
+    $view.innerHTML = html + '</div>';
   }
   function renderLoot() {
     if (!isDM()) { location.replace('#/map'); return; }
@@ -10891,6 +10942,7 @@
         var sy = Math.floor(st / 365); saveCalendar(tcamp2, { start: { y: sy, doy: st - sy * 365 }, notes: tcal.notes }); toast('Day ' + tt.day + ' is now ' + calText(calDate(target), false)); break;
       case 'standin-toggle': ui.standIn = !ui.standIn; render(); break;
       case 'npc-random': ui.npc = makeNpc({}); render(); break;
+      case 'now-names': render(); break;
       case 'npc-again': ui.npc = makeNpc(ui.npcFix || {}); render(); break;
       case 'npc-reroll':
         if (!ui.npc) break;
