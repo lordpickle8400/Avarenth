@@ -1949,8 +1949,8 @@
         ],
         [
           3,
-          "Combat Inspiration",
-          "Combat Inspiration: Your Bardic Inspiration now lifts your allies in battle. An ally who has your Bardic Inspiration die can add it to a damage roll, or to its AC against one attack."
+          "Battle Verse",
+          "Battle Verse: Your Bardic Inspiration now lifts your allies in battle. An ally who has your Bardic Inspiration die can add it to a damage roll, or to its AC against one attack."
         ],
         [
           6,
@@ -1959,8 +1959,8 @@
         ],
         [
           14,
-          "Battle Magic",
-          "Battle Magic: You weave spells into your strikes. When you cast a spell as an action, you can make one weapon attack as a bonus action."
+          "Blade and Spell",
+          "Blade and Spell: You weave spells into your strikes. When you cast a spell as an action, you can make one weapon attack as a bonus action."
         ]
       ]
     },
@@ -1969,22 +1969,22 @@
       "features": [
         [
           3,
-          "Mantle of Inspiration",
+          "Veil of Inspiration",
           "Your songs carry the glamour of the fey courts, and your listeners feel their pull. Spend Bardic Inspiration to give allies temporary HP and a free move without provoking."
         ],
         [
           3,
-          "Enthralling Performance",
+          "Captivating Show",
           "Your performance can lift the spirits of those who hear it, and it can hold a few listeners spellbound. After performing for a minute, charm a few listeners for an hour (Wis save)."
         ],
         [
           6,
-          "Mantle of Majesty",
+          "Veil of Majesty",
           "Your presence is so commanding that the whole court seems to bend toward you. For a minute, cast Command as a bonus action each turn without spending mana. Once per long rest."
         ],
         [
           14,
-          "Unbreakable Majesty",
+          "Unbowed Majesty",
           "Your majesty becomes a shield, and foes are compelled to turn toward you. Attackers must save (Cha) or choose a new target, once per short rest."
         ]
       ]
@@ -2004,7 +2004,7 @@
         ],
         [
           3,
-          "Blade Flourish",
+          "Flourish of Steel",
           "Your flourishes set your enemies off balance and turn each strike into a show. +10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Defensive (add to AC), Slashing (hit a second creature) or Mobile (push the target)."
         ],
         [
@@ -2014,7 +2014,7 @@
         ],
         [
           14,
-          "Master's Flourish",
+          "Master's Riposte",
           "You perform your flourishes with a flick of your blade, and the crowd roars. Use a d6 for a flourish instead of spending Bardic Inspiration."
         ]
       ]
@@ -2024,22 +2024,22 @@
       "features": [
         [
           3,
-          "Psychic Blades",
+          "Shadow Blades",
           "Your inspiration sharpens into psychic blades that bite through the mind as much as the flesh. Spend Bardic Inspiration on a hit for extra psychic damage (2d6, more at higher levels)."
         ],
         [
           3,
-          "Words of Terror",
+          "Dread Words",
           "Your words can turn a face pale in the space of a conversation. Talk to someone alone for a minute and frighten them for an hour (Wis save)."
         ],
         [
           6,
-          "Mantle of Whispers",
+          "Veil of Whispers",
           "You can take the shadow of a fallen foe and wear its face for a while. Capture the shadow of a humanoid who dies near you and wear its persona as a disguise."
         ],
         [
           14,
-          "Shadow Lore",
+          "Shade Lore",
           "A whisper in the right ear can bend a person to your will. Whisper to a creature to charm it into obeying you for 8 hours (Wis save), once per long rest."
         ]
       ]
@@ -2049,22 +2049,22 @@
       "features": [
         [
           3,
-          "Mote of Potential",
+          "Spark of Creation",
           "Your songs carry a spark of creation, and every inspiration holds a little potential. Your Bardic Inspiration carries a mote with an extra effect on checks, attacks or saves."
         ],
         [
           3,
-          "Performance of Creation",
+          "Song of Making",
           "You shape objects out of song and performance, and they hold their form for a while. Create a nonmagical object worth up to 20 gp × bard level, once per long rest (or spend 10 mana to do it again)."
         ],
         [
           6,
-          "Animating Performance",
+          "Dancing Props",
           "Your performances can animate the objects you create into dancing companions. Animate a Large or smaller object as a dancing companion, once per long rest (or spend 18 mana)."
         ],
         [
           14,
-          "Creative Crescendo",
+          "Crescendo of Making",
           "Your creations flow out of you without limit, bounded only by your skill. Create several objects at once with Performance of Creation, with no gold limit."
         ]
       ]
@@ -2074,27 +2074,27 @@
       "features": [
         [
           3,
-          "Silver Tongue",
+          "Honeyed Tongue",
           "You speak with a grace that makes people listen and trust you. Persuasion and Deception rolls below 10 count as 10."
         ],
         [
           3,
-          "Unsettling Words",
+          "Unnerving Words",
           "Your inspiration breaks a creature's concentration when it is most vulnerable. Spend Bardic Inspiration to subtract the roll from a creature's next save."
         ],
         [
           6,
-          "Unfailing Inspiration",
+          "Steadfast Verse",
           "Your words linger in a listener's mind and keep working after you finish. A creature keeps your Bardic Inspiration die if the roll fails."
         ],
         [
           6,
-          "Universal Speech",
+          "Tongue of All",
           "A few listeners understand your speech as though it were their own tongue. Make a few creatures understand you for an hour, once per long rest (or spend 5 mana)."
         ],
         [
           14,
-          "Infectious Inspiration",
+          "Spreading Verse",
           "Your inspiration spreads, and your allies carry it forward. When a creature succeeds with your inspiration, give another creature a free die."
         ]
       ]
@@ -2104,27 +2104,27 @@
       "features": [
         [
           3,
-          "Guiding Whispers",
+          "Ghostly Guidance",
           "You sing with the voices of the dead, and their wisdom comes to you as whispers. Learn Guidance, which reaches 60 ft."
         ],
         [
           3,
-          "Spiritual Focus",
+          "Anchored Focus",
           "Your focus is a token of the otherworld, and it carries your power. Use a candle, crystal ball, skull or tarot deck as your focus, and later add a d6 to spell damage or healing."
         ],
         [
           3,
-          "Tales from Beyond",
+          "Tales of the Dead",
           "You can call a spirit's tale into your song, and its power will wait for you. Spend Bardic Inspiration to draw a spirit tale with a random effect you can use later."
         ],
         [
           6,
-          "Spirit Session",
+          "Seance",
           "A shared ritual brings the dead's knowledge to your companions. An hour-long ritual with allies to learn a divination or necromancy spell temporarily."
         ],
         [
           14,
-          "Mystical Connection",
+          "Spirit Link",
           "Your tales from beyond now come to you more reliably. Roll twice for Tales from Beyond and choose."
         ]
       ]
