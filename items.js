@@ -183,7 +183,7 @@
     'Kobold': ['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Rikka', 'Skivv'],
     'Lizardfolk': ['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'],
     'Shellback': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
-    'Kenku': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
+    'Corvin': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
     'Goblin': ['Nix', 'Grib', 'Skreech', 'Toadbelly', 'Blix', 'Wort'],
     'Felari': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],
     'Firbolg': ['Moss', 'Oakhollow', 'Fernwhistle', 'Barrow'],
