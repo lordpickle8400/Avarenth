@@ -1697,7 +1697,7 @@
   function classCard(cls) {
     var cd = RULES.classes[cls], m = RULES.magic.mana[cls], ch = RULES.magic.charges[cls] || [[], 0];
     var saves = cd.saves.map(function (k) { return ABILITIES.filter(function (a) { return a[0] === k; })[0][1]; }).join(', ');
-    return '<div class="group-box"><h2>' + esc(cls) + '</h2><div class="vitals sum">' + vital('Hit die', 'd' + cd.hd) + vital('Mana', m ? m[0] + ' +' + m[1] + '/lvl' : '—') + vital('Class list', 'to ' + ordinal(listCap(cls))) + vital(cd.subclassLabel, 'Level ' + cd.subclassLevel) + '</div>' +
+    return '<div class="group-box"><h2>' + esc(cls) + '</h2>' + (cd.about ? '<p class="note" style="margin:0 0 8px">' + esc(cd.about) + '</p>' : '') + '<div class="vitals sum">' + vital('Hit die', 'd' + cd.hd) + vital('Mana', m ? m[0] + ' +' + m[1] + '/lvl' : '—') + vital('Class list', 'to ' + ordinal(listCap(cls))) + vital(cd.subclassLabel, 'Level ' + cd.subclassLevel) + '</div>' +
       '<div class="tbl" style="margin-top:10px">' +
       '<div class="tbl-row"><div class="main"><b>Saving throws</b><span>' + esc(saves) + '</span></div></div>' +
       '<div class="tbl-row"><div class="main"><b>Armor and weapons</b><span>' + esc(cd.armor + '. ' + cd.weapons + '.' + (cd.tools ? ' ' + cd.tools + '.' : '')) + '</span></div></div>' +
