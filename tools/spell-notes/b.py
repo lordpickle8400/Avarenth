@@ -20,7 +20,7 @@ NOTES = {
 "Green-Flame Blade": ("1 action", "Self (5-foot radius)", "S, M (a melee weapon)", "Instantaneous",
   "Make a melee weapon attack as part of the spell. On a hit, the target suffers the weapon's normal effects, and green fire leaps to a second creature within 5 feet of it, dealing fire damage equal to your spellcasting modifier. The damage grows at 5th, 11th and 17th level (extra fire on the first target and more on the leap).", ""),
 "Guardian of Nature": ("1 bonus action", "Self", "V", "Concentration, up to 1 minute",
-  "A nature spirit transforms you. Primal Beast: +10 speed, darkvision 120, advantage on Strength attacks, and 1d6 extra force damage on melee weapon hits. Great Tree: 10 temporary hit points, advantage on Constitution saves and on Dexterity and Wisdom attacks, and the ground near you becomes difficult terrain for your enemies.", ""),
+  "A nature spirit transforms you. Wild Beast: +10 speed, darkvision 120, advantage on Strength attacks, and 1d6 extra force damage on melee weapon hits. Living Oak: 10 temporary hit points, advantage on Constitution saves and on Dexterity and Wisdom attacks, and the ground near you becomes difficult terrain for your enemies.", ""),
 "Gust": ("1 action", "30 feet", "V, S", "Instantaneous",
   "You seize the air: push a Medium or smaller creature 5 feet (Strength save), push an object up to 5 pounds 10 feet, or make a harmless sensory effect like rustling leaves or slamming shutters.", ""),
 "Hail of Thorns": ("1 bonus action", "Self", "V", "Concentration, up to 1 minute",

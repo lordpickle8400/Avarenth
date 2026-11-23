@@ -268,7 +268,7 @@
     "range": "300 feet",
     "components": "V, S",
     "duration": "Concentration, up to 1 hour",
-    "description": "You take charge of the air in a 100-foot cube and choose one effect, changeable each turn as an action: Gusts (strong wind in one direction, making flying and ranged attacks harder), Downdraft (flyers make a Strength save or are pushed down; fliers land), or Updraft (a rising wind that slows falls and helps jumps).",
+    "description": "Pick a 100-foot cube of air and set its weather: one effect at a time, changeable each turn as an action: Gusts (strong wind in one direction, making flying and ranged attacks harder), Downdraft (flyers make a Strength save or are pushed down; fliers land), or Updraft (a rising wind that slows falls and helps jumps).",
     "more": ""
   },
   "Cordon of Arrows": {
@@ -348,7 +348,7 @@
     "range": "150 feet",
     "components": "V, S, M (a shard of onyx and a drop of the caster's blood)",
     "duration": "Concentration, up to 1 minute",
-    "description": "A 40-foot-radius sphere of crushing darkness and silence forms at a point you choose. It is difficult terrain, nothing can see or hear into or out of it, and a creature that enters or starts its turn there makes a Constitution save, taking 8d10 force damage on a failure or half on a success. A creature reduced to 0 hit points by it is crushed to nothing.",
+    "description": "A ball of crushing dark and silence, 40 feet across, forms at a point you pick. It is difficult terrain, nothing can see or hear into or out of it, and a creature that enters or starts its turn there makes a Constitution save, taking 8d10 force damage on a failure or half on a success. A creature reduced to 0 hit points by it is crushed to nothing.",
     "more": ""
   },
   "Dawn": {
@@ -492,7 +492,7 @@
     "range": "150 feet",
     "components": "V, S, M (a handful of clay, crystal, glass or mineral spheres)",
     "duration": "Instantaneous",
-    "description": "You blast a creature's mind. It takes 4d6 psychic damage and makes an Intelligence save. On a failure its Intelligence and Charisma scores drop to 1: it can't cast spells, use magic items, understand language or talk sensibly, though it knows its friends. It repeats the save every 30 days. Greater Restoration, Heal or Wish ends it. (The SRD's Befuddlement is the newer, lighter version.)",
+    "description": "You blast a creature's mind. It takes 4d6 psychic damage and makes an Intelligence save. On a failure its mind goes blank: Intelligence and Charisma drop to 1, so no spells, no magic items, no speech it can follow, though it still knows its friends. It repeats the save every 30 days. Greater Restoration, Heal or Wish ends it. (The SRD's Befuddlement is the newer, lighter version.)",
     "more": ""
   },
   "Feign Death": {
@@ -679,7 +679,7 @@
     "range": "Self",
     "components": "V",
     "duration": "Concentration, up to 1 minute",
-    "description": "A nature spirit transforms you. Primal Beast: +10 speed, darkvision 120, advantage on Strength attacks, and 1d6 extra force damage on melee weapon hits. Great Tree: 10 temporary hit points, advantage on Constitution saves and on Dexterity and Wisdom attacks, and the ground near you becomes difficult terrain for your enemies.",
+    "description": "A nature spirit transforms you. Wild Beast: +10 speed, darkvision 120, advantage on Strength attacks, and 1d6 extra force damage on melee weapon hits. Living Oak: 10 temporary hit points, advantage on Constitution saves and on Dexterity and Wisdom attacks, and the ground near you becomes difficult terrain for your enemies.",
     "more": ""
   },
   "Gust": {
@@ -950,7 +950,7 @@
     "range": "150 feet",
     "components": "V, M (a drop of pitch mixed with a drop of mercury)",
     "duration": "Concentration, up to 10 minutes",
-    "description": "Magical darkness fills a 60-foot-radius sphere. Not even darkvision sees through it; nonmagical light can't light it. Shrieks and laughter fill it. A creature starting its turn there makes a Wisdom save, taking 8d8 psychic damage on a failure or half on a success.",
+    "description": "Unnatural dark swallows a 60-foot-radius sphere. Darkvision can't pierce it, and no ordinary light will brighten it. Shrieks and laughter echo inside. A creature starting its turn there makes a Wisdom save, taking 8d8 psychic damage on a failure or half on a success.",
     "more": ""
   },
   "Maelstrom": {
@@ -1217,7 +1217,7 @@
     "range": "120 feet",
     "components": "V, S",
     "duration": "Concentration, up to 10 minutes",
-    "description": "Dim, greenish light fills a 30-foot-radius sphere. A creature in it at the start of its turn makes a Constitution save, taking 4d10 radiant damage and a level of exhaustion on a failure, and glows (no hiding, no invisibility). Exhaustion from this spell fades when the spell ends.",
+    "description": "Sickly green light fills a sphere 30 feet across. A creature in it at the start of its turn makes a Constitution save, taking 4d10 radiant damage and a level of exhaustion on a failure, and glows (no hiding, no invisibility). Exhaustion from this spell fades when the spell ends.",
     "more": ""
   },
   "Silvery Barbs": {
@@ -1511,7 +1511,7 @@
     "range": "90 feet",
     "components": "V",
     "duration": "1 round",
-    "description": "You lash a creature's mind. It makes an Intelligence save. On a failure it takes 3d6 psychic damage, can't take reactions until its next turn ends, and on that turn can take only one of: move, action or bonus action. On a success it takes half damage only.",
+    "description": "You lash a creature's mind. It makes an Intelligence save. On a failure it takes 3d6 psychic damage, loses its reactions until its next turn ends, and during that turn it has a single move, action or bonus action to spend. On a success it takes half damage only.",
     "more": "One more creature for each level above 2nd."
   },
   "Otherworldly Guise": {
@@ -1535,7 +1535,7 @@
     "range": "120 feet",
     "components": "V, S, M (a holy symbol worth at least 5 gp)",
     "duration": "24 hours",
-    "description": "A temple to your god rises from the ground: up to 120 feet on a side, 120 feet tall. Creatures of a type you name (or all who aren't your faith) have to pass a Charisma save to enter. Inside, divination and attempts to charm are hampered, and healing spells heal extra. Cast it in the same place every day for a year and it's permanent.",
+    "description": "A house of worship for your faith climbs out of the earth: up to 120 feet on a side, 120 feet tall. Creatures of a type you name (or all who aren't your faith) have to pass a Charisma save to enter. Inside, divination and attempts to charm are hampered, and healing spells heal extra. Cast it in the same place every day for a year and it's permanent.",
     "more": ""
   },
   "Temporal Shunt": {
@@ -1551,7 +1551,7 @@
     "range": "Self",
     "components": "V, S, M (a few hairs from a bull)",
     "duration": "Concentration, up to 10 minutes",
-    "description": "You become a fighting machine: 50 temporary hit points, advantage on weapon attacks, an extra 2d12 force damage on weapon hits, proficiency with all armor, shields, simple and martial weapons, and Strength and Constitution saves, and two attacks when you take the Attack action. You can't cast spells. When it ends, you make a Constitution save or gain a level of exhaustion.",
+    "description": "You turn into a war engine: 50 temporary hit points, advantage on weapon attacks, an extra 2d12 force damage on weapon hits, proficiency with all armor, shields, simple and martial weapons, and Strength and Constitution saves, and two attacks when you take the Attack action. You can't cast spells. When it ends, you make a Constitution save or gain a level of exhaustion.",
     "more": ""
   },
   "Tether Essence": {
@@ -1615,7 +1615,7 @@
     "range": "Touch",
     "components": "V, S",
     "duration": "8 hours",
-    "description": "You bring a Tiny nonmagical object to life: it sprouts little arms and legs and becomes a creature that obeys you. It can carry small loads, scout, fetch things and fight weakly.",
+    "description": "A Tiny nonmagical object stirs to life under your hand, growing stubby limbs and following your orders. It carries light loads, scouts, fetches things and fights poorly.",
     "more": "Two more objects for each level above 3rd."
   },
   "Toll the Dead": {
@@ -1683,7 +1683,7 @@
     "range": "120 feet",
     "components": "V, S, M (a hand mirror)",
     "duration": "Concentration, up to 10 minutes",
-    "description": "A shimmering wall of light, up to 60 feet long, 10 feet high and 5 feet thick, appears. It blocks sight, sheds bright light, and creatures in it when it appears make a Constitution save, taking 4d8 radiant damage and being blinded for a minute on a failure, or half damage only on a success. As an action you can fire a beam from it at a creature within 60 feet (a ranged spell attack, 4d8 radiant), shrinking the wall by 10 feet.",
+    "description": "A sheet of light up to 60 feet long, 10 feet high and 5 feet thick takes form. It blocks sight, sheds bright light, and creatures in it when it appears make a Constitution save, taking 4d8 radiant damage and being blinded for a minute on a failure, or half damage only on a success. As an action you can fire a beam from it at a creature within 60 feet (a ranged spell attack, 4d8 radiant), shrinking the wall by 10 feet.",
     "more": "Damage rises by 1d8 for each level above 5th."
   },
   "Wall of Sand": {
@@ -1716,7 +1716,7 @@
     "range": "Self",
     "components": "V",
     "duration": "Concentration, up to 10 minutes",
-    "description": "A strong wind (20 mph) blows around you in a 10-foot radius. It deafens you and others in it, puts out small flames, hedges out vapor and gas, makes the area difficult terrain for others, and gives ranged weapon attacks into or out of it disadvantage.",
+    "description": "A fierce breeze whips in a 10-foot circle around you, about 20 mph. It deafens you and others in it, puts out small flames, hedges out vapor and gas, makes the area difficult terrain for others, and gives ranged weapon attacks into or out of it disadvantage.",
     "more": ""
   },
   "Warp Sense": {

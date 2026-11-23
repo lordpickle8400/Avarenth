@@ -191,7 +191,7 @@
         [
           14,
           "Colossus Form",
-          "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleaver damage rises to 2d6."
+          "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleave damage rises to 2d6."
         ]
       ]
     }
@@ -278,7 +278,7 @@
         [
           3,
           "Arcane Arrow",
-          "Know two Arcane Shot options (banishing, beguiling, bursting, grasping, piercing, seeking, shadow, enfeebling) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."
+          "Know two Arrow Art options (sunder, lure, burst, snare, pierce, hunt, shade, weaken) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."
         ],
         [
           7,
@@ -293,12 +293,12 @@
         [
           15,
           "Ready Shot",
-          "If you roll initiative with no Arcane Shot uses left, regain one."
+          "If you roll initiative with no Arrow Art uses left, regain one."
         ],
         [
           18,
           "Greater Arrows",
-          "Your Arcane Shot damage increases."
+          "Your Arrow Art damage increases."
         ]
       ]
     },
@@ -363,7 +363,7 @@
         [
           10,
           "Endless Spirit",
-          "If you roll initiative with no Fighting Spirit uses left, regain one."
+          "If you roll initiative with no Battle Spirit uses left, regain one."
         ],
         [
           15,
@@ -418,7 +418,7 @@
         [
           3,
           "Mind Reserve",
-          "Psionic Energy dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."
+          "Mind dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."
         ],
         [
           7,
@@ -453,7 +453,7 @@
         [
           3,
           "Rune Scribe",
-          "Know two runes (cloud, fire, frost, stone, hill, storm) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."
+          "Know two runes (sky, ember, rime, ore, crag, gale) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."
         ],
         [
           3,
@@ -504,7 +504,7 @@
         ],
         [
           17,
-          "Opportunist",
+          "Vulture's Strike",
           "You strike at the enemy as it falls to another's blow. Reaction: attack a creature within 5 ft that just got hit by someone else."
         ]
       ]
@@ -515,7 +515,7 @@
         [
           3,
           "Disciple of the Elements",
-          "You learn to draw the elements through your ki and shape them into disciplines. Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."
+          "You learn to draw the elements through your ki and shape them into disciplines. Learn Element Sense and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Ember Serpent, Tide Lash or Shape the Tide, some copying spells without spending mana."
         ],
         [
           6,
@@ -540,22 +540,22 @@
         [
           3,
           "Killing Touch",
-          "Killing Touch: When you reduce a creature within 5 ft of you to 0 hit points, you gain temporary hit points equal to your monk level plus your Wisdom modifier."
+          "When you reduce a creature within 5 ft of you to 0 hit points, you gain temporary hit points equal to your monk level plus your Wisdom modifier."
         ],
         [
           6,
           "Hour of Harvest",
-          "Hour of Harvest: As an action, a wave of dread sweeps out from you. Each creature within 30 ft must make a Wisdom save or become frightened of you until the end of your next turn."
+          "As an action, a wave of dread sweeps out from you. Each creature within 30 ft must make a Wisdom save or become frightened of you until the end of your next turn."
         ],
         [
           11,
           "Deathly Mastery",
-          "Deathly Mastery: Death's grip loosens for you. When you drop to 0 hit points, you can spend 1 ki point to drop to 1 hit point instead."
+          "Death's grip loosens for you. When you drop to 0 hit points, you can spend 1 ki point to drop to 1 hit point instead."
         ],
         [
           17,
           "Touch of the Last Breath",
-          "Touch of the Last Breath: You can channel your ki into a killing touch. Spend 1 to 10 ki points, and a creature you touch takes 2d10 necrotic damage per ki point spent. It makes a Constitution save for half damage."
+          "You can channel your ki into a killing touch. Spend 1 to 10 ki points, and a creature you touch takes 2d10 necrotic damage per ki point spent. It makes a Constitution save for half damage."
         ]
       ]
     },
@@ -564,22 +564,22 @@
       "features": [
         [
           3,
-          "Sunbolt",
+          "Dawnbolt",
           "You channel the sun's light through your ki, and it burns out from your fists. A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."
         ],
         [
           6,
-          "Searing Arc",
+          "Flare Arc",
           "You can hurl a bolt of radiant light at a distance. After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."
         ],
         [
           11,
-          "Sunburst Blast",
+          "Daybreak Burst",
           "Your light sears the air and burns those who stand near you. Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."
         ],
         [
           17,
-          "Solar Ward",
+          "Dawnshield",
           "Your body shines like the dawn, and foes who touch you get burned. Shed bright light, and creatures that hit you in melee take radiant damage."
         ]
       ]
@@ -609,7 +609,7 @@
         ],
         [
           17,
-          "Reckless Frenzy",
+          "Crowd Frenzy",
           "In your frenzy you can strike at a crowd, each blow finding a different foe. Flurry of Blows can make up to five attacks if each hits a different target."
         ]
       ]
@@ -694,7 +694,7 @@
         ],
         [
           17,
-          "Hand of Final Mercy",
+          "Mercy's Last Gift",
           "Spend 5 ki to bring back a creature that died in the last 24 hours, once per long rest."
         ]
       ]
@@ -716,7 +716,7 @@
         ],
         [
           9,
-          "Infiltrator's Skill",
+          "False Identity",
           "You strike before your target can react and leave nothing behind. Spend a week and some gold to build a solid false identity."
         ],
         [
@@ -726,7 +726,7 @@
         ],
         [
           17,
-          "Deathblow",
+          "Crushing Stab",
           "A surprised target has no time to save itself, and your blow lands cleanly. Hitting a surprised creature forces a Con save or doubles the damage."
         ]
       ]
@@ -746,17 +746,17 @@
         ],
         [
           9,
-          "Spell Ambush",
+          "Ambush Casting",
           "If you're hidden when you cast, the target has disadvantage on its save."
         ],
         [
           13,
-          "Versatile Deceiver",
+          "Sleight Deception",
           "Bonus action: your mage hand distracts a creature, giving you advantage on attacks against it."
         ],
         [
           17,
-          "Spell Stealer",
+          "Spell Pilfer",
           "Reaction when a spell targets you: force a save to negate it and steal the spell for 8 hours, once per long rest."
         ]
       ]
@@ -766,7 +766,7 @@
       "features": [
         [
           3,
-          "Ear for Lies",
+          "Read the Lie",
           "Insight rolls to spot lies treat a die below 8 as an 8."
         ],
         [
@@ -776,23 +776,23 @@
         ],
         [
           3,
-          "Insightful Strike",
+          "Read and Strike",
           "Bonus action: Insight against a target's Deception to gain Sneak Attack on it without advantage for a minute."
         ],
         [
           9,
-          "Steadied Gaze",
+          "Still Watch",
           "Advantage on Perception and Investigation if you move half speed or less."
         ],
         [
           13,
-          "Unfailing Gaze",
+          "Veil Sight",
           "Sense illusions, shapechangers and magic deception nearby, a few times per long rest."
         ],
         [
           17,
-          "Eye for Flaws",
-          "Sneak Attack deals an extra 3d6 against a target you've read with Insightful Fighting."
+          "Hunter's Read",
+          "Sneak Attack deals an extra 3d6 against a target you've read with Insight."
         ]
       ]
     },
@@ -811,7 +811,7 @@
         ],
         [
           9,
-          "Keen Manipulator",
+          "Keen Reader",
           "You read others and learn what makes them tick. Study a creature for a minute to learn how it compares to you in mental abilities and other traits."
         ],
         [
@@ -866,7 +866,7 @@
         ],
         [
           3,
-          "Rakish Nerve",
+          "Bold Nerve",
           "Add Charisma to initiative, and Sneak Attack a lone enemy in a one-on-one without advantage."
         ],
         [
@@ -876,7 +876,7 @@
         ],
         [
           13,
-          "Graceful Maneuver",
+          "Showy Dodge",
           "Bonus action: advantage on your next Acrobatics or Athletics check this turn."
         ],
         [
@@ -891,7 +891,7 @@
       "features": [
         [
           3,
-          "Murmurs of the Dead",
+          "Echoes of the Lost",
           "After a rest, gain proficiency in a skill or tool of your choice."
         ],
         [
@@ -912,7 +912,7 @@
         [
           17,
           "Death's Companion",
-          "Wails from the Grave hits both targets with necrotic, and you always find a token after a rest if you have none."
+          "Wails of Dread hits both targets with necrotic, and you always find a token after a rest if you have none."
         ]
       ]
     },
@@ -922,11 +922,11 @@
         [
           3,
           "Mind Power",
-          "Psionic Energy dice (d6, rising with level); spend them to boost failed checks or speak telepathically."
+          "Mind dice (d6, rising with level); spend them to boost failed checks or speak telepathically."
         ],
         [
           3,
-          "Mind Blades",
+          "Thought Blades",
           "Manifest blades of psychic energy to make melee or thrown attacks, with a bonus action second blade."
         ],
         [
@@ -936,7 +936,7 @@
         ],
         [
           13,
-          "Mind Veil",
+          "Shroud of Thought",
           "Become invisible for an hour, once per long rest (or spend a die)."
         ],
         [
@@ -968,7 +968,7 @@
         ],
         [
           6,
-          "Channel Divinity: Mind Read",
+          "Channel Divinity: Surface Sense",
           "Read a creature's surface thoughts (Wis save), then cast Suggestion on it without spending mana."
         ],
         [
@@ -978,7 +978,7 @@
         ],
         [
           17,
-          "Glimpse of the Past",
+          "Echo of the Past",
           "Meditate to see recent events around an object you hold or the area you're in."
         ]
       ]
@@ -1009,7 +1009,7 @@
         [
           6,
           "Greater Glare",
-          "Warding Flare can protect allies too."
+          "Warding Glare can protect allies too."
         ],
         [
           8,
@@ -1078,7 +1078,7 @@
         ],
         [
           1,
-          "Storm's Wrath",
+          "Storm's Recoil",
           "Reaction: a creature that hits you takes lightning or thunder damage (Dex save halves), Wisdom-mod times per long rest."
         ],
         [
@@ -1113,7 +1113,7 @@
         ],
         [
           1,
-          "Trickster's Gift",
+          "Sly Favor",
           "Give a creature advantage on Stealth for an hour."
         ],
         [
@@ -1173,7 +1173,7 @@
         ],
         [
           17,
-          "Battle Avatar",
+          "Warbound Form",
           "Resistance to bludgeoning, piercing and slashing from nonmagical attacks."
         ]
       ]
@@ -1193,12 +1193,12 @@
         ],
         [
           1,
-          "Forge Blessing",
+          "Anvil's Gift",
           "After a long rest, give a weapon or armor +1 until your next long rest."
         ],
         [
           2,
-          "Channel Divinity: Smith's Blessing",
+          "Channel Divinity: Forge Rite",
           "An hour-long ritual to create a simple metal item worth up to 100 gp."
         ],
         [
@@ -1228,12 +1228,12 @@
         ],
         [
           1,
-          "Circle of the Dead",
+          "Circle of Ash",
           "Healing a creature at 0 HP uses maximum dice; Spare the Dying works at 30 ft as a bonus action."
         ],
         [
           1,
-          "Grave Sight",
+          "Death Sight",
           "Sense undead within 60 ft, Wisdom-mod times per long rest."
         ],
         [
@@ -1253,7 +1253,7 @@
         ],
         [
           17,
-          "Soul Keeper",
+          "Soul Warden",
           "When an enemy dies nearby, you or an ally regains HP equal to its Hit Dice."
         ]
       ]
@@ -1278,7 +1278,7 @@
         ],
         [
           2,
-          "Channel Divinity: Lawful Demand",
+          "Channel Divinity: Iron Command",
           "Charm creatures of your choice within 30 ft until your next turn and make them drop what they hold (Wis save)."
         ],
         [
@@ -1293,7 +1293,7 @@
         ],
         [
           17,
-          "Lawful Wrath",
+          "Judgment's Mark",
           "Mark a creature you hit; the next ally hit on it adds psychic damage."
         ]
       ]
@@ -1323,7 +1323,7 @@
         ],
         [
           6,
-          "Guardian Bond",
+          "Warding Tether",
           "Bonded creatures can teleport to each other to take damage for one another."
         ],
         [
@@ -1333,7 +1333,7 @@
         ],
         [
           17,
-          "Wide Bond",
+          "Far Tether",
           "The bond reaches 60 ft, and the creature that takes the hit gains resistance."
         ]
       ]
@@ -1363,12 +1363,12 @@
         ],
         [
           2,
-          "Channel Divinity: Dusk Sanctuary",
+          "Channel Divinity: Dusk Refuge",
           "A sphere of dim light around you for a minute: each turn allies in it gain temporary HP or shake off charm or fear."
         ],
         [
           6,
-          "Night Steps",
+          "Gloom Walk",
           "Fly in dim light or darkness for a minute, a few times per long rest."
         ],
         [
@@ -1378,7 +1378,7 @@
         ],
         [
           17,
-          "Dusk Shroud",
+          "Dusk Veil",
           "Your sanctuary also gives half cover."
         ]
       ]
@@ -1433,7 +1433,7 @@
         ],
         [
           1,
-          "Harvester",
+          "Soul Reaper",
           "Learn a necromancy cantrip that can target two creatures next to each other."
         ],
         [
@@ -1443,7 +1443,7 @@
         ],
         [
           6,
-          "Inescapable Doom",
+          "Doomed Ground",
           "Your necrotic damage ignores resistance."
         ],
         [
@@ -1453,7 +1453,7 @@
         ],
         [
           17,
-          "Greater Harvester",
+          "Greater Reaper",
           "Single-target necromancy spells of 1st to 5th level can target a second creature."
         ]
       ]
@@ -1475,22 +1475,22 @@
         ],
         [
           3,
-          "Channel Divinity: Turn the Unfaithful",
+          "Channel Divinity: Turn the Lapsed",
           "Turn fey and fiends, revealing their true forms."
         ],
         [
           7,
-          "Aura of Ward",
+          "Aura of Shelter",
           "You and allies within 10 ft have resistance to spell damage (30 ft at 18th)."
         ],
         [
           15,
-          "Undying Guardian",
+          "Undying Watch",
           "Drop to 1 HP instead of 0 once per long rest, and you stop aging."
         ],
         [
           20,
-          "Ancient Champion",
+          "Primal Champion",
           "Transform for a minute, once per long rest: regain HP each turn, cast faster, and enemies nearby have disadvantage on saves against you."
         ]
       ]
@@ -1510,22 +1510,22 @@
         ],
         [
           3,
-          "Channel Divinity: Oath of Enmity",
+          "Channel Divinity: Hate's Mark",
           "Advantage on attacks against one creature for a minute."
         ],
         [
           7,
-          "Tireless Avenger",
+          "Tireless Pursuit",
           "After an opportunity attack hit, move half your speed without provoking."
         ],
         [
           15,
-          "Spirit of Vengeance",
-          "Reaction: attack the target of your Oath of Enmity when it attacks."
+          "Vengeful Spirit",
+          "Reaction: attack the target of your Hate's Mark when it attacks."
         ],
         [
           20,
-          "Avenging Spirit",
+          "Wrathful Form",
           "Grow wings and a menacing aura for an hour, once per long rest."
         ]
       ]
@@ -1545,7 +1545,7 @@
         ],
         [
           3,
-          "Channel Divinity: Dreadful Visage",
+          "Channel Divinity: Grim Visage",
           "Frighten creatures within 30 ft (Wis save)."
         ],
         [
@@ -1555,7 +1555,7 @@
         ],
         [
           15,
-          "Unnatural Resistance",
+          "Wraith Hide",
           "Resistance to nonmagical bludgeoning, piercing and slashing."
         ],
         [
@@ -1575,7 +1575,7 @@
         ],
         [
           3,
-          "Channel Divinity: Commanding Presence",
+          "Channel Divinity: Dire Presence",
           "Frighten creatures within 30 ft (Wis save)."
         ],
         [
@@ -1590,12 +1590,12 @@
         ],
         [
           15,
-          "Scornful Retort",
+          "Bitter Retort",
           "Creatures that hit you take psychic damage equal to your Charisma."
         ],
         [
           20,
-          "Unbroken Conqueror",
+          "Iron Sovereign",
           "A minute of resistance to all damage, an extra attack and critical hits on 19–20, once per long rest."
         ]
       ]
@@ -1717,22 +1717,22 @@
         ],
         [
           1,
-          "Fey Aura",
+          "Court Gaze",
           "You can enchant the minds of foes and send them fleeing. Charm or frighten creatures in a 10 ft cube (Wis save), once per short rest."
         ],
         [
           6,
-          "Mist Escape",
+          "Veil Step",
           "When you are struck, you slip into a veil of mist and vanish. When you take damage, turn invisible and teleport 60 ft, once per short rest."
         ],
         [
           10,
-          "Charm Defenses",
+          "Patron's Ward",
           "You turn your patron's gift into a shield against the charms of others. Immune to charm, and turn charm attempts back on the caster."
         ],
         [
           14,
-          "Dark Madness",
+          "Dread Dream",
           "You trap a foe inside an illusion of its own making. Trap a creature in an illusory realm for a minute, once per short rest."
         ]
       ]
@@ -1752,17 +1752,17 @@
         ],
         [
           6,
-          "Chaos Ward",
+          "Whirl Ward",
           "Reaction: impose disadvantage on an attack; if it misses, gain advantage on your next attack against that creature. Once per short rest."
         ],
         [
           10,
-          "Mind Shield",
+          "Mind Ward",
           "Your thoughts can't be read, resistance to psychic damage, and psychic attackers get hurt back."
         ],
         [
           14,
-          "Craft Thrall",
+          "Bind Thrall",
           "Touch an incapacitated humanoid to charm it permanently and talk to it telepathically."
         ]
       ]
@@ -1782,22 +1782,22 @@
         ],
         [
           1,
-          "Radiant Healing",
+          "Dawnlight Mend",
           "A pool of d6s (1 + warlock level) to heal creatures at range with a bonus action. Back on a long rest."
         ],
         [
           6,
-          "Radiant Spirit",
+          "Sun Spirit",
           "Resistance to radiant damage; add Charisma to one fire or radiant spell damage roll."
         ],
         [
           10,
-          "Celestial Toughness",
+          "Heavenly Grit",
           "Gain temporary HP after each rest, and give some to allies."
         ],
         [
           14,
-          "Searing Retribution",
+          "Searing Rebound",
           "When you'd make a death save, spring back to half HP and blind nearby enemies with radiant light, once per long rest."
         ]
       ]
@@ -1812,27 +1812,27 @@
         ],
         [
           1,
-          "Bladebound Curse",
+          "Bane Mark",
           "Curse a creature: extra damage equal to your proficiency, crits on 19–20, and heal when it dies. Once per short rest."
         ],
         [
           1,
-          "Cursed Warrior",
+          "Oathed Fighter",
           "Medium armor, shields and martial weapons; use Charisma for attacks with a chosen weapon."
         ],
         [
           6,
-          "Cursed Spirit",
+          "Thrall Specter",
           "Raise a slain humanoid as a specter that serves you until your next long rest."
         ],
         [
           10,
-          "Armor of Curses",
+          "Jinxed Mail",
           "Attacks from your cursed target miss half the time (roll a d6, 4+ misses)."
         ],
         [
           14,
-          "Master of Curses",
+          "Master of Jinxes",
           "When your cursed target dies, move the curse to another creature."
         ]
       ]
@@ -1847,32 +1847,32 @@
         ],
         [
           1,
-          "Tentacle of the Depths",
+          "Coiling Lash",
           "Summon a spectral tentacle that lashes for cold damage and slows, as a bonus action. Uses per long rest equal to proficiency bonus."
         ],
         [
           1,
-          "Gift of the Waves",
+          "Tide Gift",
           "Swim speed and breathe underwater."
         ],
         [
           6,
-          "Ocean Soul",
+          "Sea-Kin Soul",
           "Resistance to cold, and talk to anything underwater."
         ],
         [
           6,
-          "Guardian Tentacle",
+          "Shield Tendril",
           "Your tentacle can shield an ally from damage."
         ],
         [
           10,
-          "Grasping Coils",
+          "Snaring Tendrils",
           "Cast Evard's Black Tentacles without spending mana once per long rest, with temp HP and steady concentration."
         ],
         [
           14,
-          "Deep Plunge",
+          "Abyss Plunge",
           "Teleport yourself and up to five creatures to a body of water within a mile, once per short rest."
         ]
       ]
@@ -1887,22 +1887,22 @@
         ],
         [
           1,
-          "Genie's Flask",
+          "Genie's Vessel",
           "A lamp, ring or bottle: retreat inside it for hours, and add extra elemental damage once per turn."
         ],
         [
           6,
-          "Elemental Boon",
+          "Elemental Gift",
           "Resistance to your genie's damage type, and fly for 10 minutes a few times per long rest."
         ],
         [
           10,
-          "Sanctuary Flask",
+          "Sanctuary Vessel",
           "Bring up to five creatures into your vessel; a short rest there heals more."
         ],
         [
           14,
-          "Limited Wish",
+          "Lesser Wish",
           "Once per long-ish rest (1d4 long rests), cast any 6th-level or lower spell with a casting time of one action, without needing a tome. Your patron will remember the favor."
         ]
       ]
@@ -1917,7 +1917,7 @@
         ],
         [
           1,
-          "Shape of Dread",
+          "Dread Guise",
           "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."
         ],
         [
@@ -1927,12 +1927,12 @@
         ],
         [
           10,
-          "Necrotic Shell",
+          "Grave Carapace",
           "Resistance (immunity in dread form) to necrotic; once per long rest, burst back to 1 HP when you'd drop."
         ],
         [
           14,
-          "Spirit Sending",
+          "Spirit Drift",
           "Project your spirit for an hour: fly, pass through objects and resist physical damage."
         ]
       ]
@@ -1945,22 +1945,22 @@
         [
           3,
           "Bonus Proficiencies",
-          "Bonus Proficiencies: You train for the battlefield. You gain proficiency with medium armor, shields and martial weapons."
+          "You train for the battlefield. You gain proficiency with medium armor, shields and martial weapons."
         ],
         [
           3,
           "Battle Verse",
-          "Battle Verse: Your Bardic Inspiration now lifts your allies in battle. An ally who has your Bardic Inspiration die can add it to a damage roll, or to its AC against one attack."
+          "Your Bardic Inspiration now lifts your allies in battle. An ally who has your Bardic Inspiration die can add it to a damage roll, or to its AC against one attack."
         ],
         [
           6,
           "Extra Attack",
-          "Extra Attack: You can strike twice in one turn. Attack twice whenever you take the Attack action."
+          "You can strike twice in one turn. Attack twice whenever you take the Attack action."
         ],
         [
           14,
           "Blade and Spell",
-          "Blade and Spell: You weave spells into your strikes. When you cast a spell as an action, you can make one weapon attack as a bonus action."
+          "You weave spells into your strikes. When you cast a spell as an action, you can make one weapon attack as a bonus action."
         ]
       ]
     },
@@ -1969,22 +1969,22 @@
       "features": [
         [
           3,
-          "Veil of Inspiration",
+          "Fey Inspiration",
           "Your songs carry the glamour of the fey courts, and your listeners feel their pull. Spend Bardic Inspiration to give allies temporary HP and a free move without provoking."
         ],
         [
           3,
-          "Captivating Show",
+          "Spellbound Show",
           "Your performance can lift the spirits of those who hear it, and it can hold a few listeners spellbound. After performing for a minute, charm a few listeners for an hour (Wis save)."
         ],
         [
           6,
-          "Veil of Majesty",
+          "Fey Majesty",
           "Your presence is so commanding that the whole court seems to bend toward you. For a minute, cast Command as a bonus action each turn without spending mana. Once per long rest."
         ],
         [
           14,
-          "Unbowed Majesty",
+          "Regal Ward",
           "Your majesty becomes a shield, and foes are compelled to turn toward you. Attackers must save (Cha) or choose a new target, once per short rest."
         ]
       ]
@@ -2004,8 +2004,8 @@
         ],
         [
           3,
-          "Flourish of Steel",
-          "Your flourishes set your enemies off balance and turn each strike into a show. +10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Defensive (add to AC), Slashing (hit a second creature) or Mobile (push the target)."
+          "Blade Showmanship",
+          "Your flourishes set your enemies off balance and turn each strike into a show. +10 ft speed when you attack, and spend Bardic Inspiration on a hit for a flourish: Guarding (add to AC), Cleaving (hit a second creature) or Nimble (push the target)."
         ],
         [
           6,
@@ -2014,7 +2014,7 @@
         ],
         [
           14,
-          "Master's Riposte",
+          "Crowd Riposte",
           "You perform your flourishes with a flick of your blade, and the crowd roars. Use a d6 for a flourish instead of spending Bardic Inspiration."
         ]
       ]
@@ -2024,22 +2024,22 @@
       "features": [
         [
           3,
-          "Shadow Blades",
+          "Night Blades",
           "Your inspiration sharpens into psychic blades that bite through the mind as much as the flesh. Spend Bardic Inspiration on a hit for extra psychic damage (2d6, more at higher levels)."
         ],
         [
           3,
-          "Dread Words",
+          "Chilling Words",
           "Your words can turn a face pale in the space of a conversation. Talk to someone alone for a minute and frighten them for an hour (Wis save)."
         ],
         [
           6,
-          "Veil of Whispers",
+          "Whisper Mask",
           "You can take the shadow of a fallen foe and wear its face for a while. Capture the shadow of a humanoid who dies near you and wear its persona as a disguise."
         ],
         [
           14,
-          "Shade Lore",
+          "Hush Lore",
           "A whisper in the right ear can bend a person to your will. Whisper to a creature to charm it into obeying you for 8 hours (Wis save), once per long rest."
         ]
       ]
@@ -2049,23 +2049,23 @@
       "features": [
         [
           3,
-          "Spark of Creation",
+          "Spark of Invention",
           "Your songs carry a spark of creation, and every inspiration holds a little potential. Your Bardic Inspiration carries a mote with an extra effect on checks, attacks or saves."
         ],
         [
           3,
-          "Song of Making",
+          "Ballad of Making",
           "You shape objects out of song and performance, and they hold their form for a while. Create a nonmagical object worth up to 20 gp × bard level, once per long rest (or spend 10 mana to do it again)."
         ],
         [
           6,
-          "Dancing Props",
+          "Stage Puppets",
           "Your performances can animate the objects you create into dancing companions. Animate a Large or smaller object as a dancing companion, once per long rest (or spend 18 mana)."
         ],
         [
           14,
-          "Crescendo of Making",
-          "Your creations flow out of you without limit, bounded only by your skill. Create several objects at once with Performance of Creation, with no gold limit."
+          "Full Crescendo",
+          "Your creations flow out of you without limit, bounded only by your skill. Create several objects at once with Ballad of Making, with no gold limit."
         ]
       ]
     },
@@ -2074,12 +2074,12 @@
       "features": [
         [
           3,
-          "Honeyed Tongue",
+          "Golden Speech",
           "You speak with a grace that makes people listen and trust you. Persuasion and Deception rolls below 10 count as 10."
         ],
         [
           3,
-          "Unnerving Words",
+          "Breaking Words",
           "Your inspiration breaks a creature's concentration when it is most vulnerable. Spend Bardic Inspiration to subtract the roll from a creature's next save."
         ],
         [
@@ -2089,12 +2089,12 @@
         ],
         [
           6,
-          "Tongue of All",
+          "Common Tongue",
           "A few listeners understand your speech as though it were their own tongue. Make a few creatures understand you for an hour, once per long rest (or spend 5 mana)."
         ],
         [
           14,
-          "Spreading Verse",
+          "Carried Verse",
           "Your inspiration spreads, and your allies carry it forward. When a creature succeeds with your inspiration, give another creature a free die."
         ]
       ]
@@ -2109,23 +2109,23 @@
         ],
         [
           3,
-          "Anchored Focus",
+          "Anchored Token",
           "Your focus is a token of the otherworld, and it carries your power. Use a candle, crystal ball, skull or tarot deck as your focus, and later add a d6 to spell damage or healing."
         ],
         [
           3,
-          "Tales of the Dead",
+          "Shade Tales",
           "You can call a spirit's tale into your song, and its power will wait for you. Spend Bardic Inspiration to draw a spirit tale with a random effect you can use later."
         ],
         [
           6,
-          "Seance",
+          "Vigil Rite",
           "A shared ritual brings the dead's knowledge to your companions. An hour-long ritual with allies to learn a divination or necromancy spell temporarily."
         ],
         [
           14,
           "Spirit Link",
-          "Your tales from beyond now come to you more reliably. Roll twice for Tales from Beyond and choose."
+          "Your tales from beyond now come to you more reliably. Roll twice for Shade Tales and choose."
         ]
       ]
     }
@@ -2151,12 +2151,12 @@
         ],
         [
           10,
-          "Elemental Shape",
+          "Elemental Mantle",
           "Spend two Wild Shape uses to become an air, earth, fire or water elemental."
         ],
         [
           14,
-          "Countless Forms",
+          "Endless Shapes",
           "Cast Alter Self at will, without spending mana."
         ]
       ]
@@ -2166,22 +2166,22 @@
       "features": [
         [
           2,
-          "Summer Balm",
+          "Dew Balm",
           "Your circle walks the dreams of the Summer Court, and you carry its healing into waking life. A pool of d6s (equal to druid level) to heal and give temporary HP with a bonus action."
         ],
         [
           6,
-          "Hearth of Moonlight",
+          "Lantern Shelter",
           "You shelter your companions under a veil of moonlight and shadow during rest. During a rest, make a 30 ft sphere that hides and shelters your group."
         ],
         [
           10,
-          "Hidden Trails",
+          "Winding Trails",
           "You step between the paths of the fey woods as easily as crossing a room. Teleport 60 ft as a bonus action (or teleport a willing ally 30 ft), Wisdom-mod times per long rest."
         ],
         [
           14,
-          "Dreamwalker",
+          "Dream Roamer",
           "You can slip into the dream-realm to scry, teleport or open a path to a distant place. After a short rest, cast Dream, Scrying or Teleportation Circle without spending mana, once per long rest."
         ]
       ]
@@ -2191,27 +2191,27 @@
       "features": [
         [
           2,
-          "Woodland Tongue",
+          "Forest Tongue",
           "Speak with beasts and learn Sylvan."
         ],
         [
           2,
-          "Spirit Idol",
+          "Spirit Effigy",
           "Summon a spirit for a minute: Bear (temporary HP, advantage on Strength), Hawk (advantage on attacks with your reaction) or Unicorn (better healing and finding creatures). Once per short rest."
         ],
         [
           6,
-          "Greater Summoner",
+          "Grand Summoner",
           "Beasts and fey you summon have extra HP and magical attacks."
         ],
         [
           10,
-          "Guardian Wisp",
+          "Wisp Ward",
           "Your summoned creatures heal at the end of their turns in your totem's aura."
         ],
         [
           14,
-          "Loyal Summons",
+          "Bonded Summons",
           "When you drop to 0 HP, four beasts appear to protect you, once per long rest."
         ]
       ]
@@ -2226,17 +2226,17 @@
         ],
         [
           2,
-          "Spore Halo",
+          "Spore Ring",
           "Reaction: deal necrotic damage to a creature that moves near you or starts its turn there (Con save)."
         ],
         [
           2,
-          "Symbiotic Bond",
+          "Fungal Kinship",
           "Spend a Wild Shape use for temporary HP and stronger spores and melee necrotic damage."
         ],
         [
           6,
-          "Spore Infestation",
+          "Grave Sprout",
           "Raise a beast or humanoid that dies near you as a zombie for an hour."
         ],
         [
@@ -2246,7 +2246,7 @@
         ],
         [
           14,
-          "Mycelial Body",
+          "Fungal Flesh",
           "Immune to blinded, deafened, frightened and poisoned, and critical hits become normal hits."
         ]
       ]
@@ -2256,28 +2256,28 @@
       "features": [
         [
           2,
-          "Star Chart",
+          "Night Chart",
           "Learn Guidance, and cast Guiding Bolt without spending mana a few times per long rest."
         ],
         [
           2,
-          "Starfall Form",
-          "Spend a Wild Shape use to become a constellation: Archer (radiant bolt), Chalice (heal extra when you heal), or Dragon (rolls below 10 on Int/Wis checks and concentration count as 10)."
+          "Falling Star Form",
+          "Spend a Wild Shape use to become a constellation: Bowstar (radiant bolt), Cup of Light (heal extra when you heal), or Serpent (rolls below 10 on Int/Wis checks and concentration count as 10)."
         ],
         [
           6,
-          "Cosmic Sign",
+          "Heaven's Sign",
           "After a rest, gain weal or woe: add or subtract a d6 to others' rolls a few times."
         ],
         [
           10,
-          "Shifting Constellations",
-          "Starry Form gets stronger, and you can switch constellations each turn."
+          "Wheeling Constellations",
+          "Star Form gets stronger, and you can switch constellations each turn."
         ],
         [
           14,
-          "Starlit Shape",
-          "In Starry Form, resistance to bludgeoning, piercing and slashing."
+          "Starlit Hide",
+          "In Star Form, resistance to bludgeoning, piercing and slashing."
         ]
       ]
     },
@@ -2291,22 +2291,22 @@
         ],
         [
           2,
-          "Summon Fire Spirit",
+          "Call Kindled Spirit",
           "Spend a Wild Shape use to summon a fiery spirit that fights and can teleport you and allies."
         ],
         [
           6,
-          "Fiery Bond",
+          "Kindred Flame",
           "Add a d8 to fire damage or healing spells while your spirit is out, and cast through it."
         ],
         [
           10,
-          "Mending Flames",
+          "Sealing Embers",
           "When a creature dies near your spirit, leave a flame you can use to heal or burn."
         ],
         [
           14,
-          "Ember Revival",
+          "Ash Revival",
           "If you drop to 0 HP, your spirit sacrifices itself to bring you back to half HP."
         ]
       ]
@@ -2319,22 +2319,22 @@
         [
           3,
           "Beast Companion",
-          "Beast Companion: You bond with a beast that fights beside you and obeys your commands. You may choose a primal beast of land, sea or sky instead, keeping the bond you form in the wild."
+          "You bond with a beast that fights beside you and obeys your commands. You may choose a primal beast of land, sea or sky instead, keeping the bond you form in the wild."
         ],
         [
           7,
-          "Beast Training",
-          "Beast Training: Your companion learns to fight as a partner. As a bonus action, it can Dash, Disengage or Help, and its attacks count as magical."
+          "Companion Drill",
+          "Your companion learns to fight as a partner. As a bonus action, it can Dash, Disengage or Help, and its attacks count as magical."
         ],
         [
           11,
-          "Savage Fury",
-          "Savage Fury: Your companion's wild strength takes over in a fight. It can attack twice whenever it takes the Attack action."
+          "Feral Frenzy",
+          "Your companion's wild strength takes over in a fight. It can attack twice whenever it takes the Attack action."
         ],
         [
           15,
-          "Share Magic",
-          "Share Magic: Your companion shares the magic you cast on yourself. Spells you cast on yourself also affect the companion while it is within range of you."
+          "Mirror Magic",
+          "Your companion shares the magic you cast on yourself. Spells you cast on yourself also affect the companion while it is within range of you."
         ]
       ]
     },
@@ -2348,7 +2348,7 @@
         ],
         [
           3,
-          "Shadow Ambusher",
+          "Dusk Ambusher",
           "Add Wisdom to initiative, and on your first turn move faster and make an extra attack with extra damage."
         ],
         [
@@ -2358,17 +2358,17 @@
         ],
         [
           7,
-          "Steel Mind",
+          "Stone Mind",
           "Proficiency in Wisdom saves (or another save)."
         ],
         [
           11,
-          "Stalker's Onslaught",
+          "Relentless Hunt",
           "Once per turn, when you miss, make another attack."
         ],
         [
           15,
-          "Shadow Dodge",
+          "Veil Dodge",
           "Reaction: impose disadvantage on an attack against you."
         ]
       ]
@@ -2383,22 +2383,22 @@
         ],
         [
           3,
-          "Portal Sense",
+          "Gate Sense",
           "Sense the nearest planar portal within a mile, once per short rest."
         ],
         [
           3,
-          "Otherworld Warrior",
+          "Otherworld Smite",
           "Bonus action: your next hit on a creature deals force damage and an extra 1d8 (2d8 at 11th)."
         ],
         [
           7,
-          "Phase Step",
+          "Ethereal Drift",
           "Step into the Ethereal Plane for a turn, once per short rest."
         ],
         [
           11,
-          "Far Strike",
+          "Reaching Strike",
           "Teleport 10 ft before each attack, and attack a third target if you hit two."
         ],
         [
@@ -2423,22 +2423,22 @@
         ],
         [
           3,
-          "Slayer's Mark",
+          "Quarry's Brand",
           "Mark a creature: your first hit on it each turn deals an extra 1d6."
         ],
         [
           7,
-          "Unnatural Defense",
+          "Warded Guard",
           "Add a d6 to saves and grapple escapes against your prey."
         ],
         [
           11,
-          "Caster's Nemesis",
+          "Spell Nemesis",
           "Reaction: stop a creature casting a spell or teleporting (Wis save), once per short rest."
         ],
         [
           15,
-          "Slayer's Riposte",
+          "Quarry's Riposte",
           "Reaction: when your prey forces a save, attack it; a hit makes you succeed."
         ]
       ]
@@ -2463,7 +2463,7 @@
         ],
         [
           7,
-          "Charming Twist",
+          "Fey Redirect",
           "Advantage against charm and fear, and redirect those effects at others."
         ],
         [
@@ -2473,7 +2473,7 @@
         ],
         [
           15,
-          "Misty Walker",
+          "Mist Stepper",
           "Cast Misty Step without spending mana a few times, and take an ally with you."
         ]
       ]
@@ -2488,7 +2488,7 @@
         ],
         [
           3,
-          "Swarm Gathering",
+          "Swarm Surge",
           "Once per turn on a hit, your swarm deals 1d6 extra piercing, pushes the target, or moves you."
         ],
         [
@@ -2550,22 +2550,22 @@
         ],
         [
           1,
-          "Tides of Fate",
+          "Fate's Tilt",
           "Chaos leans toward you, and you can tip the scale of a roll in your favor. Gain advantage on one roll; regain it on a long rest or when the DM triggers a surge."
         ],
         [
           6,
-          "Bend Luck",
+          "Nudge Fate",
           "You can nudge a roll by a little, bending luck toward an ally or an enemy. Spend 2 sorcery points to add or subtract a d4 from someone else's roll."
         ],
         [
           14,
-          "Tamed Chaos",
+          "Harnessed Surge",
           "Your surges become a weapon you can aim at will. Roll twice on the surge table and choose."
         ],
         [
           18,
-          "Spell Barrage",
+          "Surging Blast",
           "Your wild magic can strike harder when you roll the highest damage. When you roll maximum on a damage die, roll it again and add it, once per turn."
         ]
       ]
@@ -2575,27 +2575,27 @@
       "features": [
         [
           1,
-          "Divine Magic",
+          "Heaven's Learning",
           "A spark of the divine burns in your blood, and it lends you knowledge of the gods' own spells. Learn spells from the cleric list as well as the sorcerer list, and gain one affinity spell (good, evil, law, chaos or neutrality)."
         ],
         [
           1,
-          "Divine Favor",
+          "Fortune's Smile",
           "Fortune smiles on you when you need it most. Add 2d4 to a failed save or missed attack, once per short rest."
         ],
         [
           6,
-          "Surging Healing",
+          "Healing Cascade",
           "Your magic can knit wounds and turn healing into a cascade of renewed strength. Spend 1 sorcery point to reroll healing dice."
         ],
         [
           14,
-          "Celestial Wings",
+          "Spectral Plumes",
           "Spectral wings unfurl from your back, and the sky opens to you. Sprout spectral wings and fly."
         ],
         [
           18,
-          "Divine Recovery",
+          "Heaven's Pull",
           "Even as you fall, the gods' favor pulls you back from the brink. Regain half your HP as a bonus action when below half, once per long rest."
         ]
       ]
@@ -2605,17 +2605,17 @@
       "features": [
         [
           1,
-          "Dark Sight",
+          "Night Eyes",
           "Darkvision 120 ft, and cast Darkness with 2 sorcery points (you can see through it)."
         ],
         [
           1,
-          "Grave Resilience",
+          "Grave Grit",
           "When you'd drop to 0 HP, Cha save to stay at 1 HP, once per long rest."
         ],
         [
           6,
-          "Hound of Woe",
+          "Hound of Dread",
           "Spend 3 sorcery points to summon a shadow hound that hunts a target and makes it worse at saving against your spells."
         ],
         [
@@ -2625,7 +2625,7 @@
         ],
         [
           18,
-          "Shadow Form",
+          "Shade Form",
           "Spend 6 sorcery points to become shadowy for a minute: resist most damage and move through objects."
         ]
       ]
@@ -2635,32 +2635,32 @@
       "features": [
         [
           1,
-          "Wind Speech",
+          "Storm Tongue",
           "You learn the speech of the storm and the wind that carries it. Speak Primordial and its dialects."
         ],
         [
           1,
-          "Stormy Magic",
+          "Gale Lift",
           "Your magic lifts you on the wind and lets you float a little while the storm rages. Fly 10 ft without provoking after casting a spell with mana."
         ],
         [
           6,
-          "Storm Heart",
+          "Thunder Core",
           "Lightning and thunder cannot easily harm you, and they strengthen your spells. Resistance to lightning and thunder, and a burst of storm damage when you cast those spells."
         ],
         [
           6,
-          "Storm Steering",
+          "Storm Sway",
           "You command the rain and wind near you, and they answer your call. Control rain and wind around you."
         ],
         [
           14,
-          "Storm's Anger",
+          "Storm's Rebuke",
           "When a foe strikes you in melee, a surge of lightning answers. Reaction: lightning damage and a push against a creature that hits you in melee."
         ],
         [
           18,
-          "Wind Spirit",
+          "Gale Soul",
           "In time, you become a creature of the wind, able to fly and share the sky with others. Immune to lightning and thunder, fly 60 ft, and share flight with allies for an hour."
         ]
       ]
@@ -2675,27 +2675,27 @@
         ],
         [
           1,
-          "Mind Speech",
+          "Thought Link",
           "Link minds with a creature to talk telepathically."
         ],
         [
           6,
-          "Psionic Casting",
+          "Dream Casting",
           "Cast your psionic spells with sorcery points instead of mana, with no components."
         ],
         [
           6,
-          "Mind Defenses",
+          "Mental Ward",
           "Resistance to psychic, advantage against charm and fear."
         ],
         [
           14,
-          "Flesh Revelation",
+          "Flesh Changes",
           "Spend sorcery points for strange gifts: see invisible, fly, swim and breathe water, or squeeze through tiny gaps."
         ],
         [
           18,
-          "Warping Burst",
+          "Warp Burst",
           "Teleport and pull creatures where you left with force damage, once per long rest (or 5 sorcery points)."
         ]
       ]
@@ -2710,12 +2710,12 @@
         ],
         [
           1,
-          "Restore Balance",
+          "Steady Order",
           "Reaction: cancel advantage or disadvantage on a roll nearby, Proficiency-bonus times per long rest."
         ],
         [
           6,
-          "Bastion of Order",
+          "Ward of Order",
           "Spend sorcery points to give a creature a ward of d8s that soaks damage."
         ],
         [
@@ -2725,7 +2725,7 @@
         ],
         [
           18,
-          "Clockwork Procession",
+          "Clockwork Parade",
           "Summon spirits of order to heal, repair and end spells, once per long rest."
         ]
       ]
@@ -2742,12 +2742,12 @@
         ],
         [
           2,
-          "Arcane Barrier",
+          "Arcane Shell",
           "You weave a ward around yourself that soaks up harm as you cast. When you cast an abjuration spell with mana, you make a ward that absorbs damage, recharged by more abjuration spells."
         ],
         [
           6,
-          "Projected Barrier",
+          "Projected Shelter",
           "Your ward can guard an ally who stands near you. Use your ward to absorb damage for an ally nearby."
         ],
         [
@@ -2757,7 +2757,7 @@
         ],
         [
           14,
-          "Spell Shielding",
+          "Spell Bulwark",
           "You become resistant to magic, and spells lose their hold on you. Advantage on saves against spells and resistance to spell damage."
         ]
       ]
@@ -2772,22 +2772,22 @@
         ],
         [
           2,
-          "Minor Summons",
+          "Trifle Summons",
           "You can pull a small, ordinary object out of thin air to use for a while. Conjure a small nonmagical object for an hour."
         ],
         [
           6,
-          "Gentle Transposition",
+          "Swap Stride",
           "You slip across short distances, trading places with a friend when a fight turns bad. Teleport 30 ft, or swap places with an ally, once per long rest (or after casting a conjuration spell)."
         ],
         [
           10,
-          "Focused Summons",
+          "Steady Summons",
           "Your summons hold steady even when you are struck while calling them. Damage can't break your concentration on conjuration spells."
         ],
         [
           14,
-          "Lasting Summons",
+          "Enduring Summons",
           "The creatures you call arrive with a bit of extra strength to hold the line. Creatures you summon get 30 temporary HP."
         ]
       ]
@@ -2807,18 +2807,18 @@
         ],
         [
           6,
-          "Expert Seeing",
+          "Keen Seeing",
           "When you cast a divination spell of 2nd level or higher with mana, regain the mana cost of a spell one level lower (up to 40, a 5th-level spell)."
         ],
         [
           10,
-          "The Inner Eye",
+          "The Far Eye",
           "Gain darkvision, ethereal sight, the ability to read any language, or see invisible things until your next rest."
         ],
         [
           14,
-          "Greater Foresight",
-          "Roll three dice for Portent."
+          "Greater Omen",
+          "Roll three dice for Foresight."
         ]
       ]
     },
@@ -2832,22 +2832,22 @@
         ],
         [
           2,
-          "Hypnotic Stare",
+          "Lulling Gaze",
           "A gentle word and a steady gaze can soften a stranger into a willing listener. Charm a creature next to you and leave it dazed while you hold its gaze."
         ],
         [
           6,
-          "Reflexive Charm",
+          "Flinch Charm",
           "Your charm slips into a creature's thoughts and turns them away from their target. Reaction: force an attacker to target someone else (Wis save)."
         ],
         [
           10,
-          "Split Charm",
+          "Paired Bind",
           "Your enchantments can bind a second creature alongside the first. Single-target enchantment spells can target a second creature."
         ],
         [
           14,
-          "Rewrite Memories",
+          "Smudge Memories",
           "You can rewrite a creature's recent memories so the charm leaves no trace. Make a creature you charmed forget it was charmed and lose some hours of memory."
         ]
       ]
@@ -2858,27 +2858,27 @@
         [
           2,
           "Phantom Scholar",
-          "Phantom Scholar: You have a gift for copying illusion spells. Copying an illusion spell into your spellbook costs half the usual gold and time."
+          "You have a gift for copying illusion spells. Copying an illusion spell into your spellbook costs half the usual gold and time."
         ],
         [
           2,
-          "Greater Minor Illusion",
-          "Greater Minor Illusion: Your Minor Illusion now makes both a sound and an image, so one cantrip can fool more than one sense."
+          "Layered Minor Illusion",
+          "Your Minor Illusion now makes both a sound and an image, so one cantrip can fool more than one sense."
         ],
         [
           6,
-          "Shifting Illusions",
-          "Shifting Illusions: You can reshape an illusion you are maintaining. As an action, change the appearance of an illusion you have created and are concentrating on."
+          "Shifting Veils",
+          "You can reshape an illusion you are maintaining. As an action, change the appearance of an illusion you have created and are concentrating on."
         ],
         [
           10,
-          "Illusory Double",
-          "Illusory Double: Reaction: when a creature attacks you, an illusory double appears and makes the attack miss. You can use this once per short rest."
+          "Mirage Double",
+          "Reaction: when a creature attacks you, an illusory double appears and makes the attack miss. You can use this once per short rest."
         ],
         [
           14,
-          "Illusory Truth",
-          "Illusory Truth: You can make a piece of your illusion real. Choose one non-living object within your illusion; it becomes real for one minute."
+          "Solid Illusion",
+          "You can make a piece of your illusion real. Choose one non-living object within your illusion; it becomes real for one minute."
         ]
       ]
     },
@@ -2888,27 +2888,27 @@
         [
           2,
           "Death Scholar",
-          "Death Scholar: You copy necromancy spells with ease. Copying a necromancy spell into your spellbook costs half the usual gold and time."
+          "You copy necromancy spells with ease. Copying a necromancy spell into your spellbook costs half the usual gold and time."
         ],
         [
           2,
-          "Grim Reaping",
-          "Grim Reaping: You feed on the death you cause. When you kill a creature with a spell, regain hit points equal to twice the spell's level, or three times if the spell is a necromancy spell of 1st level or higher."
+          "Gleaned Vitality",
+          "You feed on the death you cause. When you kill a creature with a spell, regain hit points equal to twice the spell's level, or three times if the spell is a necromancy spell of 1st level or higher."
         ],
         [
           6,
-          "Dead Thralls",
-          "Dead Thralls: Your dead serve you better. Animate Dead raises one extra creature, and each undead you create gains bonus hit points equal to your wizard level."
+          "Restless Dead",
+          "Your dead serve you better. Animate Dead raises one extra creature, and each undead you create gains bonus hit points equal to your wizard level."
         ],
         [
           10,
-          "Inured to Death",
-          "Inured to Death: Death no longer frightens you. You gain resistance to necrotic damage, and your hit point maximum can't be reduced."
+          "Death-Hardened",
+          "Death no longer frightens you. You gain resistance to necrotic damage, and your hit point maximum can't be reduced."
         ],
         [
           14,
-          "Command the Dead",
-          "Command the Dead: You take command of the dead. As an action, choose an undead creature you can see within 60 ft; it must make a Charisma save or become your ally until you lose control of it."
+          "Rule the Dead",
+          "You take command of the dead. As an action, choose an undead creature you can see within 60 ft; it must make a Charisma save or become your ally until you lose control of it."
         ]
       ]
     },
@@ -2922,22 +2922,22 @@
         ],
         [
           2,
-          "Minor Transmutation",
+          "Small Reshaping",
           "You alter the nature of common materials for a short while. Change one material into another (wood, stone, iron, copper or silver) for an hour."
         ],
         [
           6,
-          "Alchemist's Stone",
+          "Alchemist's Shard",
           "You shape a magic stone that holds a transmutation of your choosing. Make a stone that gives darkvision, speed, a save proficiency or a resistance."
         ],
         [
           10,
-          "Shapeshifter",
+          "Reforming Self",
           "You can reshape your own body with a spell cast at will. Cast Polymorph on yourself without spending mana, once per short rest."
         ],
         [
           14,
-          "Master Alchemist",
+          "Grand Alchemist",
           "You unlock the stone's full power to reshape the world around you. Destroy your stone for a big effect: transform an object, cure everything, cast Raise Dead, or restore youth."
         ]
       ]
@@ -2947,12 +2947,12 @@
       "features": [
         [
           2,
-          "Training in Blade and Song",
+          "Training in Edge and Hymn",
           "Light armor, one one-handed melee weapon, and Performance."
         ],
         [
           2,
-          "Blade Song",
+          "Edge Hymn",
           "Bonus action, a few times per long rest: add Intelligence to AC and concentration saves, move faster, and gain advantage on Acrobatics."
         ],
         [
@@ -2962,13 +2962,13 @@
         ],
         [
           10,
-          "Song of Parrying",
-          "Reaction while your Blade Song is active: spend mana to cut damage by 5 per spell level of that mana (5 mana cuts 5, 10 cuts 10, 18 cuts 15, and so on)."
+          "Hymn of Warding",
+          "Reaction while your Edge Hymn is active: spend mana to cut damage by 5 per spell level of that mana (5 mana cuts 5, 10 cuts 10, 18 cuts 15, and so on)."
         ],
         [
           14,
-          "Song of Triumph",
-          "Add Intelligence to melee weapon damage while your Blade Song is active."
+          "Hymn of Triumph",
+          "Add Intelligence to melee weapon damage while your Edge Hymn is active."
         ]
       ]
     },
@@ -2978,27 +2978,27 @@
         [
           2,
           "Arcane Parry",
-          "Arcane Parry: Reaction: when a creature you can see hits you or a creature within 10 ft, gain +2 AC or +4 to a save. You can only cast cantrips on your next turn."
+          "Reaction: when a creature you can see hits you or a creature within 10 ft, gain +2 AC or +4 to a save. You can only cast cantrips on your next turn."
         ],
         [
           2,
-          "Tactical Mind",
-          "Tactical Mind: You read the field the moment a fight starts. Add your Intelligence modifier to your initiative."
+          "Field Sense",
+          "You read the field the moment a fight starts. Add your Intelligence modifier to your initiative."
         ],
         [
           6,
           "Power Spike",
-          "Power Spike: When you counter or dispel a spell, you store a surge of raw force. Spend stored surges to add extra force damage to your spells, and the surges fade at the end of a long rest."
+          "When you counter or dispel a spell, you store a surge of raw force. Spend stored surges to add extra force damage to your spells, and the surges fade at the end of a long rest."
         ],
         [
           10,
           "Lasting Magic",
-          "Lasting Magic: Your concentration is hardened by years of fighting while casting. You gain +2 AC and +2 to saving throws while you concentrate on a spell."
+          "Your concentration is hardened by years of fighting while casting. You gain +2 AC and +2 to saving throws while you concentrate on a spell."
         ],
         [
           14,
-          "Deflecting Veil",
-          "Deflecting Veil: Arcane Deflection now also bursts outward. Creatures within 10 ft of you take force damage when you use it, so your deflection becomes a counterattack."
+          "Parrying Veil",
+          "Arcane Parry now also bursts outward. Creatures within 10 ft of you take force damage when you use it, so your deflection becomes a counterattack."
         ]
       ]
     },
@@ -3007,27 +3007,27 @@
       "features": [
         [
           2,
-          "Time Shift",
+          "Temporal Nudge",
           "You bend time to suit your will, and the past and future are your playground. Reaction: force a creature to reroll an attack, check or save, twice per long rest."
         ],
         [
           2,
-          "Time Sense",
+          "Time Feel",
           "You sense the flow of time around you and react faster than others. Add Intelligence to initiative."
         ],
         [
           6,
-          "Brief Stasis",
+          "Stolen Moment",
           "You can freeze a foe in the flow of time for a moment. Freeze a Large or smaller creature in time (Con save), a few times per long rest."
         ],
         [
           10,
-          "Arcane Pause",
+          "Bead Vault",
           "You can store a spell in a bead for another to use later. Store a 4th-level or lower spell in a bead someone else can use, once per short rest."
         ],
         [
           14,
-          "Converging Future",
+          "Fated Sight",
           "You can see the future before it happens and choose which path to take. Decide whether a roll you can see succeeds or fails, at the cost of a level of exhaustion."
         ]
       ]
@@ -3038,22 +3038,22 @@
         [
           2,
           "Shift Weight",
-          "Shift Weight: You bend the weight of a creature. As an action, make a creature heavier or lighter for one minute, changing how far it can move and how hard it hits the ground."
+          "You bend the weight of a creature. As an action, make a creature heavier or lighter for one minute, changing how far it can move and how hard it hits the ground."
         ],
         [
           6,
-          "Weight Well",
-          "Weight Well: Your spells pull their targets along with them. When a spell you cast hits or affects a creature, you can move that creature up to 5 ft."
+          "Sinking Well",
+          "Your spells pull their targets along with them. When a spell you cast hits or affects a creature, you can move that creature up to 5 ft."
         ],
         [
           10,
           "Forceful Pull",
-          "Forceful Pull: You can turn gravity into force. Reaction: add extra damage to an attack, or to falling damage, a few times per long rest."
+          "You can turn gravity into force. Reaction: add extra damage to an attack, or to falling damage, a few times per long rest."
         ],
         [
           14,
-          "Crushing Field",
-          "Crushing Field: You create a field that drags enemies toward you and holds them in place. Once per long rest, or by spending 18 mana, a creature in the field must move toward you and cannot move on its turn."
+          "Gripping Field",
+          "You create a field that drags enemies toward you and holds them in place. Once per long rest, or by spending 18 mana, a creature in the field must move toward you and cannot move on its turn."
         ]
       ]
     },
@@ -3062,22 +3062,22 @@
       "features": [
         [
           2,
-          "Inkwright's Quill",
+          "Inkwright's Pen",
           "Your spellbook is more than a book; it is a magical quill and an ink that writes itself. A magical quill that copies spells quickly and cheaply."
         ],
         [
           2,
-          "Living Spellbook",
+          "Living Tome",
           "Your spellbook awakens, and its pages answer your call. Swap a spell's damage type for another from your book, and cast rituals faster."
         ],
         [
           6,
-          "Inscribed Mind",
+          "Inscribed Spirit",
           "Your spellbook takes a shape of its own and can cast spells from where it rests. Make your book's spirit appear and cast spells from its location."
         ],
         [
           10,
-          "Master Inscriber",
+          "Master Penman",
           "You write scrolls of spells you know, and your hand strengthens each one you make. Make a magic scroll of a spell you know after a long rest, cast as one level higher."
         ],
         [
@@ -3150,7 +3150,7 @@
         ],
         [
           15,
-          "Perfected Plate",
+          "Perfected Shell",
           "Bulwark: as a reaction, a creature you can see within 30 feet that fails a Strength save is dragged up to 25 feet toward you, and you can strike it if it ends next to you. Shade: a creature hit by your bolt-caster glows until your next turn, and the next attack against it has advantage and deals an extra 1d6 lightning."
         ]
       ]
@@ -3195,12 +3195,12 @@
         ],
         [
           9,
-          "Restoring Steam",
+          "Vapour Mending",
           "Your tonics also grant 2d6 + your Intelligence modifier temporary hit points. You can cast Lesser Restoration a number of times equal to your Intelligence modifier per long rest without spending mana."
         ],
         [
           15,
-          "Master Chemist",
+          "Grand Chemist",
           "You resist acid and poison damage and can't be poisoned. Once per long rest you can cast Greater Restoration or Heal without spending mana or using components."
         ]
       ]

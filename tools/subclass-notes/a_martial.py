@@ -41,7 +41,7 @@ S["Barbarian"] = {
   [3, "Titan's Havoc", "While raging you count as Large (if space allows), your reach grows by 5 ft, and thrown or Strength-based hits add more damage."],
   [6, "Elemental Cleave", "When you rage, infuse a weapon with acid, cold, fire, thunder or lightning; it deals an extra 1d6 of that type and returns to your hand when thrown."],
   [10, "Hurl Foe", "As a bonus action while raging, hurl a Medium or smaller creature up to 30 ft (unwilling ones save)."],
-  [14, "Colossus Form", "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleaver damage rises to 2d6."]]),
+  [14, "Colossus Form", "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleave damage rises to 2d6."]]),
 }
 
 S["Fighter"] = {
@@ -61,11 +61,11 @@ S["Fighter"] = {
   [18, "Greater Battle Casting", "When you cast a spell as an action, make one weapon attack as a bonus action."]]),
  "Arcane Bowman": ("An archer who weaves magic into arrows.", [
   [3, "Archer's Lore", "Learn Arcana or Nature, and Prestidigitation or Druidcraft."],
-  [3, "Arcane Arrow", "Know two Arcane Shot options (banishing, beguiling, bursting, grasping, piercing, seeking, shadow, enfeebling) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."],
+  [3, "Arcane Arrow", "Know two Arrow Art options (sunder, lure, burst, snare, pierce, hunt, shade, weaken) and use them twice per short rest when you hit with an arrow. More options at 7th, 10th, 15th and 18th."],
   [7, "Enchanted Arrow", "Your arrows count as magical."],
   [7, "Curving Arrow", "When you miss with a magic arrow, use a bonus action to reroll the attack against a different target within 60 ft."],
-  [15, "Ready Shot", "If you roll initiative with no Arcane Shot uses left, regain one."],
-  [18, "Greater Arrows", "Your Arcane Shot damage increases."]]),
+  [15, "Ready Shot", "If you roll initiative with no Arrow Art uses left, regain one."],
+  [18, "Greater Arrows", "Your Arrow Art damage increases."]]),
  "Rider Knight": ("A mounted warrior and bodyguard who locks enemies down.", [
   [3, "Bonus Proficiency", "One skill (Animal Handling, History, Insight, Performance or Persuasion) or a language."],
   [3, "Mounted Born", "Advantage on saves against falling off your mount, land on your feet if you fall, and mount or dismount cheaply."],
@@ -78,7 +78,7 @@ S["Fighter"] = {
   [3, "Bonus Proficiency", "One skill (History, Insight, Performance or Persuasion) or a language."],
   [3, "Battle Spirit", "Bonus action, three times per long rest: advantage on attacks this turn and some temporary HP."],
   [7, "Courtly Grace", "Add Wisdom to Persuasion and gain Wisdom save proficiency (or another save if you have it)."],
-  [10, "Endless Spirit", "If you roll initiative with no Fighting Spirit uses left, regain one."],
+  [10, "Endless Spirit", "If you roll initiative with no Battle Spirit uses left, regain one."],
   [15, "Quick Strike", "Trade advantage on one attack for an extra attack."],
   [18, "Strength Unto Death", "When you drop to 0 HP, take an extra full turn before falling, once per long rest."]]),
  "Mirrorguard": ("You fight alongside an echo of yourself from another possible timeline.", [
@@ -89,14 +89,14 @@ S["Fighter"] = {
   [15, "Reclaim the Echo", "When your echo is destroyed, gain temporary HP a few times per long rest."],
   [18, "Twin Legion", "Two echoes at once, and regain an Unleash the Twin use when you roll initiative with none left."]]),
  "Mindforged": ("Psionic power adds force to your blows and shields your allies.", [
-  [3, "Mind Power", "Psionic Energy dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."],
+  [3, "Mind Power", "Mind dice (d6, rising with level), back on a long rest; regain one per short rest. Spend one to add force damage to a hit, cut damage to an ally, or move a creature or object with your mind."],
   [7, "Mind Pusher", "Psi-powered leap (fly for a turn) and Mind Thrust (push or knock prone with your force strikes)."],
   [10, "Shielded Mind", "Resistance to psychic damage; spend a die to end charm or fear on yourself."],
   [15, "Force Bulwark", "Bonus action: give a few creatures half cover for a minute, once per long rest (or spend a die)."],
   [18, "Master Pusher", "Cast Telekinesis without spending mana once per long rest (or spend a die), and attack as a bonus action while concentrating on it."]]),
  "Runebound": ("Giant runes carved into your gear, and the power to grow huge.", [
   [3, "Bonus Proficiencies", "Smith's tools and the Giant language."],
-  [3, "Rune Scribe", "Know two runes (cloud, fire, frost, stone, hill, storm) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."],
+  [3, "Rune Scribe", "Know two runes (sky, ember, rime, ore, crag, gale) with a passive gift and an activated power each, once per short rest. More runes at 7th, 10th and 15th."],
   [3, "Colossal Might", "Bonus action: become Large for a minute, with advantage on Strength checks and saves and an extra 1d6 damage once per turn. Uses per long rest equal to proficiency bonus."],
   [7, "Rune Shield", "Reaction: force a creature to reroll an attack against an ally, a few times per long rest."],
   [10, "Grand Stature", "Grow a little taller permanently; Colossal Might damage rises to 1d8."],
@@ -109,9 +109,9 @@ S["Monk"] = {
   [3, "Shadow Craft", "Spend 2 ki to cast Darkness, Darkvision, Pass without Trace or Silence without spending mana; learn Minor Illusion."],
   [6, "Shadow Stride", "In dim light or darkness, teleport 60 ft to another dark spot as a bonus action and gain advantage on your next melee attack."],
   [11, "Shadow Cloak", "Become invisible in dim light or darkness until you attack or cast."],
-  [17, "Opportunist", "Reaction: attack a creature within 5 ft that just got hit by someone else."]]),
+  [17, "Vulture's Strike", "Reaction: attack a creature within 5 ft that just got hit by someone else."]]),
  "Way of the Four Winds": ("You channel ki into elemental disciplines.", [
-  [3, "Disciple of the Elements", "Learn Elemental Attunement and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Fire Snake, Water Whip or Shape the Flowing River, some copying spells without spending mana."],
+  [3, "Disciple of the Elements", "Learn Element Sense and one discipline (more at 6th, 11th and 17th). Disciplines spend ki to produce effects like Fangs of the Ember Serpent, Tide Lash or Shape the Tide, some copying spells without spending mana."],
   [6, "Elemental Discipline", "Learn another discipline; you can swap one out when you gain a discipline."],
   [11, "Greater Discipline", "Learn another discipline and spend more ki to empower them."],
   [17, "Mastered Discipline", "Learn another discipline."]]),
@@ -121,16 +121,16 @@ S["Monk"] = {
   [11, "Deathly Mastery", "When you drop to 0 HP, spend 1 ki to stay at 1 HP instead."],
   [17, "Touch of the Last Breath", "Spend 1–10 ki to deal 2d10 necrotic per ki spent (Con save halves)."]]),
  "Way of the Sunlit Spirit": ("You hurl ki as searing radiant light.", [
-  [3, "Sunbolt", "A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."],
-  [6, "Searing Arc", "After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."],
-  [11, "Sunburst Blast", "Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."],
-  [17, "Solar Ward", "Shed bright light, and creatures that hit you in melee take radiant damage."]]),
+  [3, "Dawnbolt", "A 30 ft ranged radiant attack that uses your martial arts die; can replace attacks and be used with Flurry."],
+  [6, "Flare Arc", "After the Attack action, spend 2 ki to cast Burning Hands as a bonus action (more ki for a stronger version)."],
+  [11, "Daybreak Burst", "Action: a 20 ft radius burst of radiant light (Con save); spend ki to strengthen it."],
+  [17, "Dawnshield", "Shed bright light, and creatures that hit you in melee take radiant damage."]]),
  "Way of the Tipsy Fist": ("Lurching, staggering moves that make you impossible to pin down.", [
   [3, "Bonus Proficiencies", "Performance and brewer's supplies."],
   [3, "Drunken Footwork", "Flurry of Blows also gives you Disengage and +10 ft speed."],
   [6, "Wobbling Dodge", "Stand up for 5 ft of movement, and redirect a missed melee attack to another creature."],
   [11, "Lucky Stumble", "Spend 2 ki to cancel disadvantage on a check, attack or save."],
-  [17, "Reckless Frenzy", "Flurry of Blows can make up to five attacks if each hits a different target."]]),
+  [17, "Crowd Frenzy", "Flurry of Blows can make up to five attacks if each hits a different target."]]),
  "Way of the Swordmaster": ("A weapon master whose chosen weapons are part of their martial arts.", [
   [3, "Path of the Blade", "Pick kensei weapons that count as monk weapons, gain an AC bonus when you skip an attack, and add extra damage to ranged hits as a bonus action."],
   [6, "Blade Kin", "Your kensei weapons count as magical; spend ki for extra damage on a hit."],
@@ -147,33 +147,33 @@ S["Monk"] = {
   [3, "Harmful Hand", "Once per turn, spend 1 ki on a hit for extra necrotic damage."],
   [6, "Healer's Touch", "Hand of Healing also cures a disease or condition; Hand of Harm can poison."],
   [11, "Flurry of Mercy", "Replace each Flurry of Blows strike with Hand of Healing, and use Hand of Harm on one for free."],
-  [17, "Hand of Final Mercy", "Spend 5 ki to bring back a creature that died in the last 24 hours, once per long rest."]]),
+  [17, "Mercy's Last Gift", "Spend 5 ki to bring back a creature that died in the last 24 hours, once per long rest."]]),
 }
 
 S["Rogue"] = {
  "Night Killer": ("Killer who strikes first and from hiding.", [
   [3, "Bonus Proficiencies", "Disguise kit and poisoner's kit."],
   [3, "Silent Kill", "Advantage against creatures that haven't acted yet in combat, and any hit on a surprised creature is a critical hit."],
-  [9, "Infiltrator's Skill", "Spend a week and some gold to build a solid false identity."],
+  [9, "False Identity", "Spend a week and some gold to build a solid false identity."],
   [13, "Mimic", "Copy someone's speech, writing and mannerisms after studying them for three hours."],
-  [17, "Deathblow", "Hitting a surprised creature forces a Con save or doubles the damage."]]),
+  [17, "Crushing Stab", "Hitting a surprised creature forces a Con save or doubles the damage."]]),
  "Arcane Rogue": ("A rogue with enchantment and illusion magic.", [
   [3, "Spellcasting", "Your mana fuels a small wizard repertoire, mostly enchantment and illusion. Intelligence is your spellcasting ability. " + SP],
   [3, "Hand Trickery", "Your Mage Hand is invisible and can pick locks, plant or lift objects at range."],
-  [9, "Spell Ambush", "If you're hidden when you cast, the target has disadvantage on its save."],
-  [13, "Versatile Deceiver", "Bonus action: your mage hand distracts a creature, giving you advantage on attacks against it."],
-  [17, "Spell Stealer", "Reaction when a spell targets you: force a save to negate it and steal the spell for 8 hours, once per long rest."]]),
+  [9, "Ambush Casting", "If you're hidden when you cast, the target has disadvantage on its save."],
+  [13, "Sleight Deception", "Bonus action: your mage hand distracts a creature, giving you advantage on attacks against it."],
+  [17, "Spell Pilfer", "Reaction when a spell targets you: force a save to negate it and steal the spell for 8 hours, once per long rest."]]),
  "Seeker": ("A detective who reads lies and finds weak points.", [
-  [3, "Ear for Lies", "Insight rolls to spot lies treat a die below 8 as an 8."],
+  [3, "Read the Lie", "Insight rolls to spot lies treat a die below 8 as an 8."],
   [3, "Sharp Eye", "Bonus action: Perception to spot hidden things or Investigation to find clues."],
-  [3, "Insightful Strike", "Bonus action: Insight against a target's Deception to gain Sneak Attack on it without advantage for a minute."],
-  [9, "Steadied Gaze", "Advantage on Perception and Investigation if you move half speed or less."],
-  [13, "Unfailing Gaze", "Sense illusions, shapechangers and magic deception nearby, a few times per long rest."],
-  [17, "Eye for Flaws", "Sneak Attack deals an extra 3d6 against a target you've read with Insightful Fighting."]]),
+  [3, "Read and Strike", "Bonus action: Insight against a target's Deception to gain Sneak Attack on it without advantage for a minute."],
+  [9, "Still Watch", "Advantage on Perception and Investigation if you move half speed or less."],
+  [13, "Veil Sight", "Sense illusions, shapechangers and magic deception nearby, a few times per long rest."],
+  [17, "Hunter's Read", "Sneak Attack deals an extra 3d6 against a target you've read with Insight."]]),
  "Schemer": ("A schemer who directs allies from the shadows.", [
   [3, "Master of Schemes", "A gaming set, a disguise kit, two languages, and the knack of mimicking accents."],
   [3, "Master of Plans", "Help as a bonus action, from up to 30 ft away."],
-  [9, "Keen Manipulator", "Study a creature for a minute to learn how it compares to you in mental abilities and other traits."],
+  [9, "Keen Reader", "Study a creature for a minute to learn how it compares to you in mental abilities and other traits."],
   [13, "Misdirect", "Reaction: redirect an attack aimed at you to a creature giving you cover."],
   [17, "Heart of Deceit", "Your thoughts can't be read; you can feed false thoughts, and magic can't force the truth out of you."]]),
  "Pathfinder": ("A skirmisher and wilderness expert.", [
@@ -184,20 +184,20 @@ S["Rogue"] = {
   [17, "Surprise Strike", "A bonus action attack after the Attack action, which can Sneak Attack a different target."]]),
  "Duelist": ("A flashy duelist who darts in and out of combat.", [
   [3, "Dancing Feet", "A creature you attack in melee can't make opportunity attacks against you that turn."],
-  [3, "Rakish Nerve", "Add Charisma to initiative, and Sneak Attack a lone enemy in a one-on-one without advantage."],
+  [3, "Bold Nerve", "Add Charisma to initiative, and Sneak Attack a lone enemy in a one-on-one without advantage."],
   [9, "Flourish", "Persuasion against Insight: an enemy fixates on you (disadvantage on others) or a non-hostile creature is charmed."],
-  [13, "Graceful Maneuver", "Bonus action: advantage on your next Acrobatics or Athletics check this turn."],
+  [13, "Showy Dodge", "Bonus action: advantage on your next Acrobatics or Athletics check this turn."],
   [17, "Master Blade", "Reroll a missed attack with advantage, once per short rest."]]),
  "Deadwhisper": ("A rogue touched by death who steals knowledge from the dead.", [
-  [3, "Murmurs of the Dead", "After a rest, gain proficiency in a skill or tool of your choice."],
+  [3, "Echoes of the Lost", "After a rest, gain proficiency in a skill or tool of your choice."],
   [3, "Keening from the Grave", "After Sneak Attack, deal half the Sneak Attack dice as necrotic to another creature nearby. Uses per long rest equal to proficiency bonus."],
   [9, "Tokens of the Dead", "Catch a soul trinket when someone dies nearby; use them for advantage on saves, extra wails, or to ask a spirit a question."],
   [13, "Spectral Walk", "Become spectral for 10 minutes: fly slowly, pass through objects, attackers have disadvantage."],
-  [17, "Death's Companion", "Wails from the Grave hits both targets with necrotic, and you always find a token after a rest if you have none."]]),
+  [17, "Death's Companion", "Wails of Dread hits both targets with necrotic, and you always find a token after a rest if you have none."]]),
  "Thoughtblade": ("Psionic blades formed from your mind.", [
-  [3, "Mind Power", "Psionic Energy dice (d6, rising with level); spend them to boost failed checks or speak telepathically."],
-  [3, "Mind Blades", "Manifest blades of psychic energy to make melee or thrown attacks, with a bonus action second blade."],
+  [3, "Mind Power", "Mind dice (d6, rising with level); spend them to boost failed checks or speak telepathically."],
+  [3, "Thought Blades", "Manifest blades of psychic energy to make melee or thrown attacks, with a bonus action second blade."],
   [9, "Mind Edge", "Spend a die to turn a miss into a hit, or teleport with a thrown blade."],
-  [13, "Mind Veil", "Become invisible for an hour, once per long rest (or spend a die)."],
+  [13, "Shroud of Thought", "Become invisible for an hour, once per long rest (or spend a die)."],
   [17, "Shatter Mind", "A Sneak Attack with your blades can stun the target (Wis save), once per long rest (or spend dice)."]]),
 }
