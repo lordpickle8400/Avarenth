@@ -1,10 +1,10 @@
 {
   "feats": [
     {
-      "name": "Crafter",
+      "name": "Artisan's Hand",
       "category": "Origin",
       "prereq": "",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -118,10 +118,10 @@
       "own": true
     },
     {
-      "name": "Chef",
+      "name": "Hearthcook",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -131,10 +131,10 @@
       "own": true
     },
     {
-      "name": "Crossbow Expert",
+      "name": "Bolt Marksman",
       "category": "General",
       "prereq": "Level 4+, Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -144,10 +144,10 @@
       "own": true
     },
     {
-      "name": "Crusher",
+      "name": "Bonebreaker",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -157,10 +157,10 @@
       "own": true
     },
     {
-      "name": "Defensive Duelist",
+      "name": "Parry Step",
       "category": "General",
       "prereq": "Level 4+, Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -170,10 +170,10 @@
       "own": true
     },
     {
-      "name": "Dual Wielder",
+      "name": "Twin Blades",
       "category": "General",
       "prereq": "Level 4+, Strength or Dexterity 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -625,10 +625,10 @@
       "own": true
     },
     {
-      "name": "Dungeon Delver",
+      "name": "Tunnel Wise",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2014)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -729,10 +729,10 @@
       "own": true
     },
     {
-      "name": "Dragon Fear",
+      "name": "Terrible Glare",
       "category": "General",
       "prereq": "Level 4+, Dragonborn",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -742,10 +742,10 @@
       "own": true
     },
     {
-      "name": "Dragon Hide",
+      "name": "Scaled Hide",
       "category": "General",
       "prereq": "Level 4+, Dragonborn",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -963,10 +963,10 @@
       "own": true
     },
     {
-      "name": "Dueling",
+      "name": "Blade Focus",
       "category": "Fighting Style",
       "prereq": "Fighting Style feature",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -1097,7 +1097,7 @@
     "Artisan": {
       "book": "Player's Handbook (2024)",
       "abilities": "Strength, Dexterity, Intelligence",
-      "feat": "Crafter",
+      "feat": "Artisan's Hand",
       "skills": "Investigation and Persuasion",
       "skillList": [
         "Investigation",
@@ -1292,7 +1292,7 @@
     "Guild Artisan": {
       "book": "Player's Handbook (2014)",
       "abilities": "Dexterity, Intelligence, Charisma",
-      "feat": "Crafter",
+      "feat": "Artisan's Hand",
       "skills": "Insight and Persuasion",
       "skillList": [
         "Insight",
@@ -1352,7 +1352,7 @@
     "Clan Crafter": {
       "book": "Sword Coast Adventurer's Guide",
       "abilities": "Strength, Intelligence, Wisdom",
-      "feat": "Crafter",
+      "feat": "Artisan's Hand",
       "skills": "History and Insight",
       "skillList": [
         "History",
@@ -1577,7 +1577,7 @@
     "Shipwright": {
       "book": "Ghosts of Saltmarsh",
       "abilities": "Strength, Dexterity, Intelligence",
-      "feat": "Crafter",
+      "feat": "Artisan's Hand",
       "skills": "History and Perception",
       "skillList": [
         "History",
