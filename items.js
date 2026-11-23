@@ -63,7 +63,7 @@
     'Horn|i|3|0|', 'Pan flute|i|12|1|', 'Shawm|i|2|1|', 'Viol|i|30|2|luxury',
     // Contraband
     'Basic poison (vial)|x|100|1|shady', 'Poisoner\'s kit|x|50|1|shady', 'Forgery kit|x|15|1|shady', 'Assassin\'s blood (poison)|x|150|2|shady',
-    'Drow poison|x|200|3|shady', 'Serpent venom|x|200|2|shady', 'Torpor (poison)|x|600|3|shady', 'Midnight tears (poison)|x|1500|4|shady',
+    'Dark Elf poison|x|200|3|shady', 'Serpent venom|x|200|2|shady', 'Torpor (poison)|x|600|3|shady', 'Midnight tears (poison)|x|1500|4|shady',
     // Mounts and animals
     'Donkey or mule|m|8|0|farm', 'Draft horse|m|50|0|farm', 'Riding horse|m|75|1|', 'Pony|m|30|0|farm', 'Mastiff|m|25|0|farm', 'Warhorse|m|400|3|',
     // Tack and vehicles

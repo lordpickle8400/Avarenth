@@ -5275,7 +5275,7 @@
     'Cobbler’s tools': { rent: 0, make: [['a pair of slippers', 0.5, 'Tailor & outfitter'], ['a pair of boots', 1, 'Tailor & outfitter,General store'], ['a pair of riding boots', 3, 'Stables,Tailor & outfitter'], ['a pair of fine shoes', 5, 'Tailor & outfitter']] },
     'Brewer’s supplies': { need: 'a brewhouse', rent: 0.3, make: [['a cask of ale', 2, 'Tavern & inn'], ['a cask of cider', 2, 'Tavern & inn'], ['a cask of stout', 3, 'Tavern & inn'], ['a cask of mead', 5, 'Tavern & inn']] },
     'Alchemist’s supplies': { rent: 0, note: 'Poisons too: household ones sell anywhere; restricted ones are remembered; lethal ones are contraband, for fences only.', make: [['rat poison (a tin)', 0.5, 'General store,Alchemist'], ['pest powder (a pouch)', 0.2, 'General store'], ['weed killer (a jug)', 0.3, 'General store'], ['a purgative', 0.5, 'Herbalist,Alchemist'], ['numbing drops', 1, 'Temple,Herbalist'], ['a sleeping draught', 2, 'Alchemist,Herbalist'], ['Torpor', 600, 'Alchemist'], ['Pale tincture', 250, 'Alchemist'], ['Essence of ether', 300, 'Alchemist'], ['Soap', 0.02, 'General store'], ['Oil (flask)', 0.1, 'General store'], ['Perfume (vial)', 5, 'Tailor & outfitter'], ['Ink (1 ounce bottle)', 10, 'Bookseller'], ['Acid (vial)', 25, 'Alchemist'], ['Alchemist’s fire (flask)', 50, 'Alchemist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'],
-      ['Basic poison (vial)', 100, 'Fence'], ['Truth serum', 150, 'Fence'], ['Drow poison', 200, 'Alchemist'], ['Assassin’s blood', 150, 'Fence'], ['Serpent venom', 200, 'Fence'], ['Carrion crawler mucus', 200, 'Fence'],
+      ['Basic poison (vial)', 100, 'Fence'], ['Truth serum', 150, 'Fence'], ['Dark Elf poison', 200, 'Alchemist'], ['Assassin’s blood', 150, 'Fence'], ['Serpent venom', 200, 'Fence'], ['Carrion crawler mucus', 200, 'Fence'],
       ['Malice', 250, 'Fence'], ['Oil of taggit', 400, 'Fence'], ['Burnt othur fumes', 500, 'Fence'], 
       ['Wyvern poison', 1200, 'Fence'], ['Midnight tears', 1500, 'Fence'], ['Purple worm poison', 2000, 'Fence']] },
     'Herbalism kit': { rent: 0, make: [['dried herbs (a bundle)', 0.1, 'Alchemist,Herbalist'], ['a healing salve', 1, 'Temple,Herbalist'], ['Antitoxin (vial)', 50, 'Alchemist,Temple'], ['Potion of healing', 50, 'Alchemist,Temple,Herbalist']] },
@@ -6789,7 +6789,7 @@
   /* Poisons in three tiers. Household: sold openly, mostly for vermin. Restricted: legal, but a keeper remembers a stranger who buys it.
      Lethal: contraband, fences only, a Moderate crime to be caught with (prohibited substances). */
   var POISON_HOUSEHOLD = [['rat poison (a tin)', 0.5], ['pest powder (a pouch)', 0.2], ['weed killer (a jug)', 0.3], ['a purgative', 0.5], ['a sleeping draught', 2], ['numbing drops', 1]];
-  var POISON_RESTRICTED = [['Torpor', 600], ['Pale tincture', 250], ['Essence of ether', 300], ['Drow poison', 200]];
+  var POISON_RESTRICTED = [['Torpor', 600], ['Pale tincture', 250], ['Essence of ether', 300], ['Dark Elf poison', 200]];
   var POISON_LETHAL = ['basic poison (vial)', 'truth serum', 'assassin’s blood', 'serpent venom', 'carrion crawler mucus', 'malice', 'oil of taggit', 'burnt othur fumes', 'wyvern poison', 'midnight tears', 'purple worm poison'];
   function poisonTier(name) {
     var n = String(name || '').toLowerCase().trim();
