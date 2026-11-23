@@ -5,27 +5,27 @@
       "features": [
         [
           3,
-          "Spirit Seeker",
+          "Spirit Sight",
           "Cast Beast Sense and Speak with Animals as rituals."
         ],
         [
           3,
-          "Totem Spirit",
+          "Spirit Animal",
           "Pick an animal for your rage: Bear (resist all damage but psychic), Eagle (enemies have disadvantage on opportunity attacks; Dash as a bonus action), Wolf (allies have advantage on melee attacks against enemies within 5 ft of you), Elk or Tiger."
         ],
         [
           6,
-          "Aspect of the Beast",
+          "Beast Gift",
           "A lasting gift: Bear (double carrying capacity), Eagle (see a mile clearly, no penalty in dim light), Wolf (track at fast pace, stealth at normal pace), Elk or Tiger."
         ],
         [
           10,
-          "Spirit Walker",
+          "Ghost Path",
           "Cast Commune with Nature as a ritual."
         ],
         [
           14,
-          "Totemic Attunement",
+          "Spirit Attunement",
           "A raging power: Bear (adjacent enemies have disadvantage attacking anyone but you), Eagle (fly while raging), Wolf (knock a Large or smaller creature prone with a bonus action after a hit), Elk or Tiger."
         ]
       ]
@@ -35,22 +35,22 @@
       "features": [
         [
           3,
-          "Ancestral Protectors",
+          "Ancestor Wards",
           "The first creature you hit each turn while raging has disadvantage on attacks against anyone but you, and anyone else it hits takes half damage, until your next turn."
         ],
         [
           6,
-          "Spirit Shield",
+          "Ancestral Shield",
           "While raging, use your reaction when an ally within 30 ft takes damage to reduce it by 2d6 (3d6 at 10th, 4d6 at 14th)."
         ],
         [
           10,
-          "Consult the Spirits",
+          "Ask the Dead",
           "Cast Augury or Clairvoyance without spending mana, once per short or long rest."
         ],
         [
           14,
-          "Vengeful Ancestors",
+          "Vengeful Dead",
           "Whatever Spirit Shield prevents is dealt back as force damage to the attacker."
         ]
       ]
@@ -60,22 +60,22 @@
       "features": [
         [
           3,
-          "Storm Aura",
+          "Storm Halo",
           "While raging, a 10 ft aura: Desert (fire damage to creatures around you), Sea (lightning to one creature, Dex save half) or Tundra (temp HP to you and allies). Use it again with a bonus action each turn."
         ],
         [
           6,
-          "Storm Soul",
+          "Stormborn",
           "Resistance to your storm's damage type plus a small utility gift (no extreme heat or cold trouble, breathe and swim underwater, or freeze water)."
         ],
         [
           10,
-          "Shielding Storm",
+          "Storm Ward",
           "Allies in your aura gain resistance to your storm's damage type."
         ],
         [
           14,
-          "Raging Storm",
+          "Tempest Rage",
           "Your aura bites back: Desert burns attackers, Sea knocks enemies prone, Tundra slows creatures to 0 speed."
         ]
       ]
@@ -85,27 +85,27 @@
       "features": [
         [
           3,
-          "Divine Fury",
+          "Holy Fury",
           "While raging, your first hit each turn deals extra radiant or necrotic damage: 1d6 + half your barbarian level."
         ],
         [
           3,
-          "Warrior of the Gods",
+          "Blessed Warrior",
           "Spells that bring you back to life need no material components."
         ],
         [
           6,
-          "Fanatical Focus",
+          "Zealous Focus",
           "Once per rage, reroll a failed saving throw."
         ],
         [
           10,
-          "Zealous Presence",
+          "Zealous Aura",
           "Bonus action, once per long rest: up to ten creatures gain advantage on attacks and saves until your next turn."
         ],
         [
           14,
-          "Rage Beyond Death",
+          "Undying Rage",
           "While raging, you don't die at 0 HP; you fall only when the rage ends, if you're still at 0."
         ]
       ]
@@ -115,22 +115,22 @@
       "features": [
         [
           3,
-          "Form of the Beast",
+          "Beastform",
           "When you rage, grow a natural weapon: bite (heal a little when you hit while under half HP), claws (an extra claw attack), or tail (reaction to add to your AC against a hit)."
         ],
         [
           6,
-          "Bestial Soul",
+          "Feral Soul",
           "Your natural weapons count as magical, and you choose a gift each rest: swim speed, climb speed, or a jumping boost."
         ],
         [
           10,
-          "Infectious Fury",
+          "Spreading Rage",
           "When your natural weapon hits, the target saves (Wis) or must attack someone else or take psychic damage. A few times per long rest."
         ],
         [
           14,
-          "Call the Hunt",
+          "Hunting Cry",
           "When you rage, up to your Con modifier allies gain extra damage once per turn while you gain temporary HP. Uses equal to proficiency bonus per long rest."
         ]
       ]
@@ -140,27 +140,27 @@
       "features": [
         [
           3,
-          "Magic Awareness",
+          "Surgesight",
           "Sense spells and magic items within 60 ft as an action, a few times per long rest."
         ],
         [
           3,
-          "Wild Surge",
+          "Chaos Pulse",
           "When you rage, roll on the Wild Magic table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."
         ],
         [
           6,
-          "Bolstering Magic",
+          "Mana Lift",
           "Touch an ally to give them a d3 bonus to attacks and checks for 10 minutes, or to restore some of their mana: roll a d3 and they regain 5, 10 or 18 mana. Uses per long rest equal to proficiency bonus."
         ],
         [
           10,
-          "Unstable Backlash",
+          "Backfire",
           "When you take damage or fail a save while raging, reroll your wild surge as a reaction."
         ],
         [
           14,
-          "Controlled Surge",
+          "Steady Surge",
           "Roll twice on the Wild Magic table and pick the result you want."
         ]
       ]
@@ -170,27 +170,27 @@
       "features": [
         [
           3,
-          "Giant's Power",
+          "Titan's Might",
           "Learn Druidcraft or Thaumaturgy and the Giant language."
         ],
         [
           3,
-          "Giant's Havoc",
+          "Titan's Havoc",
           "While raging you count as Large (if space allows), your reach grows by 5 ft, and thrown or Strength-based hits add more damage."
         ],
         [
           6,
-          "Elemental Cleaver",
+          "Elemental Cleave",
           "When you rage, infuse a weapon with acid, cold, fire, thunder or lightning; it deals an extra 1d6 of that type and returns to your hand when thrown."
         ],
         [
           10,
-          "Mighty Impel",
+          "Hurl Foe",
           "As a bonus action while raging, hurl a Medium or smaller creature up to 30 ft (unwilling ones save)."
         ],
         [
           14,
-          "Demiurgic Colossus",
+          "Colossus Form",
           "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleaver damage rises to 2d6."
         ]
       ]
