@@ -2,15 +2,15 @@
    turns up more draconic folk and the Greywall Holds mostly dwarves. Weights are relative: edit freely. */
 (function () {
   var D = {
-    west: { label: 'The Wildreach', races: { Human: 64, 'Half-Elf': 6, Halfling: 8, 'Half-Orc': 5, Gnome: 3, Goliath: 4, Mossborn: 3, Orc: 3, Dwarf: 2, Infernite: 1, Dragonborn: 1 },
+    west: { label: 'The Wildreach', races: { Human: 64, 'Half-Elf': 6, Halfling: 8, 'Half-Orc': 5, Gnome: 3, Goliath: 4, Mossborn: 3, Orc: 3, Dwarf: 2, Infernite: 1, Scalekin: 1 },
       jobs: ['farmer', 'shepherd', 'trapper', 'hunter', 'charcoal burner', 'hedge priest', 'knight\'s man-at-arms', 'reeve', 'miller', 'swineherd', 'herbalist', 'tavern keeper', 'pedlar', 'ex-soldier', 'beekeeper', 'well-digger'] },
-    central: { label: 'The Emberwood', races: { Human: 40, Dragonborn: 18, Kobold: 14, Lizardfolk: 8, 'Half-Elf': 5, Halfling: 5, Dwarf: 3, Gnome: 3, Infernite: 2, 'Half-Orc': 2 },
+    central: { label: 'The Emberwood', races: { Human: 40, Scalekin: 18, Kobold: 14, Lizardfolk: 8, 'Half-Elf': 5, Halfling: 5, Dwarf: 3, Gnome: 3, Infernite: 2, 'Half-Orc': 2 },
       jobs: ['timber cutter', 'sawyer', 'warden of House Ignis', 'river raftsman', 'charcoal burner', 'carpenter', 'tanner', 'forester', 'resin tapper', 'wagoner', 'tavern keeper', 'clerk of the timber yard', 'hunter', 'kennel keeper', 'smith', 'ferryman'] },
-    capital: { label: 'The Crownlands', races: { Human: 62, 'Half-Elf': 7, Halfling: 7, Dwarf: 6, Gnome: 4, 'Half-Orc': 4, Infernite: 3, Orc: 3, Dragonborn: 2, Elf: 1, Kobold: 1 },
+    capital: { label: 'The Crownlands', races: { Human: 62, 'Half-Elf': 7, Halfling: 7, Dwarf: 6, Gnome: 4, 'Half-Orc': 4, Infernite: 3, Orc: 3, Scalekin: 2, Elf: 1, Kobold: 1 },
       jobs: ['clerk', 'city guard', 'merchant', 'priest of Akoron', 'tailor', 'baker', 'lamplighter', 'scribe', 'courtier', 'bridge toll keeper', 'street vendor', 'chandler', 'herald', 'cutpurse', 'innkeeper', 'stablehand', 'apothecary', 'washerwoman', 'goldsmith', 'royal messenger'] },
     north: { label: 'The Greywall Holds', races: { Dwarf: 72, Human: 11, Gnome: 7, Halfling: 4, Goliath: 3, 'Half-Orc': 2, 'Deepgnome': 1 },
       jobs: ['miner', 'smith', 'brewer', 'mason', 'carter', 'Craghorn herder', 'terrace farmer', 'gem cutter', 'shieldbrow guard', 'hall cook', 'tunnel surveyor', 'mead-hall keeper', 'assayer', 'lamp-keeper', 'stone carver', 'clan record keeper'] },
-    south: { label: 'The Golden Coast', races: { Human: 58, Halfling: 10, 'Half-Elf': 8, Gnome: 6, Dwarf: 6, Infernite: 4, Shellback: 3, Elf: 2, Dragonborn: 2, 'Half-Orc': 1 },
+    south: { label: 'The Golden Coast', races: { Human: 58, Halfling: 10, 'Half-Elf': 8, Gnome: 6, Dwarf: 6, Infernite: 4, Shellback: 3, Elf: 2, Scalekin: 2, 'Half-Orc': 1 },
       jobs: ['merchant', 'sailor', 'dockhand', 'scholar at the university', 'moneylender', 'vintner', 'shipwright', 'fishwife', 'customs officer', 'priest', 'student', 'galley oarsman', 'cartographer', 'spice trader', 'harbour pilot', 'Caspian soldier', 'fishmonger'] },
     mournfells: { label: 'The Strait March', races: { Human: 45, Orc: 24, 'Half-Orc': 15, Goliath: 4, Dwarf: 4, Halfling: 3, Infernite: 2, Hobgoblin: 2, 'Half-Elf': 1 },
       jobs: ['coast guard sailor', 'fort soldier', 'toll clerk', 'fisher', 'ferryman', 'shepherd', 'smith', 'signal-fire keeper', 'fog guide', 'scout', 'net mender', 'barracks cook', 'old war veteran', 'boatwright'] },
@@ -34,7 +34,7 @@
     Goliath: [['Aukan', 'Maveith', 'Gae-Al', 'Eglath', 'Keothi', 'Thotham'], ['Kuori', 'Thalai', 'Nalla', 'Orilo', 'Vaunea', 'Paavu'], ['Rockbreaker', 'Skywatcher', 'Longleaper', 'Threadtwister']],
     Mossborn: [['Moss', 'Oakhollow', 'Barrow', 'Alder'], ['Fern', 'Willow', 'Sedge', 'Briar'], ['of the Glen', 'Greenhand', 'Quietroot']],
     Infernite: [['Akmenos', 'Damakos', 'Mordai', 'Leucis', 'Ekemon', 'Skamos'], ['Bryseis', 'Criella', 'Orianna', 'Rieta', 'Kallista', 'Nemeia'], ['', 'Hope', 'Sorrow', 'Ashby', 'Vane', 'Mercer']],
-    Dragonborn: [['Arjhan', 'Kriv', 'Medrash', 'Balasar', 'Ghesh', 'Torinn', 'Rhogar'], ['Sora', 'Thava', 'Nala', 'Akra', 'Biri', 'Harann', 'Kava'], ['Ignis', 'Ashvane', 'Kerrhylon', 'Myastan', 'Daardendrian', 'Clethtinthiallor']],
+    Scalekin: [['Arjhan', 'Kriv', 'Medrash', 'Balasar', 'Ghesh', 'Torinn', 'Rhogar'], ['Sora', 'Thava', 'Nala', 'Akra', 'Biri', 'Harann', 'Kava'], ['Ignis', 'Ashvane', 'Kerrhylon', 'Myastan', 'Daardendrian', 'Clethtinthiallor']],
     Kobold: [['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Skivv', 'Krik'], ['Rikka', 'Tisk', 'Vexxa', 'Yip', 'Sskarra', 'Nib'], ['Ignis', 'of the Embers', 'Ashtail', 'Coalscale']],
     Lizardfolk: [['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'], ['Thessa', 'Ssirrka', 'Usha', 'Kessk', 'Aruk', 'Viss'], ['', 'Reedwalker', 'Mudscale', 'of Dragonsneck']],
     Shellback: [['Gar', 'Tibor', 'Wollo', 'Xelbuk', 'Ukuru'], ['Nulka', 'Quee', 'Lop', 'Damu', 'Ilmu'], ['', 'Shellback', 'Tidewalker', 'Sandbar']],

@@ -179,7 +179,7 @@
     'Half-Orc': ['Dench', 'Krusk', 'Ovak', 'Sutha', 'Mhurren', 'Engong'],
     'Goliath': ['Aukan', 'Kuori', 'Maveith', 'Thalai', 'Gae-Al', 'Nalla'],
     'Infernite': ['Akmenos', 'Bryseis', 'Criella', 'Damakos', 'Orianna', 'Mordai', 'Rieta', 'Leucis'],
-    'Dragonborn': ['Arjhan', 'Kriv', 'Sora', 'Thava', 'Medrash', 'Nala'],
+    'Scalekin': ['Arjhan', 'Kriv', 'Sora', 'Thava', 'Medrash', 'Nala'],
     'Kobold': ['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Rikka', 'Skivv'],
     'Lizardfolk': ['Garurt', 'Sesk', 'Thurk', 'Achuak', 'Vush', 'Ikalk'],
     'Shellback': ['Gar', 'Nulka', 'Quee', 'Tibor', 'Wollo', 'Xelbuk', 'Socratoise', 'Plato'],
