@@ -1,6 +1,6 @@
 # Avarenth
 
-The Dungeon Master’s table for Avarenth, a homebrew D&D world: a map-first screen with the wiki, shops, the party and the journey behind every pin. Players sign in on their phones for the shared map (only what the party knows), their characters, the rules and spells.
+The Dungeon Master’s table for Avarenth, a homebrew fifth edition world: a map-first screen with the wiki, shops, the party and the journey behind every pin. Players sign in on their phones for the shared map (only what the party knows), their characters, the rules and spells.
 
 **App:** https://lordpickle8400.github.io/Avarenth/
 

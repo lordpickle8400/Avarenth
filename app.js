@@ -1639,7 +1639,7 @@
       html += '<p class="guide">' + (step === 'Domain' ? 'Your domain is the part of ' + (b.patron ? esc(b.patron) + '’s' : 'your god’s') + ' power you carry. It decides your domain spells and your Channel Divinity.' :
         step === 'Pact' ? 'What kind of pact did you make' + (b.patron ? ' with ' + esc(b.patron) : '') + '? It decides your extra spells and the gifts your patron gives you.' :
         'Where does your magic come from? Your origin shapes the gifts it gives you.') + '</p>' +
-        choiceGrid(sopts.map(function (o) { var nt = subNote(b.cls, o.name), ss = srdSub(b.cls, o.name); return [o.name, o.custom ? (o.about || 'Avarenth') : nt ? nt.about : ss ? ss.tagline || ss.about : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the D&D rules']; }), b.sub, 'bd-sub');
+        choiceGrid(sopts.map(function (o) { var nt = subNote(b.cls, o.name), ss = srdSub(b.cls, o.name); return [o.name, o.custom ? (o.about || 'Avarenth') : nt ? nt.about : ss ? ss.tagline || ss.about : (step === 'Domain' ? 'Domain' : step === 'Pact' ? 'Pact' : 'Origin') + ' from the fifth edition rules']; }), b.sub, 'bd-sub');
       var csel = b.sub ? customSub(b.cls, b.sub) : null, nsel = !csel && b.sub ? subNote(b.cls, b.sub) : null, ssel = !csel && !nsel && b.sub ? srdSub(b.cls, b.sub) : null;
       if (nsel || ssel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(b.sub) + '</h2><div class="tbl">' + (nsel ? nsel.features : ssel.features.map(function (f) { return [f[0], f[1], srdFirst(f[2])]; })).map(function (f) { return '<div class="tbl-row"><div class="main"><b>Level ' + f[0] + ': ' + esc(f[1]) + '</b><span>' + esc(f[2]) + '</span></div></div>'; }).join('') + '</div>' + (nsel ? '<p class="note" style="margin:6px 0 0">' + SUMMARY_NOTE + '</p>' : '') + '</div>';
       if (csel) html += '<div class="group-box" style="margin-top:12px"><h2>' + esc(csel.name) + '</h2>' + (csel.about ? '<p class="note" style="margin-top:0">' + rich(csel.about) + '</p>' : '') +
@@ -2061,7 +2061,7 @@
       '<button type="button" class="btn small" data-act="short-rest">Short rest</button><button type="button" class="btn small" data-act="long-rest">Long rest</button>' +
       (cd && num(s.level, 1) < 20 && !edit ? '<a class="btn small primary" href="#/level-up/' + encodeURIComponent(c.id) + '">Level up</a>' : '') +
       '<button type="button" class="btn small' + (edit ? ' primary' : ' quiet') + '" data-act="sheet-edit">' + (edit ? 'Done' : 'Edit') + '</button>' : '') +
-      (c.ddb_url && /^https:\/\//i.test(c.ddb_url) ? '<a class="btn small quiet" href="' + esc(c.ddb_url) + '" target="_blank" rel="noopener noreferrer">D&amp;D Beyond ↗</a>' : '') + '</div></header>';
+      (c.ddb_url && /^https:\/\//i.test(c.ddb_url) ? '<a class="btn small quiet" href="' + esc(c.ddb_url) + '" target="_blank" rel="noopener noreferrer">Character sheet ↗</a>' : '') + '</div></header>';
 
     if (can && !edit) {
       var steps = nextSteps(c, s).slice(0, 3);
@@ -2083,7 +2083,7 @@
         sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class with no armor', 'ac', s.ac, 'number') +
         sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') + sheetInput('Languages', 'langs', s.langs || '', '') +
         '</div><p class="hint">To gain a level, use the level-up guide. It adds hit points, mana and choices for you. Changing the level here doesn’t.</p>' +
-        '<div class="field"><label for="ch-camp">Campaign</label><select id="ch-camp" data-cf="campaign_id">' + campaignOptions(c.campaign_id, true, 'No campaign') + '</select></div><div class="field"><label for="ch-ddb">D&amp;D Beyond link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
+        '<div class="field"><label for="ch-camp">Campaign</label><select id="ch-camp" data-cf="campaign_id">' + campaignOptions(c.campaign_id, true, 'No campaign') + '</select></div><div class="field"><label for="ch-ddb">Character sheet link (optional)</label><input type="url" id="ch-ddb" data-cf="ddb_url" value="' + esc(c.ddb_url || '') + '" placeholder="https://www.dndbeyond.com/characters/…"></div></div>';
     }
 
 
@@ -2132,7 +2132,7 @@
     $view.innerHTML = html;
     var barEl = document.querySelector('header.bar'); if (barEl) document.documentElement.style.setProperty('--bar-h', barEl.offsetHeight + 'px');
   }
-  // Phone sheet, laid out like the D&D Beyond app: a stat card up top, then one section at a time under a header that stays put; the menu button lists every section.
+  // Phone sheet, laid out like a character sheet app: a stat card up top, then one section at a time under a header that stays put; the menu button lists every section.
   var M_ICON = {
     Abilities: '<path d="M12 3l7 4v6c0 4-3 7-7 8-4-1-7-4-7-8V7z"/>',
     Skills: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
@@ -2265,7 +2265,7 @@
       '<div class="tbl">' + (sp0.traits || []).map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></section>';
     return html;
   }
-  /* Class resources from the D&D rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
+  /* Class resources from the fifth edition rules: only what this class has at this level. Spell slots are left out: mana replaces them. */
   /* ---------- Conditions, exhaustion, inspiration, death saves, carrying ---------- */
   var CONDITIONS = ['Blinded', 'Charmed', 'Deafened', 'Frightened', 'Grappled', 'Incapacitated', 'Invisible', 'Paralyzed', 'Petrified', 'Poisoned', 'Prone', 'Restrained', 'Stunned', 'Unconscious'];
   var EXHAUSTION = ['None', 'Disadvantage on ability checks', 'Speed halved', 'Disadvantage on attacks and saving throws', 'Hit point maximum halved', 'Speed reduced to 0', 'Death'];
@@ -3375,8 +3375,8 @@
       var split = L.split || (L.split = party.map(function (ch) { return ch.id; }));
       html += '<div class="lt-rollbar"><button type="button" class="btn primary" data-act="lt-roll">' + (kept ? 'Reroll the rest' : 'Reroll all') + '</button><span class="note">' + (kept ? kept + ' kept' : 'Nothing kept yet') + '</span></div>' +
         (L.items.length ? '<div class="lt-items">' + L.items.map(function (it) {
-          var real = gearFind(it.name), src = real ? (real.it.hb ? '<span class="tag lt-src-hb">Homebrew</span>' : '<span class="tag lt-src-dd">D&amp;D</span>') : '';
-          if (ui.ltEdit === it.id) return '<form class="lt-item lt-edit" id="lt-editf" data-ltedit="' + it.id + '" novalidate><div class="main"><label class="sr" for="lte-n">Item</label><input class="input" id="lte-n" list="lt-gear" value="' + esc(it.name) + '" placeholder="Any D&D or homebrew item, or type your own">' +
+          var real = gearFind(it.name), src = real ? (real.it.hb ? '<span class="tag lt-src-hb">Homebrew</span>' : '<span class="tag lt-src-dd">SRD</span>') : '';
+          if (ui.ltEdit === it.id) return '<form class="lt-item lt-edit" id="lt-editf" data-ltedit="' + it.id + '" novalidate><div class="main"><label class="sr" for="lte-n">Item</label><input class="input" id="lte-n" list="lt-gear" value="' + esc(it.name) + '" placeholder="Any SRD or homebrew item, or type your own">' +
             '<div class="lte-row"><label>Qty<input class="input" id="lte-q" type="number" min="1" inputmode="numeric" value="' + it.qty + '"></label><label>Worth (gp each)<input class="input" id="lte-v" type="number" min="0" inputmode="decimal" value="' + (it.val || 0) + '"></label></div>' +
             '<div class="actions tight"><button type="submit" class="btn small primary">Save</button><button type="button" class="btn small quiet" data-act="lt-editx">Cancel</button></div></div></form>';
           return '<div class="lt-item' + (it.keep ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keep" data-id="' + it.id + '" aria-pressed="' + !!it.keep + '">' + (it.keep ? 'Kept' : 'Keep') + '</button>' +
@@ -3387,7 +3387,7 @@
         }).join('') + '</div>' : '<div class="empty">Nothing but dust.</div>') +
         '<div class="lt-item lt-coinrow' + (L.keepCoins ? ' kept' : '') + '"><button type="button" class="keep" data-act="lt-keepcoin" aria-pressed="' + !!L.keepCoins + '">' + (L.keepCoins ? 'Kept' : 'Keep') + '</button>' +
           '<div class="lt-coins">' + ['pp', 'gp', 'sp', 'cp'].map(function (k) { return '<label><span>' + k + '</span><input class="input" type="number" min="0" inputmode="numeric" data-ltcoin="' + k + '" value="' + L.coins[k] + '"></label>'; }).join('') + '</div></div>' +
-        '<form class="lt-addline" id="lt-line" novalidate><label class="sr" for="lt-line-n">Add an item</label><input class="input" type="text" id="lt-line-n" list="lt-gear" placeholder="Add any D&D or homebrew item…" maxlength="80"><button type="submit" class="btn small">Add</button></form>' +
+        '<form class="lt-addline" id="lt-line" novalidate><label class="sr" for="lt-line-n">Add an item</label><input class="input" type="text" id="lt-line-n" list="lt-gear" placeholder="Add any SRD or homebrew item…" maxlength="80"><button type="submit" class="btn small">Add</button></form>' +
         '<div class="lt-magic"><span class="note">Add a random magic item:</span>' + LT_RARITY.map(function (r) { return '<button type="button" class="chip" data-act="lt-magic" data-r="' + r + '">' + r + '</button>'; }).join('') +
         '<label class="check lt-hbonly"><input type="checkbox" id="lt-hbonly"' + (ui.ltHbOnly ? ' checked' : '') + '> Homebrew only</label></div>' +
         '<datalist id="lt-gear">' + lootGearNames().map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
@@ -3397,7 +3397,7 @@
     $view.innerHTML = html + '</div>';
   }
   renderLoot.ensure = function () { ui.loot = ui.loot || { picks: [], places: [], items: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, rolled: false }; ui.loot.places = ui.loot.places || []; };
-  // Loot lines can be any real item: the D&D catalog plus approved homebrew.
+  // Loot lines can be any real item: the SRD catalog plus approved homebrew.
   var LT_RARITY = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
   var LT_RARITY_GP = { Common: 100, Uncommon: 400, Rare: 4000, 'Very Rare': 40000, Legendary: 100000 };
   function lootGearNames() {
@@ -3929,7 +3929,7 @@
   function dornishBase(name) { var m = /^(?:unmarked\s+)?dornish[- ]steel\s+(.+)$/i.exec(String(name || '').trim()); return m ? m[1] : ''; }
   function isDornish(it) { return !!(it && (it.ds || dornishBase(it.name))); }
   /* Item quality, 0 Rough to 4 Masterwork. Sound is normal. Never as good as magic: masterwork is +1 to hit, nothing on damage, and doesn't stack with a magic bonus.
-     Built on D&D 3.5's masterwork items; Rough's drawbacks are house rules. */
+     Built on the older edition's masterwork items; Rough's drawbacks are house rules. */
   var QUALITY_NAMES = ['Rough', 'Sound', 'Good', 'Fine', 'Masterwork'];
   function itemQ(it) { return !it ? 1 : it.made ? num(it.made.q, 1) : it.q != null ? num(it.q, 1) : 1; }
   function qualityKind(k) { return /^(sw|mw|rw|la|ma|ha|sh|t|k|i|p|weapon|armor|shield|tool|kit|instrument|potion)$/.test(k || ''); }
@@ -5594,7 +5594,7 @@
     var classes = Object.keys(RULES.classes);
     if (ui.subEdit) return renderSubclassForm();
     var html = '<div class="page narrow"><p class="crumbs"><a href="#/characters">Characters</a></p><h1 class="page-title">Custom subclasses</h1>' +
-      '<p class="note">Your own domains, pacts, oaths and the rest. They appear in the builder and at level-up next to the D&D ones, for the patrons you choose, and their features land on the sheet at the right levels.</p>' +
+      '<p class="note">Your own domains, pacts, oaths and the rest. They appear in the builder and at level-up next to the standard ones, for the patrons you choose, and their features land on the sheet at the right levels.</p>' +
       '<div class="actions"><button type="button" class="btn primary" data-act="sub-new">+ New subclass</button></div>';
     var any = false;
     classes.forEach(function (cls) {
@@ -5620,7 +5620,7 @@
       '<div class="field"><span class="lbl">Granted by</span><p class="note" style="margin:0 0 6px">Tick none and anyone can take it.</p><div class="chips">' + patrons.map(function (n) {
         return '<button type="button" class="chip pick" data-act="sub-patron" data-name="' + esc(n) + '" aria-pressed="' + (e.patrons.indexOf(n) >= 0) + '">' + esc(n) + '</button>';
       }).join('') + '</div></div>' +
-      '<div class="field"><span class="lbl">Features</span><p class="note" style="margin:0 0 6px">D&D gives ' + esc(e.class) + ' subclass features at levels ' + (RULES.subLevels[e.class] || []).join(', ') + '.</p>' +
+      '<div class="field"><span class="lbl">Features</span><p class="note" style="margin:0 0 6px">The rules give ' + esc(e.class) + ' subclass features at levels ' + (RULES.subLevels[e.class] || []).join(', ') + '.</p>' +
       e.features.map(function (f, i) {
         return '<div class="group-box sub-feat"><div class="two"><div class="field"><label for="sf-l' + i + '">Level</label><input type="number" id="sf-l' + i + '" data-subfeat="level" data-i="' + i + '" min="1" max="20" value="' + num(f.level, 1) + '" inputmode="numeric"></div>' +
           '<div class="field"><label for="sf-n' + i + '">Feature</label><input type="text" id="sf-n' + i + '" data-subfeat="name" data-i="' + i + '" maxlength="80" value="' + esc(f.name) + '"></div></div>' +
@@ -12302,7 +12302,7 @@
     } finally { setTimeout(function () { AT.remote = false; }, 400); }
   }
 
-  /* ================= The free D&D rules (SRD 5.2.1) =================
+  /* ================= The free fifth edition rules (SRD 5.2.1) =================
      srd.json holds the System Reference Document 5.2.1 by Wizards of the Coast (CC-BY-4.0): full class
      feature text, one subclass per class, feats, species, backgrounds, Metamagic and Invocations.
      It loads once after sign-in. Anything from the paid books stays a name only. */
@@ -12517,7 +12517,7 @@
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
     var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Tinkerings']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
-    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1>' + helpNote('rules', 'The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.') + '</div>' +
+    var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1>' + helpNote('rules', 'The free 2024 fifth edition rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.') + '</div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
     if (tab === 'classes' || tab === 'subclasses') {
       var names = Object.keys(SRD.classes).concat(Object.keys(RULES.classes).filter(function (k) { return !SRD.classes[k]; }));
