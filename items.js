@@ -186,7 +186,7 @@
     'Corvin': ['Creak', 'Rattle', 'Chime', 'Hush', 'Scratch', 'Whistle'],
     'Goblin': ['Nix', 'Grib', 'Skreech', 'Toadbelly', 'Blix', 'Wort'],
     'Felari': ['Five Timber', 'Smoke on Water', 'Two Dry Cloaks', 'Bright Thread', 'Cloud on the Mountain'],
-    'Firbolg': ['Moss', 'Oakhollow', 'Fernwhistle', 'Barrow'],
+    'Mossborn': ['Moss', 'Oakhollow', 'Fernwhistle', 'Barrow'],
     'Bugbear': ['Klarg', 'Grumble', 'Hrud', 'Mog'],
     'Half-Elf': ['Ilvan', 'Seren', 'Tavian', 'Lirael'],
     'Gnoll': ['Yeenrik', 'Grawl', 'Hackle']

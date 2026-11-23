@@ -2,7 +2,7 @@
    turns up more draconic folk and the Greywall Holds mostly dwarves. Weights are relative: edit freely. */
 (function () {
   var D = {
-    west: { label: 'The Wildreach', races: { Human: 64, 'Half-Elf': 6, Halfling: 8, 'Half-Orc': 5, Gnome: 3, Goliath: 4, Firbolg: 3, Orc: 3, Dwarf: 2, Tiefling: 1, Dragonborn: 1 },
+    west: { label: 'The Wildreach', races: { Human: 64, 'Half-Elf': 6, Halfling: 8, 'Half-Orc': 5, Gnome: 3, Goliath: 4, Mossborn: 3, Orc: 3, Dwarf: 2, Tiefling: 1, Dragonborn: 1 },
       jobs: ['farmer', 'shepherd', 'trapper', 'hunter', 'charcoal burner', 'hedge priest', 'knight\'s man-at-arms', 'reeve', 'miller', 'swineherd', 'herbalist', 'tavern keeper', 'pedlar', 'ex-soldier', 'beekeeper', 'well-digger'] },
     central: { label: 'The Emberwood', races: { Human: 40, Dragonborn: 18, Kobold: 14, Lizardfolk: 8, 'Half-Elf': 5, Halfling: 5, Dwarf: 3, Gnome: 3, Tiefling: 2, 'Half-Orc': 2 },
       jobs: ['timber cutter', 'sawyer', 'warden of House Ignis', 'river raftsman', 'charcoal burner', 'carpenter', 'tanner', 'forester', 'resin tapper', 'wagoner', 'tavern keeper', 'clerk of the timber yard', 'hunter', 'kennel keeper', 'smith', 'ferryman'] },
@@ -32,7 +32,7 @@
     Orc: [['Grosh', 'Thokk', 'Bazrak', 'Durth', 'Henk', 'Krusk', 'Shump'], ['Murga', 'Ushna', 'Volga', 'Baggi', 'Emen', 'Kansif', 'Ovak'], ['Stonefist', 'Bonecleaver', 'Ironhide', 'of the Strait', 'Blackbrook', 'Tuskward']],
     'Half-Orc': [['Dench', 'Krusk', 'Mhurren', 'Engong', 'Gell', 'Ront'], ['Sutha', 'Ovak', 'Yevelda', 'Neega', 'Shautha', 'Vola'], ['Thorne', 'Ashby', 'Ironhide', 'Marsh', 'Grimm']],
     Goliath: [['Aukan', 'Maveith', 'Gae-Al', 'Eglath', 'Keothi', 'Thotham'], ['Kuori', 'Thalai', 'Nalla', 'Orilo', 'Vaunea', 'Paavu'], ['Rockbreaker', 'Skywatcher', 'Longleaper', 'Threadtwister']],
-    Firbolg: [['Moss', 'Oakhollow', 'Barrow', 'Alder'], ['Fern', 'Willow', 'Sedge', 'Briar'], ['of the Glen', 'Greenhand', 'Quietroot']],
+    Mossborn: [['Moss', 'Oakhollow', 'Barrow', 'Alder'], ['Fern', 'Willow', 'Sedge', 'Briar'], ['of the Glen', 'Greenhand', 'Quietroot']],
     Tiefling: [['Akmenos', 'Damakos', 'Mordai', 'Leucis', 'Ekemon', 'Skamos'], ['Bryseis', 'Criella', 'Orianna', 'Rieta', 'Kallista', 'Nemeia'], ['', 'Hope', 'Sorrow', 'Ashby', 'Vane', 'Mercer']],
     Dragonborn: [['Arjhan', 'Kriv', 'Medrash', 'Balasar', 'Ghesh', 'Torinn', 'Rhogar'], ['Sora', 'Thava', 'Nala', 'Akra', 'Biri', 'Harann', 'Kava'], ['Ignis', 'Ashvane', 'Kerrhylon', 'Myastan', 'Daardendrian', 'Clethtinthiallor']],
     Kobold: [['Snarl', 'Kib', 'Tazzik', 'Meepo', 'Skivv', 'Krik'], ['Rikka', 'Tisk', 'Vexxa', 'Yip', 'Sskarra', 'Nib'], ['Ignis', 'of the Embers', 'Ashtail', 'Coalscale']],
