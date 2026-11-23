@@ -1098,10 +1098,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Intelligence",
       "feat": "Artisan's Hand",
-      "skills": "Investigation and Persuasion",
+      "skills": "Arcana and Investigation",
       "skillList": [
-        "Investigation",
-        "Persuasion"
+        "Arcana",
+        "Investigation"
       ],
       "tool": "One artisan's tool",
       "equipment": "The tool, 2 pouches, traveler's clothes, 32 gp; or 50 gp",
@@ -1113,10 +1113,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Constitution, Charisma",
       "feat": "Skilled",
-      "skills": "Deception and Sleight of Hand",
+      "skills": "Deception and Intimidation",
       "skillList": [
         "Deception",
-        "Sleight of Hand"
+        "Intimidation"
       ],
       "tool": "Forgery kit",
       "equipment": "Forgery kit, costume, fine clothes, 15 gp; or 50 gp",
@@ -1128,10 +1128,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Charisma",
       "feat": "Lyric Heart",
-      "skills": "Acrobatics and Performance",
+      "skills": "Performance and Insight",
       "skillList": [
-        "Acrobatics",
-        "Performance"
+        "Performance",
+        "Insight"
       ],
       "tool": "One musical instrument",
       "equipment": "Instrument, 2 costumes, mirror, perfume, traveler's clothes, 11 gp; or 50 gp",
@@ -1143,10 +1143,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",
-      "skills": "Animal Handling and Nature",
+      "skills": "Nature and Athletics",
       "skillList": [
-        "Animal Handling",
-        "Nature"
+        "Nature",
+        "Athletics"
       ],
       "tool": "Carpenter's tools",
       "equipment": "Sickle, carpenter's tools, healer's kit, iron pot, shovel, traveler's clothes, 30 gp; or 50 gp",
@@ -1158,9 +1158,9 @@
       "book": "Avarenth",
       "abilities": "Strength, Intelligence, Wisdom",
       "feat": "Alert",
-      "skills": "Athletics and Perception",
+      "skills": "Intimidation and Perception",
       "skillList": [
-        "Athletics",
+        "Intimidation",
         "Perception"
       ],
       "tool": "One gaming set",
@@ -1173,10 +1173,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Constitution, Wisdom",
       "feat": "Magic Initiate (Druid)",
-      "skills": "Stealth and Survival",
+      "skills": "Survival and Insight",
       "skillList": [
-        "Stealth",
-        "Survival"
+        "Survival",
+        "Insight"
       ],
       "tool": "Cartographer's tools",
       "equipment": "Shortbow and arrows, cartographer's tools, bedroll, quiver, tent, traveler's clothes, 3 gp; or 50 gp",
@@ -1188,10 +1188,10 @@
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Field Medic",
-      "skills": "Medicine and Religion",
+      "skills": "Medicine and Arcana",
       "skillList": [
         "Medicine",
-        "Religion"
+        "Arcana"
       ],
       "tool": "Herbalism kit",
       "equipment": "Quarterstaff, herbalism kit, bedroll, book of philosophy, lamp, oil, traveler's clothes, 16 gp; or 50 gp",
@@ -1203,10 +1203,10 @@
       "book": "Avarenth",
       "abilities": "Constitution, Intelligence, Charisma",
       "feat": "Fortune Pool",
-      "skills": "Animal Handling and Persuasion",
+      "skills": "Persuasion and Perception",
       "skillList": [
-        "Animal Handling",
-        "Persuasion"
+        "Persuasion",
+        "Perception"
       ],
       "tool": "Navigator's tools",
       "equipment": "Navigator's tools, 2 pouches, traveler's clothes, 22 gp; or 50 gp",
@@ -1218,10 +1218,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Intelligence, Charisma",
       "feat": "Skilled",
-      "skills": "History and Persuasion",
+      "skills": "History and Intimidation",
       "skillList": [
         "History",
-        "Persuasion"
+        "Intimidation"
       ],
       "tool": "One gaming set",
       "equipment": "Gaming set, fine clothes, perfume, 29 gp; or 50 gp",
@@ -1233,10 +1233,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Wisdom",
       "feat": "Alehouse Fists",
-      "skills": "Acrobatics and Perception",
+      "skills": "Acrobatics and Survival",
       "skillList": [
         "Acrobatics",
-        "Perception"
+        "Survival"
       ],
       "tool": "Navigator's tools",
       "equipment": "Dagger, navigator's tools, rope, traveler's clothes, 20 gp; or 50 gp",
@@ -1248,10 +1248,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Intelligence, Wisdom",
       "feat": "Skilled",
-      "skills": "Investigation and Perception",
+      "skills": "History and Investigation",
       "skillList": [
-        "Investigation",
-        "Perception"
+        "History",
+        "Investigation"
       ],
       "tool": "Calligrapher's supplies",
       "equipment": "Calligrapher's supplies, fine clothes, lamp, oil, parchment, 23 gp; or 50 gp",
@@ -1263,10 +1263,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Fortune Pool",
-      "skills": "Insight and Stealth",
+      "skills": "Stealth and Survival",
       "skillList": [
-        "Insight",
-        "Stealth"
+        "Stealth",
+        "Survival"
       ],
       "tool": "Thieves' tools",
       "equipment": "2 daggers, thieves' tools, gaming set, bedroll, 2 pouches, traveler's clothes, 16 gp; or 50 gp",
@@ -1278,10 +1278,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",
-      "skills": "Animal Handling and Survival",
+      "skills": "Animal Handling and Insight",
       "skillList": [
         "Animal Handling",
-        "Survival"
+        "Insight"
       ],
       "tool": "One artisan's tool, vehicles (land)",
       "equipment": "Artisan's tool, shovel, iron pot, common clothes, 10 gp; or 50 gp",
@@ -1293,10 +1293,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Intelligence, Charisma",
       "feat": "Artisan's Hand",
-      "skills": "Insight and Persuasion",
+      "skills": "Insight and History",
       "skillList": [
         "Insight",
-        "Persuasion"
+        "History"
       ],
       "tool": "One artisan's tool",
       "equipment": "Artisan's tool, letter of introduction from your guild, traveler's clothes, 15 gp; or 50 gp",
@@ -1308,10 +1308,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",
-      "skills": "Athletics and Survival",
+      "skills": "Athletics and Animal Handling",
       "skillList": [
         "Athletics",
-        "Survival"
+        "Animal Handling"
       ],
       "tool": "One musical instrument",
       "equipment": "Staff, hunting trap, animal trophy, traveler's clothes, 10 gp; or 50 gp",
@@ -1323,10 +1323,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Constitution, Wisdom",
       "feat": "Fortune Pool",
-      "skills": "Sleight of Hand and Stealth",
+      "skills": "Sleight of Hand and Perception",
       "skillList": [
         "Sleight of Hand",
-        "Stealth"
+        "Perception"
       ],
       "tool": "Disguise kit, thieves' tools",
       "equipment": "Small knife, city map, pet mouse, token of your parents, common clothes, 10 gp; or 50 gp",
@@ -1338,10 +1338,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Alert",
-      "skills": "Athletics and Insight",
+      "skills": "Perception and Athletics",
       "skillList": [
-        "Athletics",
-        "Insight"
+        "Perception",
+        "Athletics"
       ],
       "tool": "None (two languages)",
       "equipment": "Uniform, horn, manacles, 10 gp; or 50 gp",
@@ -1353,10 +1353,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Intelligence, Wisdom",
       "feat": "Artisan's Hand",
-      "skills": "History and Insight",
+      "skills": "History and Arcana",
       "skillList": [
         "History",
-        "Insight"
+        "Arcana"
       ],
       "tool": "One artisan's tool",
       "equipment": "Artisan's tool, maker's mark chisel, traveler's clothes, 5 gp and a gem; or 50 gp",
@@ -1368,9 +1368,9 @@
       "book": "Avarenth",
       "abilities": "Intelligence, Wisdom, Charisma",
       "feat": "Magic Initiate (Wizard)",
-      "skills": "History and Religion",
+      "skills": "Arcana and Religion",
       "skillList": [
-        "History",
+        "Arcana",
         "Religion"
       ],
       "tool": "None (two languages)",
@@ -1383,10 +1383,10 @@
       "book": "Avarenth",
       "abilities": "Intelligence, Wisdom, Charisma",
       "feat": "Skilled",
-      "skills": "Insight and Persuasion",
+      "skills": "Insight and Deception",
       "skillList": [
         "Insight",
-        "Persuasion"
+        "Deception"
       ],
       "tool": "None (two languages)",
       "equipment": "Fine clothes, 5 gp; or 50 gp",
@@ -1398,9 +1398,9 @@
       "book": "Avarenth",
       "abilities": "Intelligence, Wisdom, Charisma",
       "feat": "Skilled",
-      "skills": "Insight and Persuasion",
+      "skills": "Investigation and Persuasion",
       "skillList": [
-        "Insight",
+        "Investigation",
         "Persuasion"
       ],
       "tool": "None (two languages)",
@@ -1413,9 +1413,9 @@
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Skilled",
-      "skills": "Insight and Perception",
+      "skills": "Survival and Perception",
       "skillList": [
-        "Insight",
+        "Survival",
         "Perception"
       ],
       "tool": "One instrument or gaming set",
@@ -1428,10 +1428,10 @@
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Fortune Pool",
-      "skills": "Survival and History",
+      "skills": "History and Persuasion",
       "skillList": [
-        "Survival",
-        "History"
+        "History",
+        "Persuasion"
       ],
       "tool": "One gaming set or instrument",
       "equipment": "Your inheritance (an item, document or secret), traveler's clothes, tool, 15 gp; or 50 gp",
@@ -1443,10 +1443,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Wisdom, Charisma",
       "feat": "Skilled",
-      "skills": "Persuasion and Religion",
+      "skills": "Religion and Insight",
       "skillList": [
-        "Persuasion",
-        "Religion"
+        "Religion",
+        "Insight"
       ],
       "tool": "One gaming set or instrument",
       "equipment": "Traveler's clothes, signet or banner, 10 gp; or 50 gp",
@@ -1458,10 +1458,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Constitution",
       "feat": "Savage Attacker",
-      "skills": "Athletics and Persuasion",
+      "skills": "Athletics and Survival",
       "skillList": [
         "Athletics",
-        "Persuasion"
+        "Survival"
       ],
       "tool": "One gaming set, vehicles (land)",
       "equipment": "Uniform of your company, insignia, gaming set, common clothes, 10 gp; or 50 gp",
@@ -1473,10 +1473,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Alert",
-      "skills": "Insight and Stealth",
+      "skills": "Stealth and Insight",
       "skillList": [
-        "Insight",
-        "Stealth"
+        "Stealth",
+        "Insight"
       ],
       "tool": "Two of gaming set, instrument, thieves' tools",
       "equipment": "Clothes for your work, 20 gp; or 50 gp",
@@ -1488,10 +1488,10 @@
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Alert",
-      "skills": "Investigation and Religion",
+      "skills": "Religion and Medicine",
       "skillList": [
-        "Investigation",
-        "Religion"
+        "Religion",
+        "Medicine"
       ],
       "tool": "None (two exotic languages)",
       "equipment": "Monster hunter's pack, common clothes, 1 sp; or 50 gp",
@@ -1503,10 +1503,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Intelligence, Wisdom",
       "feat": "Alert",
-      "skills": "Insight and Investigation",
+      "skills": "Insight and Perception",
       "skillList": [
         "Insight",
-        "Investigation"
+        "Perception"
       ],
       "tool": "Disguise kit, thieves' tools",
       "equipment": "Magnifying glass, evidence from a case, common clothes, 10 gp; or 50 gp",
@@ -1518,10 +1518,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Wisdom",
       "feat": "Alehouse Fists",
-      "skills": "Athletics and Perception",
+      "skills": "Athletics and Acrobatics",
       "skillList": [
         "Athletics",
-        "Perception"
+        "Acrobatics"
       ],
       "tool": "Navigator's tools, vehicles (water)",
       "equipment": "Belaying pin (club), silk rope, lucky charm, common clothes, 10 gp; or 50 gp",
@@ -1533,10 +1533,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Intelligence, Charisma",
       "feat": "Alert",
-      "skills": "Deception and Stealth",
+      "skills": "Deception and Investigation",
       "skillList": [
         "Deception",
-        "Stealth"
+        "Investigation"
       ],
       "tool": "Gaming set, thieves' tools",
       "equipment": "Crowbar, dark clothes with a hood, 15 gp; or 50 gp",
@@ -1548,10 +1548,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Charisma",
       "feat": "Savage Attacker",
-      "skills": "Acrobatics and Performance",
+      "skills": "Athletics and Intimidation",
       "skillList": [
-        "Acrobatics",
-        "Performance"
+        "Athletics",
+        "Intimidation"
       ],
       "tool": "Disguise kit, one unusual weapon",
       "equipment": "An unusual weapon (net, trident), costume, admirer's favor, 15 gp; or 50 gp",
@@ -1563,10 +1563,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Wisdom, Charisma",
       "feat": "Skilled",
-      "skills": "History and Persuasion",
+      "skills": "Athletics and History",
       "skillList": [
-        "History",
-        "Persuasion"
+        "Athletics",
+        "History"
       ],
       "tool": "One gaming set",
       "equipment": "Fine clothes, signet ring, scroll of pedigree, 25 gp, and three retainers; or 50 gp",
@@ -1578,10 +1578,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Dexterity, Intelligence",
       "feat": "Artisan's Hand",
-      "skills": "History and Perception",
+      "skills": "Athletics and Investigation",
       "skillList": [
-        "History",
-        "Perception"
+        "Athletics",
+        "Investigation"
       ],
       "tool": "Carpenter's tools, vehicles (water)",
       "equipment": "Carpenter's tools, common clothes, quill and ink, 10 gp; or 50 gp",
@@ -1593,9 +1593,9 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Fortune Pool",
-      "skills": "Athletics and Deception",
+      "skills": "Stealth and Deception",
       "skillList": [
-        "Athletics",
+        "Stealth",
         "Deception"
       ],
       "tool": "Vehicles (water)",
@@ -1608,10 +1608,10 @@
       "book": "Avarenth",
       "abilities": "Strength, Intelligence, Wisdom",
       "feat": "Alert",
-      "skills": "History and Survival",
+      "skills": "History and Medicine",
       "skillList": [
         "History",
-        "Survival"
+        "Medicine"
       ],
       "tool": "Cartographer's or navigator's tools",
       "equipment": "Map or scroll case, lantern, miner's pick, shovel, two-person tent, trinket from a dig, 25 gp; or 50 gp",
@@ -1623,10 +1623,10 @@
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Magic Initiate (Druid)",
-      "skills": "Deception and Survival",
+      "skills": "Nature and Perception",
       "skillList": [
-        "Deception",
-        "Survival"
+        "Nature",
+        "Perception"
       ],
       "tool": "One musical instrument",
       "equipment": "Instrument, three trinkets from the fey realm, traveler's clothes, 8 gp; or 50 gp",
