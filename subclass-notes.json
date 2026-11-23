@@ -1907,8 +1907,8 @@
         ]
       ]
     },
-    "The Undead": {
-      "about": "Your patron is a creature of death, and its gifts give you a grip on the grave. Undead-pact warlocks are feared by the church and sought by the cults of the dead.",
+    "The Deathless": {
+      "about": "Your patron is a creature of death, and its gifts give you a grip on the grave. Deathless-pact warlocks are feared by the church and sought by the cults of the dead.",
       "features": [
         [
           1,
@@ -3002,8 +3002,8 @@
         ]
       ]
     },
-    "Chronurgy Magic": {
-      "about": "Wizards who bend time for a moment, and who see the past and the future in a single breath. Chronurgists are rare and cautious, and the wise do not ask them to rush.",
+    "Timecraft": {
+      "about": "Wizards who bend time for a moment, and who see the past and the future in a single breath. Timecrafters are rare and cautious, and the wise do not ask them to rush.",
       "features": [
         [
           2,
@@ -3032,8 +3032,8 @@
         ]
       ]
     },
-    "Graviturgy Magic": {
-      "about": "Wizards who shape gravity itself, dragging foes to the ground and lifting the heavy as if they were light. Graviturgists are feared for their power and respected for their care.",
+    "Weightcraft": {
+      "about": "Wizards who shape gravity itself, dragging foes to the ground and lifting the heavy as if they were light. Weightcrafters are feared for their power and respected for their care.",
       "features": [
         [
           2,
@@ -3057,8 +3057,8 @@
         ]
       ]
     },
-    "Order of Scribes": {
-      "about": "Wizards who write the spells they learn into their own books, and who can copy a spell from any page. Scribes are the librarians of the mage-guilds and the keepers of its secrets.",
+    "Order of the Inkwright": {
+      "about": "Wizards who write the spells they learn into their own books, and who can copy a spell from any page. Inkwrights are the librarians of the mage-guilds and the keepers of its secrets.",
       "features": [
         [
           2,

@@ -202,7 +202,7 @@ S["Warlock"] = {
   [6, "Elemental Gift", "Resistance to your genie's damage type, and fly for 10 minutes a few times per long rest."],
   [10, "Sanctuary Vessel", "Bring up to five creatures into your vessel; a short rest there heals more."],
   [14, "Limited Wish", "Once per long-ish rest (1d4 long rests), cast any 6th-level or lower spell with a casting time of one action, without needing a tome. Your patron will remember the favor."]]),
- "The Undead": ("A pact with a deathless being.", [
+ "The Deathless": ("A pact with a deathless being.", [
   [1, "Expanded spells", "Avarenth: subclasses add no spells. These suit your patron; your patron may teach them, as a debt."],
   [1, "Form of Dread", "Bonus action: transform for a minute, gaining temporary HP and immunity to fear, and your first hit each turn can frighten. Uses per long rest equal to proficiency bonus."],
   [6, "Grave Touched", "No need to eat, drink or breathe; once per turn, an attack can deal necrotic and extra damage in your dread form."],

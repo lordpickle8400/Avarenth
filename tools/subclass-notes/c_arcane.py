@@ -226,18 +226,18 @@ S["Wizard"] = {
   [6, "Power Surge", "Store power surges when you counter or dispel magic, and spend them for extra force damage."],
   [10, "Durable Magic", "+2 AC and saves while concentrating."],
   [14, "Deflecting Shroud", "Arcane Deflection also blasts nearby creatures with force damage."]]),
- "Chronurgy Magic": ("Wizards who bend time.", [
+ "Timecraft": ("Wizards who bend time.", [
   [2, "Chronal Shift", "Reaction: force a creature to reroll an attack, check or save, twice per long rest."],
   [2, "Temporal Awareness", "Add Intelligence to initiative."],
   [6, "Momentary Stasis", "Freeze a Large or smaller creature in time (Con save), a few times per long rest."],
   [10, "Arcane Abeyance", "Store a 4th-level or lower spell in a bead someone else can use, once per short rest."],
   [14, "Convergent Future", "Decide whether a roll you can see succeeds or fails, at the cost of a level of exhaustion."]]),
- "Graviturgy Magic": ("Wizards who bend gravity.", [
+ "Weightcraft": ("Wizards who bend gravity.", [
   [2, "Adjust Density", "Make a creature heavier or lighter for a minute."],
   [6, "Gravity Well", "When your spell hits or affects a creature, move it 5 ft."],
   [10, "Violent Attraction", "Reaction: add damage to an attack, or to falling damage, a few times per long rest."],
   [14, "Event Horizon", "A field that drags enemies toward you and stops their movement, once per long rest (or spend 18 mana)."]]),
- "Order of Scribes": ("Wizards whose spellbook is alive.", [
+ "Order of the Inkwright": ("Wizards whose spellbook is alive.", [
   [2, "Wizardly Quill", "A magical quill that copies spells quickly and cheaply."],
   [2, "Awakened Spellbook", "Swap a spell's damage type for another from your book, and cast rituals faster."],
   [6, "Manifest Mind", "Make your book's spirit appear and cast spells from its location."],
