@@ -183,10 +183,10 @@
       "own": true
     },
     {
-      "name": "Durable",
+      "name": "Stalwart",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -196,10 +196,10 @@
       "own": true
     },
     {
-      "name": "Elemental Adept",
+      "name": "Elemental Focus",
       "category": "General",
       "prereq": "Level 4+, a spell or mana",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -209,10 +209,10 @@
       "own": true
     },
     {
-      "name": "Fey Touched",
+      "name": "Wildtouched",
       "category": "General",
       "prereq": "Level 4+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -222,10 +222,10 @@
       "own": true
     },
     {
-      "name": "Great Weapon Master",
+      "name": "Greatblade Master",
       "category": "General",
       "prereq": "Level 4+, Strength 13+",
-      "book": "Player's Handbook (2024)",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -664,10 +664,10 @@
       "own": true
     },
     {
-      "name": "Eldritch Adept",
+      "name": "Warded Caster",
       "category": "General",
       "prereq": "Level 4+, a spell or Pact Magic",
-      "book": "Tasha's Cauldron of Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -677,10 +677,10 @@
       "own": true
     },
     {
-      "name": "Fighting Initiate",
+      "name": "Style Apprentice",
       "category": "General",
       "prereq": "Level 4+, martial weapon proficiency",
-      "book": "Tasha's Cauldron of Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -768,10 +768,10 @@
       "own": true
     },
     {
-      "name": "Dwarven Fortitude",
+      "name": "Clan Grit",
       "category": "General",
       "prereq": "Level 4+, Dwarf",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -781,10 +781,10 @@
       "own": true
     },
     {
-      "name": "Elven Accuracy",
+      "name": "Sure Aim",
       "category": "General",
       "prereq": "Level 4+, Elf or Half-Elf",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -794,10 +794,10 @@
       "own": true
     },
     {
-      "name": "Fade Away",
+      "name": "Vanish Step",
       "category": "General",
       "prereq": "Level 4+, Gnome",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -807,10 +807,10 @@
       "own": true
     },
     {
-      "name": "Fey Teleportation",
+      "name": "Glade Step",
       "category": "General",
       "prereq": "Level 4+, High Elf",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
