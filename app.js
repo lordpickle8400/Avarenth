@@ -11622,9 +11622,10 @@
       // The padded background is the limit: pan only across its 15% margin, never past it.
       var pd = 0.15, cover = Math.max(s.w / (AT.W * (1 + 2 * pd)), s.h / (AT.H * (1 + 2 * pd)));
       AT.k = Math.max(AT.k, cover); // never zoom out far enough to show the empty stage behind the margin
-      var ox = pd * AT.W * AT.k, oy = pd * AT.H * AT.k, bw = AT.W * (1 + 2 * pd) * AT.k, bh = AT.H * (1 + 2 * pd) * AT.k;
-      AT.x = bw >= s.w ? Math.min(ox, Math.max(s.w - bw + ox, AT.x)) : (s.w - AT.W * AT.k) / 2;
-      AT.y = bh >= s.h ? Math.min(oy, Math.max(s.h - bh + oy, AT.y)) : (s.h - AT.H * AT.k) / 2;
+      // Drag past the map's edge by only 6 percent of its size; the 15 percent margin covers the rest of the screen.
+      var ov = 0.06, mw = AT.W * AT.k, mh = AT.H * AT.k;
+      AT.x = mw >= s.w ? Math.min(ov * mw, Math.max(s.w - (1 + ov) * mw, AT.x)) : (s.w - mw) / 2;
+      AT.y = mh >= s.h ? Math.min(ov * mh, Math.max(s.h - (1 + ov) * mh, AT.y)) : (s.h - mh) / 2;
       return;
     }
     // Keep at least a good piece of the map on screen, wherever it is dragged.
