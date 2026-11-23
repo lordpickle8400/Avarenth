@@ -1,1 +1,1974 @@
-{"feats":[{"name":"Crafter","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","Proficiency with three artisan's tools of your choice. You buy nonmagical items for 20% less, and after a long rest you can craft one simple item (a ladder, a torch, a rope, a shovel...) that lasts until your next long rest."]],"own":true},{"name":"Healer","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","With a healer's kit and an action, use one charge to let a creature spend one of its Hit Dice and heal that much plus your proficiency bonus. When you roll a 1 on a healing die, you can reroll it."]],"own":true},{"name":"Lucky","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","You have luck points equal to your proficiency bonus, regained on a long rest. Spend one to give yourself advantage on a d20 roll, or to give a creature disadvantage on an attack against you."]],"own":true},{"name":"Musician","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","Proficiency with three musical instruments. After a short or long rest, you can play a song that gives Heroic Inspiration to a number of allies equal to your proficiency bonus."]],"own":true},{"name":"Tavern Brawler","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","Your unarmed strikes deal 1d4 + Strength damage, you can reroll 1s on that damage, you're proficient with improvised weapons, and once per turn when you hit with an unarmed strike you can push the target 5 feet."]],"own":true},{"name":"Tough","category":"Origin","prereq":"","book":"Player's Handbook (2024)","text":[["p","Your hit point maximum rises by 2 for every character level you have, and by 2 more each time you gain a level."]],"own":true},{"name":"Actor","category":"General","prereq":"Level 4+, Charisma 13+","book":"Player's Handbook (2024)","text":[["p","+1 Charisma. Advantage on Deception and Performance checks to pass as someone else, and you can mimic a voice you've heard for a minute (Insight against your DC to notice)."]],"own":true},{"name":"Athlete","category":"General","prereq":"Level 4+, Strength or Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. You gain a climb speed equal to your speed, standing up from prone costs only 5 feet, and you can make a running jump after only 5 feet of movement."]],"own":true},{"name":"Charger","category":"General","prereq":"Level 4+, Strength or Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Dashing adds 10 feet to your speed. If you move at least 10 feet in a straight line before hitting with a melee attack, either deal an extra 1d8 damage or push the target 10 feet. Once per turn."]],"own":true},{"name":"Chef","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Constitution or Wisdom. Proficiency with cook's utensils. After a short rest, creatures who eat your food regain an extra 1d8 hit points; after a long rest, you can make treats that give temporary hit points equal to your proficiency bonus."]],"own":true},{"name":"Crossbow Expert","category":"General","prereq":"Level 4+, Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity. Ignore the loading property of crossbows, no disadvantage for firing within 5 feet of an enemy, and when you make the extra light-weapon attack with a hand crossbow, you add your ability modifier to its damage."]],"own":true},{"name":"Crusher","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Constitution. Once per turn when you deal bludgeoning damage, push the target 5 feet. When you score a critical hit with bludgeoning damage, attacks against the target have advantage until your next turn."]],"own":true},{"name":"Defensive Duelist","category":"General","prereq":"Level 4+, Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity. When you're holding a finesse weapon and someone hits you with a melee attack, use your reaction to add your proficiency bonus to your AC for that attack and until your next turn."]],"own":true},{"name":"Dual Wielder","category":"General","prereq":"Level 4+, Strength or Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. When you attack with a light weapon, you can make the extra bonus-action attack with a weapon that isn't light, and you can draw or stow two weapons at once."]],"own":true},{"name":"Durable","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Constitution. Advantage on death saves, and as a bonus action you can spend one Hit Die to heal."]],"own":true},{"name":"Elemental Adept","category":"General","prereq":"Level 4+, a spell or mana","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Pick acid, cold, fire, lightning or thunder: your spells ignore resistance to it, and you treat any 1 on that damage as a 2. You can take this feat more than once."]],"own":true},{"name":"Fey Touched","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Learn Misty Step and one 1st-level divination or enchantment spell. Each can be cast once per long rest without mana, or normally with mana."]],"own":true},{"name":"Great Weapon Master","category":"General","prereq":"Level 4+, Strength 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength. When you hit with a heavy weapon as part of the Attack action, add your proficiency bonus to the damage. When you score a critical hit or drop a creature to 0 with a melee weapon, you can make one more attack as a bonus action."]],"own":true},{"name":"Heavily Armored","category":"General","prereq":"Level 4+, medium armor training","book":"Player's Handbook (2024)","text":[["p","+1 Constitution or Strength. You gain training with heavy armor."]],"own":true},{"name":"Heavy Armor Master","category":"General","prereq":"Level 4+, heavy armor training","book":"Player's Handbook (2024)","text":[["p","+1 Constitution or Strength. While in heavy armor, bludgeoning, piercing and slashing damage you take is reduced by your proficiency bonus."]],"own":true},{"name":"Inspiring Leader","category":"General","prereq":"Level 4+, Wisdom or Charisma 13+","book":"Player's Handbook (2024)","text":[["p","+1 Wisdom or Charisma. After a short or long rest, give up to six creatures (you included) temporary hit points equal to your character level plus the modifier you raised."]],"own":true},{"name":"Keen Mind","category":"General","prereq":"Level 4+, Intelligence 13+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence. Proficiency (or expertise) in one of Arcana, History, Investigation, Nature or Religion, and you can Study as a bonus action."]],"own":true},{"name":"Lightly Armored","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. You gain training with light armor and shields."]],"own":true},{"name":"Mage Slayer","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Creatures you hit lose concentration more easily (disadvantage on the save). Once per long rest, when you fail an Intelligence, Wisdom or Charisma save, you can succeed instead."]],"own":true},{"name":"Martial Weapon Training","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. You gain proficiency with martial weapons."]],"own":true},{"name":"Medium Armor Master","category":"General","prereq":"Level 4+, medium armor training","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Medium armor lets you add up to 3 from Dexterity to your AC, instead of 2."]],"own":true},{"name":"Moderately Armored","category":"General","prereq":"Level 4+, light armor training","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. You gain training with medium armor."]],"own":true},{"name":"Mounted Combatant","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength, Dexterity or Wisdom. Advantage on melee attacks against unmounted creatures near your mount, your mount takes no damage on a successful Dexterity save for half, and you can redirect an attack on your mount to yourself."]],"own":true},{"name":"Observant","category":"General","prereq":"Level 4+, Intelligence or Wisdom 13+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence or Wisdom. Proficiency (or expertise) in Insight, Investigation or Perception, and you can Search as a bonus action."]],"own":true},{"name":"Piercer","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Once per turn, reroll one piercing damage die. On a critical hit with piercing damage, roll one extra damage die."]],"own":true},{"name":"Poisoner","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity or Intelligence. Your poison damage ignores resistance. With a poisoner's kit and an hour, brew doses that deal 2d8 poison and poison the target on a failed Constitution save."]],"own":true},{"name":"Polearm Master","category":"General","prereq":"Level 4+, Strength or Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. With a glaive, halberd, quarterstaff, spear or pike, you can strike with the butt end as a bonus action (1d4 bludgeoning), and creatures entering your reach provoke an attack."]],"own":true},{"name":"Resilient","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 to an ability of your choice, and proficiency in saving throws with that ability."]],"own":true},{"name":"Ritual Caster","category":"General","prereq":"Level 4+, Intelligence, Wisdom or Charisma 13+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Learn ritual spells (as many as your proficiency bonus), which you can cast as rituals without mana; you can also cast one quickly once per long rest."]],"own":true},{"name":"Sentinel","category":"General","prereq":"Level 4+, Strength or Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Creatures you hit with opportunity attacks stop moving, and you can react when an enemy near you attacks someone else. Disengaging doesn't stop your opportunity attacks."]],"own":true},{"name":"Shadow Touched","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Learn Invisibility and one 1st-level illusion or necromancy spell. Each can be cast once per long rest without mana, or normally with mana."]],"own":true},{"name":"Sharpshooter","category":"General","prereq":"Level 4+, Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity. Your ranged weapon attacks ignore half and three-quarters cover, and you don't have disadvantage at long range or when an enemy is within 5 feet."]],"own":true},{"name":"Shield Master","category":"General","prereq":"Level 4+, shield training","book":"Player's Handbook (2024)","text":[["p","+1 Strength. When you hit with a melee attack, you can bash with your shield to push or knock the target prone. When a Dexterity save would deal half damage, you can use your reaction to take none."]],"own":true},{"name":"Skill Expert","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability, proficiency in one skill, and expertise (double proficiency) in one skill you're proficient in."]],"own":true},{"name":"Skulker","category":"General","prereq":"Level 4+, Dexterity 13+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity. Blindsight 10 feet, missing an attack while hidden doesn't reveal you, and you have advantage on Stealth checks while hiding in fog or darkness."]],"own":true},{"name":"Slasher","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Once per turn when you deal slashing damage, reduce the target's speed by 10 feet. On a critical hit with slashing damage, the target has disadvantage on attacks until your next turn."]],"own":true},{"name":"Speedy","category":"General","prereq":"Level 4+, Dexterity or Constitution 13+","book":"Player's Handbook (2024)","text":[["p","+1 Dexterity or Constitution. +10 speed, difficult terrain doesn't slow you when you Dash, and opportunity attacks against you have disadvantage."]],"own":true},{"name":"Spell Sniper","category":"General","prereq":"Level 4+, a spell or mana","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Your attack spells ignore half and three-quarters cover, have +60 feet of range, and casting them within 5 feet of an enemy doesn't give you disadvantage. Learn one attack cantrip."]],"own":true},{"name":"Telekinetic","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Learn Mage Hand, cast it without components, and its hand is invisible. As a bonus action, shove a creature within 30 feet 5 feet (Strength save)."]],"own":true},{"name":"Telepathic","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Speak telepathically to a creature within 60 feet. Learn Detect Thoughts and cast it once per long rest without mana."]],"own":true},{"name":"War Caster","category":"General","prereq":"Level 4+, a spell or mana","book":"Player's Handbook (2024)","text":[["p","+1 Intelligence, Wisdom or Charisma. Advantage on saves to keep concentration, you can cast spells with weapons or a shield in hand, and you can cast a one-target spell instead of an opportunity attack."]],"own":true},{"name":"Weapon Master","category":"General","prereq":"Level 4+","book":"Player's Handbook (2024)","text":[["p","+1 Strength or Dexterity. Learn the weapon mastery property of one weapon type, and swap it after a long rest."]],"own":true},{"name":"Mobile","category":"General","prereq":"Level 4+","book":"Player's Handbook (2014)","text":[["p","+10 speed, difficult terrain doesn't slow you when you Dash, and creatures you attack in melee can't make opportunity attacks against you that turn. (The 2024 book calls this Speedy.)"]],"own":true},{"name":"Dungeon Delver","category":"General","prereq":"Level 4+","book":"Player's Handbook (2014)","text":[["p","Advantage on checks to find secret doors and saves against traps, resistance to trap damage, and you can search for traps at normal pace."]],"own":true},{"name":"Linguist","category":"General","prereq":"Level 4+","book":"Player's Handbook (2014)","text":[["p","+1 Intelligence. Learn three languages, and create written ciphers others can't read without magic or a hard Intelligence check."]],"own":true},{"name":"Artificer Initiate","category":"General","prereq":"Level 4+","book":"Tasha's Cauldron of Everything","text":[["p","Learn one artificer cantrip and one 1st-level artificer spell (cast once per long rest without mana), and gain proficiency with one artisan's tool."]],"own":true},{"name":"Eldritch Adept","category":"General","prereq":"Level 4+, a spell or Pact Magic","book":"Tasha's Cauldron of Everything","text":[["p","Learn one Eldritch Invocation that has no level prerequisite. Swap it when you gain a level."]],"own":true},{"name":"Fighting Initiate","category":"General","prereq":"Level 4+, martial weapon proficiency","book":"Tasha's Cauldron of Everything","text":[["p","Learn one Fighting Style. Swap it when you gain an Ability Score Improvement."]],"own":true},{"name":"Gunner","category":"General","prereq":"Level 4+","book":"Tasha's Cauldron of Everything","text":[["p","+1 Dexterity. Proficiency with firearms, ignore their loading property, and no disadvantage firing within 5 feet. (Avarenth: gunpowder exists but few know how to use it. DM's call.)"]],"own":true},{"name":"Metamagic Adept","category":"General","prereq":"Level 4+, a spell or mana","book":"Tasha's Cauldron of Everything","text":[["p","Learn two Metamagic options and gain 2 sorcery points just for them, regained on a long rest."]],"own":true},{"name":"Bountiful Luck","category":"General","prereq":"Level 4+, Halfling","book":"Xanathar's Guide to Everything","text":[["p","When an ally within 30 feet rolls a 1 on a d20, you can use your reaction to let them reroll. You can't use your own Lucky trait before your next turn."]],"own":true},{"name":"Dragon Fear","category":"General","prereq":"Level 4+, Dragonborn","book":"Xanathar's Guide to Everything","text":[["p","+1 Strength, Constitution or Charisma. Instead of your breath weapon, roar: creatures of your choice within 30 feet make a Wisdom save or are frightened for a minute."]],"own":true},{"name":"Dragon Hide","category":"General","prereq":"Level 4+, Dragonborn","book":"Xanathar's Guide to Everything","text":[["p","+1 Strength, Constitution or Charisma. Your scales harden (AC 13 + Dexterity without armor) and you grow claws that deal 1d4 slashing."]],"own":true},{"name":"Drow High Magic","category":"General","prereq":"Level 4+, Drow","book":"Xanathar's Guide to Everything","text":[["p","Learn Detect Magic (free at will), and Levitate and Dispel Magic, each once per long rest without mana."]],"own":true},{"name":"Dwarven Fortitude","category":"General","prereq":"Level 4+, Dwarf","book":"Xanathar's Guide to Everything","text":[["p","+1 Constitution. When you take the Dodge action, you can spend one Hit Die to heal."]],"own":true},{"name":"Elven Accuracy","category":"General","prereq":"Level 4+, Elf or Half-Elf","book":"Xanathar's Guide to Everything","text":[["p","+1 Dexterity, Intelligence, Wisdom or Charisma. When you have advantage on an attack using one of those abilities, roll a third d20 and keep the best."]],"own":true},{"name":"Fade Away","category":"General","prereq":"Level 4+, Gnome","book":"Xanathar's Guide to Everything","text":[["p","+1 Dexterity or Intelligence. When you take damage, turn invisible as a reaction until the end of your next turn or until you attack or cast. Once per short rest."]],"own":true},{"name":"Fey Teleportation","category":"General","prereq":"Level 4+, High Elf","book":"Xanathar's Guide to Everything","text":[["p","+1 Intelligence or Charisma. Learn Sylvan, and cast Misty Step once per short rest without mana."]],"own":true},{"name":"Flames of Phlegethos","category":"General","prereq":"Level 4+, Tiefling","book":"Xanathar's Guide to Everything","text":[["p","+1 Intelligence or Charisma. Reroll 1s on fire damage from your spells, and when you cast a fire spell you can wreathe yourself in flame: attackers take 1d4 fire."]],"own":true},{"name":"Infernal Constitution","category":"General","prereq":"Level 4+, Tiefling","book":"Xanathar's Guide to Everything","text":[["p","+1 Constitution. Resistance to cold and poison damage, and advantage on saves against being poisoned."]],"own":true},{"name":"Orcish Fury","category":"General","prereq":"Level 4+, Half-Orc or Orc","book":"Xanathar's Guide to Everything","text":[["p","+1 Strength or Constitution. Once per short rest, add an extra weapon damage die to a hit. When Relentless Endurance saves you, you can attack as a reaction."]],"own":true},{"name":"Prodigy","category":"General","prereq":"Level 4+, Half-Elf, Half-Orc or Human","book":"Xanathar's Guide to Everything","text":[["p","One skill proficiency, one tool proficiency, one language, and expertise in one skill you're proficient in."]],"own":true},{"name":"Second Chance","category":"General","prereq":"Level 4+, Halfling","book":"Xanathar's Guide to Everything","text":[["p","+1 Dexterity, Constitution or Charisma. When a creature hits you, use your reaction to make it reroll the attack. Once per short rest (or initiative)."]],"own":true},{"name":"Squat Nimbleness","category":"General","prereq":"Level 4+, Dwarf or a Small species","book":"Xanathar's Guide to Everything","text":[["p","+1 Strength or Dexterity. +5 speed, proficiency in Acrobatics or Athletics, and advantage on checks to escape a grapple."]],"own":true},{"name":"Wood Elf Magic","category":"General","prereq":"Level 4+, Wood Elf","book":"Xanathar's Guide to Everything","text":[["p","Learn one druid cantrip, and cast Longstrider and Pass without Trace once per long rest each without mana."]],"own":true},{"name":"Gift of the Chromatic Dragon","category":"Origin","prereq":"","book":"Fizban's Treasury of Dragons","text":[["p","As a bonus action, touch a weapon to add 1d4 acid, cold, fire, lightning or poison damage to its hits for a minute (once per long rest). When you take one of those damage types, use your reaction to gain resistance to it (proficiency bonus times per long rest)."]],"own":true},{"name":"Gift of the Gem Dragon","category":"Origin","prereq":"","book":"Fizban's Treasury of Dragons","text":[["p","+1 Intelligence, Wisdom or Charisma. When a creature within 10 feet damages you, use your reaction to blast it with telekinetic force (Strength save, 2d8 force and pushed 10 feet). Proficiency bonus times per long rest."]],"own":true},{"name":"Gift of the Metallic Dragon","category":"Origin","prereq":"","book":"Fizban's Treasury of Dragons","text":[["p","Learn Cure Wounds and cast it once per long rest without mana. When you or someone near you is hit, you can use your reaction to sprout spectral wings and add 1d4 to their AC. Proficiency bonus times per long rest."]],"own":true},{"name":"Blind Fighting","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","Blindsight 10 feet: you can see invisible creatures and things in darkness within 10 feet."]],"own":true},{"name":"Dueling","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","+2 damage with a melee weapon held in one hand when you have no other weapon."]],"own":true},{"name":"Interception","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","When an ally within 5 feet is hit, use your reaction to reduce the damage by 1d10 + your proficiency bonus. You need a shield or weapon in hand."]],"own":true},{"name":"Protection","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","With a shield, use your reaction to give an attack against an ally within 5 feet disadvantage."]],"own":true},{"name":"Thrown Weapon Fighting","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","+2 damage with thrown weapons, and you can draw them as part of the attack."]],"own":true},{"name":"Unarmed Fighting","category":"Fighting Style","prereq":"Fighting Style feature","book":"Player's Handbook (2024)","text":[["p","Your unarmed strikes deal 1d6 + Strength (1d8 with both hands free), and you deal 1d4 to a creature you're grappling at the start of each turn."]],"own":true},{"name":"Boon of Energy Resistance","category":"Epic Boon","prereq":"Level 19+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability (to 30). Resistance to two of acid, cold, fire, lightning, necrotic, poison, psychic, radiant or thunder, and you can redirect that damage at someone else as a reaction."]],"own":true},{"name":"Boon of Fortitude","category":"Epic Boon","prereq":"Level 19+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability (to 30). Your hit point maximum rises by 40, and when you heal you can add your Constitution modifier once per turn."]],"own":true},{"name":"Boon of Recovery","category":"Epic Boon","prereq":"Level 19+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability (to 30). Once per long rest, when you would drop to 0, drop to 1 and heal half your maximum. You also have a pool of 10d10 to heal yourself as a bonus action."]],"own":true},{"name":"Boon of Skill","category":"Epic Boon","prereq":"Level 19+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability (to 30). Proficiency in every skill, and expertise in one."]],"own":true},{"name":"Boon of Speed","category":"Epic Boon","prereq":"Level 19+","book":"Player's Handbook (2024)","text":[["p","+1 to any ability (to 30). +30 speed, and you can Disengage as a bonus action that also ends being grappled."]],"own":true}],"backgrounds":{"Artisan":{"book":"Player's Handbook (2024)","abilities":"Strength, Dexterity, Intelligence","feat":"Crafter","skills":"Investigation and Persuasion","skillList":["Investigation","Persuasion"],"tool":"One artisan's tool","equipment":"The tool, 2 pouches, traveler's clothes, 32 gp; or 50 gp","about":"You learned a trade in a workshop, scrubbing floors before you earned your place at the bench.","feature":"","own":true},"Charlatan":{"book":"Player's Handbook (2024)","abilities":"Dexterity, Constitution, Charisma","feat":"Skilled","skills":"Deception and Sleight of Hand","skillList":["Deception","Sleight of Hand"],"tool":"Forgery kit","equipment":"Forgery kit, costume, fine clothes, 15 gp; or 50 gp","about":"You made your living off marks in taverns and markets, selling fake cures and false identities.","feature":"False Identity (older books): a second identity with papers and contacts.","own":true},"Entertainer":{"book":"Player's Handbook (2024)","abilities":"Strength, Dexterity, Charisma","feat":"Musician","skills":"Acrobatics and Performance","skillList":["Acrobatics","Performance"],"tool":"One musical instrument","equipment":"Instrument, 2 costumes, mirror, perfume, traveler's clothes, 11 gp; or 50 gp","about":"You grew up on the road with troupes, fairs and festivals, living for the crowd.","feature":"By Popular Demand (older books): free lodging where you perform.","own":true},"Farmer":{"book":"Player's Handbook (2024)","abilities":"Strength, Constitution, Wisdom","feat":"Tough","skills":"Animal Handling and Nature","skillList":["Animal Handling","Nature"],"tool":"Carpenter's tools","equipment":"Sickle, carpenter's tools, healer's kit, iron pot, shovel, traveler's clothes, 30 gp; or 50 gp","about":"You grew up close to the land: early mornings, long harvests, and a body hardened by work.","feature":"","own":true},"Guard":{"book":"Player's Handbook (2024)","abilities":"Strength, Intelligence, Wisdom","feat":"Alert","skills":"Athletics and Perception","skillList":["Athletics","Perception"],"tool":"One gaming set","equipment":"Spear, light crossbow and bolts, gaming set, hooded lantern, manacles, quiver, traveler's clothes, 12 gp; or 50 gp","about":"You stood watch on walls and gates, learning to spot trouble before it arrived.","feature":"","own":true},"Guide":{"book":"Player's Handbook (2024)","abilities":"Dexterity, Constitution, Wisdom","feat":"Magic Initiate (Druid)","skills":"Stealth and Survival","skillList":["Stealth","Survival"],"tool":"Cartographer's tools","equipment":"Shortbow and arrows, cartographer's tools, bedroll, quiver, tent, traveler's clothes, 3 gp; or 50 gp","about":"You led travelers through the wild places, reading weather and trail.","feature":"","own":true},"Hermit":{"book":"Player's Handbook (2024)","abilities":"Constitution, Wisdom, Charisma","feat":"Healer","skills":"Medicine and Religion","skillList":["Medicine","Religion"],"tool":"Herbalism kit","equipment":"Quarterstaff, herbalism kit, bedroll, book of philosophy, lamp, oil, traveler's clothes, 16 gp; or 50 gp","about":"You lived apart from the world, in a hut or a cave, chasing an answer only solitude could give.","feature":"Discovery (older books): you found a secret truth about the world.","own":true},"Merchant":{"book":"Player's Handbook (2024)","abilities":"Constitution, Intelligence, Charisma","feat":"Lucky","skills":"Animal Handling and Persuasion","skillList":["Animal Handling","Persuasion"],"tool":"Navigator's tools","equipment":"Navigator's tools, 2 pouches, traveler's clothes, 22 gp; or 50 gp","about":"You worked a trading house or caravan, learning that everything has a price.","feature":"","own":true},"Noble":{"book":"Player's Handbook (2024)","abilities":"Strength, Intelligence, Charisma","feat":"Skilled","skills":"History and Persuasion","skillList":["History","Persuasion"],"tool":"One gaming set","equipment":"Gaming set, fine clothes, perfume, 29 gp; or 50 gp","about":"You were raised in a castle among tutors and servants, and taught that your name carries weight. (In the isles, ask the DM which house.)","feature":"Position of Privilege (older books): commoners make way and nobles receive you.","own":true},"Sailor":{"book":"Player's Handbook (2024)","abilities":"Strength, Dexterity, Wisdom","feat":"Tavern Brawler","skills":"Acrobatics and Perception","skillList":["Acrobatics","Perception"],"tool":"Navigator's tools","equipment":"Dagger, navigator's tools, rope, traveler's clothes, 20 gp; or 50 gp","about":"You lived at sea, through storms and long watches, with salt in your hair.","feature":"Ship's Passage (older books): free passage on ships for you and friends.","own":true},"Scribe":{"book":"Player's Handbook (2024)","abilities":"Dexterity, Intelligence, Wisdom","feat":"Skilled","skills":"Investigation and Perception","skillList":["Investigation","Perception"],"tool":"Calligrapher's supplies","equipment":"Calligrapher's supplies, fine clothes, lamp, oil, parchment, 23 gp; or 50 gp","about":"You copied books and kept records in a scriptorium or a government hall, with an eye for small mistakes.","feature":"","own":true},"Wayfarer":{"book":"Player's Handbook (2024)","abilities":"Dexterity, Wisdom, Charisma","feat":"Lucky","skills":"Insight and Stealth","skillList":["Insight","Stealth"],"tool":"Thieves' tools","equipment":"2 daggers, thieves' tools, gaming set, bedroll, 2 pouches, traveler's clothes, 16 gp; or 50 gp","about":"You grew up on the streets among other castoffs, relying on luck and your wits.","feature":"","own":true},"Folk Hero":{"book":"Player's Handbook (2014)","abilities":"Strength, Constitution, Wisdom","feat":"Tough","skills":"Animal Handling and Survival","skillList":["Animal Handling","Survival"],"tool":"One artisan's tool, vehicles (land)","equipment":"Artisan's tool, shovel, iron pot, common clothes, 10 gp; or 50 gp","about":"You come from humble stock, but you stood up to a tyrant or a monster and the common folk remember.","feature":"Rustic Hospitality: common folk will hide and shelter you.","own":true},"Guild Artisan":{"book":"Player's Handbook (2014)","abilities":"Dexterity, Intelligence, Charisma","feat":"Crafter","skills":"Insight and Persuasion","skillList":["Insight","Persuasion"],"tool":"One artisan's tool","equipment":"Artisan's tool, letter of introduction from your guild, traveler's clothes, 15 gp; or 50 gp","about":"A full member of a craft guild, with dues, contacts and a reputation to keep.","feature":"Guild Membership: the guild houses and helps you, for dues.","own":true},"Outlander":{"book":"Player's Handbook (2014)","abilities":"Strength, Constitution, Wisdom","feat":"Tough","skills":"Athletics and Survival","skillList":["Athletics","Survival"],"tool":"One musical instrument","equipment":"Staff, hunting trap, animal trophy, traveler's clothes, 10 gp; or 50 gp","about":"You grew up far from towns, in the wilds, among tribes or alone.","feature":"Wanderer: you never get lost and can find food for six people.","own":true},"Urchin":{"book":"Player's Handbook (2014)","abilities":"Dexterity, Constitution, Wisdom","feat":"Lucky","skills":"Sleight of Hand and Stealth","skillList":["Sleight of Hand","Stealth"],"tool":"Disguise kit, thieves' tools","equipment":"Small knife, city map, pet mouse, token of your parents, common clothes, 10 gp; or 50 gp","about":"Orphaned and poor, you grew up on the streets learning to survive.","feature":"City Secrets: you know the back alleys and move through a city twice as fast.","own":true},"City Watch":{"book":"Sword Coast Adventurer's Guide","abilities":"Strength, Constitution, Wisdom","feat":"Alert","skills":"Athletics and Insight","skillList":["Athletics","Insight"],"tool":"None (two languages)","equipment":"Uniform, horn, manacles, 10 gp; or 50 gp","about":"You served in a town's watch, keeping the peace and chasing thieves.","feature":"Watcher's Eye: you can always find the local watch post and the crime dens.","own":true},"Clan Crafter":{"book":"Sword Coast Adventurer's Guide","abilities":"Strength, Intelligence, Wisdom","feat":"Crafter","skills":"History and Insight","skillList":["History","Insight"],"tool":"One artisan's tool","equipment":"Artisan's tool, maker's mark chisel, traveler's clothes, 5 gp and a gem; or 50 gp","about":"You were raised among a clan of master crafters.","feature":"Respect of the Stout Folk: dwarves give you food and lodging.","own":true},"Cloistered Scholar":{"book":"Sword Coast Adventurer's Guide","abilities":"Intelligence, Wisdom, Charisma","feat":"Magic Initiate (Wizard)","skills":"History and Religion","skillList":["History","Religion"],"tool":"None (two languages)","equipment":"Scholar's robes, writing kit, borrowed book, 10 gp; or 50 gp","about":"You studied in a great library or university for years.","feature":"Library Access: you can use libraries and scholars freely.","own":true},"Courtier":{"book":"Sword Coast Adventurer's Guide","abilities":"Intelligence, Wisdom, Charisma","feat":"Skilled","skills":"Insight and Persuasion","skillList":["Insight","Persuasion"],"tool":"None (two languages)","equipment":"Fine clothes, 5 gp; or 50 gp","about":"You worked at a noble court, learning manners, gossip and the corridors of power.","feature":"Court Functionary: you know how courts and bureaucracies really work.","own":true},"Faction Agent":{"book":"Sword Coast Adventurer's Guide","abilities":"Intelligence, Wisdom, Charisma","feat":"Skilled","skills":"Insight and Persuasion","skillList":["Insight","Persuasion"],"tool":"None (two languages)","equipment":"Faction badge, cipher book, common clothes, 15 gp; or 50 gp","about":"You serve a faction (in the isles, ask the DM which one would have you).","feature":"Safe Haven: the faction's agents will hide and help you.","own":true},"Far Traveler":{"book":"Sword Coast Adventurer's Guide","abilities":"Constitution, Wisdom, Charisma","feat":"Skilled","skills":"Insight and Perception","skillList":["Insight","Perception"],"tool":"One instrument or gaming set","equipment":"Traveler's clothes, instrument or gaming set, poorly drawn maps from home, 5 gp jewelry, 5 gp; or 50 gp","about":"You come from a land far from the empire, and everything here is strange.","feature":"All Eyes on You: people are curious about you, which opens doors.","own":true},"Inheritor":{"book":"Sword Coast Adventurer's Guide","abilities":"Constitution, Wisdom, Charisma","feat":"Lucky","skills":"Survival and History","skillList":["Survival","History"],"tool":"One gaming set or instrument","equipment":"Your inheritance (an item, document or secret), traveler's clothes, tool, 15 gp; or 50 gp","about":"You are the heir to something precious: an item, a title, a map or a secret.","feature":"Inheritance: work out with the DM what you inherited.","own":true},"Knight of the Order":{"book":"Sword Coast Adventurer's Guide","abilities":"Strength, Wisdom, Charisma","feat":"Skilled","skills":"Persuasion and Religion","skillList":["Persuasion","Religion"],"tool":"One gaming set or instrument","equipment":"Traveler's clothes, signet or banner, 10 gp; or 50 gp","about":"You belong to a knightly order with its own code.","feature":"Knightly Regard: members of your order and its allies help you.","own":true},"Mercenary Veteran":{"book":"Sword Coast Adventurer's Guide","abilities":"Strength, Dexterity, Constitution","feat":"Savage Attacker","skills":"Athletics and Persuasion","skillList":["Athletics","Persuasion"],"tool":"One gaming set, vehicles (land)","equipment":"Uniform of your company, insignia, gaming set, common clothes, 10 gp; or 50 gp","about":"You fought for coin with a mercenary company.","feature":"Mercenary Life: you know the companies and can find mercenary work.","own":true},"Urban Bounty Hunter":{"book":"Sword Coast Adventurer's Guide","abilities":"Dexterity, Wisdom, Charisma","feat":"Alert","skills":"Insight and Stealth","skillList":["Insight","Stealth"],"tool":"Two of gaming set, instrument, thieves' tools","equipment":"Clothes for your work, 20 gp; or 50 gp","about":"You hunt people for money in the cities, through the streets and the underworld.","feature":"Ear to the Ground: you have contacts in every city's underbelly.","own":true},"Haunted One":{"book":"Curse of Strahd","abilities":"Constitution, Wisdom, Charisma","feat":"Alert","skills":"Investigation and Religion","skillList":["Investigation","Religion"],"tool":"None (two exotic languages)","equipment":"Monster hunter's pack, common clothes, 1 sp; or 50 gp","about":"You are haunted by something so terrible you won't speak of it.","feature":"Heart of Darkness: common folk sense your pain and help you, and even fight beside you.","own":true},"Investigator":{"book":"Van Richten's Guide to Ravenloft","abilities":"Dexterity, Intelligence, Wisdom","feat":"Alert","skills":"Insight and Investigation","skillList":["Insight","Investigation"],"tool":"Disguise kit, thieves' tools","equipment":"Magnifying glass, evidence from a case, common clothes, 10 gp; or 50 gp","about":"You solve mysteries, by trade or because you can't stop yourself.","feature":"Official Inquiry: you can get into crime scenes and records.","own":true},"Pirate":{"book":"Player's Handbook (2014)","abilities":"Strength, Dexterity, Wisdom","feat":"Tavern Brawler","skills":"Athletics and Perception","skillList":["Athletics","Perception"],"tool":"Navigator's tools, vehicles (water)","equipment":"Belaying pin (club), silk rope, lucky charm, common clothes, 10 gp; or 50 gp","about":"A sailor who sailed under a black flag.","feature":"Bad Reputation: people fear you, and you can get away with minor crimes.","own":true},"Spy":{"book":"Player's Handbook (2014)","abilities":"Dexterity, Intelligence, Charisma","feat":"Alert","skills":"Deception and Stealth","skillList":["Deception","Stealth"],"tool":"Gaming set, thieves' tools","equipment":"Crowbar, dark clothes with a hood, 15 gp; or 50 gp","about":"You worked as an agent for a master, gathering secrets.","feature":"Criminal Contact: you have a reliable contact in a spy network.","own":true},"Gladiator":{"book":"Player's Handbook (2014)","abilities":"Strength, Dexterity, Charisma","feat":"Savage Attacker","skills":"Acrobatics and Performance","skillList":["Acrobatics","Performance"],"tool":"Disguise kit, one unusual weapon","equipment":"An unusual weapon (net, trident), costume, admirer's favor, 15 gp; or 50 gp","about":"You fought in arenas for the crowd's roar.","feature":"By Popular Demand: the arena circuit gives you work and lodging.","own":true},"Knight":{"book":"Player's Handbook (2014)","abilities":"Strength, Wisdom, Charisma","feat":"Skilled","skills":"History and Persuasion","skillList":["History","Persuasion"],"tool":"One gaming set","equipment":"Fine clothes, signet ring, scroll of pedigree, 25 gp, and three retainers; or 50 gp","about":"A noble sworn to a lord, with a squire and servants at your back.","feature":"Retainers: three loyal commoners serve you.","own":true},"Shipwright":{"book":"Ghosts of Saltmarsh","abilities":"Strength, Dexterity, Intelligence","feat":"Crafter","skills":"History and Perception","skillList":["History","Perception"],"tool":"Carpenter's tools, vehicles (water)","equipment":"Carpenter's tools, common clothes, quill and ink, 10 gp; or 50 gp","about":"You built and repaired ships in the harbor yards.","feature":"I'll Patch It: you can fix a ship's damage on the fly.","own":true},"Smuggler":{"book":"Ghosts of Saltmarsh","abilities":"Dexterity, Wisdom, Charisma","feat":"Lucky","skills":"Athletics and Deception","skillList":["Athletics","Deception"],"tool":"Vehicles (water)","equipment":"Fancy leather vest, common clothes, 15 gp; or 50 gp","about":"You moved goods past the crown's tolls by night.","feature":"Down Low: you know the secret ways and the people who use them.","own":true},"Archaeologist":{"book":"Tomb of Annihilation","abilities":"Strength, Intelligence, Wisdom","feat":"Alert","skills":"History and Survival","skillList":["History","Survival"],"tool":"Cartographer's or navigator's tools","equipment":"Map or scroll case, lantern, miner's pick, shovel, two-person tent, trinket from a dig, 25 gp; or 50 gp","about":"You dig up the past: ruins, tombs, lost cities.","feature":"Historical Knowledge: you can identify a ruin's age, builders and purpose.","own":true},"Feylost":{"book":"The Wild Beyond the Witchlight","abilities":"Dexterity, Wisdom, Charisma","feat":"Magic Initiate (Druid)","skills":"Deception and Survival","skillList":["Deception","Survival"],"tool":"One musical instrument","equipment":"Instrument, three trinkets from the fey realm, traveler's clothes, 8 gp; or 50 gp","about":"You spent part of your childhood in the fey realm and came back changed.","feature":"Feywild Connection: fey creatures treat you kindly.","own":true}},"options":{"Artificer Infusion":[{"name":"Armor of Magical Strength","prereq":"","text":[["p","Armor that adds your Intelligence modifier to Strength checks and saves, and lets you refuse to be knocked prone a few times per day."]],"own":true},{"name":"Boots of the Winding Path","prereq":"6th level","text":[["p","Boots that let you teleport back to a spot you stood on in the last turn (up to 15 feet) as a bonus action."]],"own":true},{"name":"Enhanced Arcane Focus","prereq":"","text":[["p","A rod, staff or wand gives +1 to spell attack rolls and lets your spells ignore half cover. +2 at 10th level."]],"own":true},{"name":"Enhanced Defense","prereq":"","text":[["p","Armor or a shield gives +1 AC (+2 at 10th level)."]],"own":true},{"name":"Enhanced Weapon","prereq":"","text":[["p","A simple or martial weapon becomes a +1 weapon (+2 at 10th level)."]],"own":true},{"name":"Helm of Awareness","prereq":"10th level","text":[["p","A helmet gives advantage on initiative, and you can't be surprised while awake."]],"own":true},{"name":"Homunculus Servant","prereq":"","text":[["p","Build a tiny mechanical homunculus that obeys you, fights alongside you and can deliver your touch spells."]],"own":true},{"name":"Mind Sharpener","prereq":"","text":[["p","Armor or robes that can turn a failed concentration save into a success a few times per day."]],"own":true},{"name":"Radiant Weapon","prereq":"6th level","text":[["p","A +1 weapon that sheds light on command, and can blind a creature that hits you as a reaction a few times per day."]],"own":true},{"name":"Repeating Shot","prereq":"","text":[["p","A ranged weapon becomes +1, ignores the loading property, and makes its own ammunition."]],"own":true},{"name":"Replicate Magic Item","prereq":"","text":[["p","Make a copy of a common or uncommon magic item from the artificer's list (bag of holding, goggles of night, rope of climbing, and many more, with better ones at higher levels)."]],"own":true},{"name":"Repulsion Shield","prereq":"6th level","text":[["p","A +1 shield that can push an attacker 15 feet away as a reaction a few times per day."]],"own":true},{"name":"Resistant Armor","prereq":"6th level","text":[["p","Armor that gives resistance to one damage type: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder."]],"own":true},{"name":"Returning Weapon","prereq":"","text":[["p","A thrown weapon becomes +1 and flies back to your hand after the attack."]],"own":true},{"name":"Spell-Refueling Ring","prereq":"6th level","text":[["p","A ring that, once per day, gives you back the mana of a spell of 3rd level or lower (up to 18 mana)."]],"own":true},{"name":"Arcane Propulsion Armor","prereq":"14th level","text":[["p","Armor that adds 5 feet of speed, gives you powered gauntlets as weapons (1d8 force, thrown 20/60 that return), and replaces missing limbs."]],"own":true}],"Blood Curse":[{"name":"Blood Curse of the Anxious","prereq":"","text":[["p","Make a creature more vulnerable to intimidation: Intimidation checks against it have advantage until your next turn. Amplified, it also has disadvantage on its next Wisdom save."]],"own":true},{"name":"Blood Curse of Binding","prereq":"","text":[["p","As a bonus action, a Large or smaller creature makes a Strength save or its speed drops to 0 and it can't use reactions until the end of its next turn. Amplified, it lasts a minute (it repeats the save each turn) and works on bigger creatures."]],"own":true},{"name":"Blood Curse of Bloated Agony","prereq":"","text":[["p","A creature's body swells: it has disadvantage on Strength and Dexterity checks and takes damage each time it acts, for a minute (Constitution save each turn to end it). Amplified, it takes more damage."]],"own":true},{"name":"Blood Curse of the Eyeless","prereq":"","text":[["p","As a reaction when a creature attacks, roll your hemocraft die and subtract it from the attack roll. Amplified, it applies to all its attacks this turn."]],"own":true},{"name":"Blood Curse of the Fallen Puppet","prereq":"","text":[["p","When a creature near you drops to 0 hit points, use your reaction to make it immediately make one attack against a target of your choice before it falls. Amplified, it can move first and gets a bonus to hit."]],"own":true},{"name":"Blood Curse of the Marked","prereq":"","text":[["p","As a bonus action, mark a creature: your Crimson Rite damage against it is doubled until the end of your turn. Amplified, you also have advantage on your next attack against it."]],"own":true},{"name":"Blood Curse of Mutual Suffering","prereq":"","text":[["p","Link a creature to you: when it damages you, it takes half that damage as necrotic. Amplified, it takes the full amount."]],"own":true},{"name":"Blood Curse of the Muddled Mind","prereq":"","text":[["p","A spellcaster has disadvantage on its next concentration save. Amplified, on all of them for a while."]],"own":true},{"name":"Blood Curse of Exposure","prereq":"","text":[["p","As a reaction when a creature takes damage, remove its resistance to that damage for that hit. Amplified, also for the rest of the turn."]],"own":true},{"name":"Blood Curse of Spurned Movement","prereq":"","text":[["p","As a reaction when a creature moves near you, its speed drops to 0 until the end of the turn. Amplified, works on a creature farther away and it also can't take reactions."]],"own":true},{"name":"Blood Curse of the Exorcist","prereq":"Order of the Ghostslayer","text":[["p","End a charm, fright or possession effect on a creature; the possessor takes psychic damage."]],"own":true},{"name":"Blood Curse of the Howl","prereq":"Order of the Lycan","text":[["p","As an action, howl: creatures that hear it make a Wisdom save or are frightened and can't move."]],"own":true},{"name":"Blood Curse of Corrosion","prereq":"Order of the Mutant","text":[["p","A creature is poisoned and takes poison damage each turn until it shakes it off (Constitution save)."]],"own":true},{"name":"Blood Curse of the Souleater","prereq":"Order of the Profane Soul","text":[["p","When a creature dies near you, feed on its soul to regain mana and gain advantage on your next attacks. Once per long rest."]],"own":true}]}}
+{
+  "feats": [
+    {
+      "name": "Crafter",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Proficiency with three artisan's tools of your choice. You buy nonmagical items for 20% less, and after a long rest you can craft one simple item (a ladder, a torch, a rope, a shovel...) that lasts until your next long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Healer",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "With a healer's kit and an action, use one charge to let a creature spend one of its Hit Dice and heal that much plus your proficiency bonus. When you roll a 1 on a healing die, you can reroll it."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Lucky",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "You have luck points equal to your proficiency bonus, regained on a long rest. Spend one to give yourself advantage on a d20 roll, or to give a creature disadvantage on an attack against you."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Musician",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Proficiency with three musical instruments. After a short or long rest, you can play a song that gives Heroic Inspiration to a number of allies equal to your proficiency bonus."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Tavern Brawler",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Your unarmed strikes deal 1d4 + Strength damage, you can reroll 1s on that damage, you're proficient with improvised weapons, and once per turn when you hit with an unarmed strike you can push the target 5 feet."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Tough",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Your hit point maximum rises by 2 for every character level you have, and by 2 more each time you gain a level."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Actor",
+      "category": "General",
+      "prereq": "Level 4+, Charisma 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Charisma. Advantage on Deception and Performance checks to pass as someone else, and you can mimic a voice you've heard for a minute (Insight against your DC to notice)."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Athlete",
+      "category": "General",
+      "prereq": "Level 4+, Strength or Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. You gain a climb speed equal to your speed, standing up from prone costs only 5 feet, and you can make a running jump after only 5 feet of movement."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Charger",
+      "category": "General",
+      "prereq": "Level 4+, Strength or Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Dashing adds 10 feet to your speed. If you move at least 10 feet in a straight line before hitting with a melee attack, either deal an extra 1d8 damage or push the target 10 feet. Once per turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Chef",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Constitution or Wisdom. Proficiency with cook's utensils. After a short rest, creatures who eat your food regain an extra 1d8 hit points; after a long rest, you can make treats that give temporary hit points equal to your proficiency bonus."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Crossbow Expert",
+      "category": "General",
+      "prereq": "Level 4+, Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity. Ignore the loading property of crossbows, no disadvantage for firing within 5 feet of an enemy, and when you make the extra light-weapon attack with a hand crossbow, you add your ability modifier to its damage."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Crusher",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Constitution. Once per turn when you deal bludgeoning damage, push the target 5 feet. When you score a critical hit with bludgeoning damage, attacks against the target have advantage until your next turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Defensive Duelist",
+      "category": "General",
+      "prereq": "Level 4+, Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity. When you're holding a finesse weapon and someone hits you with a melee attack, use your reaction to add your proficiency bonus to your AC for that attack and until your next turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dual Wielder",
+      "category": "General",
+      "prereq": "Level 4+, Strength or Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. When you attack with a light weapon, you can make the extra bonus-action attack with a weapon that isn't light, and you can draw or stow two weapons at once."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Durable",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Constitution. Advantage on death saves, and as a bonus action you can spend one Hit Die to heal."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Elemental Adept",
+      "category": "General",
+      "prereq": "Level 4+, a spell or mana",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Pick acid, cold, fire, lightning or thunder: your spells ignore resistance to it, and you treat any 1 on that damage as a 2. You can take this feat more than once."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Fey Touched",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Learn Misty Step and one 1st-level divination or enchantment spell. Each can be cast once per long rest without mana, or normally with mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Great Weapon Master",
+      "category": "General",
+      "prereq": "Level 4+, Strength 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength. When you hit with a heavy weapon as part of the Attack action, add your proficiency bonus to the damage. When you score a critical hit or drop a creature to 0 with a melee weapon, you can make one more attack as a bonus action."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Heavily Armored",
+      "category": "General",
+      "prereq": "Level 4+, medium armor training",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Constitution or Strength. You gain training with heavy armor."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Heavy Armor Master",
+      "category": "General",
+      "prereq": "Level 4+, heavy armor training",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Constitution or Strength. While in heavy armor, bludgeoning, piercing and slashing damage you take is reduced by your proficiency bonus."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Inspiring Leader",
+      "category": "General",
+      "prereq": "Level 4+, Wisdom or Charisma 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Wisdom or Charisma. After a short or long rest, give up to six creatures (you included) temporary hit points equal to your character level plus the modifier you raised."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Keen Mind",
+      "category": "General",
+      "prereq": "Level 4+, Intelligence 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence. Proficiency (or expertise) in one of Arcana, History, Investigation, Nature or Religion, and you can Study as a bonus action."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Lightly Armored",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. You gain training with light armor and shields."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Mage Slayer",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Creatures you hit lose concentration more easily (disadvantage on the save). Once per long rest, when you fail an Intelligence, Wisdom or Charisma save, you can succeed instead."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Martial Weapon Training",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. You gain proficiency with martial weapons."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Medium Armor Master",
+      "category": "General",
+      "prereq": "Level 4+, medium armor training",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Medium armor lets you add up to 3 from Dexterity to your AC, instead of 2."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Moderately Armored",
+      "category": "General",
+      "prereq": "Level 4+, light armor training",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. You gain training with medium armor."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Mounted Combatant",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength, Dexterity or Wisdom. Advantage on melee attacks against unmounted creatures near your mount, your mount takes no damage on a successful Dexterity save for half, and you can redirect an attack on your mount to yourself."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Observant",
+      "category": "General",
+      "prereq": "Level 4+, Intelligence or Wisdom 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence or Wisdom. Proficiency (or expertise) in Insight, Investigation or Perception, and you can Search as a bonus action."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Piercer",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Once per turn, reroll one piercing damage die. On a critical hit with piercing damage, roll one extra damage die."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Poisoner",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity or Intelligence. Your poison damage ignores resistance. With a poisoner's kit and an hour, brew doses that deal 2d8 poison and poison the target on a failed Constitution save."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Polearm Master",
+      "category": "General",
+      "prereq": "Level 4+, Strength or Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. With a glaive, halberd, quarterstaff, spear or pike, you can strike with the butt end as a bonus action (1d4 bludgeoning), and creatures entering your reach provoke an attack."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Resilient",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to an ability of your choice, and proficiency in saving throws with that ability."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Ritual Caster",
+      "category": "General",
+      "prereq": "Level 4+, Intelligence, Wisdom or Charisma 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Learn ritual spells (as many as your proficiency bonus), which you can cast as rituals without mana; you can also cast one quickly once per long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Sentinel",
+      "category": "General",
+      "prereq": "Level 4+, Strength or Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Creatures you hit with opportunity attacks stop moving, and you can react when an enemy near you attacks someone else. Disengaging doesn't stop your opportunity attacks."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Shadow Touched",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Learn Invisibility and one 1st-level illusion or necromancy spell. Each can be cast once per long rest without mana, or normally with mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Sharpshooter",
+      "category": "General",
+      "prereq": "Level 4+, Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity. Your ranged weapon attacks ignore half and three-quarters cover, and you don't have disadvantage at long range or when an enemy is within 5 feet."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Shield Master",
+      "category": "General",
+      "prereq": "Level 4+, shield training",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength. When you hit with a melee attack, you can bash with your shield to push or knock the target prone. When a Dexterity save would deal half damage, you can use your reaction to take none."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Skill Expert",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability, proficiency in one skill, and expertise (double proficiency) in one skill you're proficient in."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Skulker",
+      "category": "General",
+      "prereq": "Level 4+, Dexterity 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity. Blindsight 10 feet, missing an attack while hidden doesn't reveal you, and you have advantage on Stealth checks while hiding in fog or darkness."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Slasher",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Once per turn when you deal slashing damage, reduce the target's speed by 10 feet. On a critical hit with slashing damage, the target has disadvantage on attacks until your next turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Speedy",
+      "category": "General",
+      "prereq": "Level 4+, Dexterity or Constitution 13+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity or Constitution. +10 speed, difficult terrain doesn't slow you when you Dash, and opportunity attacks against you have disadvantage."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Spell Sniper",
+      "category": "General",
+      "prereq": "Level 4+, a spell or mana",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Your attack spells ignore half and three-quarters cover, have +60 feet of range, and casting them within 5 feet of an enemy doesn't give you disadvantage. Learn one attack cantrip."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Telekinetic",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Learn Mage Hand, cast it without components, and its hand is invisible. As a bonus action, shove a creature within 30 feet 5 feet (Strength save)."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Telepathic",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Speak telepathically to a creature within 60 feet. Learn Detect Thoughts and cast it once per long rest without mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "War Caster",
+      "category": "General",
+      "prereq": "Level 4+, a spell or mana",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. Advantage on saves to keep concentration, you can cast spells with weapons or a shield in hand, and you can cast a one-target spell instead of an opportunity attack."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Weapon Master",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. Learn the weapon mastery property of one weapon type, and swap it after a long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Mobile",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2014)",
+      "text": [
+        [
+          "p",
+          "+10 speed, difficult terrain doesn't slow you when you Dash, and creatures you attack in melee can't make opportunity attacks against you that turn. (The 2024 book calls this Speedy.)"
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dungeon Delver",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2014)",
+      "text": [
+        [
+          "p",
+          "Advantage on checks to find secret doors and saves against traps, resistance to trap damage, and you can search for traps at normal pace."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Linguist",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Player's Handbook (2014)",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence. Learn three languages, and create written ciphers others can't read without magic or a hard Intelligence check."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Artificer Initiate",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Tasha's Cauldron of Everything",
+      "text": [
+        [
+          "p",
+          "Learn one artificer cantrip and one 1st-level artificer spell (cast once per long rest without mana), and gain proficiency with one artisan's tool."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Eldritch Adept",
+      "category": "General",
+      "prereq": "Level 4+, a spell or Pact Magic",
+      "book": "Tasha's Cauldron of Everything",
+      "text": [
+        [
+          "p",
+          "Learn one Eldritch Invocation that has no level prerequisite. Swap it when you gain a level."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Fighting Initiate",
+      "category": "General",
+      "prereq": "Level 4+, martial weapon proficiency",
+      "book": "Tasha's Cauldron of Everything",
+      "text": [
+        [
+          "p",
+          "Learn one Fighting Style. Swap it when you gain an Ability Score Improvement."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Gunner",
+      "category": "General",
+      "prereq": "Level 4+",
+      "book": "Tasha's Cauldron of Everything",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity. Proficiency with firearms, ignore their loading property, and no disadvantage firing within 5 feet. (Avarenth: gunpowder exists but few know how to use it. DM's call.)"
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Metamagic Adept",
+      "category": "General",
+      "prereq": "Level 4+, a spell or mana",
+      "book": "Tasha's Cauldron of Everything",
+      "text": [
+        [
+          "p",
+          "Learn two Metamagic options and gain 2 sorcery points just for them, regained on a long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Bountiful Luck",
+      "category": "General",
+      "prereq": "Level 4+, Halfling",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "When an ally within 30 feet rolls a 1 on a d20, you can use your reaction to let them reroll. You can't use your own Lucky trait before your next turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dragon Fear",
+      "category": "General",
+      "prereq": "Level 4+, Dragonborn",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Strength, Constitution or Charisma. Instead of your breath weapon, roar: creatures of your choice within 30 feet make a Wisdom save or are frightened for a minute."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dragon Hide",
+      "category": "General",
+      "prereq": "Level 4+, Dragonborn",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Strength, Constitution or Charisma. Your scales harden (AC 13 + Dexterity without armor) and you grow claws that deal 1d4 slashing."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Drow High Magic",
+      "category": "General",
+      "prereq": "Level 4+, Drow",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "Learn Detect Magic (free at will), and Levitate and Dispel Magic, each once per long rest without mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dwarven Fortitude",
+      "category": "General",
+      "prereq": "Level 4+, Dwarf",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Constitution. When you take the Dodge action, you can spend one Hit Die to heal."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Elven Accuracy",
+      "category": "General",
+      "prereq": "Level 4+, Elf or Half-Elf",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity, Intelligence, Wisdom or Charisma. When you have advantage on an attack using one of those abilities, roll a third d20 and keep the best."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Fade Away",
+      "category": "General",
+      "prereq": "Level 4+, Gnome",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity or Intelligence. When you take damage, turn invisible as a reaction until the end of your next turn or until you attack or cast. Once per short rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Fey Teleportation",
+      "category": "General",
+      "prereq": "Level 4+, High Elf",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence or Charisma. Learn Sylvan, and cast Misty Step once per short rest without mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Flames of Phlegethos",
+      "category": "General",
+      "prereq": "Level 4+, Tiefling",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence or Charisma. Reroll 1s on fire damage from your spells, and when you cast a fire spell you can wreathe yourself in flame: attackers take 1d4 fire."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Infernal Constitution",
+      "category": "General",
+      "prereq": "Level 4+, Tiefling",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Constitution. Resistance to cold and poison damage, and advantage on saves against being poisoned."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Orcish Fury",
+      "category": "General",
+      "prereq": "Level 4+, Half-Orc or Orc",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Constitution. Once per short rest, add an extra weapon damage die to a hit. When Relentless Endurance saves you, you can attack as a reaction."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Prodigy",
+      "category": "General",
+      "prereq": "Level 4+, Half-Elf, Half-Orc or Human",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "One skill proficiency, one tool proficiency, one language, and expertise in one skill you're proficient in."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Second Chance",
+      "category": "General",
+      "prereq": "Level 4+, Halfling",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Dexterity, Constitution or Charisma. When a creature hits you, use your reaction to make it reroll the attack. Once per short rest (or initiative)."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Squat Nimbleness",
+      "category": "General",
+      "prereq": "Level 4+, Dwarf or a Small species",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "+1 Strength or Dexterity. +5 speed, proficiency in Acrobatics or Athletics, and advantage on checks to escape a grapple."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Wood Elf Magic",
+      "category": "General",
+      "prereq": "Level 4+, Wood Elf",
+      "book": "Xanathar's Guide to Everything",
+      "text": [
+        [
+          "p",
+          "Learn one druid cantrip, and cast Longstrider and Pass without Trace once per long rest each without mana."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Gift of the Chromatic Dragon",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Fizban's Treasury of Dragons",
+      "text": [
+        [
+          "p",
+          "As a bonus action, touch a weapon to add 1d4 acid, cold, fire, lightning or poison damage to its hits for a minute (once per long rest). When you take one of those damage types, use your reaction to gain resistance to it (proficiency bonus times per long rest)."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Gift of the Gem Dragon",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Fizban's Treasury of Dragons",
+      "text": [
+        [
+          "p",
+          "+1 Intelligence, Wisdom or Charisma. When a creature within 10 feet damages you, use your reaction to blast it with telekinetic force (Strength save, 2d8 force and pushed 10 feet). Proficiency bonus times per long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Gift of the Metallic Dragon",
+      "category": "Origin",
+      "prereq": "",
+      "book": "Fizban's Treasury of Dragons",
+      "text": [
+        [
+          "p",
+          "Learn Cure Wounds and cast it once per long rest without mana. When you or someone near you is hit, you can use your reaction to sprout spectral wings and add 1d4 to their AC. Proficiency bonus times per long rest."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Blind Fighting",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Blindsight 10 feet: you can see invisible creatures and things in darkness within 10 feet."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Dueling",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+2 damage with a melee weapon held in one hand when you have no other weapon."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Interception",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "When an ally within 5 feet is hit, use your reaction to reduce the damage by 1d10 + your proficiency bonus. You need a shield or weapon in hand."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Protection",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "With a shield, use your reaction to give an attack against an ally within 5 feet disadvantage."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Thrown Weapon Fighting",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+2 damage with thrown weapons, and you can draw them as part of the attack."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Unarmed Fighting",
+      "category": "Fighting Style",
+      "prereq": "Fighting Style feature",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "Your unarmed strikes deal 1d6 + Strength (1d8 with both hands free), and you deal 1d4 to a creature you're grappling at the start of each turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Boon of Energy Resistance",
+      "category": "Epic Boon",
+      "prereq": "Level 19+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability (to 30). Resistance to two of acid, cold, fire, lightning, necrotic, poison, psychic, radiant or thunder, and you can redirect that damage at someone else as a reaction."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Boon of Fortitude",
+      "category": "Epic Boon",
+      "prereq": "Level 19+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability (to 30). Your hit point maximum rises by 40, and when you heal you can add your Constitution modifier once per turn."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Boon of Recovery",
+      "category": "Epic Boon",
+      "prereq": "Level 19+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability (to 30). Once per long rest, when you would drop to 0, drop to 1 and heal half your maximum. You also have a pool of 10d10 to heal yourself as a bonus action."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Boon of Skill",
+      "category": "Epic Boon",
+      "prereq": "Level 19+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability (to 30). Proficiency in every skill, and expertise in one."
+        ]
+      ],
+      "own": true
+    },
+    {
+      "name": "Boon of Speed",
+      "category": "Epic Boon",
+      "prereq": "Level 19+",
+      "book": "Player's Handbook (2024)",
+      "text": [
+        [
+          "p",
+          "+1 to any ability (to 30). +30 speed, and you can Disengage as a bonus action that also ends being grappled."
+        ]
+      ],
+      "own": true
+    }
+  ],
+  "backgrounds": {
+    "Artisan": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Dexterity, Intelligence",
+      "feat": "Crafter",
+      "skills": "Investigation and Persuasion",
+      "skillList": [
+        "Investigation",
+        "Persuasion"
+      ],
+      "tool": "One artisan's tool",
+      "equipment": "The tool, 2 pouches, traveler's clothes, 32 gp; or 50 gp",
+      "about": "You learned a trade in a workshop, sweeping floors and carrying tools before you were ever trusted with the bench. Your hands know materials the way other people know faces, and you still judge a person by the work they’ve made.",
+      "feature": "Workshop Eye: You can look at any finished object and tell roughly who made it, how long it took, and whether it was made properly. Advantage on Investigation checks to judge the quality or origin of crafted goods.",
+      "own": true
+    },
+    "Charlatan": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Dexterity, Constitution, Charisma",
+      "feat": "Skilled",
+      "skills": "Deception and Sleight of Hand",
+      "skillList": [
+        "Deception",
+        "Sleight of Hand"
+      ],
+      "tool": "Forgery kit",
+      "equipment": "Forgery kit, costume, fine clothes, 15 gp; or 50 gp",
+      "about": "Every crowd has a pocket and you have always known which one to reach for. You learned early that a good story sells faster than a good sword, and you never lie when a half-truth will do.",
+      "feature": "False Identity: You have a second persona with papers, a history and a few people who will swear to it. Gaining the papers for a new identity takes a week and a modest bribe.",
+      "own": true
+    },
+    "Entertainer": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Dexterity, Charisma",
+      "feat": "Musician",
+      "skills": "Acrobatics and Performance",
+      "skillList": [
+        "Acrobatics",
+        "Performance"
+      ],
+      "tool": "One musical instrument",
+      "equipment": "Instrument, 2 costumes, mirror, perfume, traveler's clothes, 11 gp; or 50 gp",
+      "about": "You have sung, juggled and played for coins in taverns, markets and the courts of minor lords. A crowd is a living thing to you, and you can read its mood like a sailor reads the sky.",
+      "feature": "By Popular Demand: You can always find a place to perform, and you can usually find a bed and a meal from grateful hosts. Crowds will forgive your mistakes when you keep them entertained.",
+      "own": true
+    },
+    "Farmer": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Tough",
+      "skills": "Animal Handling and Nature",
+      "skillList": [
+        "Animal Handling",
+        "Nature"
+      ],
+      "tool": "Carpenter's tools",
+      "equipment": "Sickle, carpenter's tools, healer's kit, iron pot, shovel, traveler's clothes, 30 gp; or 50 gp",
+      "about": "You grew up on the land, raising grain, animals or orchards and rising before the sun to tend them. You know weather, soil and the moods of livestock better than most folk know their own family.",
+      "feature": "Know the Land: Within a day’s walk of a farm or village you can find food and fresh water for a party of your size, and you always know the way home from the fields.",
+      "own": true
+    },
+    "Guard": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Intelligence, Wisdom",
+      "feat": "Alert",
+      "skills": "Athletics and Perception",
+      "skillList": [
+        "Athletics",
+        "Perception"
+      ],
+      "tool": "One gaming set",
+      "equipment": "Spear, light crossbow and bolts, gaming set, hooded lantern, manacles, quiver, traveler's clothes, 12 gp; or 50 gp",
+      "about": "You kept the peace at a gate, a warehouse or a lord’s door. You learned to spot trouble before it came through, and to tell a real threat from a drunk looking for a fight.",
+      "feature": "Watchful Eye: You can always tell when a stranger is lying about where they are going, and you notice when someone has been in a room you’re watching.",
+      "own": true
+    },
+    "Guide": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Dexterity, Constitution, Wisdom",
+      "feat": "Magic Initiate (Druid)",
+      "skills": "Stealth and Survival",
+      "skillList": [
+        "Stealth",
+        "Survival"
+      ],
+      "tool": "Cartographer's tools",
+      "equipment": "Shortbow and arrows, cartographer's tools, bedroll, quiver, tent, traveler's clothes, 3 gp; or 50 gp",
+      "about": "You have led caravans, pilgrims and lost lords through wild country and crowded roads. You know which paths are safe and which are a trap, and where the inns that won’t rob you are.",
+      "feature": "Trail Lore: You can find safe paths, water and shelter through wilderness, and you know the roads, inns and ferries of the region well enough to make good time.",
+      "own": true
+    },
+    "Hermit": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Constitution, Wisdom, Charisma",
+      "feat": "Healer",
+      "skills": "Medicine and Religion",
+      "skillList": [
+        "Medicine",
+        "Religion"
+      ],
+      "tool": "Herbalism kit",
+      "equipment": "Quarterstaff, herbalism kit, bedroll, book of philosophy, lamp, oil, traveler's clothes, 16 gp; or 50 gp",
+      "about": "You lived alone for a long while, in a cave, a hut or a forgotten shrine, and came back to the world with new eyes. Silence taught you to listen, and you have learned to speak only when you have something to say.",
+      "feature": "Discovery: You have made a private discovery, a rite, a herb or a truth that the world has forgotten. Work it out with the DM, and it will open one door that no one else can.",
+      "own": true
+    },
+    "Merchant": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Constitution, Intelligence, Charisma",
+      "feat": "Lucky",
+      "skills": "Animal Handling and Persuasion",
+      "skillList": [
+        "Animal Handling",
+        "Persuasion"
+      ],
+      "tool": "Navigator's tools",
+      "equipment": "Navigator's tools, 2 pouches, traveler's clothes, 22 gp; or 50 gp",
+      "about": "You bought and sold goods across the isles, arguing over prices from the docks to the great markets. You know what things are worth, and you know how to make a deal stick.",
+      "feature": "Contacts in the Trade: You know merchants, ferry captains and warehouse keepers in most ports. They will give you news, a fair price and a bit of credit when you’re honest with them.",
+      "own": true
+    },
+    "Noble": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Intelligence, Charisma",
+      "feat": "Skilled",
+      "skills": "History and Persuasion",
+      "skillList": [
+        "History",
+        "Persuasion"
+      ],
+      "tool": "One gaming set",
+      "equipment": "Gaming set, fine clothes, perfume, 29 gp; or 50 gp",
+      "about": "You were born into a family of rank and privilege, and you learned early that a name opens more doors than a sword. You are used to having people listen when you speak, and to having them expect something in return.",
+      "feature": "Position of Privilege: People of rank and their households treat you as one of their own. You can get a hearing with minor lords and their stewards, and you can find lodgings in most noble houses.",
+      "own": true
+    },
+    "Sailor": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Strength, Dexterity, Wisdom",
+      "feat": "Tavern Brawler",
+      "skills": "Acrobatics and Perception",
+      "skillList": [
+        "Acrobatics",
+        "Perception"
+      ],
+      "tool": "Navigator's tools",
+      "equipment": "Dagger, navigator's tools, rope, traveler's clothes, 20 gp; or 50 gp",
+      "about": "You worked the decks of trading ships and fishing boats, hauling rope and reading the sky. You know the sea’s temper, and you still walk a little unsteady on dry land.",
+      "feature": "Ship’s Passage: You can usually find passage on a ship headed where you need to go, and sailors will share news and rumours with you. You know the basics of rigging, knots and reading the weather at sea.",
+      "own": true
+    },
+    "Scribe": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Dexterity, Intelligence, Wisdom",
+      "feat": "Skilled",
+      "skills": "Investigation and Perception",
+      "skillList": [
+        "Investigation",
+        "Perception"
+      ],
+      "tool": "Calligrapher's supplies",
+      "equipment": "Calligrapher's supplies, fine clothes, lamp, oil, parchment, 23 gp; or 50 gp",
+      "about": "You copied books, wrote letters and kept accounts for people who could not do it themselves. Your hand is clean, your memory for names is sharp, and you know more secrets than anyone who ever paid you.",
+      "feature": "Reference Library: You have access to a library, archive or private collection of records in the places you know. Ask the DM what you can find in a day of searching, and you will usually find it.",
+      "own": true
+    },
+    "Wayfarer": {
+      "book": "Player's Handbook (2024)",
+      "abilities": "Dexterity, Wisdom, Charisma",
+      "feat": "Lucky",
+      "skills": "Insight and Stealth",
+      "skillList": [
+        "Insight",
+        "Stealth"
+      ],
+      "tool": "Thieves' tools",
+      "equipment": "2 daggers, thieves' tools, gaming set, bedroll, 2 pouches, traveler's clothes, 16 gp; or 50 gp",
+      "about": "You have travelled the roads for years with no fixed home, working for food and a bed in every town along the way. You know how to make yourself useful and how to leave before you wear out your welcome.",
+      "feature": "Road Friends: You have friends in many towns along the roads. A few days of hospitality, a warm bed and a meal are easy to find, and travellers pass news to you without being asked.",
+      "own": true
+    },
+    "Folk Hero": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Tough",
+      "skills": "Animal Handling and Survival",
+      "skillList": [
+        "Animal Handling",
+        "Survival"
+      ],
+      "tool": "One artisan's tool, vehicles (land)",
+      "equipment": "Artisan's tool, shovel, iron pot, common clothes, 10 gp; or 50 gp",
+      "about": "You are remembered in a village for something you did: a flood held back, a lord defied, a child saved from the wolves. The people there still ask after you when you come back, and they expect you to act like the hero they told stories about.",
+      "feature": "Rustic Hospitality: Common folk will shelter you and share their food. They will hide you from the law if you have done a good turn for them, and they will carry word of you across the countryside.",
+      "own": true
+    },
+    "Guild Artisan": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Dexterity, Intelligence, Charisma",
+      "feat": "Crafter",
+      "skills": "Insight and Persuasion",
+      "skillList": [
+        "Insight",
+        "Persuasion"
+      ],
+      "tool": "One artisan's tool",
+      "equipment": "Artisan's tool, letter of introduction from your guild, traveler's clothes, 15 gp; or 50 gp",
+      "about": "You belong to a craft guild in one of the cities, with dues paid, rules kept and a reputation to protect. Your guild is your family and your insurance, and it expects you to hold its name with pride.",
+      "feature": "Guild Membership: Your guild houses and feeds you when you are in its city, speaks for you before the town council and lends you coin against your work, for dues you must keep paying.",
+      "own": true
+    },
+    "Outlander": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Tough",
+      "skills": "Athletics and Survival",
+      "skillList": [
+        "Athletics",
+        "Survival"
+      ],
+      "tool": "One musical instrument",
+      "equipment": "Staff, hunting trap, animal trophy, traveler's clothes, 10 gp; or 50 gp",
+      "about": "You were raised far from the towns, in the marshes, hills or open country where survival is a daily job. You trust your own judgement more than laws and lords, and you never feel more at home than under the open sky.",
+      "feature": "Wanderer: You can always find food and fresh water in the wild for yourself and up to five companions, and you always know the direction of the nearest settlement. Your memory for the land around you is excellent.",
+      "own": true
+    },
+    "Urchin": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Dexterity, Constitution, Wisdom",
+      "feat": "Lucky",
+      "skills": "Sleight of Hand and Stealth",
+      "skillList": [
+        "Sleight of Hand",
+        "Stealth"
+      ],
+      "tool": "Disguise kit, thieves' tools",
+      "equipment": "Small knife, city map, pet mouse, token of your parents, common clothes, 10 gp; or 50 gp",
+      "about": "You grew up in the streets, sleeping in doorways and stealing bread before you could read. The city taught you to watch, to run and to keep your secrets close, and you still find yourself counting exits in any room.",
+      "feature": "City Secrets: You know the back ways, the sewers, the rooftops and the places the watch doesn’t go in your home city. You can find a safe place to hide and someone who will sell you information for a few coins.",
+      "own": true
+    },
+    "City Watch": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Alert",
+      "skills": "Athletics and Insight",
+      "skillList": [
+        "Athletics",
+        "Insight"
+      ],
+      "tool": "None (two languages)",
+      "equipment": "Uniform, horn, manacles, 10 gp; or 50 gp",
+      "about": "You patrolled the streets of a walled city, keeping the peace, chasing thieves and dragging drunks home. You know the town better than most people who live in it, and you know the quiet deals that keep it running.",
+      "feature": "Watch Connections: You know the other watchmen, the sergeants and the gatekeepers of your city. They will help you with a favour, and they will look the other way when you have a good reason.",
+      "own": true
+    },
+    "Clan Crafter": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Strength, Intelligence, Wisdom",
+      "feat": "Crafter",
+      "skills": "History and Insight",
+      "skillList": [
+        "History",
+        "Insight"
+      ],
+      "tool": "One artisan's tool",
+      "equipment": "Artisan's tool, maker's mark chisel, traveler's clothes, 5 gp and a gem; or 50 gp",
+      "about": "You were raised in a clan of crafters, where every child learns a trade and every trade is handed down through blood and tradition. The clan’s workshops are your first home, and their name is the only one that opens the right doors.",
+      "feature": "Clan Commission: Your clan takes commissions from lords and merchants, and it will house you and put you to work when you need a place. Its workshops and tools are open to you when you have earned your keep.",
+      "own": true
+    },
+    "Cloistered Scholar": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Intelligence, Wisdom, Charisma",
+      "feat": "Magic Initiate (Wizard)",
+      "skills": "History and Religion",
+      "skillList": [
+        "History",
+        "Religion"
+      ],
+      "tool": "None (two languages)",
+      "equipment": "Scholar's robes, writing kit, borrowed book, 10 gp; or 50 gp",
+      "about": "You spent your youth in a library, a monastery or a university, reading everything you could reach and arguing with the masters who taught you. You know the old texts well, and you are shy when the world does not come to you through a book.",
+      "feature": "Library Access: You can use the libraries and archives of your former house, and its masters will answer your letters. Ask the DM what you can learn there in a week, and you will often find the answer.",
+      "own": true
+    },
+    "Courtier": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Intelligence, Wisdom, Charisma",
+      "feat": "Skilled",
+      "skills": "Insight and Persuasion",
+      "skillList": [
+        "Insight",
+        "Persuasion"
+      ],
+      "tool": "None (two languages)",
+      "equipment": "Fine clothes, 5 gp; or 50 gp",
+      "about": "You lived in the halls of a lord or king, learning the rules of who speaks, who listens and who smiles while they plot. You can carry a conversation through three rooms of enemies, and you still keep a list of favours owed.",
+      "feature": "Court Etiquette: You know the proper manners and titles of the great houses, and you can get a hearing with courtiers and stewards. Your presence at a feast or a formal dinner is always noticed, and rarely questioned.",
+      "own": true
+    },
+    "Faction Agent": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Intelligence, Wisdom, Charisma",
+      "feat": "Skilled",
+      "skills": "Insight and Persuasion",
+      "skillList": [
+        "Insight",
+        "Persuasion"
+      ],
+      "tool": "None (two languages)",
+      "equipment": "Faction badge, cipher book, common clothes, 15 gp; or 50 gp",
+      "about": "You work for one of the factions or houses that run the isles, carrying messages, making deals and finding the things their enemies would rather keep hidden. You are loyal to your house, but you are never sure which of your fellows will sell you out.",
+      "feature": "Faction Ties: You have a contact in your faction’s network in most major towns. They can pass a message, arrange a meeting or give you a safe house, provided you keep the house’s interests first.",
+      "own": true
+    },
+    "Far Traveler": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Constitution, Wisdom, Charisma",
+      "feat": "Skilled",
+      "skills": "Insight and Perception",
+      "skillList": [
+        "Insight",
+        "Perception"
+      ],
+      "tool": "One instrument or gaming set",
+      "equipment": "Traveler's clothes, instrument or gaming set, poorly drawn maps from home, 5 gp jewelry, 5 gp; or 50 gp",
+      "about": "You come from across the sea, from a land far beyond the empire, and you have the marks of that journey in your speech and your habits. The isles see you as a curiosity, but your home holds memories and knowledge that few here have seen.",
+      "feature": "Far Lands: You know the customs, languages and history of your homeland, and you can speak of it with a little authority. People from there, or who have heard of it, will often help you.",
+      "own": true
+    },
+    "Inheritor": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Constitution, Wisdom, Charisma",
+      "feat": "Lucky",
+      "skills": "Survival and History",
+      "skillList": [
+        "Survival",
+        "History"
+      ],
+      "tool": "One gaming set or instrument",
+      "equipment": "Your inheritance (an item, document or secret), traveler's clothes, tool, 15 gp; or 50 gp",
+      "about": "You were left a legacy you did not ask for: a house, a debt, a grudge or an oath passed down from someone who died too soon. You are still learning what it means to be the one who carries it.",
+      "feature": "Inherited Claim: You hold a claim to a house, a title, a plot of land or a debt owed. The DM decides what it’s worth and who is willing to fight you for it.",
+      "own": true
+    },
+    "Knight of the Order": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Strength, Wisdom, Charisma",
+      "feat": "Skilled",
+      "skills": "Persuasion and Religion",
+      "skillList": [
+        "Persuasion",
+        "Religion"
+      ],
+      "tool": "One gaming set or instrument",
+      "equipment": "Traveler's clothes, signet or banner, 10 gp; or 50 gp",
+      "about": "You were trained in one of the knightly orders, an oath sworn before a shrine and kept through every hardship. The order gave you armour, a horse and a purpose, and it expects you to remember both.",
+      "feature": "Order’s Shelter: Your order will house and feed you in its keeps and chapter-houses, and its knights will speak for you at court. Asking for their help costs you the order’s goodwill, so do it sparingly.",
+      "own": true
+    },
+    "Mercenary Veteran": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Strength, Dexterity, Constitution",
+      "feat": "Savage Attacker",
+      "skills": "Athletics and Persuasion",
+      "skillList": [
+        "Athletics",
+        "Persuasion"
+      ],
+      "tool": "One gaming set, vehicles (land)",
+      "equipment": "Uniform of your company, insignia, gaming set, common clothes, 10 gp; or 50 gp",
+      "about": "You have fought for coin in too many wars and sold your sword to too many banners. You know the price of a life and the value of a good contract, and you keep old friends from the company you cannot easily forget.",
+      "feature": "Company Ties: You have former comrades in mercenary companies across the isles. They can find you work, a fair price for a fight and news of who is hiring. Your old company may still want you back.",
+      "own": true
+    },
+    "Urban Bounty Hunter": {
+      "book": "Sword Coast Adventurer's Guide",
+      "abilities": "Dexterity, Wisdom, Charisma",
+      "feat": "Alert",
+      "skills": "Insight and Stealth",
+      "skillList": [
+        "Insight",
+        "Stealth"
+      ],
+      "tool": "Two of gaming set, instrument, thieves' tools",
+      "equipment": "Clothes for your work, 20 gp; or 50 gp",
+      "about": "You hunt people for money in the cities, tracking debtors, deserters and fugitives who thought they had got away. You know the law well enough to bend it, and you have learned that a live prisoner pays better than a dead one.",
+      "feature": "Bounty Contacts: You know the bounty boards, the jailers and the watch sergeants of the big cities. They will tell you who is wanted and where, and they will pay you for finding them.",
+      "own": true
+    },
+    "Haunted One": {
+      "book": "Curse of Strahd",
+      "abilities": "Constitution, Wisdom, Charisma",
+      "feat": "Alert",
+      "skills": "Investigation and Religion",
+      "skillList": [
+        "Investigation",
+        "Religion"
+      ],
+      "tool": "None (two exotic languages)",
+      "equipment": "Monster hunter's pack, common clothes, 1 sp; or 50 gp",
+      "about": "Something terrible happened to you once, in the dark where you did not expect it, and it has never fully let go. You keep the memory close, and you have learned to read the signs of the unnatural before others can.",
+      "feature": "Dark Insight: You can tell when a place or a person is touched by death, madness or the fiendish, and you can recall the rites or the warnings that the old texts give against them. The DM decides exactly what you saw.",
+      "own": true
+    },
+    "Investigator": {
+      "book": "Van Richten's Guide to Ravenloft",
+      "abilities": "Dexterity, Intelligence, Wisdom",
+      "feat": "Alert",
+      "skills": "Insight and Investigation",
+      "skillList": [
+        "Insight",
+        "Investigation"
+      ],
+      "tool": "Disguise kit, thieves' tools",
+      "equipment": "Magnifying glass, evidence from a case, common clothes, 10 gp; or 50 gp",
+      "about": "You solve crimes for a living, for a city, a lord or a private client who cannot trust the watch. You are patient, observant and suspicious of every story, and you have learned to find the truth in the gaps between what people say.",
+      "feature": "Trusted Eye: You can call on a contact in the watch, the courts or a city’s records office to help you dig through a case. Their help is quick, but it can only go so far before someone asks questions.",
+      "own": true
+    },
+    "Pirate": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Strength, Dexterity, Wisdom",
+      "feat": "Tavern Brawler",
+      "skills": "Athletics and Perception",
+      "skillList": [
+        "Athletics",
+        "Perception"
+      ],
+      "tool": "Navigator's tools, vehicles (water)",
+      "equipment": "Belaying pin (club), silk rope, lucky charm, common clothes, 10 gp; or 50 gp",
+      "about": "You sailed under a black flag or a letter of marque, taking ships and sacking ports for gold and glory. You know the ocean’s dark corners and the harbours that do not ask questions, and you still wonder whether the sea will ever forgive you.",
+      "feature": "Pirate Haven: You can find a safe harbour or a fence for stolen goods in most port towns. The crews of other pirate ships will shelter you and share news of the sea, if you pay your share.",
+      "own": true
+    },
+    "Spy": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Dexterity, Intelligence, Charisma",
+      "feat": "Alert",
+      "skills": "Deception and Stealth",
+      "skillList": [
+        "Deception",
+        "Stealth"
+      ],
+      "tool": "Gaming set, thieves' tools",
+      "equipment": "Crowbar, dark clothes with a hood, 15 gp; or 50 gp",
+      "about": "You worked in the shadows for a house, a kingdom or a guild, gathering secrets and passing them to the people who paid for them. You are good at being unseen, and you have learned to trust no one who has not earned it.",
+      "feature": "Dead Drop: You have a network of dead drops and safe contacts in the cities you know. You can pass a message or leave a package for a trusted contact in a day, provided no one is watching.",
+      "own": true
+    },
+    "Gladiator": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Strength, Dexterity, Charisma",
+      "feat": "Savage Attacker",
+      "skills": "Acrobatics and Performance",
+      "skillList": [
+        "Acrobatics",
+        "Performance"
+      ],
+      "tool": "Disguise kit, one unusual weapon",
+      "equipment": "An unusual weapon (net, trident), costume, admirer's favor, 15 gp; or 50 gp",
+      "about": "You fought in the arenas for crowds and purses, a name in the sand and a bloody rope tied to your wrist. The fans remember your fights, and so do the men you beat, and both have their own use.",
+      "feature": "Crowd Favourite: Your name is known in the arenas and taverns where you fought. People will buy you a drink, give you work and often forgive you a little trouble, as long as you keep giving them a good show.",
+      "own": true
+    },
+    "Knight": {
+      "book": "Player's Handbook (2014)",
+      "abilities": "Strength, Wisdom, Charisma",
+      "feat": "Skilled",
+      "skills": "History and Persuasion",
+      "skillList": [
+        "History",
+        "Persuasion"
+      ],
+      "tool": "One gaming set",
+      "equipment": "Fine clothes, signet ring, scroll of pedigree, 25 gp, and three retainers; or 50 gp",
+      "about": "You were raised as a knight of a lord, sworn to a banner and an oath of service. You learned to ride, to fight and to speak to nobles, and you still keep the oath when it is hard to keep.",
+      "feature": "Knightly Sponsor: A lord of the realm will vouch for you at court, and his household will house you when you travel in his lands. Asking for more than a meal and a bed will cost you his goodwill.",
+      "own": true
+    },
+    "Shipwright": {
+      "book": "Ghosts of Saltmarsh",
+      "abilities": "Strength, Dexterity, Intelligence",
+      "feat": "Crafter",
+      "skills": "History and Perception",
+      "skillList": [
+        "History",
+        "Perception"
+      ],
+      "tool": "Carpenter's tools, vehicles (water)",
+      "equipment": "Carpenter's tools, common clothes, quill and ink, 10 gp; or 50 gp",
+      "about": "You built and repaired ships in a yard along the coast, shaping timber and tar into things that float. You know how a hull fails and how to make it last, and you judge a crew by the state of its boat.",
+      "feature": "Yard Knowledge: You can find work repairing or building boats in most coastal towns, and you know the shipwrights who will lend you a dock or a few tools. You can judge a vessel’s condition at a glance.",
+      "own": true
+    },
+    "Smuggler": {
+      "book": "Ghosts of Saltmarsh",
+      "abilities": "Dexterity, Wisdom, Charisma",
+      "feat": "Lucky",
+      "skills": "Athletics and Deception",
+      "skillList": [
+        "Athletics",
+        "Deception"
+      ],
+      "tool": "Vehicles (water)",
+      "equipment": "Fancy leather vest, common clothes, 15 gp; or 50 gp",
+      "about": "You moved goods past the customs houses and the watch, running cargo in the dark on fast boats and hidden carts. You know the coves, the tides and the men who will look the other way for the right price.",
+      "feature": "Smuggler’s Route: You know hidden coves, back roads and safe houses along a stretch of coast or border. A night of smuggling can usually be arranged for a small fee, and the men who run it will keep your secrets.",
+      "own": true
+    },
+    "Archaeologist": {
+      "book": "Tomb of Annihilation",
+      "abilities": "Strength, Intelligence, Wisdom",
+      "feat": "Alert",
+      "skills": "History and Survival",
+      "skillList": [
+        "History",
+        "Survival"
+      ],
+      "tool": "Cartographer's or navigator's tools",
+      "equipment": "Map or scroll case, lantern, miner's pick, shovel, two-person tent, trinket from a dig, 25 gp; or 50 gp",
+      "about": "You dug through ruins, tombs and forgotten cities, looking for the lost things of the old world. You are careful with what you find, and you have learned that some of it is better left buried.",
+      "feature": "Tomb Lore: You can identify the age and purpose of an old ruin or tomb from a glance at its stonework. You know how to find safe paths through ruins, and the scholars who value old finds will pay for what you bring back.",
+      "own": true
+    },
+    "Feylost": {
+      "book": "The Wild Beyond the Witchlight",
+      "abilities": "Dexterity, Wisdom, Charisma",
+      "feat": "Magic Initiate (Druid)",
+      "skills": "Deception and Survival",
+      "skillList": [
+        "Deception",
+        "Survival"
+      ],
+      "tool": "One musical instrument",
+      "equipment": "Instrument, three trinkets from the fey realm, traveler's clothes, 8 gp; or 50 gp",
+      "about": "You were taken into the fey woods as a child, or walked into them once and came out changed. You remember the world on the other side in dreams, and you still notice when the fey are watching.",
+      "feature": "Fey Notice: You can tell when a fey creature is near, or when a bargain has been struck in the woods. You can speak a few words of Sylvan and find a fey creature willing to hear you, once a season.",
+      "own": true
+    }
+  },
+  "options": {
+    "Artificer Infusion": [
+      {
+        "name": "Armor of Magical Strength",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Armor that adds your Intelligence modifier to Strength checks and saves, and lets you refuse to be knocked prone a few times per day."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Boots of the Winding Path",
+        "prereq": "6th level",
+        "text": [
+          [
+            "p",
+            "Boots that let you teleport back to a spot you stood on in the last turn (up to 15 feet) as a bonus action."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Enhanced Arcane Focus",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A rod, staff or wand gives +1 to spell attack rolls and lets your spells ignore half cover. +2 at 10th level."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Enhanced Defense",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Armor or a shield gives +1 AC (+2 at 10th level)."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Enhanced Weapon",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A simple or martial weapon becomes a +1 weapon (+2 at 10th level)."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Helm of Awareness",
+        "prereq": "10th level",
+        "text": [
+          [
+            "p",
+            "A helmet gives advantage on initiative, and you can't be surprised while awake."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Homunculus Servant",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Build a tiny mechanical homunculus that obeys you, fights alongside you and can deliver your touch spells."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Mind Sharpener",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Armor or robes that can turn a failed concentration save into a success a few times per day."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Radiant Weapon",
+        "prereq": "6th level",
+        "text": [
+          [
+            "p",
+            "A +1 weapon that sheds light on command, and can blind a creature that hits you as a reaction a few times per day."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Repeating Shot",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A ranged weapon becomes +1, ignores the loading property, and makes its own ammunition."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Replicate Magic Item",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Make a copy of a common or uncommon magic item from the artificer's list (bag of holding, goggles of night, rope of climbing, and many more, with better ones at higher levels)."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Repulsion Shield",
+        "prereq": "6th level",
+        "text": [
+          [
+            "p",
+            "A +1 shield that can push an attacker 15 feet away as a reaction a few times per day."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Resistant Armor",
+        "prereq": "6th level",
+        "text": [
+          [
+            "p",
+            "Armor that gives resistance to one damage type: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Returning Weapon",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A thrown weapon becomes +1 and flies back to your hand after the attack."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Spell-Refueling Ring",
+        "prereq": "6th level",
+        "text": [
+          [
+            "p",
+            "A ring that, once per day, gives you back the mana of a spell of 3rd level or lower (up to 18 mana)."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Arcane Propulsion Armor",
+        "prereq": "14th level",
+        "text": [
+          [
+            "p",
+            "Armor that adds 5 feet of speed, gives you powered gauntlets as weapons (1d8 force, thrown 20/60 that return), and replaces missing limbs."
+          ]
+        ],
+        "own": true
+      }
+    ],
+    "Blood Curse": [
+      {
+        "name": "Blood Curse of the Anxious",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Make a creature more vulnerable to intimidation: Intimidation checks against it have advantage until your next turn. Amplified, it also has disadvantage on its next Wisdom save."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Binding",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "As a bonus action, a Large or smaller creature makes a Strength save or its speed drops to 0 and it can't use reactions until the end of its next turn. Amplified, it lasts a minute (it repeats the save each turn) and works on bigger creatures."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Bloated Agony",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A creature's body swells: it has disadvantage on Strength and Dexterity checks and takes damage each time it acts, for a minute (Constitution save each turn to end it). Amplified, it takes more damage."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Eyeless",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "As a reaction when a creature attacks, roll your hemocraft die and subtract it from the attack roll. Amplified, it applies to all its attacks this turn."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Fallen Puppet",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "When a creature near you drops to 0 hit points, use your reaction to make it immediately make one attack against a target of your choice before it falls. Amplified, it can move first and gets a bonus to hit."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Marked",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "As a bonus action, mark a creature: your Crimson Rite damage against it is doubled until the end of your turn. Amplified, you also have advantage on your next attack against it."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Mutual Suffering",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "Link a creature to you: when it damages you, it takes half that damage as necrotic. Amplified, it takes the full amount."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Muddled Mind",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "A spellcaster has disadvantage on its next concentration save. Amplified, on all of them for a while."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Exposure",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "As a reaction when a creature takes damage, remove its resistance to that damage for that hit. Amplified, also for the rest of the turn."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Spurned Movement",
+        "prereq": "",
+        "text": [
+          [
+            "p",
+            "As a reaction when a creature moves near you, its speed drops to 0 until the end of the turn. Amplified, works on a creature farther away and it also can't take reactions."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Exorcist",
+        "prereq": "Order of the Ghostslayer",
+        "text": [
+          [
+            "p",
+            "End a charm, fright or possession effect on a creature; the possessor takes psychic damage."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Howl",
+        "prereq": "Order of the Lycan",
+        "text": [
+          [
+            "p",
+            "As an action, howl: creatures that hear it make a Wisdom save or are frightened and can't move."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of Corrosion",
+        "prereq": "Order of the Mutant",
+        "text": [
+          [
+            "p",
+            "A creature is poisoned and takes poison damage each turn until it shakes it off (Constitution save)."
+          ]
+        ],
+        "own": true
+      },
+      {
+        "name": "Blood Curse of the Souleater",
+        "prereq": "Order of the Profane Soul",
+        "text": [
+          [
+            "p",
+            "When a creature dies near you, feed on its soul to regain mana and gain advantage on your next attacks. Once per long rest."
+          ]
+        ],
+        "own": true
+      }
+    ]
+  }
+}
