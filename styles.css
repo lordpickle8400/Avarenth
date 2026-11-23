@@ -1473,3 +1473,6 @@ body:has(.m-sheet) { overflow: hidden; }
 .bar-clock a:first-child { font-weight: 600; }
 .bar-clock a:last-child { opacity: .8; }
 .bar-clock a:hover { text-decoration: underline; }
+
+/* City districts: names sit over the zones */
+.ap-dlabel{position:absolute;transform:translate(-50%,-50%);pointer-events:none;white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#2b1d0e;text-shadow:0 0 4px #f5ecd6,0 0 4px #f5ecd6,0 0 2px #f5ecd6}

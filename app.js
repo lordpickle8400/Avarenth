@@ -11424,10 +11424,18 @@
   }
   function shopCount(slug) { var a = slug ? articleBySlug(slug) : null; return a && loaded.shops ? shopsAt(a.id).length : 0; }
 
+  // Districts: coloured zones over the city map, with a name on each.
+  function districtsHtml(w) {
+    var ds = w.city.level.districts || [];
+    var svg = '<svg aria-hidden="true" style="position:absolute;left:0;top:0;width:' + w.w + 'px;height:' + w.h + 'px;pointer-events:none;overflow:visible" viewBox="0 0 1 1" preserveAspectRatio="none">' +
+      ds.map(function (d) { return '<polygon points="' + d.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' ') + '" fill="' + d.color + '" fill-opacity="0.16" stroke="' + d.color + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-dasharray="6 4"/>'; }).join('') + '</svg>';
+    return svg + ds.map(function (d) { return '<span class="ap-dlabel" style="left:' + (d.label[0] * w.w) + 'px;top:' + (d.label[1] * w.h) + 'px">' + esc(d.name) + '</span>'; }).join('');
+  }
   function pinsHtml(w) {
     if (TABLE && !w.city) return tablePinsHtml(w);
     var html = '', L = AT.layers;
     if (w.city) {
+      if (L.districts) html += districtsHtml(w);
       if (L.marks) (w.city.level.marks || []).forEach(function (mk) {
         var s = AT.sel && AT.sel.t === 'mark' && AT.sel.n === mk.n;
         html += '<button type="button" class="ap ap-mark' + (s ? ' sel' : '') + '" style="left:' + (mk.x * w.w) + 'px;top:' + (mk.y * w.h) + 'px" data-pin="mark" data-n="' + mk.n + '" aria-label="' + esc(mk.n + '. ' + mk.name) + '"><i>' + mk.n + '</i><span class="lbl">' + esc(mk.name) + '</span></button>';
@@ -11579,7 +11587,7 @@
   }
   function layersHtml() {
     var w = atlasWorld(), L = AT.layers;
-    var opts = w && w.city ? [['marks', 'Numbered key']] : [['labels', 'Names'], ['towns', 'Towns and villages'], ['shops', 'Shop counts'], ['ruins', 'Ruins'], ['tolls', 'Tolls'], ['party', 'Party, route and trail'], ['tpins', 'The party’s own pins'], ['grid', 'Travel roads (what the app uses)']];
+    var opts = w && w.city ? [['districts', 'Districts']] : [['labels', 'Names'], ['towns', 'Towns and villages'], ['shops', 'Shop counts'], ['ruins', 'Ruins'], ['tolls', 'Tolls'], ['party', 'Party, route and trail'], ['tpins', 'The party’s own pins'], ['grid', 'Travel roads (what the app uses)']];
     document.getElementById('at-layers').innerHTML = '<p class="eyebrow">Show on the map</p>' + opts.map(function (o) { return '<label class="check"><input type="checkbox" data-layer="' + o[0] + '"' + (L[o[0]] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>'; }).join('') + (isDM() && !TABLE && w && w.map && !w.city ? '<div class="actions" style="margin-top:8px"><a class="btn small" href="#/map-edit/' + encodeURIComponent(w.map.id) + '">Edit this map</a><a class="btn small quiet" href="#/pins/' + encodeURIComponent(w.map.id) + '">Edit pins</a></div>' : '');
   }
 
@@ -12433,7 +12441,7 @@
   function startTable() {
     TABLE = true;
     AT.linked = false;
-    AT.layers = { towns: true, labels: false, ruins: false, tolls: false, party: true, shops: false, marks: false, grid: false };
+    AT.layers = { towns: true, labels: false, ruins: false, tolls: false, party: true, shops: false, marks: false, grid: false, districts: true };
     if (isTable()) document.body.classList.add('table-mode');
     loadTable().then(render).catch(function (e) { fail(e, 'Could not load the table map.'); });
     if (sb.channel && !tableChannel) {
