@@ -757,7 +757,7 @@
     {
       "name": "Drow High Magic",
       "category": "General",
-      "prereq": "Level 4+, Drow",
+      "prereq": "Level 4+, Dark Elf",
       "book": "Xanathar's Guide to Everything",
       "text": [
         [
