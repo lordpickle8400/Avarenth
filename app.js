@@ -1741,7 +1741,7 @@
     Paladin: ['str', 'cha', 'con', 'wis', 'dex', 'int'], Ranger: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
     Rogue: ['dex', 'con', 'wis', 'int', 'cha', 'str'], Sorcerer: ['cha', 'con', 'dex', 'wis', 'int', 'str'],
     Warlock: ['cha', 'con', 'dex', 'wis', 'int', 'str'], Wizard: ['int', 'con', 'dex', 'wis', 'cha', 'str'],
-    Artificer: ['int', 'con', 'dex', 'str', 'wis', 'cha'], 'Blood Hunter': ['dex', 'int', 'con', 'str', 'wis', 'cha']
+    Artificer: ['int', 'con', 'dex', 'str', 'wis', 'cha']
   };
   var CLASS_ABIL_NOTE = { Fighter: 'Put Dexterity first instead for an archer or finesse build.', Cleric: 'Heavy-armor domains like War and Life like Strength; the rest can take Dexterity.', Ranger: 'Dexterity and Wisdom are both needed, so split the top picks.' };
   // Abilities a species' traits and build lean on, if any. Humans and anything homebrew get no hint.
@@ -2330,8 +2330,6 @@
         add('flash', 'Flash of Genius', L >= 7 ? Math.max(1, mod(s.abilities.int)) : 0, 'long');
         if (s.subclass === 'Artillerist') add('cannon', 'Eldritch Cannon', L >= 3 ? 1 : 0, 'long', { note: 'another costs 5 mana' });
         break;
-      case 'Blood Hunter':
-        add('maledict', 'Blood Maledict', byLevel(L, [[1, 1], [6, 2], [13, 3], [17, 4]]), 'short', { note: 'hemocraft d' + byLevel(L, [[1, 4], [5, 6], [11, 8], [17, 10]]) }); break;
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
     return out;
@@ -4912,7 +4910,7 @@
 
   /* ================= Spell tomes ================= */
   var RARITIES = ['Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary'];
-  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Blood Hunter', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
+  var SPELL_CLASSES = ['Artificer', 'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer', 'Warlock', 'Wizard'];
   var SCHOOLS = ['Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation'];
   var SPELL_COLS = 'name, level, school, classes, book, ritual, concentration, rarity, notes, homebrew, status, submitted_by, casting_time, spell_range, components, duration, description, dm_note, created_at';
   function loadSpells() {
@@ -12308,7 +12306,7 @@
   var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
   var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
   // Pick a feat, invocation, metamagic, infusion or blood curse from the lists instead of typing it in.
-  var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Artificer: 'Artificer Infusion', 'Blood Hunter': 'Blood Curse' };
+  var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Artificer: 'Artificer Infusion' };
   function blocksText(b) { return (b || []).map(function (x) { return x[0] === 'ul' ? x[1].map(function (li) { return '• ' + li; }).join('\n') : x[0] === 'p' || x[0] === 'h' ? x[1] : ''; }).filter(Boolean).join('\n\n').replace(/_/g, '').replace(/\*\*/g, ''); }
   function featurePickHtml(s) {
     if (!SRD) return '';
@@ -12496,7 +12494,7 @@
   }
 
   // The rules reference: everything in the free SRD, for players and the DM.
-  // A class from outside the SRD (Artificer, Blood Hunter): our own summaries from rules.js.
+  // A class from outside the SRD (Artificer): our own summaries from rules.js.
   function extraClassHtml(cls) {
     var cd = RULES.classes[cls], m = RULES.magic.mana[cls], ch = RULES.magic.charges[cls] || [[], 0];
     var facts = [['Hit die', 'd' + cd.hd], ['Main ability', cd.primary], ['Saves', cd.saves.map(function (x) { return x.toUpperCase(); }).join(', ')], ['Armor', cd.armor], ['Weapons', cd.weapons], ['Tools', cd.tools || 'None'],
@@ -12513,7 +12511,7 @@
   function renderRules(arg) {
     document.body.classList.remove('atlas-mode');
     if (!SRD) { loadSrd(); $view.innerHTML = '<div class="page"><div class="empty">Opening the rulebook…</div></div>'; return; }
-    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Infusions'], ['curses', 'Blood curses']];
+    var tabs = [['classes', 'Classes'], ['subclasses', 'Subclasses'], ['feats', 'Feats'], ['species', 'Species'], ['backgrounds', 'Backgrounds'], ['metamagic', 'Metamagic'], ['invocations', 'Invocations'], ['infusions', 'Infusions']];
     var parts = String(arg || 'classes').split(':'), tab = parts[0], pick = parts[1] || '';
     var html = '<div class="page"><div><p class="eyebrow">Free rules</p><h1 class="page-title">Rules</h1>' + helpNote('rules', 'The free 2024 D&D rules (SRD 5.2.1), rewritten for Avarenth’s mana: there are no spell slots. Features marked DM’s call are conversions your DM decides. Everything from the other books is summarized in our own words; check the book for exact wording.') + '</div>' +
       '<div class="pill-row" role="tablist">' + tabs.map(function (t) { return '<a class="pill" href="#/rules/' + t[0] + '"' + (tab === t[0] ? ' aria-current="page"' : '') + '>' + t[1] + '</a>'; }).join('') + '</div>';
@@ -12550,8 +12548,8 @@
       html += '<p class="note">Backgrounds with a book name are summaries in our own words; for the older books, the abilities and feat are suggestions in the 2024 style.</p>';
       Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Feature</dt><dd>' + esc(b.feature) + '</dd>' : '') + '</dl></section>'; });
     } else {
-      var key = { metamagic: 'Metamagic', infusions: 'Artificer Infusion', curses: 'Blood Curse' }[tab] || 'Eldritch Invocation';
-      if (key === 'Artificer Infusion' || key === 'Blood Curse') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
+      var key = { metamagic: 'Metamagic', infusions: 'Artificer Infusion' }[tab] || 'Eldritch Invocation';
+      if (key === 'Artificer Infusion') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
       html += (SRD.options[key] || []).map(function (o) { return '<section class="section feat"><h2>' + esc(o.name) + (o.prereq ? '<small>' + esc(o.prereq) + '</small>' : '') + '</h2><div class="prose srd-body">' + srdBlocks(o.text) + '</div>' + srdOrig(o.meta) + '</section>'; }).join('');
     }
     html += '<p class="note srd-credit">' + esc(SRD_CREDIT) + '</p></div>';

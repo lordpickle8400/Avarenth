@@ -282,46 +282,22 @@
     ]
   };
 
-  C['Blood Hunter'] = {
-    hd: 10, primary: 'Strength or Dexterity, and Intelligence', saves: ['dex', 'int'], book: 'Blood Hunter (Matthew Mercer, 2020)',
-    armor: 'Light and medium armor, shields', weapons: 'Simple and martial weapons', tools: 'Alchemist\'s supplies',
-    skills: { n: 3, from: ['Acrobatics', 'Arcana', 'Athletics', 'History', 'Insight', 'Investigation', 'Religion', 'Survival'] },
-    subclassLevel: 3, subclassLabel: 'Blood Hunter Order', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Order of the Ghostslayer', 'Order of the Lycan', 'Order of the Mutant', 'Order of the Profane Soul'],
-    about: 'Hunters who use forbidden blood magic (hemocraft), paying in their own health to fight monsters.',
-    features: [
-      [1, 'Hunter\'s Bane', 'Advantage on Wisdom (Survival) checks to track fey, fiends or undead, and on Intelligence checks to recall lore about them.'],
-      [1, 'Blood Maledict', 'Learn a blood curse and use it as a bonus action or reaction. You can amplify it by taking damage equal to one roll of your hemocraft die. One use per short or long rest (two at 6th, three at 13th, four at 17th). More curses as you level.'],
-      [1, 'Hemocraft Die', 'Your blood magic rolls a d4, growing to d6 at 5th, d8 at 11th and d10 at 17th. Your hemocraft ability is Intelligence or Wisdom (your choice).'],
-      [2, 'Fighting Style', 'Pick a fighting specialty: Archery, Dueling, Great Weapon Fighting or Two-Weapon Fighting.'],
-      [2, 'Crimson Rite', 'As a bonus action, take damage equal to one roll of your hemocraft die to coat your weapon in an elemental rite (flame, frozen or storm; more at higher levels). Until your next rest your hits with it deal an extra hemocraft die of that damage.'],
-      [3, 'Blood Hunter Order', 'Choose your order.'],
-      [5, 'Extra Attack', 'Attack twice when you take the Attack action.'],
-      [6, 'Brand of Castigation', 'When you hit with a Crimson Rite weapon, you can brand the creature: you always know where it is, and it takes psychic damage when it damages you.'],
-      [9, 'Grim Psychometry', 'Advantage on Intelligence (History) checks about the dark past of an object or place you touch.'],
-      [10, 'Dark Augmentation', 'Your speed rises by 5 feet, and you add your hemocraft modifier to Strength, Dexterity and Constitution saves.'],
-      [13, 'Brand of Tethering', 'A branded creature takes psychic damage if it tries to flee you, and can\'t teleport or leave the plane.'],
-      [14, 'Hardened Soul', 'Advantage on saves against being charmed or frightened.'],
-      [20, 'Sanguine Mastery', 'Once per turn, reroll a hemocraft die and use either roll. When you score a critical hit with a Crimson Rite weapon, you regain one use of Blood Maledict.']
-    ]
-  };
-
   // Subclass feature levels (the features themselves depend on the subclass).
-  var SUB_LEVELS = { Artificer: [3, 5, 9, 15], 'Blood Hunter': [3, 7, 11, 15, 18], Barbarian: [3, 6, 10, 14], Bard: [3, 6, 14], Cleric: [1, 2, 6, 8, 17], Druid: [2, 6, 10, 14], Fighter: [3, 7, 10, 15, 18],
+  var SUB_LEVELS = { Artificer: [3, 5, 9, 15], Barbarian: [3, 6, 10, 14], Bard: [3, 6, 14], Cleric: [1, 2, 6, 8, 17], Druid: [2, 6, 10, 14], Fighter: [3, 7, 10, 15, 18],
     Monk: [3, 6, 11, 17], Paladin: [3, 7, 15, 20], Ranger: [3, 7, 11, 15], Rogue: [3, 9, 13, 17], Sorcerer: [1, 6, 14, 18], Warlock: [1, 6, 10, 14], Wizard: [2, 6, 10, 14] };
 
   // Avarenth magic, from the Mana Guide.
   var MAGIC = {
     manaCost: [0, 5, 10, 18, 28, 40, 60, 85, 110, 150],
-    mana: { Wizard: [25, 15], Sorcerer: [35, 17], Cleric: [25, 14], Druid: [25, 14], Bard: [30, 13], Warlock: [30, 12], Paladin: [20, 9], Ranger: [20, 9], Monk: [20, 8], Fighter: [15, 7], Rogue: [15, 6], Barbarian: [10, 6], Artificer: [20, 9], 'Blood Hunter': [15, 7] },
+    mana: { Wizard: [25, 15], Sorcerer: [35, 17], Cleric: [25, 14], Druid: [25, 14], Bard: [30, 13], Warlock: [30, 12], Paladin: [20, 9], Ranger: [20, 9], Monk: [20, 8], Fighter: [15, 7], Rogue: [15, 6], Barbarian: [10, 6], Artificer: [20, 9] },
     // Levels at which each High Magic Charge is gained, and when the Reality Channel arrives (0 = never).
     charges: { Wizard: [[11, 13, 15, 17, 19], 17], Sorcerer: [[11, 13, 15, 17, 19], 17], Cleric: [[11, 13, 15, 19], 17], Druid: [[11, 13, 15, 19], 17],
-      Bard: [[11, 15, 19], 19], Warlock: [[11, 15, 19], 19], Paladin: [[15, 19], 0], Ranger: [[15, 19], 0], Monk: [[17], 0], Fighter: [[19], 0], Rogue: [[19], 0], Barbarian: [[], 0], Artificer: [[15, 19], 0], 'Blood Hunter': [[19], 0] },
+      Bard: [[11, 15, 19], 19], Warlock: [[11, 15, 19], 19], Paladin: [[15, 19], 0], Ranger: [[15, 19], 0], Monk: [[17], 0], Fighter: [[19], 0], Rogue: [[19], 0], Barbarian: [[], 0], Artificer: [[15, 19], 0] },
     fullCasters: ['Wizard', 'Sorcerer', 'Cleric', 'Druid', 'Bard', 'Warlock'],
     learnLevel: [1, 1, 3, 5, 7, 9, 11, 13, 15, 17],          // character level needed for each spell level
     learnCost: [5, 10, 25, 50, 100, 200, 400, 750, 1250, 2500], // gp
     studyHours: [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-    spellAbility: { Wizard: 'int', Sorcerer: 'cha', Cleric: 'wis', Druid: 'wis', Bard: 'cha', Warlock: 'cha', Paladin: 'cha', Ranger: 'wis', Monk: 'wis', Fighter: 'int', Rogue: 'int', Barbarian: 'wis', Artificer: 'int', 'Blood Hunter': 'int' },
+    spellAbility: { Wizard: 'int', Sorcerer: 'cha', Cleric: 'wis', Druid: 'wis', Bard: 'cha', Warlock: 'cha', Paladin: 'cha', Ranger: 'wis', Monk: 'wis', Fighter: 'int', Rogue: 'int', Barbarian: 'wis', Artificer: 'int' },
     // Starting spell picks from the class list, and free picks gained at later levels.
     // A DM-tunable default: Avarenth's class spells are learned at levels 1, 3 and 5+.
     startPicks: { full: [3, 2], half: [2, 2], martial: [1, 1] },
