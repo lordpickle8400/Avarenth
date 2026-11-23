@@ -1827,7 +1827,7 @@
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
     var natural = { Lizardfolk: 13 + dex, Tortle: 17, Troglodyte: 12 + dex, Locathah: 12 + dex, 'Thri-kreen': 13 + dex, Loxodon: 12 + con }[b.species] || 0;
-    s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Warforged' ? 1 : 0);
+    s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Ironcored' ? 1 : 0);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
     buildFixedSkills(b).concat(b.skills).forEach(function (k) { s.skills[k] = 1; });
@@ -4003,15 +4003,15 @@
       if (!g || r.k !== 'armor') return;
       if (g.shield) { if (!shield) shield = { g: g, it: it }; } else if (!armor) armor = { g: g, it: it };
     });
-    // Warforged: armour plates are part of the body, +1 AC always.
-    var wf = /^warforged$/i.test(String(s.species || '').trim()) ? 1 : 0;
-    if (!armor && !shield) return { ac: num(s.ac, 10) + wf, how: 'Unarmored' + (wf ? ' + Integrated Protection' : ''), worn: false, notes: notes };
+    // Ironcored: armour plates are part of the body, +1 AC always.
+    var wf = /^(ironcored|warforged)$/i.test(String(s.species || '').trim()) ? 1 : 0;
+    if (!armor && !shield) return { ac: num(s.ac, 10) + wf, how: 'Unarmored' + (wf ? ' + Bolted Plating' : ''), worn: false, notes: notes };
     var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) - (itemQ(armor.it) === 0 ? 1 : 0) : num(s.ac, 10);
     if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0) - (itemQ(shield.it) === 0 ? 1 : 0);
     if (armor && armor.g.stealth && itemQ(armor.it) < 4) notes.push('Disadvantage on Stealth');
     if (armor && itemQ(armor.it) === 0) notes.push('Rough armor: −1 AC');
     if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
-    return { ac: ac + wf, how: [armor ? armor.it.name : '', shield ? 'Shield' : '', wf ? 'Integrated Protection' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
+    return { ac: ac + wf, how: [armor ? armor.it.name : '', shield ? 'Shield' : '', wf ? 'Bolted Plating' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
   }
   function weaponProf(cd, w) {
     if (!cd) return false;
