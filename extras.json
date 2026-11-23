@@ -755,10 +755,10 @@
       "own": true
     },
     {
-      "name": "Drow High Magic",
+      "name": "Deep Sorcery",
       "category": "General",
       "prereq": "Level 4+, Dark Elf",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -820,10 +820,10 @@
       "own": true
     },
     {
-      "name": "Flames of Phlegethos",
+      "name": "Emberheart",
       "category": "General",
       "prereq": "Level 4+, Infernite",
-      "book": "Xanathar's Guide to Everything",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -911,10 +911,10 @@
       "own": true
     },
     {
-      "name": "Gift of the Chromatic Dragon",
+      "name": "Gift of the Many Scales",
       "category": "Origin",
       "prereq": "",
-      "book": "Fizban's Treasury of Dragons",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -924,10 +924,10 @@
       "own": true
     },
     {
-      "name": "Gift of the Gem Dragon",
+      "name": "Gift of the Jewel Scale",
       "category": "Origin",
       "prereq": "",
-      "book": "Fizban's Treasury of Dragons",
+      "book": "Avarenth",
       "text": [
         [
           "p",
@@ -937,10 +937,10 @@
       "own": true
     },
     {
-      "name": "Gift of the Metallic Dragon",
+      "name": "Gift of the Bright Scale",
       "category": "Origin",
       "prereq": "",
-      "book": "Fizban's Treasury of Dragons",
+      "book": "Avarenth",
       "text": [
         [
           "p",
