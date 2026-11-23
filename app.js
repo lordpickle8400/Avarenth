@@ -11620,7 +11620,9 @@
     AT.k = Math.max(mn, Math.min(mk, AT.k));
     if (AT.bg) {
       // The padded background is the limit: pan only across its 15% margin, never past it.
-      var pd = 0.15, ox = pd * AT.W * AT.k, oy = pd * AT.H * AT.k, bw = AT.W * (1 + 2 * pd) * AT.k, bh = AT.H * (1 + 2 * pd) * AT.k;
+      var pd = 0.15, cover = Math.max(s.w / (AT.W * (1 + 2 * pd)), s.h / (AT.H * (1 + 2 * pd)));
+      AT.k = Math.max(AT.k, cover); // never zoom out far enough to show the empty stage behind the margin
+      var ox = pd * AT.W * AT.k, oy = pd * AT.H * AT.k, bw = AT.W * (1 + 2 * pd) * AT.k, bh = AT.H * (1 + 2 * pd) * AT.k;
       AT.x = bw >= s.w ? Math.min(ox, Math.max(s.w - bw + ox, AT.x)) : (s.w - AT.W * AT.k) / 2;
       AT.y = bh >= s.h ? Math.min(oy, Math.max(s.h - bh + oy, AT.y)) : (s.h - AT.H * AT.k) / 2;
       return;
