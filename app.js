@@ -3809,7 +3809,7 @@
         return '<a class="mon-tr" role="row" href="#/monsters/' + monSlug(m.name) + '"><span class="nm"><b>' + esc(m.name) + '</b>' + (m.hb ? ' <span class="tag plain" style="font-size:10px">Homebrew</span>' : '') + (m.group && m.group !== m.name && m.group !== 'Homebrew' ? '<small>' + esc(m.group) + '</small>' : '') + '</span>' +
           '<span class="cr">' + esc(m.cr || '—') + '</span><span>' + esc(m.type || '') + '</span><span>' + esc(m.size || '') + '</span><span>' + esc(String(m.hp || '').split(' (')[0]) + '</span><span>' + esc(String(m.ac || '').split(' ')[0]) + '</span></a>';
       }).join('') : '<div class="empty">No monsters match.</div>') + '</div>';
-    html += '<p class="note" style="margin-top:12px">Stat blocks from the System Reference Document 5.2.1 by Wizards of the Coast, CC-BY-4.0.</p></div>';
+    html += '<p class="note" style="margin-top:12px">This work includes material from the System Reference Document 5.2.1 ("SRD 5.2.1") by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.</p></div>';
     $view.innerHTML = html;
   }
 
@@ -12307,7 +12307,7 @@
      feature text, one subclass per class, feats, species, backgrounds, Metamagic and Invocations.
      It loads once after sign-in. Anything from the paid books stays a name only. */
   var SRD = null, SUBNOTES = null;
-  var SRD_CREDIT = 'Rules text from the System Reference Document 5.2.1 by Wizards of the Coast LLC, licensed under CC-BY-4.0 (creativecommons.org/licenses/by/4.0). Arranged for this app.';
+  var SRD_CREDIT = 'This work includes material from the System Reference Document 5.2.1 (\"SRD 5.2.1\") by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.';
   var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
   // Pick a feat, invocation, metamagic or Tinkering from the lists instead of typing it in.
   var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Cogwright: 'Tinkering' };
