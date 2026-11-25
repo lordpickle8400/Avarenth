@@ -1826,8 +1826,8 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
-    var natural = { Lizardfolk: 13 + dex, Shellback: 17, Troglodyte: 12 + dex, Reefkin: 12 + dex, Mantari: 13 + dex, Elephantra: 12 + con }[b.species] || 0;
-    s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural) + (b.species === 'Ironcored' ? 1 : 0);
+    var natural = spc.ac ? spc.ac.base + (spc.ac.stat ? mod(sc[spc.ac.stat]) : 0) : 0;   // natural armor comes from the species data
+    s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
     cd.saves.forEach(function (k) { s.saves[k] = true; });
     buildFixedSkills(b).concat(b.skills).forEach(function (k) { s.skills[k] = 1; });
@@ -2303,7 +2303,7 @@
   function carrying(s) {
     var items = s.items.reduce(function (t, it) { return t + itemWeight(it) * Math.max(0, num(it.qty, 1)); }, 0);
     var coins = (num(s.coins.cp, 0) + num(s.coins.sp, 0) + num(s.coins.gp, 0) + num(s.coins.pp, 0)) / 50;
-    var sp = RULES.species[s.species] || {}, powerful = (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });
+    var sp = RULES.species[s.species] || {}, powerful = !!sp.big || (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });   // big: counts as one size larger for carrying
     var pack = s.items.some(function (it) { return it.eq && isBackpack(it); });
     var cap = num(s.abilities.str, 10) * 15 * (powerful ? 2 : 1) * (sp.size === 'Small' ? 1 : 1) + (pack ? BACKPACK_LB : 0);
     return { total: Math.round((items + coins) * 10) / 10, coins: Math.round(coins * 10) / 10, cap: cap, powerful: powerful, pack: pack };
@@ -2336,12 +2336,18 @@
         break;
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
+    // Limited-use species traits (rules.js: species.uses). Keys start with sx_ so they never clash with class resources.
+    var spc = RULES.species[s.species];
+    if (spc && spc.uses) spc.uses.forEach(function (u) {
+      var m = u.max === 'prof' ? profBonus(L) : u.max;
+      if (!u.minLevel || L >= u.minLevel) add('sx_' + u.key, u.name, m, u.rest, Object.assign({ species: true }, u.note ? { note: u.note } : {}));
+    });
     return out;
   }
   function resourcesHtml(s, can) {
     var list = classResources(s);
     if (!list.length) return '';
-    return '<section class="pool res-pool" aria-label="Class resources"><div class="pool-top"><span class="k">' + esc(s.cls) + ' resources</span></div>' + list.map(function (r) {
+    return '<section class="pool res-pool" aria-label="Class resources"><div class="pool-top"><span class="k">' + esc(s.cls) + (list.some(function (r) { return r.species; }) ? ' and ' + esc(s.species) : '') + ' resources</span></div>' + list.map(function (r) {
       var meta = (r.note ? r.note + ' · ' : '') + (r.rest === 'short' ? 'short or long rest' : 'long rest');
       if (r.max === 'unlimited') return '<div class="res-row"><div class="main"><b>' + esc(r.name) + '</b><span>Unlimited</span></div></div>';
       var used = Math.min(r.max, Math.max(0, num(s.res[r.key], 0))), left = r.max - used;
@@ -4003,15 +4009,13 @@
       if (!g || r.k !== 'armor') return;
       if (g.shield) { if (!shield) shield = { g: g, it: it }; } else if (!armor) armor = { g: g, it: it };
     });
-    // Ironcored: armour plates are part of the body, +1 AC always.
-    var wf = /^(ironcored|warforged)$/i.test(String(s.species || '').trim()) ? 1 : 0;
-    if (!armor && !shield) return { ac: num(s.ac, 10) + wf, how: 'Unarmored' + (wf ? ' + Bolted Plating' : ''), worn: false, notes: notes };
+    if (!armor && !shield) return { ac: num(s.ac, 10), how: 'Unarmored', worn: false, notes: notes };
     var ac = armor ? armor.g.ac + (armor.g.dex === 'full' ? abil.dex : armor.g.dex === 'max2' ? Math.min(2, abil.dex) : 0) + num(armor.it.bonus, 0) + (isDornish(armor.it) ? 1 : 0) - (itemQ(armor.it) === 0 ? 1 : 0) : num(s.ac, 10);
     if (shield) ac += 2 + num(shield.it.bonus, 0) + (isDornish(shield.it) ? 1 : 0) - (itemQ(shield.it) === 0 ? 1 : 0);
     if (armor && armor.g.stealth && itemQ(armor.it) < 4) notes.push('Disadvantage on Stealth');
     if (armor && itemQ(armor.it) === 0) notes.push('Rough armor: −1 AC');
     if (armor && armor.g.str && num(s.abilities.str, 10) < armor.g.str) notes.push('Speed −10 ft (needs Strength ' + armor.g.str + ')');
-    return { ac: ac + wf, how: [armor ? armor.it.name : '', shield ? 'Shield' : '', wf ? 'Bolted Plating' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
+    return { ac: ac, how: [armor ? armor.it.name : '', shield ? 'Shield' : ''].filter(Boolean).join(' + '), worn: true, notes: notes };
   }
   function weaponProf(cd, w) {
     if (!cd) return false;
