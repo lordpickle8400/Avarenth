@@ -1211,7 +1211,7 @@
 
   function defaultSheet() {
     return {
-      species: '', cls: '', subclass: '', background: '', patron: '', level: 1,
+      species: '', lineage: '', cls: '', subclass: '', background: '', patron: '', level: 1,
       abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
       ac: 10, speed: 30, initBonus: 0,
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
@@ -1222,10 +1222,24 @@
       spells: [], items: [], attacks: [], coins: { cp: 0, sp: 0, gp: 0, pp: 0 }, features: [], notes: '', log: []
     };
   }
+  // A species with lineages (Elf) merges the chosen lineage over its base data. Everything that reads a character's species goes through this.
+  function spData(name, lin) {
+    var sp = RULES.species[name];
+    if (!sp || !sp.lineages || !sp.lineages[lin]) return sp;
+    var l = sp.lineages[lin], o = Object.assign({}, sp);
+    ['speed', 'swim', 'fly', 'climb', 'dark'].forEach(function (k) { if (l[k] !== undefined) o[k] = l[k]; });
+    o.skillExtra = l.skill || '';
+    o.traits = (sp.traits || []).concat(l.traits || []);
+    o.uses = (sp.uses || []).concat(l.uses || []);
+    o.lineageNote = l.note || '';
+    return o;
+  }
+  var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'] };
   function normSheet(s) {
     var d = defaultSheet();
     if (!s || typeof s !== 'object') return d;
     var out = Object.assign(d, s);
+    if (OLD_LINEAGES[out.species]) { out.lineage = OLD_LINEAGES[out.species][1]; out.species = OLD_LINEAGES[out.species][0]; }
     out.abilities = Object.assign(defaultSheet().abilities, s.abilities || {});
     out.hp = Object.assign(defaultSheet().hp, s.hp || {});
     out.hd = Object.assign(defaultSheet().hd, s.hd || {});
@@ -1316,7 +1330,7 @@
 
   // Everything the sheet shows as a feature: class features up to the current level, subclass levels, species traits, then the owner's own.
   function derivedFeatures(s) {
-    var out = [], cd = classOf(s), sp = RULES.species[s.species];
+    var out = [], cd = classOf(s), sp = spData(s.species, s.lineage);
     if (cd) {
       cd.features.forEach(function (f) { if (f[0] <= num(s.level, 1)) { var sf = srdClassFeat(s.cls, f[0], f[1]); out.push({ name: f[1], text: f[2], src: s.cls + ' ' + f[0], ruling: !!f[3], srd: sf ? sf[2] : null, srdMeta: sf ? sf[3] : null }); } });
       var csub = s.subclass ? customSub(s.cls, s.subclass) : null, ssub = !csub ? srdSub(s.cls, s.subclass) : null;
@@ -1330,7 +1344,7 @@
     }
     if (sp) {
       if (sp.dark) out.push({ name: 'Darkvision', text: 'See in dim light within ' + sp.dark + ' feet as if it were bright, and in darkness as if dim.', src: s.species });
-      sp.traits.forEach(function (t) { out.push({ name: t[0], text: t[1], src: s.species }); });
+      sp.traits.forEach(function (t) { out.push({ name: t[0], text: t[1], src: s.species + (s.lineage && sp.lineageNote ? ' (' + s.lineage + ')' : '') }); });
     }
     return out;
   }
@@ -1417,7 +1431,7 @@
     return out;
   }
   function newBuild() {
-    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [], buy: [], shopQ: '', shopCat: 'Gear' };
+    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', lineage: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [], buy: [], shopQ: '', shopCat: 'Gear' };
   }
   function buildBase(b) {
     var out = {};
@@ -1432,7 +1446,7 @@
     ABILITIES.forEach(function (a) { var k = a[0]; out[k] = Math.min(20, num(base[k], 0) + (b.plus2 === k ? 2 : 0) + (b.plus1 === k ? 1 : 0)); });
     return out;
   }
-  function buildFixedSkills(b) { return uniq((RULES.backgrounds[b.bg] || []).concat((RULES.species[b.species] || {}).skill ? [RULES.species[b.species].skill] : [])); }
+  function buildFixedSkills(b) { var sp = spData(b.species, b.lineage) || {}; return uniq((RULES.backgrounds[b.bg] || []).concat(sp.skill ? [sp.skill] : [], sp.skillExtra ? [sp.skillExtra] : [])); }
   function buildSpellNeeds(b) { var p = RULES.magic.startPicks[casterKind(b.cls)] || [0, 0]; return { cantrips: p[0], first: p[1] }; }
   function buildStepError(b) {
     switch (buildSteps(b)[b.step]) {
@@ -1446,7 +1460,7 @@
       case 'Domain': case 'Pact': case 'Origin': return b.sub ? '' : 'Choose your ' + RULES.classes[b.cls].subclassLabel.toLowerCase() + '.';
       case 'Name': return b.name.trim() ? '' : 'Give your character a name.';
       case 'Class': return b.cls ? '' : 'Pick a class.';
-      case 'Species': return b.species ? '' : 'Pick a species.';
+      case 'Species': return !b.species ? 'Pick a species.' : (RULES.species[b.species] || {}).lineages && !b.lineage ? 'Pick a lineage.' : '';
       case 'Background': return b.bg ? '' : 'Pick a background.';
       case 'Abilities':
         var base = buildBase(b);
@@ -1554,7 +1568,7 @@
   }
   // The live summary beside the builder: the character filling in as you choose.
   function buildSummaryHtml(b) {
-    var cd = RULES.classes[b.cls], sp = RULES.species[b.species] || null, sc = buildScores(b), haveScores = ABILITIES.every(function (a) { return num(sc[a[0]], 0) > 0; });
+    var cd = RULES.classes[b.cls], sp = spData(b.species, b.lineage) || null, sc = buildScores(b), haveScores = ABILITIES.every(function (a) { return num(sc[a[0]], 0) > 0; });
     var con = haveScores ? mod(sc.con) : 0, m = cd ? RULES.magic.mana[b.cls] : null;
     var rows = [['Class', b.cls ? b.cls + (b.sub ? ' (' + b.sub + ')' : '') : ''], [devotionLabel(b.cls) || '', b.patron || ''], ['Species', b.species], ['Background', b.bg + (b.ofeat ? ' · ' + b.ofeat : '')]].filter(function (r) { return r[0]; });
     var html = '<div class="bd-card"><div class="bd-who"><span class="cs-ava" aria-hidden="true">' + esc(initials(b.name || '?')) + '</span><div><b>' + esc(b.name || 'Unnamed') + '</b><span>' + esc(['Level 1', b.species, b.cls].filter(Boolean).join(' ')) + '</span></div></div>' +
@@ -1569,6 +1583,11 @@
   // A list of choices; the chosen one opens up in place to show what it gives you.
   // [[Link]] or [[Link|words]] as plain words, for places a link can't go (inside a button).
   function plainLinks(s) { return String(s || '').replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, function (m, a, b) { return b || a; }); }
+  function lineagePick(b) {
+    var base = RULES.species[b.species];
+    if (!base || !base.lineages) return '';
+    return '<h3 class="kind-h">Lineage</h3><p class="note" style="margin:0 0 6px">Pick the people you come from. It sets your extra gifts.</p>' + choiceList(Object.keys(base.lineages).map(function (k) { return [k, base.lineages[k].note]; }), b.lineage, 'bd-lineage', '');
+  }
   function choiceList(items, selected, act, detail) {
     return '<div class="choice-list">' + items.map(function (it) {
       var on = it[0] === selected;
@@ -1671,7 +1690,7 @@
       }
       if (!devotionRequired(b.cls)) html += '<div class="actions"><button type="button" class="btn small quiet" data-act="bd-patron" data-val="">' + (b.patron ? 'Clear my choice' : 'Skip: no god') + '</button></div>';
     } else if (step === 'Species') {
-      var sp = RULES.species[b.species], spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<div class="note" style="margin:0 0 8px">' + rich(sp.note) + '</div>' : '') + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
+      var sp = spData(b.species, b.lineage), spDetail = sp ? '<div class="group-box"><h2>' + esc(b.species) + '</h2>' + (sp.note ? '<div class="note" style="margin:0 0 8px">' + rich(sp.note) + '</div>' : '') + lineagePick(b) + '<p class="note" style="margin:0 0 8px">' + esc([sp.size, sp.speed + ' ft walking', sp.fly ? sp.fly + ' ft flying' : '', sp.swim ? sp.swim + ' ft swimming' : '', sp.climb ? sp.climb + ' ft climbing' : ''].filter(Boolean).join(' · ')) + '</p><div class="tbl">' + (sp.dark ? '<div class="tbl-row"><div class="main"><b>Darkvision</b><span>' + sp.dark + ' feet</span></div></div>' : '') +
         sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>' : '';
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.'], ['homebrew', 'Homebrew', 'Made at your table and approved by the DM.']].map(function (g) {
@@ -1819,9 +1838,9 @@
   }
 
   function buildSheet(b) {
-    var cd = RULES.classes[b.cls], sc = buildScores(b), spc = RULES.species[b.species] || {};
+    var cd = RULES.classes[b.cls], sc = buildScores(b), spc = spData(b.species, b.lineage) || {};
     var s = defaultSheet();
-    s.built = true; s.cls = b.cls; s.species = b.species; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; if (SUB_STEP[b.cls]) s.subclass = b.sub || ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
+    s.built = true; s.cls = b.cls; s.species = b.species; s.lineage = b.lineage || ''; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; if (SUB_STEP[b.cls]) s.subclass = b.sub || ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
     s.abilities = sc;
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
@@ -2048,7 +2067,7 @@
     var mMax = manaMax(s);
     if (num(s.mana.cur, 0) > mMax) s.mana.cur = mMax;
 
-    var sp0 = RULES.species[s.species] || {};
+    var sp0 = spData(s.species, s.lineage) || {};
     var who = [s.species, s.cls, s.subclass ? '(' + s.subclass + ')' : ''].filter(Boolean).join(' ');
     var phone = isPhoneSheet();
     var html = '<div class="page sheet cs" data-char="' + esc(c.id) + '">';
@@ -2261,7 +2280,7 @@
     else if (bg) html += (bg.about ? '<p class="prose" style="margin:0 0 8px">' + esc(bg.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Skills</dt><dd>' + esc(bg.skills) + '</dd><dt>Tool</dt><dd>' + esc(bg.tool) + '</dd><dt>Feat</dt><dd>' + esc(bg.feat) + '</dd>' + (bg.feature ? '<dt>Feature</dt><dd>' + esc(bg.feature) + '</dd>' : '') + '</dl>';
     else html += '<p class="note">Skills: ' + esc((RULES.backgrounds[s.background] || []).join(', ') || '—') + '</p>';
     html += '</section>';
-    if (s.species) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.species) + '<small>' + esc([sp0.size, (sp0.speed || 30) + ' ft'].filter(Boolean).join(' · ')) + '</small></h2>' + (sp0.note ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.note) + '</p>' : '') +
+    if (s.species) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.species + (s.lineage && sp0.lineageNote ? ' · ' + s.lineage : '')) + '<small>' + esc([sp0.size, (sp0.speed || 30) + ' ft'].filter(Boolean).join(' · ')) + '</small></h2>' + (sp0.note ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.note) + '</p>' : '') + (sp0.lineageNote ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.lineageNote) + '</p>' : '') +
       '<div class="tbl">' + (sp0.traits || []).map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></section>';
     return html;
   }
@@ -2303,7 +2322,7 @@
   function carrying(s) {
     var items = s.items.reduce(function (t, it) { return t + itemWeight(it) * Math.max(0, num(it.qty, 1)); }, 0);
     var coins = (num(s.coins.cp, 0) + num(s.coins.sp, 0) + num(s.coins.gp, 0) + num(s.coins.pp, 0)) / 50;
-    var sp = RULES.species[s.species] || {}, powerful = !!sp.big || (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });   // big: counts as one size larger for carrying
+    var sp = spData(s.species, s.lineage) || {}, powerful = !!sp.big || (sp.traits || []).some(function (t) { return t[0] === 'Powerful Build'; });   // big: counts as one size larger for carrying
     var pack = s.items.some(function (it) { return it.eq && isBackpack(it); });
     var cap = num(s.abilities.str, 10) * 15 * (powerful ? 2 : 1) * (sp.size === 'Small' ? 1 : 1) + (pack ? BACKPACK_LB : 0);
     return { total: Math.round((items + coins) * 10) / 10, coins: Math.round(coins * 10) / 10, cap: cap, powerful: powerful, pack: pack };
@@ -2337,7 +2356,7 @@
       case 'Sorcerer': add('sp', 'Sorcery Points', L >= 2 ? L : 0, 'long', { pool: true, font: true, note: 'Font of Magic: 1 point = ' + FONT_TO_MANA + ' mana, ' + FONT_FROM_MANA + ' mana = 1 point' }); break;
     }
     // Limited-use species traits (rules.js: species.uses). Keys start with sx_ so they never clash with class resources.
-    var spc = RULES.species[s.species];
+    var spc = spData(s.species, s.lineage);
     if (spc && spc.uses) spc.uses.forEach(function (u) {
       var m = u.max === 'prof' ? profBonus(L) : u.max;
       if (!u.minLevel || L >= u.minLevel) add('sx_' + u.key, u.name, m, u.rest, Object.assign({ species: true }, u.note ? { note: u.note } : {}));
@@ -2851,7 +2870,7 @@
 
   /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
-  var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
+  var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
     [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Dragonborn'], [/\bkobold/i, 'Kobold'],
     [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Shellback'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
@@ -11034,9 +11053,10 @@
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
         if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
-        else if (act === 'bd-species') { if (bb.species !== val) bb.skills = []; bb.species = val; }
+        else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; } bb.species = val; }
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
+      case 'bd-lineage': if (ui.build.lineage !== el.getAttribute('data-val')) ui.build.skills = []; ui.build.lineage = el.getAttribute('data-val'); render(); break;
       case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
       case 'bd-buy':
         var bsb = ui.build, bsn = el.getAttribute('data-name'), bsd = num(el.getAttribute('data-dir'), 1);
@@ -12839,7 +12859,7 @@
     }
     var next = cd.features.filter(function (f) { return f[0] > L; }).slice(0, 3);
     if (next.length) html += '<h3 class="kind-h">Coming up</h3><div class="cheat-list soon">' + next.map(featLine).join('') + '</div>';
-    var sp = RULES.species[s.species];
+    var sp = spData(s.species, s.lineage);
     if (sp) html += '<h3 class="kind-h">' + esc(s.species) + '</h3><div class="cheat-list">' + (sp.dark ? featLine([0, 'Darkvision', sp.dark + ' ft.']) : '') + sp.traits.map(function (t) { return featLine([0, t[0], t[1]]); }).join('') + '</div>';
     return html + '</section>';
   }
