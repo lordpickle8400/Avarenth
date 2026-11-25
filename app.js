@@ -2846,14 +2846,14 @@
   /* ---------- NPC maker: random, or from a few words, weighted by district ---------- */
   var NPCD = window.AVARENTH_NPC || { districts: {}, names: {} };
   var RACE_WORDS = [[/\bsea[- ]?elf|\bcoralyn/i, 'Sea Elf'], [/\bhalf[- ]?elf|\bhalf[- ]?elven/i, 'Half-Elf'], [/\bhalf[- ]?orc/i, 'Half-Orc'], [/\bdeep ?gnome/i, 'Deepgnome'], [/\belf|\belven|\belvish/i, 'Elf'], [/\bdwar(f|ves|ven)/i, 'Dwarf'], [/\bhalfling|\bhobbit/i, 'Halfling'],
-    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\bfirbolg/i, 'Mossborn'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Drakonid'], [/\bkobold/i, 'Kobold'],
+    [/\bgnom(e|ish)/i, 'Gnome'], [/\bhobgoblin/i, 'Hobgoblin'], [/\borc(s|ish)?\b/i, 'Orc'], [/\bgoliath/i, 'Goliath'], [/\binfernite/i, 'Infernite'], [/\bdragonborn|\bdraconic|\bdragon[- ]?folk/i, 'Drakonid'], [/\bkobold/i, 'Kobold'],
     [/\blizard/i, 'Lizardfolk'], [/\btortle|\bturtle/i, 'Shellback'], [/\bhuman|\bman\b|\bwoman\b/i, 'Human']];
   var PLACE_WORDS = [[/ignis|emberwood|dragonsneck|timberfall|central/i, 'central'], [/greywall|stonehelm|anvilborn|dwarf lands|north/i, 'north'], [/loreaon|crownlands|capital|kingswatch|queenswatch/i, 'capital'],
     [/caspian|crisfey|golden coast|akorsrest|south/i, 'south'], [/vor'?nak|strait|straitwatch|mournfell/i, 'mournfells'], [/marloo|wildreach|hermitsbay|west/i, 'west'], [/\bsea\b|island|coralyn|ship|brinewolf|wreckholm/i, 'sea']];
   function rweighted(map) { var keys = Object.keys(map), tot = keys.reduce(function (t, k) { return t + map[k]; }, 0), r = Math.random() * tot; for (var i = 0; i < keys.length; i++) { r -= map[keys[i]]; if (r < 0) return keys[i]; } return keys[0]; }
   function readNpcPrompt(text) {
     var t = String(text || ''), out = { words: t.trim() };
-    RACE_WORDS.some(function (r) { if (r[0].test(t) && !(r[1] === 'Human' && /\b(dwar|elf|orc|gnom|halfl|kobold|dragon|lizard|tortle|goliath|infernite|firbolg)/i.test(t))) { out.race = r[1]; return true; } return false; });
+    RACE_WORDS.some(function (r) { if (r[0].test(t) && !(r[1] === 'Human' && /\b(dwar|elf|orc|gnom|halfl|kobold|dragon|lizard|tortle|goliath|infernite)/i.test(t))) { out.race = r[1]; return true; } return false; });
     PLACE_WORDS.some(function (p) { if (p[0].test(t)) { out.district = p[1]; return true; } return false; });
     if (/\b(woman|female|she|her|girl|lady|wife|mother|widow|daughter|sister|maid|queen|duchess|priestess)\b/i.test(t)) out.sex = 'f';
     else if (/\b(man|male|he|his|boy|lord|husband|father|son|brother|king|duke|priest)\b/i.test(t)) out.sex = 'm';
