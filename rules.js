@@ -311,8 +311,8 @@
     'Dwarf': { speed: 25, size: 'Medium', dark: 60, note: 'Stone-hewers and smiths who keep old oaths and older grudges. The dwarves of the isles still dig, forge and drink in the halls under the high hills, and they remember every debt.', traits: [['Dwarven Resilience', 'You have advantage on saves against poison, and resistance to poison damage.'], ['Stonecunning', 'You know stonework, its history and how old a wall is just by looking at it. Advantage on History checks about stonework.'], ['Heavy Armor Stride', 'Heavy armor doesn’t slow your speed down.']] },
     'Elf': { speed: 30, size: 'Medium', dark: 60, skill: 'Perception', note: 'Long-lived and slow to trust, the elves of the isles are mostly gone. The few who remain keep to quiet corners and remember when the forests were theirs.', traits: [['Keen Senses', 'Proficiency in Perception.'], ['Fey Ancestry', 'You have advantage against being charmed, and magic can’t put you to sleep.'], ['Trance', 'You meditate for 4 hours instead of sleeping, and come out of it rested.']] },
     'Halfling': { speed: 25, size: 'Small', note: 'Small, cheerful folk who settled the marshes and lakes around the capital because nobody else wanted them. Halfling towns are built on stilts, with a boat tied up at every door.', traits: [['Lucky', 'When you roll a natural 1 on an attack, check or save, you can reroll it and must use the new roll.'], ['Brave', 'Advantage on saves against being frightened.'], ['Nimble', 'You can move through the space of any creature larger than you.']] },
-    'Drakonid': { speed: 30, size: 'Medium', note: 'Born of the draconic blood of the Draconic Wars, the drakonid are proud, honest and bound by their word. Many serve House Ignis and the lords of [[Dragonsneck]], and few forget a debt or an insult.', traits: [['Draconic Ancestry', 'Pick a dragon colour when you make your character. It sets your breath weapon and damage resistance.'], ['Breath Weapon', 'Exhale destructive energy in a cone or a line, dealing damage that matches your ancestry. Recharges on a short or long rest.'], ['Damage Resistance', 'Resistance to the damage type of your ancestry.']] },
-    'Kobold': { speed: 30, size: 'Small', dark: 60, note: 'Small scaled folk who claim the same draconic ancestor as the drakonid, and serve the house with quick hands. Kobolds are scouts, traders and go-betweens, and most of the councillors of [[House Ignis]] are kobolds.', traits: [['Rallying Hiss', 'As a bonus action, give one ally you can see advantage on their next attack roll. Uses equal to proficiency bonus per long rest.'], ['Dragonkin Gift', 'A small draconic gift: a skill proficiency, a cantrip, or resistance to one damage type of your choice.']] },
+    'Dragonborn': { speed: 30, size: 'Medium', note: 'Born of the draconic blood of the Draconic Wars, the dragonborn are proud, honest and bound by their word. Many serve House Ignis and the lords of [[Dragonsneck]], and few forget a debt or an insult.', traits: [['Draconic Ancestry', 'Pick a dragon colour when you make your character. It sets your breath weapon and damage resistance.'], ['Breath Weapon', 'Exhale destructive energy in a cone or a line, dealing damage that matches your ancestry. Recharges on a short or long rest.'], ['Damage Resistance', 'Resistance to the damage type of your ancestry.']] },
+    'Kobold': { speed: 30, size: 'Small', dark: 60, note: 'Small scaled folk who claim the same draconic ancestor as the dragonborn, and serve the house with quick hands. Kobolds are scouts, traders and go-betweens, and most of the councillors of [[House Ignis]] are kobolds.', traits: [['Rallying Hiss', 'As a bonus action, give one ally you can see advantage on their next attack roll. Uses equal to proficiency bonus per long rest.'], ['Dragonkin Gift', 'A small draconic gift: a skill proficiency, a cantrip, or resistance to one damage type of your choice.']] },
     'Lizardfolk': { speed: 30, size: 'Medium', note: 'Cold-blooded hunters of the swamps and the warm coastal marshes. They are patient, practical and unbothered by most things that rattle other folk.', traits: [['Jaw Strike', 'Your bite is a natural weapon that deals 1d6 piercing damage.'], ['Long Breath', 'You can hold your breath for 15 minutes.'], ['Hide of Scales', 'Without armour, your AC is 13 + Dexterity.'], ['Feeding Bite', 'As a bonus action, bite a creature you can reach and gain temporary hit points. Once per short or long rest.']] },
     'Gnome': { speed: 25, size: 'Small', dark: 60, note: 'Inventive tinkerers and tricksters who love a puzzle more than a fight. Gnomes make the best clockmakers and mapmakers in the isles, and they know a spell when they see one.', traits: [['Gnome Cunning', 'Advantage on Intelligence, Wisdom and Charisma saves against magic.']] },
     'Half-Elf': { speed: 30, size: 'Medium', dark: 60, note: 'Born of two peoples and at home in neither, half-elves are charming, adaptable and easy to underestimate. They are common in the port towns and in the courts of the great houses.', traits: [['Fey Ancestry', 'You have advantage against being charmed, and magic can’t put you to sleep.'], ['Skill Versatility', 'Proficiency in two skills of your choice.']], extraSkill: 2 },
@@ -397,7 +397,7 @@
     // 'good' and 'demon' groups. Starting standing is capped at Allied and Hostile; the DM moves it from there.
     // Crown and noble factions only care about blood: no class or faith pulls them off Neutral.
     // Every faction is wary of the draconic races (one step lower) unless it is draconic itself.
-    draconic: ['Drakonid', 'Kobold', 'Lizardfolk', 'Troglodyte'],
+    draconic: ['Dragonborn', 'Kobold', 'Lizardfolk', 'Troglodyte'],
     draconicFactions: ['the-red-scales', 'house-ignis'],
     // Which subclasses each patron offers. Classes not listed for a patron (and Druids, Rangers, Monks) can take any.
     // Paladins sworn to their oath alone can take any oath. The DM's custom subclasses say for themselves which patrons grant them.
@@ -424,15 +424,15 @@
     },
     factionStart: {
       'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },
-      'the-red-scales': { base: -2, species: { Drakonid: 3, Kobold: 2, Lizardfolk: 1 } },
+      'the-red-scales': { base: -2, species: { Dragonborn: 3, Kobold: 2, Lizardfolk: 1 } },
       'spider-cult': { base: -2, faith: { Sytha: 4 } },
       'the-blooming-isle': { cls: { Monk: 1, Druid: 1 }, bg: { Acolyte: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
       'the-thornwardens': { cls: { Paladin: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
       'the-city-state-of-coralyn': { species: { Elf: 1 }, faith: { Thorum: 1 } },
       'the-tribe-of-orock': { species: { Goliath: 1 }, cls: { Barbarian: 1 } },
       'clan-anvilborn': { species: { Dwarf: 1, Troglodyte: 2 } }, // trogs work Stonehelm's mines: +2 cancels the draconic −1, so they start one above neutral
-      'house-ignis': { species: { Drakonid: 1, Kobold: 1 } },
-      'the-last-watch': { species: { Drakonid: -2, Kobold: -2, Lizardfolk: -1 } },
+      'house-ignis': { species: { Dragonborn: 1, Kobold: 1 } },
+      'the-last-watch': { species: { Dragonborn: -2, Kobold: -2, Lizardfolk: -1 } },
       'the-nine-below': { faith: { 'The Nine Below': 2, Azrul: -1 } }
     } };
 })();
