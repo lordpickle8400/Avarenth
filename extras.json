@@ -1633,6 +1633,21 @@
       "about": "You were taken into the fey woods as a child, or walked into them once and came out changed. You remember the world on the other side in dreams, and you still notice when the fey are watching.",
       "feature": "Fey Notice: You can tell when a fey creature is near, or when a bargain has been struck in the woods. You can speak a few words of Sylvan and find a fey creature willing to hear you, once a season.",
       "own": true
+    },
+    "Dishonored Orc": {
+      "book": "Avarenth",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Savage Attacker",
+      "skills": "Intimidation and Survival",
+      "skillList": [
+        "Intimidation",
+        "Survival"
+      ],
+      "tool": "Smith's tools",
+      "equipment": "Smith's tools, a broken clan token, traveler's clothes, 15 gp; or 50 gp",
+      "about": "You were blooded once, and then you weren't. Whatever you did, or were said to have done, cost you your clan's name and your tusks, and every orc who sees the filed stumps knows it. You learned to hunt alone, mend your own gear and keep walking, and you are still deciding whether to prove them wrong or stop caring.",
+      "feature": "Marked: Any orc who sees your filed tusks knows you were unblooded and will not treat you as clan, so clan hospitality is closed to you. In return, you owe no clan anything, and an orc who respects a fight will still hear you out in a challenge.",
+      "own": true
     }
   },
   "options": {
