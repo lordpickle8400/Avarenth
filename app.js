@@ -1229,6 +1229,7 @@
     var l = sp.lineages[lin], o = Object.assign({}, sp);
     ['speed', 'swim', 'fly', 'climb', 'dark'].forEach(function (k) { if (l[k] !== undefined) o[k] = l[k]; });
     o.skillExtra = l.skill || '';
+    o.skillPick = l.skillPick || null;
     o.traits = (sp.traits || []).concat(l.traits || []);
     o.uses = (sp.uses || []).concat(l.uses || []);
     o.lineageNote = l.bio || l.note || '';
@@ -1431,7 +1432,7 @@
     return out;
   }
   function newBuild() {
-    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', lineage: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [], buy: [], shopQ: '', shopCat: 'Gear' };
+    return { step: 0, patron: '', sub: '', oath: '', drawbacks: '', name: '', campaign: (myCampaigns()[0] || {}).id || '', cls: '', species: '', lineage: '', lskill: '', bg: '', method: 'array', assign: {}, rolls: [], pb: { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }, manual: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, plus2: '', plus1: '', skills: [], extra: [], spells: [], buy: [], shopQ: '', shopCat: 'Gear' };
   }
   function buildBase(b) {
     var out = {};
@@ -1446,7 +1447,7 @@
     ABILITIES.forEach(function (a) { var k = a[0]; out[k] = Math.min(20, num(base[k], 0) + (b.plus2 === k ? 2 : 0) + (b.plus1 === k ? 1 : 0)); });
     return out;
   }
-  function buildFixedSkills(b) { var sp = spData(b.species, b.lineage) || {}; return uniq((RULES.backgrounds[b.bg] || []).concat(sp.skill ? [sp.skill] : [], sp.skillExtra ? [sp.skillExtra] : [])); }
+  function buildFixedSkills(b) { var sp = spData(b.species, b.lineage) || {}; return uniq((RULES.backgrounds[b.bg] || []).concat(sp.skill ? [sp.skill] : [], sp.skillExtra ? [sp.skillExtra] : [], sp.skillPick && b.lskill && sp.skillPick.indexOf(b.lskill) >= 0 ? [b.lskill] : [])); }
   function buildSpellNeeds(b) { var p = RULES.magic.startPicks[casterKind(b.cls)] || [0, 0]; return { cantrips: p[0], first: p[1] }; }
   function buildStepError(b) {
     switch (buildSteps(b)[b.step]) {
@@ -1460,7 +1461,7 @@
       case 'Domain': case 'Pact': case 'Origin': return b.sub ? '' : 'Choose your ' + RULES.classes[b.cls].subclassLabel.toLowerCase() + '.';
       case 'Name': return b.name.trim() ? '' : 'Give your character a name.';
       case 'Class': return b.cls ? '' : 'Pick a class.';
-      case 'Species': return !b.species ? 'Pick a species.' : (RULES.species[b.species] || {}).lineages && !b.lineage ? 'Pick a lineage.' : '';
+      case 'Species': return !b.species ? 'Pick a species.' : (RULES.species[b.species] || {}).lineages && !b.lineage ? 'Pick a lineage.' : lineageNeedsSkill(b) ? 'Pick a lineage skill.' : '';
       case 'Background': return b.bg ? '' : 'Pick a background.';
       case 'Abilities':
         var base = buildBase(b);
@@ -1583,10 +1584,11 @@
   // A list of choices; the chosen one opens up in place to show what it gives you.
   // [[Link]] or [[Link|words]] as plain words, for places a link can't go (inside a button).
   function plainLinks(s) { return String(s || '').replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, function (m, a, b) { return b || a; }); }
+  function lineageNeedsSkill(b) { var sp = spData(b.species, b.lineage); return !!(sp && sp.skillPick && sp.skillPick.indexOf(b.lskill) < 0); }
   function lineagePick(b) {
     var base = RULES.species[b.species];
     if (!base || !base.lineages) return '';
-    var cur = b.lineage && base.lineages[b.lineage], det = cur && cur.bio ? '<div class="note" style="margin:0">' + esc(cur.bio) + '</div>' : '';
+    var cur = b.lineage && base.lineages[b.lineage], det = (cur && cur.bio ? '<div class="note" style="margin:0 0 8px">' + esc(cur.bio) + '</div>' : '') + (cur && cur.skillPick ? '<h3 class="kind-h">Lineage skill</h3><p class="note" style="margin:0 0 6px">Pick one skill your blood leans toward.</p>' + choiceList(cur.skillPick.map(function (k) { return [k, '']; }), b.lskill, 'bd-lskill', '') : '');
     return '<h3 class="kind-h">Lineage</h3><p class="note" style="margin:0 0 6px">Pick the people you come from. It sets your extra gifts.</p>' + choiceList(Object.keys(base.lineages).map(function (k) { return [k, base.lineages[k].note]; }), b.lineage, 'bd-lineage', det);
   }
   function choiceList(items, selected, act, detail) {
@@ -11054,10 +11056,11 @@
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
         if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
-        else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; } bb.species = val; }
+        else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; bb.lskill = ''; } bb.species = val; }
         else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
         render(); break;
-      case 'bd-lineage': if (ui.build.lineage !== el.getAttribute('data-val')) ui.build.skills = []; ui.build.lineage = el.getAttribute('data-val'); render(); break;
+      case 'bd-lineage': if (ui.build.lineage !== el.getAttribute('data-val')) { ui.build.skills = []; ui.build.lskill = ''; } ui.build.lineage = el.getAttribute('data-val'); render(); break;
+      case 'bd-lskill': ui.build.skills = ui.build.skills.filter(function (k) { return k !== el.getAttribute('data-val'); }); ui.build.lskill = el.getAttribute('data-val'); render(); break;
       case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
       case 'bd-buy':
         var bsb = ui.build, bsn = el.getAttribute('data-name'), bsd = num(el.getAttribute('data-dir'), 1);
