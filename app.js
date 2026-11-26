@@ -1231,7 +1231,7 @@
     o.skillExtra = l.skill || '';
     o.traits = (sp.traits || []).concat(l.traits || []);
     o.uses = (sp.uses || []).concat(l.uses || []);
-    o.lineageNote = l.note || '';
+    o.lineageNote = l.bio || l.note || '';
     return o;
   }
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'] };
@@ -1586,7 +1586,8 @@
   function lineagePick(b) {
     var base = RULES.species[b.species];
     if (!base || !base.lineages) return '';
-    return '<h3 class="kind-h">Lineage</h3><p class="note" style="margin:0 0 6px">Pick the people you come from. It sets your extra gifts.</p>' + choiceList(Object.keys(base.lineages).map(function (k) { return [k, base.lineages[k].note]; }), b.lineage, 'bd-lineage', '');
+    var cur = b.lineage && base.lineages[b.lineage], det = cur && cur.bio ? '<div class="note" style="margin:0">' + esc(cur.bio) + '</div>' : '';
+    return '<h3 class="kind-h">Lineage</h3><p class="note" style="margin:0 0 6px">Pick the people you come from. It sets your extra gifts.</p>' + choiceList(Object.keys(base.lineages).map(function (k) { return [k, base.lineages[k].note]; }), b.lineage, 'bd-lineage', det);
   }
   function choiceList(items, selected, act, detail) {
     return '<div class="choice-list">' + items.map(function (it) {
