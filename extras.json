@@ -1910,7 +1910,8 @@
       "feature": "Marked: Any orc who sees your filed tusks knows you were unblooded, so clan hospitality is closed to you. In return you owe no clan anything, and an orc who respects a fight will still hear you out in a challenge.",
       "own": true,
       "species": [
-        "Orc"
+        "Orc",
+        "Half-Orc"
       ]
     },
     "Black Lizardfolk": {
