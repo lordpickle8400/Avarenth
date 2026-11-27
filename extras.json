@@ -8,10 +8,23 @@
       "text": [
         [
           "p",
-          "Proficiency with three artisan's tools of your choice. You buy nonmagical items for 20% less, and after a long rest you can craft one simple item (a ladder, a torch, a rope, a shovel...) that lasts until your next long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Tool Proficiency._ You gain proficiency with one kind of Artisan's Tools of your choice."
+        ],
+        [
+          "p",
+          "_Maker's Eye._ When you handle a nonmagical item for 1 minute, you learn who or what kind of craftsperson made it, how well it was made, and any hidden flaw."
+        ],
+        [
+          "p",
+          "_Field Repair._ With Artisan's Tools you are proficient with and 10 minutes, you can mend a broken nonmagical item or restore a damaged object to full Hit Points."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Field Medic",
@@ -21,10 +34,23 @@
       "text": [
         [
           "p",
-          "With a healer's kit and an action, use one charge to let a creature spend one of its Hit Dice and heal that much plus your proficiency bonus. When you roll a 1 on a healing die, you can reroll it."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Bleed Control._ As a Bonus Action, you can stabilize a creature within 5 feet that has 0 Hit Points. It also gains Temporary Hit Points equal to your Proficiency Bonus."
+        ],
+        [
+          "p",
+          "_Bedside Manner._ When you finish a Short Rest, you can tend one creature that rested with you. It regains one expended Hit Die."
+        ],
+        [
+          "p",
+          "_Steady Eye._ You have Advantage on Wisdom (Medicine) checks."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Fortune Pool",
@@ -34,10 +60,19 @@
       "text": [
         [
           "p",
-          "You have luck points equal to your proficiency bonus, regained on a long rest. Spend one to give yourself advantage on a d20 roll, or to give a creature disadvantage on an attack against you."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Pool of Dice._ You have a pool of d6s equal to your Proficiency Bonus. You regain all expended dice when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Spend Fortune._ When you or a creature you can see within 30 feet makes a D20 Test, you can expend one die and add or subtract the number rolled from the d20 result. You choose after you see the roll but before you know the outcome."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Lyric Heart",
@@ -47,10 +82,19 @@
       "text": [
         [
           "p",
-          "Proficiency with three musical instruments. After a short or long rest, you can play a song that gives Heroic Inspiration to a number of allies equal to your proficiency bonus."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Tool Proficiency._ You gain proficiency with one Musical Instrument of your choice."
+        ],
+        [
+          "p",
+          "_Rousing Verse._ As a Bonus Action, you can play or sing a verse. Allies of your choice within 30 feet who can hear you add 1d4 to the next saving throw they make in the next minute. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Alehouse Fists",
@@ -60,10 +104,23 @@
       "text": [
         [
           "p",
-          "Your unarmed strikes deal 1d4 + Strength damage, you can reroll 1s on that damage, you're proficient with improvised weapons, and once per turn when you hit with an unarmed strike you can push the target 5 feet."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Bar Fight._ Your Unarmed Strikes deal 1d4 plus your Strength modifier, and you have proficiency with improvised weapons."
+        ],
+        [
+          "p",
+          "_Anything Goes._ Improvised weapons you wield deal an extra 1d4 damage and don't break from use."
+        ],
+        [
+          "p",
+          "_Iron Gut._ You have Advantage on saving throws against the Poisoned condition and against the effects of drink."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Hardy Body",
@@ -73,10 +130,19 @@
       "text": [
         [
           "p",
-          "Your hit point maximum rises by 2 for every character level you have, and by 2 more each time you gain a level."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Seasoned Hide._ When you finish a Long Rest, you gain Temporary Hit Points equal to your character level."
+        ],
+        [
+          "p",
+          "_Shake It Off._ When you fail a Constitution saving throw, you can reroll it and must use the new roll. Once you use this benefit, you can't do so again until you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Stagecraft",
@@ -86,10 +152,23 @@
       "text": [
         [
           "p",
-          "+1 Charisma. Advantage on Deception and Performance checks to pass as someone else, and you can mimic a voice you've heard for a minute (Insight against your DC to notice)."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Persona._ Once per Long Rest, you can take on a role (a named identity you've prepared). For 8 hours, you have Advantage on Charisma (Deception) and Charisma (Performance) checks to keep up the role, and creatures have Disadvantage on Wisdom (Insight) checks to see through it."
+        ],
+        [
+          "p",
+          "_Spotlight._ As a Bonus Action, you draw every eye. Creatures of your choice within 30 feet that can see you have Disadvantage on Wisdom (Perception) checks to notice anyone but you until the start of your next turn. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Charisma 13+)"
     },
     {
       "name": "Trailrunner",
@@ -99,10 +178,27 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. You gain a climb speed equal to your speed, standing up from prone costs only 5 feet, and you can make a running jump after only 5 feet of movement."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Surefoot._ Difficult Terrain made of natural plants, rubble, mud or snow doesn't cost you extra movement."
+        ],
+        [
+          "p",
+          "_Hill Hands._ You gain a Climb Speed equal to half your Speed."
+        ],
+        [
+          "p",
+          "_Endless Miles._ You can travel 2 extra hours each day without risking Exhaustion."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)"
     },
     {
       "name": "Rushing Strike",
@@ -112,10 +208,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Dashing adds 10 feet to your speed. If you move at least 10 feet in a straight line before hitting with a melee attack, either deal an extra 1d8 damage or push the target 10 feet. Once per turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Opening Rush._ When you roll Initiative, you can move up to half your Speed before anyone acts, as long as you aren't Incapacitated. This movement doesn't provoke Opportunity Attacks."
+        ],
+        [
+          "p",
+          "_Hit and Slip._ Once per turn, when you hit a creature with a melee attack, you can move up to 10 feet without provoking Opportunity Attacks from it."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)"
     },
     {
       "name": "Hearthcook",
@@ -125,10 +234,27 @@
       "text": [
         [
           "p",
-          "+1 Constitution or Wisdom. Proficiency with cook's utensils. After a short rest, creatures who eat your food regain an extra 1d8 hit points; after a long rest, you can make treats that give temporary hit points equal to your proficiency bonus."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution or Wisdom score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Tool Proficiency._ You gain proficiency with Cook's Utensils."
+        ],
+        [
+          "p",
+          "_Stretch the Rations._ Each Ration you cook feeds two creatures for a day."
+        ],
+        [
+          "p",
+          "_Comfort Meal._ When you cook a meal during a rest, each creature that eats it can end the Frightened or Poisoned condition on itself and has Advantage on its next saving throw against either until it finishes a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Bolt Marksman",
@@ -138,10 +264,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity. Ignore the loading property of crossbows, no disadvantage for firing within 5 feet of an enemy, and when you make the extra light-weapon attack with a hand crossbow, you add your ability modifier to its damage."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Braced Aim._ If you haven't moved on your turn, you have a +1 bonus to attack rolls made with crossbows."
+        ],
+        [
+          "p",
+          "_Pinning Bolt._ Once per turn, when you hit a creature with a crossbow, its Speed is halved until the end of its next turn."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dexterity 13+)"
     },
     {
       "name": "Bonebreaker",
@@ -151,10 +290,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Constitution. Once per turn when you deal bludgeoning damage, push the target 5 feet. When you score a critical hit with bludgeoning damage, attacks against the target have advantage until your next turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Stagger._ When you hit a creature of Large size or smaller with a weapon that deals Bludgeoning damage, it must succeed on a Constitution saving throw (DC 8 plus your Proficiency Bonus and the ability modifier of the ability score you increased with this feat) or be unable to take Reactions until the start of your next turn. You can use this benefit once per turn."
+        ],
+        [
+          "p",
+          "_Wall Breaker._ You deal double damage to objects and structures with Bludgeoning weapons, and you ignore damage thresholds."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Parry Step",
@@ -164,10 +316,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity. When you're holding a finesse weapon and someone hits you with a melee attack, use your reaction to add your proficiency bonus to your AC for that attack and until your next turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Riposte._ When a creature within 5 feet misses you with a melee attack, you can use your Reaction to make one melee attack with a Finesse weapon against it."
+        ],
+        [
+          "p",
+          "_Measured Retreat._ After you use Riposte, you can move 5 feet without provoking Opportunity Attacks."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dexterity 13+)"
     },
     {
       "name": "Twin Blades",
@@ -177,10 +342,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. When you attack with a light weapon, you can make the extra bonus-action attack with a weapon that isn't light, and you can draw or stow two weapons at once."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Twin Strike._ Once per turn, if you hit the same creature with two different weapons on your turn, it takes extra damage equal to your Proficiency Bonus."
+        ],
+        [
+          "p",
+          "_Quick Hands._ You can draw or stow two weapons when you would normally be able to draw or stow one."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)"
     },
     {
       "name": "Stalwart",
@@ -190,10 +368,23 @@
       "text": [
         [
           "p",
-          "+1 Constitution. Advantage on death saves, and as a bonus action you can spend one Hit Die to heal."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Death Defiance._ You have Advantage on Death Saving Throws."
+        ],
+        [
+          "p",
+          "_Grit._ When damage reduces you to 0 Hit Points and doesn't kill you outright, you can make a Constitution saving throw (DC 10). On a success, you drop to 1 Hit Point instead. Each time you use this benefit, the DC increases by 5 until you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Elemental Focus",
@@ -203,10 +394,27 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Pick acid, cold, fire, lightning or thunder: your spells ignore resistance to it, and you treat any 1 on that damage as a 2. You can take this feat more than once."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Attunement._ Choose one of Acid, Cold, Fire, Lightning or Thunder. You have Resistance to that damage type."
+        ],
+        [
+          "p",
+          "_Surge._ Once per turn, when you deal damage of that type with a spell, you can add your Proficiency Bonus to the damage."
+        ],
+        [
+          "p",
+          "_Repeatable._ You can take this feat more than once, but you must choose a different damage type each time."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, a spell or mana)"
     },
     {
       "name": "Wildtouched",
@@ -216,10 +424,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Learn Misty Step and one 1st-level divination or enchantment spell. Each can be cast once per long rest without mana, or normally with mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Wild Cantrips._ You learn two cantrips of your choice from the Druid or Sorcerer spell list. Your spellcasting ability for them is the ability score you increased with this feat."
+        ],
+        [
+          "p",
+          "_Wild Reservoir._ Once per Long Rest, you can cast one spell you know of level 1 or 2 without spending mana."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Greatblade Master",
@@ -229,10 +450,23 @@
       "text": [
         [
           "p",
-          "+1 Strength. When you hit with a heavy weapon as part of the Attack action, add your proficiency bonus to the damage. When you score a critical hit or drop a creature to 0 with a melee weapon, you can make one more attack as a bonus action."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Sweeping Arc._ When you hit a creature with a melee weapon that has the Heavy property, you can deal damage equal to your Proficiency Bonus to another creature within 5 feet of the target and within your reach."
+        ],
+        [
+          "p",
+          "_Overbearing Blow._ Once per turn, when you hit with a Heavy weapon, the target must succeed on a Strength saving throw (DC 8 plus your Proficiency Bonus and the ability modifier of the ability score you increased with this feat) or be pushed 10 feet away from you."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength 13+)"
     },
     {
       "name": "Plated Rank",
@@ -242,10 +476,23 @@
       "text": [
         [
           "p",
-          "+1 Constitution or Strength. You gain training with heavy armor."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution or Strength score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Heavy Armor Training._ You gain training with Heavy armor."
+        ],
+        [
+          "p",
+          "_Ranks Close._ While you wear Heavy armor and an ally within 5 feet wears Medium or Heavy armor, you both gain a +1 bonus to Armor Class."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, medium armor training)"
     },
     {
       "name": "Plate Bulwark",
@@ -255,10 +502,23 @@
       "text": [
         [
           "p",
-          "+1 Constitution or Strength. While in heavy armor, bludgeoning, piercing and slashing damage you take is reduced by your proficiency bonus."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution or Strength score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Brace._ While you wear Heavy armor, when you take the Dodge action, you gain Resistance to Bludgeoning, Piercing and Slashing damage until the start of your next turn."
+        ],
+        [
+          "p",
+          "_Armored Stand._ While you wear Heavy armor, you have Advantage on saving throws against effects that would push you or knock you Prone."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, heavy armor training)"
     },
     {
       "name": "Rallying Captain",
@@ -268,10 +528,23 @@
       "text": [
         [
           "p",
-          "+1 Wisdom or Charisma. After a short or long rest, give up to six creatures (you included) temporary hit points equal to your character level plus the modifier you raised."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Wisdom or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Marching Orders._ When you roll Initiative, up to a number of allies equal to your Proficiency Bonus within 30 feet can add your ability modifier from this feat to their Initiative."
+        ],
+        [
+          "p",
+          "_Hold Fast._ When an ally you can see within 30 feet fails a saving throw against the Frightened or Charmed condition, you can use your Reaction to let it reroll and add your Proficiency Bonus to the new roll. Once you use this benefit, you can't do so again until you finish a Short Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Wisdom or Charisma 13+)"
     },
     {
       "name": "Sharp Wits",
@@ -281,10 +554,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence. Proficiency (or expertise) in one of Arcana, History, Investigation, Nature or Religion, and you can Study as a bonus action."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Prepared Mind._ When you finish a Long Rest, choose one of Arcana, History, Investigation, Nature or Religion. Until your next Long Rest, you have Advantage on checks with it."
+        ],
+        [
+          "p",
+          "_Perfect Recall._ You can recall anything you have read, seen or heard in the last month in perfect detail."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Intelligence 13+)"
     },
     {
       "name": "Light Plating",
@@ -294,10 +580,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. You gain training with light armor and shields."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Armor and Shield Training._ You gain training with Light armor and Shields."
+        ],
+        [
+          "p",
+          "_Nimble Guard._ While you wear Light armor and wield a Shield, you can use your Reaction to gain a +2 bonus to Armor Class against one attack."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Spellbreaker",
@@ -307,10 +606,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Creatures you hit lose concentration more easily (disadvantage on the save). Once per long rest, when you fail an Intelligence, Wisdom or Charisma save, you can succeed instead."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Disruptive Hits._ When you hit a creature with an attack, it has Disadvantage on Constitution saving throws to maintain Concentration until the start of your next turn."
+        ],
+        [
+          "p",
+          "_Stubborn Mind._ When you fail an Intelligence, Wisdom or Charisma saving throw, you can succeed instead. Once you use this benefit, you can't do so again until you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Weapon Drill",
@@ -320,10 +632,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. You gain proficiency with martial weapons."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Martial Training._ You gain proficiency with Martial weapons."
+        ],
+        [
+          "p",
+          "_Practiced Form._ Choose one weapon type. You have a +1 bonus to attack rolls with it. Whenever you finish a Long Rest, you can change the weapon type."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Scale Mastery",
@@ -333,10 +658,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Medium armor lets you add up to 3 from Dexterity to your AC, instead of 2."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Layered Mail._ While you wear Medium armor, you gain a +1 bonus to Armor Class."
+        ],
+        [
+          "p",
+          "_Quiet Links._ Medium armor you wear doesn't impose Disadvantage on Dexterity (Stealth) checks."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, medium armor training)"
     },
     {
       "name": "Chain Training",
@@ -346,10 +684,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. You gain training with medium armor."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Medium Armor Training._ You gain training with Medium armor."
+        ],
+        [
+          "p",
+          "_Quick Hauberk._ You can don or doff Medium armor in 1 minute."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, light armor training)"
     },
     {
       "name": "Saddle Fighter",
@@ -359,10 +710,27 @@
       "text": [
         [
           "p",
-          "+1 Strength, Dexterity or Wisdom. Advantage on melee attacks against unmounted creatures near your mount, your mount takes no damage on a successful Dexterity save for half, and you can redirect an attack on your mount to yourself."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength, Dexterity, or Wisdom score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Lance Charge._ If your mount moves at least 20 feet in a straight line before you hit with a melee attack, the attack deals extra damage equal to your Proficiency Bonus."
+        ],
+        [
+          "p",
+          "_Steady Seat._ You can mount or dismount using only 5 feet of movement, and you have Advantage on checks and saving throws to avoid being knocked off your mount."
+        ],
+        [
+          "p",
+          "_Bonded Steed._ While you are mounted, your mount can use your saving throw bonuses in place of its own."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Keen Eye",
@@ -372,10 +740,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence or Wisdom. Proficiency (or expertise) in Insight, Investigation or Perception, and you can Search as a bonus action."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence or Wisdom score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Sharp Senses._ Choose one of Insight, Investigation or Perception. You gain proficiency in it, or Expertise if you already have proficiency."
+        ],
+        [
+          "p",
+          "_Spot the Flaw._ As a Bonus Action, you study a creature within 60 feet. The next attack roll an ally makes against it before the start of your next turn has a +1d6 bonus. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Intelligence or Wisdom 13+)"
     },
     {
       "name": "Pinpoint Strike",
@@ -385,10 +766,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Once per turn, reroll one piercing damage die. On a critical hit with piercing damage, roll one extra damage die."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Pin._ Once per turn, when you hit a creature with a weapon that deals Piercing damage, you can pin it. Its Speed becomes 0 until it uses an Action to break free (Strength check (DC 8 plus your Proficiency Bonus and the ability modifier of the ability score you increased with this feat))."
+        ],
+        [
+          "p",
+          "_Armor Gap._ You have a +1 bonus to attack rolls with Piercing weapons against creatures wearing armor."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Venomcraft",
@@ -398,10 +792,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity or Intelligence. Your poison damage ignores resistance. With a poisoner's kit and an hour, brew doses that deal 2d8 poison and poison the target on a failed Constitution save."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity or Intelligence score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Coat Blade._ As a Bonus Action, you coat a weapon you hold. The next time you hit with it within 1 minute, it deals an extra 1d6 Poison damage, and the target must succeed on a Constitution saving throw (DC 8 plus your Proficiency Bonus and the ability modifier of the ability score you increased with this feat) or have the Poisoned condition until the end of its next turn. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Brew Antivenom._ With a Poisoner's Kit and 1 hour, you can brew a number of doses equal to your Proficiency Bonus. A creature that drinks one has Advantage on saving throws against the Poisoned condition for 8 hours."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Spearwarden",
@@ -411,10 +818,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. With a glaive, halberd, quarterstaff, spear or pike, you can strike with the butt end as a bonus action (1d4 bludgeoning), and creatures entering your reach provoke an attack."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Set Against Charge._ When you take the Ready action to attack with a weapon that has the Reach property, and a creature moves into your reach, the attack deals an extra 1d6 damage."
+        ],
+        [
+          "p",
+          "_Keep Distance._ When a creature starts its turn within your reach while you wield a Reach weapon, you can use your Reaction to make it succeed on a Strength saving throw (DC 8 plus your Proficiency Bonus and the ability modifier of the ability score you increased with this feat) or be pushed 5 feet away."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)"
     },
     {
       "name": "Steadfast",
@@ -424,10 +844,23 @@
       "text": [
         [
           "p",
-          "+1 to an ability of your choice, and proficiency in saving throws with that ability."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Second Try._ Choose the ability you increased with this feat. Once per Short Rest, when you fail a saving throw with that ability, you can reroll it and must use the new roll."
+        ],
+        [
+          "p",
+          "_Stout Heart._ You have Advantage on saving throws against the Frightened condition."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Rite Keeper",
@@ -437,10 +870,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Learn ritual spells (as many as your proficiency bonus), which you can cast as rituals without mana; you can also cast one quickly once per long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Hasty Ritual._ When you cast a spell as a ritual, it takes only 1 extra minute to cast instead of 10."
+        ],
+        [
+          "p",
+          "_Rite of Rest._ When you finish a Long Rest, you can cast Alarm as a ritual without spending mana."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Intelligence, Wisdom or Charisma 13+)"
     },
     {
       "name": "Watchman",
@@ -450,10 +896,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Creatures you hit with opportunity attacks stop moving, and you can react when an enemy near you attacks someone else. Disengaging doesn't stop your opportunity attacks."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Sound the Alarm._ As a Reaction when you see a hostile creature, you can shout a warning. Allies within 60 feet who can hear you can't be Surprised and add your Proficiency Bonus to their Initiative. Once you use this benefit, you can't do so again until you finish a Short Rest."
+        ],
+        [
+          "p",
+          "_Unsleeping Watch._ You need only 4 hours of Long Rest, and you can remain on watch for the rest without penalty."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Strength or Dexterity 13+)"
     },
     {
       "name": "Dusk Touched",
@@ -463,10 +922,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Learn Invisibility and one 1st-level illusion or necromancy spell. Each can be cast once per long rest without mana, or normally with mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Dim Sight._ You have Darkvision with a range of 60 feet, or 30 feet more if you already have it."
+        ],
+        [
+          "p",
+          "_Dusk Veil._ As a Bonus Action, you wrap yourself in dusk for 1 minute. You have Advantage on Dexterity (Stealth) checks, and if you are Hidden when you attack, you stay Hidden once. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Far Shot",
@@ -476,10 +948,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity. Your ranged weapon attacks ignore half and three-quarters cover, and you don't have disadvantage at long range or when an enemy is within 5 feet."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Extended Range._ The normal and long ranges of ranged weapons you wield increase by half."
+        ],
+        [
+          "p",
+          "_Steady Marksman._ If you haven't moved on your turn, the first ranged weapon attack you hit with deals extra damage equal to your Proficiency Bonus."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dexterity 13+)"
     },
     {
       "name": "Bulwark Strike",
@@ -489,10 +974,23 @@
       "text": [
         [
           "p",
-          "+1 Strength. When you hit with a melee attack, you can bash with your shield to push or knock the target prone. When a Dexterity save would deal half damage, you can use your reaction to take none."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Shield Edge._ Your Shield counts as a simple melee weapon that deals 1d4 Bludgeoning damage, and you have proficiency with it. You can attack with it as part of the Attack action."
+        ],
+        [
+          "p",
+          "_Shield Rush._ Once per turn, when you hit with your Shield, you can push the target 5 feet away from you."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, shield training)"
     },
     {
       "name": "Well Rounded",
@@ -502,10 +1000,23 @@
       "text": [
         [
           "p",
-          "+1 to any ability, proficiency in one skill, and expertise (double proficiency) in one skill you're proficient in."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Daily Pick._ When you finish a Long Rest, choose one skill. You gain proficiency in it until you finish your next Long Rest."
+        ],
+        [
+          "p",
+          "_Fill the Gap._ When you make an ability check with a skill you aren't proficient in, you can add 1d4 to the roll."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Lurker",
@@ -515,10 +1026,27 @@
       "text": [
         [
           "p",
-          "+1 Dexterity. Blindsight 10 feet, missing an attack while hidden doesn't reveal you, and you have advantage on Stealth checks while hiding in fog or darkness."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Dark Cling._ You have Advantage on Dexterity (Stealth) checks made in dim light or darkness, and you can try to hide when you are only Lightly Obscured."
+        ],
+        [
+          "p",
+          "_Vanishing Reaction._ When a creature misses you with an attack, you can use your Reaction to take the Hide action if you are able to."
+        ],
+        [
+          "p",
+          "_Quiet Soles._ Your Speed isn't reduced while you move stealthily."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dexterity 13+)"
     },
     {
       "name": "Cutting Edge",
@@ -528,10 +1056,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Once per turn when you deal slashing damage, reduce the target's speed by 10 feet. On a critical hit with slashing damage, the target has disadvantage on attacks until your next turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Open Wound._ When you hit a creature with a weapon that deals Slashing damage, the target takes an extra 1d4 Slashing damage at the start of its next turn unless it uses an Action to staunch the wound."
+        ],
+        [
+          "p",
+          "_Opening Slash._ The first time on each turn you hit a creature that has all of its Hit Points, it takes extra damage equal to your Proficiency Bonus."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Quickstep",
@@ -541,10 +1082,27 @@
       "text": [
         [
           "p",
-          "+1 Dexterity or Constitution. +10 speed, difficult terrain doesn't slow you when you Dash, and opportunity attacks against you have disadvantage."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity or Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Step Aside._ When a creature moves within 5 feet of you, you can use your Reaction to move up to half your Speed without provoking Opportunity Attacks."
+        ],
+        [
+          "p",
+          "_Evasive Footing._ Opportunity Attacks against you have Disadvantage."
+        ],
+        [
+          "p",
+          "_Light Feet._ Your Speed increases by 5 feet."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dexterity or Constitution 13+)"
     },
     {
       "name": "Distant Spell",
@@ -554,10 +1112,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Your attack spells ignore half and three-quarters cover, have +60 feet of range, and casting them within 5 feet of an enemy doesn't give you disadvantage. Learn one attack cantrip."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Extended Reach._ When you cast a spell with a range of at least 10 feet, its range increases by 30 feet. A spell with a range of Touch can instead be cast at a range of 15 feet."
+        ],
+        [
+          "p",
+          "_Arc Over._ Your spell attack rolls ignore Half Cover."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, a spell or mana)"
     },
     {
       "name": "Mind Shove",
@@ -567,10 +1138,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Learn Mage Hand, cast it without components, and its hand is invisible. As a bonus action, shove a creature within 30 feet 5 feet (Strength save)."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Force Nudge._ Once per turn, when you hit a creature with a spell attack, you can push it 5 feet away from you."
+        ],
+        [
+          "p",
+          "_Long Hand._ You learn the Mage Hand cantrip. Its range increases by 30 feet, and it can lift up to 20 pounds."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Mind Link",
@@ -580,10 +1164,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Speak telepathically to a creature within 60 feet. Learn Detect Thoughts and cast it once per long rest without mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Bond Mind._ As a 1-minute ritual, you can bond with one willing creature you touch. You can have up to two bonds. While within 1 mile of a bonded creature, you know its direction and general condition, and you can send it a single word or emotion."
+        ],
+        [
+          "p",
+          "_Shared Sight._ As a Bonus Action, you can see through a bonded creature's eyes for 1 minute, and you have the Blinded condition while you do. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Battle Mage",
@@ -593,10 +1190,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. Advantage on saves to keep concentration, you can cast spells with weapons or a shield in hand, and you can cast a one-target spell instead of an opportunity attack."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Weave Strike._ When you cast a spell on your turn, you can make one weapon attack as a Bonus Action."
+        ],
+        [
+          "p",
+          "_Focus Weapon._ You can use a weapon you are proficient with as a Spellcasting Focus."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, a spell or mana)"
     },
     {
       "name": "Armory Expert",
@@ -606,10 +1216,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. Learn the weapon mastery property of one weapon type, and swap it after a long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Mastery._ You can use the weapon mastery property of one kind of weapon of your choice that you have proficiency with. Whenever you finish a Long Rest, you can change which weapon you chose."
+        ],
+        [
+          "p",
+          "_Weapon Lore._ You can identify a weapon's properties and maker's marks on sight, and you have Advantage on Intelligence (Investigation) checks about weapons."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Swift Footwork",
@@ -619,10 +1242,23 @@
       "text": [
         [
           "p",
-          "+10 speed, difficult terrain doesn't slow you when you Dash, and creatures you attack in melee can't make opportunity attacks against you that turn. (The 2024 book calls this Speedy.)"
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Fleet Stride._ Your Speed increases by 5 feet."
+        ],
+        [
+          "p",
+          "_Momentum._ If you moved at least 20 feet on your turn, you have a +2 bonus to your first attack roll that turn."
+        ],
+        [
+          "p",
+          "_Light Leap._ Your jump distances are doubled."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Tunnel Wise",
@@ -632,10 +1268,23 @@
       "text": [
         [
           "p",
-          "Advantage on checks to find secret doors and saves against traps, resistance to trap damage, and you can search for traps at normal pace."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Underground Instinct._ You always know how deep underground you are and which way leads to the surface, and you can't become lost in tunnels or caves."
+        ],
+        [
+          "p",
+          "_Rubble Reflexes._ You have Advantage on Dexterity saving throws against collapses and Resistance to Bludgeoning damage from falling rock."
+        ],
+        [
+          "p",
+          "_Tunnel Fighter._ Squeezing through a narrow space doesn't give you Disadvantage on attack rolls."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Polyglot",
@@ -645,10 +1294,27 @@
       "text": [
         [
           "p",
-          "+1 Intelligence. Learn three languages, and create written ciphers others can't read without magic or a hard Intelligence check."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Languages._ You learn two languages of your choice."
+        ],
+        [
+          "p",
+          "_Pidgin._ You can communicate simple ideas with any creature that has a language, even one you don't share."
+        ],
+        [
+          "p",
+          "_Quick Ear._ After you listen to a language for 1 hour, you can understand its basics, and you can learn it in a week of study."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Cogwright Initiate",
@@ -658,10 +1324,19 @@
       "text": [
         [
           "p",
-          "Learn one Cogwright cantrip and one 1st-level Cogwright spell (cast once per long rest without mana), and gain proficiency with one artisan's tool."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Cogwright Spells._ You learn one Cogwright cantrip and one level 1 Cogwright spell. You can cast the spell once without spending mana, and you regain the ability to do so when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Tool Proficiency._ You gain proficiency with one kind of Artisan's Tools of your choice."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Warded Caster",
@@ -671,10 +1346,19 @@
       "text": [
         [
           "p",
-          "Learn one Eldritch Invocation that has no level prerequisite. Swap it when you gain a level."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Spell Ward._ When you cast a spell of level 1 or higher using mana, you gain Temporary Hit Points equal to twice the spell's level."
+        ],
+        [
+          "p",
+          "_Ward Reflex._ When a creature targets you with a spell attack, you can use your Reaction to add your Proficiency Bonus to your Armor Class against it. Once you use this benefit, you can't do so again until you finish a Short Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, a spell or Pact Magic)"
     },
     {
       "name": "Style Apprentice",
@@ -684,10 +1368,15 @@
       "text": [
         [
           "p",
-          "Learn one Fighting Style. Swap it when you gain an Ability Score Improvement."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Flexible Style._ You learn one Fighting Style feat of your choice. Whenever you finish a Long Rest, you can swap it for a different Fighting Style feat."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, martial weapon proficiency)"
     },
     {
       "name": "Firelock Expert",
@@ -697,10 +1386,31 @@
       "text": [
         [
           "p",
-          "+1 Dexterity. Proficiency with firearms, ignore their loading property, and no disadvantage firing within 5 feet. (Avarenth: gunpowder exists but few know how to use it. DM's call.)"
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Powder Training._ You gain proficiency with firearms."
+        ],
+        [
+          "p",
+          "_Quick Loader._ You ignore the Loading property of firearms. When you roll a 1 on the d20 for an attack roll with one, it jams, and clearing it takes an Action."
+        ],
+        [
+          "p",
+          "_Thunderclap._ When you hit with a firearm, creatures of your choice within 10 feet of the target must succeed on a Constitution saving throw (DC 8 plus your Proficiency Bonus and Dexterity modifier) or be Deafened until the end of your next turn. Once you use this benefit, you can't do so again until you finish a Short Rest."
+        ],
+        [
+          "p",
+          "_Avarenth._ Gunpowder is rare in the isles. Ask your DM before you take this feat."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+)"
     },
     {
       "name": "Spell Tinkerer",
@@ -710,10 +1420,19 @@
       "text": [
         [
           "p",
-          "Learn two Metamagic options and gain 2 sorcery points just for them, regained on a long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Retune._ When you cast a spell using mana that deals Acid, Cold, Fire, Lightning, Poison or Thunder damage, you can spend 3 extra mana to change the damage to another of those types. You can use this benefit once per turn."
+        ],
+        [
+          "p",
+          "_Thrift._ Once per Short Rest, you can reduce the mana cost of a spell you cast by 5 (to a minimum of 0)."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, a spell or mana)"
     },
     {
       "name": "Providence",
@@ -723,10 +1442,19 @@
       "text": [
         [
           "p",
-          "When an ally within 30 feet rolls a 1 on a d20, you can use your reaction to let them reroll. You can't use your own Lucky trait before your next turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Lucky Lift._ When you reroll a die with your Lucky trait, you add 1d4 to the new roll."
+        ],
+        [
+          "p",
+          "_Share the Luck._ When an ally you can see within 30 feet fails a saving throw, you can use your Reaction to let it add 1d4 to the roll. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Halfling)"
     },
     {
       "name": "Terrible Glare",
@@ -736,10 +1464,23 @@
       "text": [
         [
           "p",
-          "+1 Strength, Constitution or Charisma. Instead of your breath weapon, roar: creatures of your choice within 30 feet make a Wisdom save or are frightened for a minute."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength, Constitution, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Dread Stare._ When a creature makes an attack roll against you or an ally within 10 feet, you can use your Reaction to make it succeed on a Wisdom saving throw (DC 8 plus your Proficiency Bonus and Constitution modifier) or have Disadvantage on the attack. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Draconic Voice._ You have Advantage on Charisma (Intimidation) checks."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dragonborn)"
     },
     {
       "name": "Scaled Hide",
@@ -749,10 +1490,23 @@
       "text": [
         [
           "p",
-          "+1 Strength, Constitution or Charisma. Your scales harden (AC 13 + Dexterity without armor) and you grow claws that deal 1d4 slashing."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength, Constitution, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Hardened Scale._ When you take Bludgeoning, Piercing or Slashing damage, you can use your Reaction to reduce it by 1d6 plus your Proficiency Bonus. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Claws._ Your Unarmed Strikes deal 1d4 plus your Strength modifier Slashing damage."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dragonborn)"
     },
     {
       "name": "Deep Sorcery",
@@ -762,10 +1516,19 @@
       "text": [
         [
           "p",
-          "Learn Detect Magic (free at will), and Levitate and Dispel Magic, each once per long rest without mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Shroud._ As an Action, you create a 10-foot-radius sphere of magical darkness for 1 minute. You and creatures of your choice can see through it. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Gloom Sense._ You have Advantage on Wisdom (Perception) checks in dim light or darkness."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Elf (Dark lineage))"
     },
     {
       "name": "Clan Grit",
@@ -775,10 +1538,23 @@
       "text": [
         [
           "p",
-          "+1 Constitution. When you take the Dodge action, you can spend one Hit Die to heal."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Stone Stance._ As a Bonus Action, you set your feet. Until the start of your next turn, your Speed is 0, you can't be pushed, pulled or knocked Prone, and you have Advantage on Strength and Constitution saving throws. Once you use this benefit, you can't do so again until you finish a Short Rest."
+        ],
+        [
+          "p",
+          "_Hearth Memory._ You have Advantage on saving throws against the Frightened condition while an ally is within 10 feet of you."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dwarf)"
     },
     {
       "name": "Sure Aim",
@@ -788,10 +1564,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity, Intelligence, Wisdom or Charisma. When you have advantage on an attack using one of those abilities, roll a third d20 and keep the best."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity, Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Dead Eye._ Once per turn, when you hit with an attack roll that has Advantage, you deal extra damage equal to your Proficiency Bonus."
+        ],
+        [
+          "p",
+          "_Fey Sight._ Fog and dim light don't impose Disadvantage on your ranged attack rolls."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Elf or Half-Elf)"
     },
     {
       "name": "Vanish Step",
@@ -801,10 +1590,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity or Intelligence. When you take damage, turn invisible as a reaction until the end of your next turn or until you attack or cast. Once per short rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity or Intelligence score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Tinker's Dodge._ When a creature larger than you attacks you, you can use your Reaction to gain a +2 bonus to Armor Class against that attack and move 5 feet without provoking Opportunity Attacks. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Small Hide._ You can hide behind a creature that is Medium or larger."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Gnome)"
     },
     {
       "name": "Glade Step",
@@ -814,10 +1616,27 @@
       "text": [
         [
           "p",
-          "+1 Intelligence or Charisma. Learn Sylvan, and cast Misty Step once per short rest without mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Wild Footing._ You can move through nonmagical plants and Difficult Terrain made of them without extra movement, and you leave no tracks."
+        ],
+        [
+          "p",
+          "_Branch Walk._ You can walk along branches and vines as if they were solid ground."
+        ],
+        [
+          "p",
+          "_Glade Hide._ You have Advantage on Dexterity (Stealth) checks in natural surroundings."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, High Elf)"
     },
     {
       "name": "Emberheart",
@@ -827,10 +1646,23 @@
       "text": [
         [
           "p",
-          "+1 Intelligence or Charisma. Reroll 1s on fire damage from your spells, and when you cast a fire spell you can wreathe yourself in flame: attackers take 1d4 fire."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Intelligence or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Cinder Cloak._ As a Bonus Action, you shed Bright Light in a 10-foot radius for 1 minute. A creature that hits you with a melee attack takes 1d4 Fire damage. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Kindle._ You learn the Produce Flame cantrip. Intelligence or Charisma is its spellcasting ability (your choice when you take this feat)."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Infernite)"
     },
     {
       "name": "Brimstone Body",
@@ -840,10 +1672,27 @@
       "text": [
         [
           "p",
-          "+1 Constitution. Resistance to cold and poison damage, and advantage on saves against being poisoned."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Ashen Hide._ You have Resistance to Poison damage."
+        ],
+        [
+          "p",
+          "_Hot-Blooded._ Extreme cold doesn't harm you."
+        ],
+        [
+          "p",
+          "_Smoldering Rise._ When you drop to 0 Hit Points, a flash of heat erupts. Creatures within 5 feet take Fire damage equal to your Proficiency Bonus."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Infernite)"
     },
     {
       "name": "Warband Fury",
@@ -853,10 +1702,23 @@
       "text": [
         [
           "p",
-          "+1 Strength or Constitution. Once per short rest, add an extra weapon damage die to a hit. When Relentless Endurance saves you, you can attack as a reaction."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Constitution score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Rally Roar._ As a Bonus Action, you roar. Allies within 30 feet who can hear you add 1d4 to the damage of the next weapon attack they hit with in the next minute. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Bloodied Fury._ While you are at or below half your Hit Point maximum, once per turn you deal extra damage equal to your Proficiency Bonus when you hit with a weapon."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Half-Orc or Orc)"
     },
     {
       "name": "Savant",
@@ -866,10 +1728,19 @@
       "text": [
         [
           "p",
-          "One skill proficiency, one tool proficiency, one language, and expertise in one skill you're proficient in."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Wide Reading._ You gain proficiency in two skills of your choice from Arcana, History, Nature and Religion."
+        ],
+        [
+          "p",
+          "_Quick Reference._ When you or an ally you can see within 60 feet makes an Intelligence check, you can use your Reaction to add 1d6 to the roll. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Half-Elf, Half-Orc or Human)"
     },
     {
       "name": "Last Hope",
@@ -879,10 +1750,23 @@
       "text": [
         [
           "p",
-          "+1 Dexterity, Constitution or Charisma. When a creature hits you, use your reaction to make it reroll the attack. Once per short rest (or initiative)."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Dexterity, Constitution, or Charisma score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Lucky Dodge._ When a creature hits you with an attack, you can use your Reaction to roll a d6. On a 4 or higher, the attack misses instead. Once you use this benefit, you can't do so again until you finish a Short Rest."
+        ],
+        [
+          "p",
+          "_Run for It._ When you drop below half your Hit Point maximum, your Speed increases by 10 feet until the end of your next turn."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Halfling)"
     },
     {
       "name": "Low Crawler",
@@ -892,10 +1776,27 @@
       "text": [
         [
           "p",
-          "+1 Strength or Dexterity. +5 speed, proficiency in Acrobatics or Athletics, and advantage on checks to escape a grapple."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase your Strength or Dexterity score by 1, to a maximum of 20."
+        ],
+        [
+          "p",
+          "_Slip Beneath._ You can move through the space of any creature that is larger than you."
+        ],
+        [
+          "p",
+          "_Hole Up._ You can squeeze through spaces one size smaller than you without penalty."
+        ],
+        [
+          "p",
+          "_Low Guard._ You have a +1 bonus to Armor Class against creatures larger than you."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Dwarf or a Small species)"
     },
     {
       "name": "Greenwood Magic",
@@ -905,10 +1806,23 @@
       "text": [
         [
           "p",
-          "Learn one druid cantrip, and cast Longstrider and Pass without Trace once per long rest each without mana."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Greenwood Cantrip._ You learn one Druid cantrip of your choice."
+        ],
+        [
+          "p",
+          "_Whisper Wood._ You can cast Speak with Plants once without spending mana. You regain the ability to do so when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Leaf Cover._ You have Advantage on Dexterity (Stealth) checks in woodland."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "General Feat (Prerequisite: Level 4+, Wood Elf)"
     },
     {
       "name": "Gift of the Many Scales",
@@ -918,10 +1832,15 @@
       "text": [
         [
           "p",
-          "As a bonus action, touch a weapon to add 1d4 acid, cold, fire, lightning or poison damage to its hits for a minute (once per long rest). When you take one of those damage types, use your reaction to gain resistance to it (proficiency bonus times per long rest)."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Scale Sheen._ As a Bonus Action, you choose Acid, Cold, Fire, Lightning or Poison. For 1 minute, you have Resistance to that damage type, and once per turn, when you hit with a weapon attack, you deal an extra 1d4 damage of that type. Once you use this benefit, you can't do so again until you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Gift of the Jewel Scale",
@@ -931,10 +1850,19 @@
       "text": [
         [
           "p",
-          "+1 Intelligence, Wisdom or Charisma. When a creature within 10 feet damages you, use your reaction to blast it with telekinetic force (Strength save, 2d8 force and pushed 10 feet). Proficiency bonus times per long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Facet Flash._ When a creature you can see hits you with an attack, you can use your Reaction to flash your scales. The attacker must succeed on a Constitution saving throw (DC 8 plus your Proficiency Bonus and Constitution modifier) or have the Blinded condition until the end of its next turn. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Glint._ You learn the Light cantrip. Intelligence, Wisdom or Charisma is its spellcasting ability (your choice when you take this feat)."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Gift of the Bright Scale",
@@ -944,10 +1872,19 @@
       "text": [
         [
           "p",
-          "Learn Cure Wounds and cast it once per long rest without mana. When you or someone near you is hit, you can use your reaction to sprout spectral wings and add 1d4 to their AC. Proficiency bonus times per long rest."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Gilded Mercy._ As a Bonus Action, you can touch a creature to restore 1d6 plus your Proficiency Bonus in Hit Points and end the Frightened or Poisoned condition on it. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Warm Glow._ As a Bonus Action, you can shed Bright Light in a 10-foot radius for 1 minute. Allies in the light have Advantage on saving throws against the Frightened condition."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Origin Feat"
     },
     {
       "name": "Unseen Combat",
@@ -957,10 +1894,19 @@
       "text": [
         [
           "p",
-          "Blindsight 10 feet: you can see invisible creatures and things in darkness within 10 feet."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Fight in the Dark._ You don't have Disadvantage on attack rolls against creatures you can't see, and being unseen by an enemy doesn't give it Advantage against you."
+        ],
+        [
+          "p",
+          "_Heard It Coming._ You have Advantage on Wisdom (Perception) checks that rely on hearing."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Blade Focus",
@@ -970,10 +1916,19 @@
       "text": [
         [
           "p",
-          "+2 damage with a melee weapon held in one hand when you have no other weapon."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Single Edge._ While you wield a melee weapon in one hand and no other weapon, you have a +1 bonus to attack rolls with it."
+        ],
+        [
+          "p",
+          "_Free Hand._ You can perform the Somatic components of spells with your free hand."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Guard Step",
@@ -983,10 +1938,19 @@
       "text": [
         [
           "p",
-          "When an ally within 5 feet is hit, use your reaction to reduce the damage by 1d10 + your proficiency bonus. You need a shield or weapon in hand."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Swap Places._ As a Bonus Action, you can swap places with a willing ally within 5 feet without provoking Opportunity Attacks."
+        ],
+        [
+          "p",
+          "_Cover Them._ While you hold a weapon or a Shield, allies within 5 feet of you gain a +1 bonus to Armor Class."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Shield Guard",
@@ -996,10 +1960,19 @@
       "text": [
         [
           "p",
-          "With a shield, use your reaction to give an attack against an ally within 5 feet disadvantage."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ward Another._ While you wield a Shield, when an ally within 5 feet is hit by an attack, you can use your Reaction to add your Shield's AC bonus to that ally's Armor Class against the attack."
+        ],
+        [
+          "p",
+          "_Brace Shield._ While you wield a Shield, you have Advantage on saving throws against effects that push you or knock you Prone."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Hurled Mastery",
@@ -1009,10 +1982,19 @@
       "text": [
         [
           "p",
-          "+2 damage with thrown weapons, and you can draw them as part of the attack."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Throw Anything._ You can throw any melee weapon you are proficient with as a Thrown weapon with a range of 20/60."
+        ],
+        [
+          "p",
+          "_Ricochet._ Once per turn, when you hit with a Thrown weapon, you can make a ranged attack against another creature within 10 feet of the target, as if the weapon bounced."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Brawler’s Grip",
@@ -1022,10 +2004,19 @@
       "text": [
         [
           "p",
-          "Your unarmed strikes deal 1d6 + Strength (1d8 with both hands free), and you deal 1d4 to a creature you're grappling at the start of each turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Grip Lock._ Once per turn, when you hit a creature with an Unarmed Strike, you can grapple it without a check."
+        ],
+        [
+          "p",
+          "_Hold Fast._ Creatures you have Grappled have Disadvantage on checks to escape."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Fighting Style Feat (Prerequisite: Fighting Style feature)"
     },
     {
       "name": "Elemental Ward",
@@ -1035,10 +2026,23 @@
       "text": [
         [
           "p",
-          "+1 to any ability (to 30). Resistance to two of acid, cold, fire, lightning, necrotic, poison, psychic, radiant or thunder, and you can redirect that damage at someone else as a reaction."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 30."
+        ],
+        [
+          "p",
+          "_Chosen Resistance._ When you finish a Long Rest, choose one of Acid, Cold, Fire, Lightning, Necrotic, Poison, Psychic, Radiant or Thunder. You have Resistance to it until your next Long Rest."
+        ],
+        [
+          "p",
+          "_Absorb._ When you take damage of the chosen type, you can use your Reaction to regain Hit Points equal to half the damage you took. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Epic Boon Feat (Prerequisite: Level 19+)"
     },
     {
       "name": "Stoneheart",
@@ -1048,10 +2052,23 @@
       "text": [
         [
           "p",
-          "+1 to any ability (to 30). Your hit point maximum rises by 40, and when you heal you can add your Constitution modifier once per turn."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 30."
+        ],
+        [
+          "p",
+          "_Stone Skin._ You have Resistance to Bludgeoning, Piercing and Slashing damage from nonmagical attacks."
+        ],
+        [
+          "p",
+          "_Rooted Strength._ You can't be moved or knocked Prone against your will."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Epic Boon Feat (Prerequisite: Level 19+)"
     },
     {
       "name": "Restful Mend",
@@ -1061,10 +2078,23 @@
       "text": [
         [
           "p",
-          "+1 to any ability (to 30). Once per long rest, when you would drop to 0, drop to 1 and heal half your maximum. You also have a pool of 10d10 to heal yourself as a bonus action."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 30."
+        ],
+        [
+          "p",
+          "_Mending Nap._ A Short Rest takes you only 30 minutes. When you finish one, you regain all your expended Hit Dice."
+        ],
+        [
+          "p",
+          "_Gentle Dawn._ When you finish a Long Rest, you can end one curse, disease or level of Exhaustion affecting you, and you gain Temporary Hit Points equal to your character level."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Epic Boon Feat (Prerequisite: Level 19+)"
     },
     {
       "name": "Quick Study",
@@ -1074,10 +2104,23 @@
       "text": [
         [
           "p",
-          "+1 to any ability (to 30). Proficiency in every skill, and expertise in one."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 30."
+        ],
+        [
+          "p",
+          "_Mind Library._ You gain Expertise in three skills of your choice in which you have proficiency."
+        ],
+        [
+          "p",
+          "_Speed Read._ You can read and copy any book or scroll in 1 hour and recall it perfectly."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Epic Boon Feat (Prerequisite: Level 19+)"
     },
     {
       "name": "Swift Stride",
@@ -1087,10 +2130,27 @@
       "text": [
         [
           "p",
-          "+1 to any ability (to 30). +30 speed, and you can Disengage as a bonus action that also ends being grappled."
+          "You gain the following benefits."
+        ],
+        [
+          "p",
+          "_Ability Score Increase._ Increase one ability score of your choice by 1, to a maximum of 30."
+        ],
+        [
+          "p",
+          "_Fleet._ Your Speed increases by 20 feet."
+        ],
+        [
+          "p",
+          "_Blink Step._ As a Bonus Action, you can teleport up to 30 feet to an unoccupied space you can see. You can use this benefit a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest."
+        ],
+        [
+          "p",
+          "_Never Caught._ Opportunity Attacks against you have Disadvantage."
         ]
       ],
-      "own": true
+      "own": true,
+      "kind": "Epic Boon Feat (Prerequisite: Level 19+)"
     }
   ],
   "backgrounds": {
