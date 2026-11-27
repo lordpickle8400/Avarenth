@@ -1121,7 +1121,7 @@
       "tool": "Forgery kit",
       "equipment": "Forgery kit, costume, fine clothes, 15 gp; or 50 gp",
       "about": "Every crowd has a pocket and you have always known which one to reach for. You learned early that a good story sells faster than a good sword, and you never lie when a half-truth will do.",
-      "feature": "False Identity: You have a second persona with papers, a history and a few people who will swear to it. Gaining the papers for a new identity takes a week and a modest bribe.",
+      "feature": "Second Face: You have a second persona with papers, a history and a few people who will swear to it. Gaining the papers for a new identity takes a week and a modest bribe.",
       "own": true
     },
     "Entertainer": {
@@ -1136,7 +1136,7 @@
       "tool": "One musical instrument",
       "equipment": "Instrument, 2 costumes, mirror, perfume, traveler's clothes, 11 gp; or 50 gp",
       "about": "You have sung, juggled and played for coins in taverns, markets and the courts of minor lords. A crowd is a living thing to you, and you can read its mood like a sailor reads the sky.",
-      "feature": "By Popular Demand: You can always find a place to perform, and you can usually find a bed and a meal from grateful hosts. Crowds will forgive your mistakes when you keep them entertained.",
+      "feature": "Open Stage: You can always find a place to perform, and you can usually find a bed and a meal from grateful hosts. Crowds will forgive your mistakes when you keep them entertained.",
       "own": true
     },
     "Farmer": {
@@ -1196,7 +1196,7 @@
       "tool": "Herbalism kit",
       "equipment": "Quarterstaff, herbalism kit, bedroll, book of philosophy, lamp, oil, traveler's clothes, 16 gp; or 50 gp",
       "about": "You lived alone for a long while, in a cave, a hut or a forgotten shrine, and came back to the world with new eyes. Silence taught you to listen, and you have learned to speak only when you have something to say.",
-      "feature": "Discovery: You have made a private discovery, a rite, a herb or a truth that the world has forgotten. Work it out with the DM, and it will open one door that no one else can.",
+      "feature": "Quiet Revelation: You have made a private discovery, a rite, a herb or a truth that the world has forgotten. Work it out with the DM, and it will open one door that no one else can.",
       "own": true
     },
     "Merchant": {
@@ -1226,7 +1226,7 @@
       "tool": "One gaming set",
       "equipment": "Gaming set, fine clothes, perfume, 29 gp; or 50 gp",
       "about": "You were born into a family of rank and privilege, and you learned early that a name opens more doors than a sword. You are used to having people listen when you speak, and to having them expect something in return.",
-      "feature": "Position of Privilege: People of rank and their households treat you as one of their own. You can get a hearing with minor lords and their stewards, and you can find lodgings in most noble houses.",
+      "feature": "Name and Standing: People of rank and their households treat you as one of their own. You can get a hearing with minor lords and their stewards, and you can find lodgings in most noble houses.",
       "own": true
     },
     "Sailor": {
@@ -1286,7 +1286,7 @@
       "tool": "One artisan's tool, vehicles (land)",
       "equipment": "Artisan's tool, shovel, iron pot, common clothes, 10 gp; or 50 gp",
       "about": "You are remembered in a village for something you did: a flood held back, a lord defied, a child saved from the wolves. The people there still ask after you when you come back, and they expect you to act like the hero they told stories about.",
-      "feature": "Rustic Hospitality: Common folk will shelter you and share their food. They will hide you from the law if you have done a good turn for them, and they will carry word of you across the countryside.",
+      "feature": "Open Doors: Common folk will shelter you and share their food. They will hide you from the law if you have done a good turn for them, and they will carry word of you across the countryside.",
       "own": true
     },
     "Guild Artisan": {
@@ -1301,7 +1301,7 @@
       "tool": "One artisan's tool",
       "equipment": "Artisan's tool, letter of introduction from your guild, traveler's clothes, 15 gp; or 50 gp",
       "about": "You belong to a craft guild in one of the cities, with dues paid, rules kept and a reputation to protect. Your guild is your family and your insurance, and it expects you to hold its name with pride.",
-      "feature": "Guild Membership: Your guild houses and feeds you when you are in its city, speaks for you before the town council and lends you coin against your work, for dues you must keep paying.",
+      "feature": "Trade Card: Your guild houses and feeds you when you are in its city, speaks for you before the town council and lends you coin against your work, for dues you must keep paying.",
       "own": true
     },
     "Outlander": {
@@ -1316,7 +1316,7 @@
       "tool": "One musical instrument",
       "equipment": "Staff, hunting trap, animal trophy, traveler's clothes, 10 gp; or 50 gp",
       "about": "You were raised far from the towns, in the marshes, hills or open country where survival is a daily job. You trust your own judgement more than laws and lords, and you never feel more at home than under the open sky.",
-      "feature": "Wanderer: You can always find food and fresh water in the wild for yourself and up to five companions, and you always know the direction of the nearest settlement. Your memory for the land around you is excellent.",
+      "feature": "Mapmind: You can always find food and fresh water in the wild for yourself and up to five companions, and you always know the direction of the nearest settlement. Your memory for the land around you is excellent.",
       "own": true
     },
     "Urchin": {
@@ -1331,7 +1331,7 @@
       "tool": "Disguise kit, thieves' tools",
       "equipment": "Small knife, city map, pet mouse, token of your parents, common clothes, 10 gp; or 50 gp",
       "about": "You grew up in the streets, sleeping in doorways and stealing bread before you could read. The city taught you to watch, to run and to keep your secrets close, and you still find yourself counting exits in any room.",
-      "feature": "City Secrets: You know the back ways, the sewers, the rooftops and the places the watch doesn’t go in your home city. You can find a safe place to hide and someone who will sell you information for a few coins.",
+      "feature": "Back Ways: You know the back ways, the sewers, the rooftops and the places the watch doesn’t go in your home city. You can find a safe place to hide and someone who will sell you information for a few coins.",
       "own": true
     },
     "City Watch": {
