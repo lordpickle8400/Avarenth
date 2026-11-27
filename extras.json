@@ -1103,11 +1103,98 @@
         "Arcana",
         "Investigation"
       ],
-      "tool": "One artisan's tool",
-      "equipment": "The tool, 2 pouches, traveler's clothes, 32 gp; or 50 gp",
+      "tool": "Choose one kind of Artisan’s Tools",
+      "equipment": "Choose A or B: (A) Artisan’s Tools (same as above), 2 Pouches, Traveler’s Clothes, 32 GP; or (B) 50 GP",
       "about": "You learned a trade in a workshop, sweeping floors and carrying tools before you were ever trusted with the bench. Your hands know materials the way other people know faces, and you still judge a person by the work they’ve made.",
-      "feature": "Workshop Eye: You can look at any finished object and tell roughly who made it, how long it took, and whether it was made properly. Advantage on Investigation checks to judge the quality or origin of crafted goods.",
-      "own": true
+      "feature": "Trade Hands: In downtime your crafting earns double, and any workshop of your trade lets you use its bench for free.",
+      "own": true,
+      "trades": [
+        {
+          "tool": "Alchemist’s Supplies",
+          "name": "Alchemist",
+          "perk": "Nose for Brews: You can identify a potion or poison by smell and taste."
+        },
+        {
+          "tool": "Brewer’s Supplies",
+          "name": "Brewer",
+          "perk": "Good Round: A drink you brewed loosens tongues: Advantage on Persuasion with anyone who shares it with you."
+        },
+        {
+          "tool": "Calligrapher’s Supplies",
+          "name": "Calligrapher",
+          "perk": "Steady Hand: You can spot forged writing and copy any script you have seen."
+        },
+        {
+          "tool": "Carpenter’s Tools",
+          "name": "Carpenter",
+          "perk": "Frame Sense: You can tell whether a structure is sound, and you raise a simple shelter for up to 6 in an hour."
+        },
+        {
+          "tool": "Cartographer’s Tools",
+          "name": "Cartographer",
+          "perk": "Map in the Head: You recall any map or place you have studied exactly, and you keep your bearings."
+        },
+        {
+          "tool": "Cobbler’s Tools",
+          "name": "Cobbler",
+          "perk": "Good Soles: Boots you tend let you and up to 4 companions ignore the first 4 extra hours of a forced march."
+        },
+        {
+          "tool": "Cook’s Utensils",
+          "name": "Cook",
+          "perk": "Camp Meal: Creatures who eat a meal you cook during a Short Rest can add 1d4 to one Hit Die roll that rest."
+        },
+        {
+          "tool": "Glassblower’s Tools",
+          "name": "Glassblower",
+          "perk": "Clear Eye: You judge glass, lenses and gems at a glance, and you blow a simple lens or vial in an hour."
+        },
+        {
+          "tool": "Jeweler’s Tools",
+          "name": "Jeweler",
+          "perk": "True Weight: You appraise gems and metals exactly and spot a fake on sight."
+        },
+        {
+          "tool": "Leatherworker’s Tools",
+          "name": "Leatherworker",
+          "perk": "Hide Sense: You name any hide and the creature it came from, and you patch armour or a bag in 10 minutes."
+        },
+        {
+          "tool": "Mason’s Tools",
+          "name": "Mason",
+          "perk": "Stone Sense: You tell by sound how a wall, arch or tunnel will hold, and you find its weak point."
+        },
+        {
+          "tool": "Painter’s Supplies",
+          "name": "Painter",
+          "perk": "Quick Likeness: You sketch anyone you have seen in 10 minutes well enough for others to know them, and you spot a forged painting."
+        },
+        {
+          "tool": "Potter’s Tools",
+          "name": "Potter",
+          "perk": "Fired Clay: You make jars, lamps and crude vessels in an hour, and you name the region and maker of any pot."
+        },
+        {
+          "tool": "Smith’s Tools",
+          "name": "Smith",
+          "perk": "Reforge: At a forge you restore a broken weapon or suit of armour in 1 hour."
+        },
+        {
+          "tool": "Tinker’s Tools",
+          "name": "Tinker",
+          "perk": "Rig: You build or fix a small mechanism, such as a lock, hinge or trap trigger, in 10 minutes."
+        },
+        {
+          "tool": "Weaver’s Tools",
+          "name": "Weaver",
+          "perk": "Fine Thread: You make or mend cloth and rope quickly, and you name the origin of any weave."
+        },
+        {
+          "tool": "Woodcarver’s Tools",
+          "name": "Woodcarver",
+          "perk": "Whittle: You carve a simple tool or token in 10 minutes, and you name any wood and its age."
+        }
+      ]
     },
     "Charlatan": {
       "book": "Avarenth",
@@ -1118,10 +1205,10 @@
         "Deception",
         "Intimidation"
       ],
-      "tool": "Forgery kit",
-      "equipment": "Forgery kit, costume, fine clothes, 15 gp; or 50 gp",
+      "tool": "Forgery Kit",
+      "equipment": "Choose A or B: (A) Forgery Kit, Costume, Fine Clothes, 15 GP; or (B) 50 GP",
       "about": "Every crowd has a pocket and you have always known which one to reach for. You learned early that a good story sells faster than a good sword, and you never lie when a half-truth will do.",
-      "feature": "Second Face: You have a second persona with papers, a history and a few people who will swear to it. Gaining the papers for a new identity takes a week and a modest bribe.",
+      "feature": "Rehearsed Lie: After a Long Rest, fix one cover story (a name, a trade, a patron). You have Advantage on Deception checks made to defend it, and you can drop it without anyone connecting it to you.",
       "own": true
     },
     "Entertainer": {
@@ -1133,10 +1220,10 @@
         "Performance",
         "Insight"
       ],
-      "tool": "One musical instrument",
-      "equipment": "Instrument, 2 costumes, mirror, perfume, traveler's clothes, 11 gp; or 50 gp",
+      "tool": "Choose one kind of Musical Instrument",
+      "equipment": "Choose A or B: (A) Musical Instrument (same as above), 2 Costumes, Mirror, Perfume, Traveler’s Clothes, 18 GP; or (B) 50 GP",
       "about": "You have sung, juggled and played for coins in taverns, markets and the courts of minor lords. A crowd is a living thing to you, and you can read its mood like a sailor reads the sky.",
-      "feature": "Open Stage: You can always find a place to perform, and you can usually find a bed and a meal from grateful hosts. Crowds will forgive your mistakes when you keep them entertained.",
+      "feature": "House Draw: A night’s performance in an inn or square earns your lodging and meals, and one rumour the DM picks from the crowd.",
       "own": true
     },
     "Farmer": {
@@ -1148,10 +1235,10 @@
         "Nature",
         "Athletics"
       ],
-      "tool": "Carpenter's tools",
-      "equipment": "Sickle, carpenter's tools, healer's kit, iron pot, shovel, traveler's clothes, 30 gp; or 50 gp",
+      "tool": "Carpenter’s Tools",
+      "equipment": "Choose A or B: (A) Sickle, Carpenter’s Tools, Healer’s Kit, Iron Pot, Shovel, Traveler’s Clothes, 30 GP; or (B) 50 GP",
       "about": "You grew up on the land, raising grain, animals or orchards and rising before the sun to tend them. You know weather, soil and the moods of livestock better than most folk know their own family.",
-      "feature": "Know the Land: Within a day’s walk of a farm or village you can find food and fresh water for a party of your size, and you always know the way home from the fields.",
+      "feature": "Strong Back: You count as one size larger for carrying, pushing and dragging, and you can wake before dawn and read the next day’s weather from the sky.",
       "own": true
     },
     "Guard": {
@@ -1163,10 +1250,10 @@
         "Intimidation",
         "Perception"
       ],
-      "tool": "One gaming set",
-      "equipment": "Spear, light crossbow and bolts, gaming set, hooded lantern, manacles, quiver, traveler's clothes, 12 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Spear, Light Crossbow, 20 Bolts, Gaming Set (same as above), Hooded Lantern, Manacles, Quiver, Traveler’s Clothes, 12 GP; or (B) 50 GP",
       "about": "You kept the peace at a gate, a warehouse or a lord’s door. You learned to spot trouble before it came through, and to tell a real threat from a drunk looking for a fight.",
-      "feature": "Watchful Eye: You can always tell when a stranger is lying about where they are going, and you notice when someone has been in a room you’re watching.",
+      "feature": "Post Sense: After 10 minutes watching a gate, building or room, the DM tells you its best way in and its weakest watch.",
       "own": true
     },
     "Guide": {
@@ -1178,10 +1265,10 @@
         "Survival",
         "Insight"
       ],
-      "tool": "Cartographer's tools",
-      "equipment": "Shortbow and arrows, cartographer's tools, bedroll, quiver, tent, traveler's clothes, 3 gp; or 50 gp",
+      "tool": "Cartographer’s Tools",
+      "equipment": "Choose A or B: (A) Shortbow, 20 Arrows, Cartographer’s Tools, Bedroll, Quiver, Tent, Traveler’s Clothes, 3 GP; or (B) 50 GP",
       "about": "You have led caravans, pilgrims and lost lords through wild country and crowded roads. You know which paths are safe and which are a trap, and where the inns that won’t rob you are.",
-      "feature": "Trail Lore: You can find safe paths, water and shelter through wilderness, and you know the roads, inns and ferries of the region well enough to make good time.",
+      "feature": "Pathfinder: Difficult terrain does not slow you or the allies following your lead, and you cannot become lost on foot.",
       "own": true
     },
     "Hermit": {
@@ -1193,10 +1280,10 @@
         "Medicine",
         "Arcana"
       ],
-      "tool": "Herbalism kit",
-      "equipment": "Quarterstaff, herbalism kit, bedroll, book of philosophy, lamp, oil, traveler's clothes, 16 gp; or 50 gp",
+      "tool": "Herbalism Kit",
+      "equipment": "Choose A or B: (A) Quarterstaff, Herbalism Kit, Bedroll, Book (philosophy), Lamp, Oil, Traveler’s Clothes, 16 GP; or (B) 50 GP",
       "about": "You lived alone for a long while, in a cave, a hut or a forgotten shrine, and came back to the world with new eyes. Silence taught you to listen, and you have learned to speak only when you have something to say.",
-      "feature": "Quiet Revelation: You have made a private discovery, a rite, a herb or a truth that the world has forgotten. Work it out with the DM, and it will open one door that no one else can.",
+      "feature": "Alone With It: Once per adventure, ask the DM one question about the history of a place where you have spent a night alone. You get a true answer if the place has one.",
       "own": true
     },
     "Merchant": {
@@ -1208,10 +1295,10 @@
         "Persuasion",
         "Perception"
       ],
-      "tool": "Navigator's tools",
-      "equipment": "Navigator's tools, 2 pouches, traveler's clothes, 22 gp; or 50 gp",
+      "tool": "Navigator’s Tools",
+      "equipment": "Choose A or B: (A) Navigator’s Tools, 2 Pouches, Traveler’s Clothes, 22 GP; or (B) 50 GP",
       "about": "You bought and sold goods across the isles, arguing over prices from the docks to the great markets. You know what things are worth, and you know how to make a deal stick.",
-      "feature": "Contacts in the Trade: You know merchants, ferry captains and warehouse keepers in most ports. They will give you news, a fair price and a bit of credit when you’re honest with them.",
+      "feature": "Keen Appraisal: You know the true worth of any mundane or minor item at a glance, and you buy goods for 10 percent less.",
       "own": true
     },
     "Noble": {
@@ -1223,10 +1310,10 @@
         "History",
         "Intimidation"
       ],
-      "tool": "One gaming set",
-      "equipment": "Gaming set, fine clothes, perfume, 29 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Gaming Set (same as above), Fine Clothes, Perfume, 29 GP; or (B) 50 GP",
       "about": "You were born into a family of rank and privilege, and you learned early that a name opens more doors than a sword. You are used to having people listen when you speak, and to having them expect something in return.",
-      "feature": "Name and Standing: People of rank and their households treat you as one of their own. You can get a hearing with minor lords and their stewards, and you can find lodgings in most noble houses.",
+      "feature": "Well-Born Voice: Once per Long Rest, add your Proficiency Bonus to a Charisma check made to command, impress or reassure someone of lower station.",
       "own": true
     },
     "Sailor": {
@@ -1238,10 +1325,10 @@
         "Acrobatics",
         "Survival"
       ],
-      "tool": "Navigator's tools",
-      "equipment": "Dagger, navigator's tools, rope, traveler's clothes, 20 gp; or 50 gp",
+      "tool": "Navigator’s Tools",
+      "equipment": "Choose A or B: (A) Dagger, Navigator’s Tools, Rope, Traveler’s Clothes, 20 GP; or (B) 50 GP",
       "about": "You worked the decks of trading ships and fishing boats, hauling rope and reading the sky. You know the sea’s temper, and you still walk a little unsteady on dry land.",
-      "feature": "Ship’s Passage: You can usually find passage on a ship headed where you need to go, and sailors will share news and rumours with you. You know the basics of rigging, knots and reading the weather at sea.",
+      "feature": "Sea Legs: You have Advantage on Strength (Athletics) and Dexterity (Acrobatics) checks made on ships, rigging, docks and slick footing, and you can hold your breath twice as long.",
       "own": true
     },
     "Scribe": {
@@ -1253,10 +1340,10 @@
         "History",
         "Investigation"
       ],
-      "tool": "Calligrapher's supplies",
-      "equipment": "Calligrapher's supplies, fine clothes, lamp, oil, parchment, 23 gp; or 50 gp",
+      "tool": "Calligrapher’s Supplies",
+      "equipment": "Choose A or B: (A) Calligrapher’s Supplies, Fine Clothes, Lamp, Oil, Parchment (12 sheets), 23 GP; or (B) 50 GP",
       "about": "You copied books, wrote letters and kept accounts for people who could not do it themselves. Your hand is clean, your memory for names is sharp, and you know more secrets than anyone who ever paid you.",
-      "feature": "Reference Library: You have access to a library, archive or private collection of records in the places you know. Ask the DM what you can find in a day of searching, and you will usually find it.",
+      "feature": "Fair Copy: You copy any document in half the time, in a hand that passes for the original unless it is closely examined, and archives let you read their common records.",
       "own": true
     },
     "Wayfarer": {
@@ -1268,10 +1355,10 @@
         "Stealth",
         "Survival"
       ],
-      "tool": "Thieves' tools",
-      "equipment": "2 daggers, thieves' tools, gaming set, bedroll, 2 pouches, traveler's clothes, 16 gp; or 50 gp",
+      "tool": "Thieves’ Tools",
+      "equipment": "Choose A or B: (A) 2 Daggers, Thieves’ Tools, Gaming Set (same as above), Bedroll, 2 Pouches, Traveler’s Clothes, 16 GP; or (B) 50 GP",
       "about": "You have travelled the roads for years with no fixed home, working for food and a bed in every town along the way. You know how to make yourself useful and how to leave before you wear out your welcome.",
-      "feature": "Road Friends: You have friends in many towns along the roads. A few days of hospitality, a warm bed and a meal are easy to find, and travellers pass news to you without being asked.",
+      "feature": "Road Debt: Once per settlement, someone you once helped on the road gives you a bed, a meal and a rumour.",
       "own": true
     },
     "Local Hero": {
@@ -1283,10 +1370,10 @@
         "Animal Handling",
         "Insight"
       ],
-      "tool": "One artisan's tool, vehicles (land)",
-      "equipment": "Artisan's tool, shovel, iron pot, common clothes, 10 gp; or 50 gp",
+      "tool": "Choose one kind of Artisan’s Tools",
+      "equipment": "Choose A or B: (A) Artisan’s Tools (same as above), Shovel, Iron Pot, Traveler’s Clothes, 29 GP; or (B) 50 GP",
       "about": "You are remembered in a village for something you did: a flood held back, a lord defied, a child saved from the wolves. The people there still ask after you when you come back, and they expect you to act like the hero they told stories about.",
-      "feature": "Open Doors: Common folk will shelter you and share their food. They will hide you from the law if you have done a good turn for them, and they will carry word of you across the countryside.",
+      "feature": "Village Song: Common folk in a settlement may know your deed. Once per settlement, one of them will guide you, hide you for a night, or carry a message to the next village.",
       "own": true
     },
     "Guild Artisan": {
@@ -1298,11 +1385,98 @@
         "Insight",
         "History"
       ],
-      "tool": "One artisan's tool",
-      "equipment": "Artisan's tool, letter of introduction from your guild, traveler's clothes, 15 gp; or 50 gp",
+      "tool": "Choose one kind of Artisan’s Tools",
+      "equipment": "Choose A or B: (A) Artisan’s Tools (same as above), Letter of Introduction from Your Guild, Traveler’s Clothes, 32 GP; or (B) 50 GP",
       "about": "You belong to a craft guild in one of the cities, with dues paid, rules kept and a reputation to protect. Your guild is your family and your insurance, and it expects you to hold its name with pride.",
-      "feature": "Trade Card: Your guild houses and feeds you when you are in its city, speaks for you before the town council and lends you coin against your work, for dues you must keep paying.",
-      "own": true
+      "feature": "Guild Letter: You carry a sealed letter from your guild. At any chapter it sells what you craft at full list price instead of half, houses you for a night, and lends you a workbench.",
+      "own": true,
+      "trades": [
+        {
+          "tool": "Alchemist’s Supplies",
+          "name": "Alchemist",
+          "perk": "Nose for Brews: You can identify a potion or poison by smell and taste."
+        },
+        {
+          "tool": "Brewer’s Supplies",
+          "name": "Brewer",
+          "perk": "Good Round: A drink you brewed loosens tongues: Advantage on Persuasion with anyone who shares it with you."
+        },
+        {
+          "tool": "Calligrapher’s Supplies",
+          "name": "Calligrapher",
+          "perk": "Steady Hand: You can spot forged writing and copy any script you have seen."
+        },
+        {
+          "tool": "Carpenter’s Tools",
+          "name": "Carpenter",
+          "perk": "Frame Sense: You can tell whether a structure is sound, and you raise a simple shelter for up to 6 in an hour."
+        },
+        {
+          "tool": "Cartographer’s Tools",
+          "name": "Cartographer",
+          "perk": "Map in the Head: You recall any map or place you have studied exactly, and you keep your bearings."
+        },
+        {
+          "tool": "Cobbler’s Tools",
+          "name": "Cobbler",
+          "perk": "Good Soles: Boots you tend let you and up to 4 companions ignore the first 4 extra hours of a forced march."
+        },
+        {
+          "tool": "Cook’s Utensils",
+          "name": "Cook",
+          "perk": "Camp Meal: Creatures who eat a meal you cook during a Short Rest can add 1d4 to one Hit Die roll that rest."
+        },
+        {
+          "tool": "Glassblower’s Tools",
+          "name": "Glassblower",
+          "perk": "Clear Eye: You judge glass, lenses and gems at a glance, and you blow a simple lens or vial in an hour."
+        },
+        {
+          "tool": "Jeweler’s Tools",
+          "name": "Jeweler",
+          "perk": "True Weight: You appraise gems and metals exactly and spot a fake on sight."
+        },
+        {
+          "tool": "Leatherworker’s Tools",
+          "name": "Leatherworker",
+          "perk": "Hide Sense: You name any hide and the creature it came from, and you patch armour or a bag in 10 minutes."
+        },
+        {
+          "tool": "Mason’s Tools",
+          "name": "Mason",
+          "perk": "Stone Sense: You tell by sound how a wall, arch or tunnel will hold, and you find its weak point."
+        },
+        {
+          "tool": "Painter’s Supplies",
+          "name": "Painter",
+          "perk": "Quick Likeness: You sketch anyone you have seen in 10 minutes well enough for others to know them, and you spot a forged painting."
+        },
+        {
+          "tool": "Potter’s Tools",
+          "name": "Potter",
+          "perk": "Fired Clay: You make jars, lamps and crude vessels in an hour, and you name the region and maker of any pot."
+        },
+        {
+          "tool": "Smith’s Tools",
+          "name": "Smith",
+          "perk": "Reforge: At a forge you restore a broken weapon or suit of armour in 1 hour."
+        },
+        {
+          "tool": "Tinker’s Tools",
+          "name": "Tinker",
+          "perk": "Rig: You build or fix a small mechanism, such as a lock, hinge or trap trigger, in 10 minutes."
+        },
+        {
+          "tool": "Weaver’s Tools",
+          "name": "Weaver",
+          "perk": "Fine Thread: You make or mend cloth and rope quickly, and you name the origin of any weave."
+        },
+        {
+          "tool": "Woodcarver’s Tools",
+          "name": "Woodcarver",
+          "perk": "Whittle: You carve a simple tool or token in 10 minutes, and you name any wood and its age."
+        }
+      ]
     },
     "Wildlander": {
       "book": "Avarenth",
@@ -1313,10 +1487,10 @@
         "Athletics",
         "Animal Handling"
       ],
-      "tool": "One musical instrument",
-      "equipment": "Staff, hunting trap, animal trophy, traveler's clothes, 10 gp; or 50 gp",
+      "tool": "Choose one kind of Musical Instrument",
+      "equipment": "Choose A or B: (A) Quarterstaff, Hunting Trap, Animal Trophy, Bedroll, 5 days of Rations, Waterskin, Traveler’s Clothes, 38 GP; or (B) 50 GP",
       "about": "You were raised far from the towns, in the marshes, hills or open country where survival is a daily job. You trust your own judgement more than laws and lords, and you never feel more at home than under the open sky.",
-      "feature": "Mapmind: You can always find food and fresh water in the wild for yourself and up to five companions, and you always know the direction of the nearest settlement. Your memory for the land around you is excellent.",
+      "feature": "Wild Kin: Beasts with an Intelligence of 2 or less do not attack you unless provoked or starving, and you can calm a frightened or wounded beast without a check.",
       "own": true
     },
     "City Dreg": {
@@ -1328,10 +1502,10 @@
         "Sleight of Hand",
         "Perception"
       ],
-      "tool": "Disguise kit, thieves' tools",
-      "equipment": "Small knife, city map, pet mouse, token of your parents, common clothes, 10 gp; or 50 gp",
+      "tool": "Disguise Kit",
+      "equipment": "Choose A or B: (A) Dagger, Map, Disguise Kit, Token of Your Parents, Traveler’s Clothes, 20 GP; or (B) 50 GP",
       "about": "You grew up in the streets, sleeping in doorways and stealing bread before you could read. The city taught you to watch, to run and to keep your secrets close, and you still find yourself counting exits in any room.",
-      "feature": "Back Ways: You know the back ways, the sewers, the rooftops and the places the watch doesn’t go in your home city. You can find a safe place to hide and someone who will sell you information for a few coins.",
+      "feature": "Gutter Network: Street children and beggars in any city pass you news for a coin and will hide you for a night.",
       "own": true
     },
     "City Watch": {
@@ -1343,10 +1517,10 @@
         "Perception",
         "Athletics"
       ],
-      "tool": "None (two languages)",
-      "equipment": "Uniform, horn, manacles, 10 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Light Crossbow, 20 Bolts, Spear, Manacles, Signal Whistle, Watch Uniform, Gaming Set (same as above), 15 GP; or (B) 50 GP",
       "about": "You patrolled the streets of a walled city, keeping the peace, chasing thieves and dragging drunks home. You know the town better than most people who live in it, and you know the quiet deals that keep it running.",
-      "feature": "Watch Connections: You know the other watchmen, the sergeants and the gatekeepers of your city. They will help you with a favour, and they will look the other way when you have a good reason.",
+      "feature": "Beat Knowledge: In a walled city you can tell the DM which gate, patrol route or watch house suits what you need, and the watch there treats you as a colleague.",
       "own": true
     },
     "Clan Crafter": {
@@ -1358,11 +1532,98 @@
         "History",
         "Arcana"
       ],
-      "tool": "One artisan's tool",
-      "equipment": "Artisan's tool, maker's mark chisel, traveler's clothes, 5 gp and a gem; or 50 gp",
+      "tool": "Choose one kind of Artisan’s Tools",
+      "equipment": "Choose A or B: (A) Artisan’s Tools (same as above), Maker’s Mark Chisel, Pouch, Traveler’s Clothes, 31 GP; or (B) 50 GP",
       "about": "You were raised in a clan of crafters, where every child learns a trade and every trade is handed down through blood and tradition. The clan’s workshops are your first home, and their name is the only one that opens the right doors.",
-      "feature": "Clan Commission: Your clan takes commissions from lords and merchants, and it will house you and put you to work when you need a place. Its workshops and tools are open to you when you have earned your keep.",
-      "own": true
+      "feature": "Maker’s Mark: Anything you craft carries your clan’s mark. Folk who know it pay 10 percent more, and a marked weapon or armour cannot be broken by nonmagical means.",
+      "own": true,
+      "trades": [
+        {
+          "tool": "Alchemist’s Supplies",
+          "name": "Alchemist",
+          "perk": "Nose for Brews: You can identify a potion or poison by smell and taste."
+        },
+        {
+          "tool": "Brewer’s Supplies",
+          "name": "Brewer",
+          "perk": "Good Round: A drink you brewed loosens tongues: Advantage on Persuasion with anyone who shares it with you."
+        },
+        {
+          "tool": "Calligrapher’s Supplies",
+          "name": "Calligrapher",
+          "perk": "Steady Hand: You can spot forged writing and copy any script you have seen."
+        },
+        {
+          "tool": "Carpenter’s Tools",
+          "name": "Carpenter",
+          "perk": "Frame Sense: You can tell whether a structure is sound, and you raise a simple shelter for up to 6 in an hour."
+        },
+        {
+          "tool": "Cartographer’s Tools",
+          "name": "Cartographer",
+          "perk": "Map in the Head: You recall any map or place you have studied exactly, and you keep your bearings."
+        },
+        {
+          "tool": "Cobbler’s Tools",
+          "name": "Cobbler",
+          "perk": "Good Soles: Boots you tend let you and up to 4 companions ignore the first 4 extra hours of a forced march."
+        },
+        {
+          "tool": "Cook’s Utensils",
+          "name": "Cook",
+          "perk": "Camp Meal: Creatures who eat a meal you cook during a Short Rest can add 1d4 to one Hit Die roll that rest."
+        },
+        {
+          "tool": "Glassblower’s Tools",
+          "name": "Glassblower",
+          "perk": "Clear Eye: You judge glass, lenses and gems at a glance, and you blow a simple lens or vial in an hour."
+        },
+        {
+          "tool": "Jeweler’s Tools",
+          "name": "Jeweler",
+          "perk": "True Weight: You appraise gems and metals exactly and spot a fake on sight."
+        },
+        {
+          "tool": "Leatherworker’s Tools",
+          "name": "Leatherworker",
+          "perk": "Hide Sense: You name any hide and the creature it came from, and you patch armour or a bag in 10 minutes."
+        },
+        {
+          "tool": "Mason’s Tools",
+          "name": "Mason",
+          "perk": "Stone Sense: You tell by sound how a wall, arch or tunnel will hold, and you find its weak point."
+        },
+        {
+          "tool": "Painter’s Supplies",
+          "name": "Painter",
+          "perk": "Quick Likeness: You sketch anyone you have seen in 10 minutes well enough for others to know them, and you spot a forged painting."
+        },
+        {
+          "tool": "Potter’s Tools",
+          "name": "Potter",
+          "perk": "Fired Clay: You make jars, lamps and crude vessels in an hour, and you name the region and maker of any pot."
+        },
+        {
+          "tool": "Smith’s Tools",
+          "name": "Smith",
+          "perk": "Reforge: At a forge you restore a broken weapon or suit of armour in 1 hour."
+        },
+        {
+          "tool": "Tinker’s Tools",
+          "name": "Tinker",
+          "perk": "Rig: You build or fix a small mechanism, such as a lock, hinge or trap trigger, in 10 minutes."
+        },
+        {
+          "tool": "Weaver’s Tools",
+          "name": "Weaver",
+          "perk": "Fine Thread: You make or mend cloth and rope quickly, and you name the origin of any weave."
+        },
+        {
+          "tool": "Woodcarver’s Tools",
+          "name": "Woodcarver",
+          "perk": "Whittle: You carve a simple tool or token in 10 minutes, and you name any wood and its age."
+        }
+      ]
     },
     "Arrogant Scholar": {
       "book": "Avarenth",
@@ -1373,10 +1634,10 @@
         "Arcana",
         "Religion"
       ],
-      "tool": "None (two languages)",
-      "equipment": "Scholar's robes, writing kit, borrowed book, 10 gp; or 50 gp",
+      "tool": "Calligrapher’s Supplies",
+      "equipment": "Choose A or B: (A) Quarterstaff, Calligrapher’s Supplies, Book (history), Parchment (8 sheets), Robe, 13 GP; or (B) 50 GP",
       "about": "You spent your youth in a library, a monastery or a university, reading everything you could reach and arguing with the masters who taught you. You know the old texts well, and you are shy when the world does not come to you through a book.",
-      "feature": "Library Access: You can use the libraries and archives of your former house, and its masters will answer your letters. Ask the DM what you can learn there in a week, and you will often find the answer.",
+      "feature": "Well, Actually: Once per Short Rest, when you see a creature, ask the DM what it is resistant, vulnerable and immune to. You say it aloud, and everyone nearby is annoyed.",
       "own": true
     },
     "Courtier": {
@@ -1388,10 +1649,10 @@
         "Insight",
         "Deception"
       ],
-      "tool": "None (two languages)",
-      "equipment": "Fine clothes, 5 gp; or 50 gp",
+      "tool": "Choose one kind of Musical Instrument",
+      "equipment": "Choose A or B: (A) Musical Instrument (same as above), Fine Clothes, Perfume, Pouch, 20 GP; or (B) 50 GP",
       "about": "You lived in the halls of a lord or king, learning the rules of who speaks, who listens and who smiles while they plot. You can carry a conversation through three rooms of enemies, and you still keep a list of favours owed.",
-      "feature": "Court Etiquette: You know the proper manners and titles of the great houses, and you can get a hearing with courtiers and stewards. Your presence at a feast or a formal dinner is always noticed, and rarely questioned.",
+      "feature": "Read the Room: After 1 minute of conversation with someone, the DM tells you one thing they want and one thing they fear. Once per Long Rest.",
       "own": true
     },
     "Faction Agent": {
@@ -1403,10 +1664,10 @@
         "Investigation",
         "Persuasion"
       ],
-      "tool": "None (two languages)",
-      "equipment": "Faction badge, cipher book, common clothes, 15 gp; or 50 gp",
+      "tool": "Disguise Kit",
+      "equipment": "Choose A or B: (A) Disguise Kit, Faction Badge, Ink, Paper (5 sheets), Traveler’s Clothes, 11 GP; or (B) 50 GP",
       "about": "You work for one of the factions or houses that run the isles, carrying messages, making deals and finding the things their enemies would rather keep hidden. You are loyal to your house, but you are never sure which of your fellows will sell you out.",
-      "feature": "Faction Ties: You have a contact in your faction’s network in most major towns. They can pass a message, arrange a meeting or give you a safe house, provided you keep the house’s interests first.",
+      "feature": "Courier Call: You and allies who learn your cipher can write messages no one else can read. Once per Long Rest, your faction sends a courier within a day to carry a message or bring a small item (worth up to 50 GP).",
       "own": true
     },
     "Stranger from Afar": {
@@ -1418,10 +1679,10 @@
         "Survival",
         "Perception"
       ],
-      "tool": "One instrument or gaming set",
-      "equipment": "Traveler's clothes, instrument or gaming set, poorly drawn maps from home, 5 gp jewelry, 5 gp; or 50 gp",
+      "tool": "Choose one kind of Musical Instrument",
+      "equipment": "Choose A or B: (A) Musical Instrument (same as above), 2 Maps of Your Homeland, Jewellery from Home, Backpack, Bedroll, 5 days of Rations, Waterskin, Traveler’s Clothes, 25 GP; or (B) 50 GP",
       "about": "You come from across the sea, from a land far beyond the empire, and you have the marks of that journey in your speech and your habits. The isles see you as a curiosity, but your home holds memories and knowledge that few here have seen.",
-      "feature": "Far Lands: You know the customs, languages and history of your homeland, and you can speak of it with a little authority. People from there, or who have heard of it, will often help you.",
+      "feature": "Foreign Eye: You notice what locals take for granted, and you have Advantage on Insight and Investigation checks about local customs, hidden rules and secrets.",
       "own": true
     },
     "Inheritor": {
@@ -1433,10 +1694,10 @@
         "History",
         "Persuasion"
       ],
-      "tool": "One gaming set or instrument",
-      "equipment": "Your inheritance (an item, document or secret), traveler's clothes, tool, 15 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Gaming Set (same as above), Book (family history), Fine Clothes, Pouch, 9 GP; or (B) 50 GP",
       "about": "You were left a legacy you did not ask for: a house, a debt, a grudge or an oath passed down from someone who died too soon. You are still learning what it means to be the one who carries it.",
-      "feature": "Inherited Claim: You hold a claim to a house, a title, a plot of land or a debt owed. The DM decides what it’s worth and who is willing to fight you for it.",
+      "feature": "Heirloom: You carry a family heirloom with a minor magic, chosen with the DM: it casts Light, Mending or Prestidigitation at will, and once per adventure it opens a door in the story.",
       "own": true
     },
     "Knight of an Order": {
@@ -1448,10 +1709,10 @@
         "Religion",
         "Insight"
       ],
-      "tool": "One gaming set or instrument",
-      "equipment": "Traveler's clothes, signet or banner, 10 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Gaming Set (same as above), Signet or Banner, Holy Symbol (Emblem), Fine Clothes, 24 GP; or (B) 50 GP",
       "about": "You were trained in one of the knightly orders, an oath sworn before a shrine and kept through every hardship. The order gave you armour, a horse and a purpose, and it expects you to remember both.",
-      "feature": "Order’s Shelter: Your order will house and feed you in its keeps and chapter-houses, and its knights will speak for you at court. Asking for their help costs you the order’s goodwill, so do it sparingly.",
+      "feature": "Chapter Shelter: Your order houses and feeds you in its keeps, and once per season its knights will vouch for you at court.",
       "own": true
     },
     "Mercenary Veteran": {
@@ -1463,10 +1724,10 @@
         "Athletics",
         "Survival"
       ],
-      "tool": "One gaming set, vehicles (land)",
-      "equipment": "Uniform of your company, insignia, gaming set, common clothes, 10 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Shortsword, Light Crossbow, 20 Bolts, Gaming Set (same as above), Company Insignia, Traveler’s Clothes, 10 GP; or (B) 50 GP",
       "about": "You have fought for coin in too many wars and sold your sword to too many banners. You know the price of a life and the value of a good contract, and you keep old friends from the company you cannot easily forget.",
-      "feature": "Company Ties: You have former comrades in mercenary companies across the isles. They can find you work, a fair price for a fight and news of who is hiring. Your old company may still want you back.",
+      "feature": "Old Contract: Once per Long Rest in a settlement, you can hire a Guard (stat block) for a day at standard rates. They will not walk into obvious death.",
       "own": true
     },
     "Bounty Hunter": {
@@ -1478,10 +1739,10 @@
         "Stealth",
         "Insight"
       ],
-      "tool": "Two of gaming set, instrument, thieves' tools",
-      "equipment": "Clothes for your work, 20 gp; or 50 gp",
+      "tool": "Thieves’ Tools",
+      "equipment": "Choose A or B: (A) Thieves’ Tools, 2 Manacles, Net, Rope, Dagger, Traveler’s Clothes, 15 GP; or (B) 50 GP",
       "about": "You hunt people for money in the cities, tracking debtors, deserters and fugitives who thought they had got away. You know the law well enough to bend it, and you have learned that a live prisoner pays better than a dead one.",
-      "feature": "Bounty Contacts: You know the bounty boards, the jailers and the watch sergeants of the big cities. They will tell you who is wanted and where, and they will pay you for finding them.",
+      "feature": "Mark Your Quarry: As a Bonus Action, mark a creature you can see. For 24 hours you know its direction and distance, and you have Advantage on Survival checks to track it. Once per Short Rest.",
       "own": true
     },
     "Haunted": {
@@ -1493,10 +1754,10 @@
         "Religion",
         "Medicine"
       ],
-      "tool": "None (two exotic languages)",
-      "equipment": "Monster hunter's pack, common clothes, 1 sp; or 50 gp",
+      "tool": "Herbalism Kit",
+      "equipment": "Choose A or B: (A) Herbalism Kit, Holy Water, Holy Symbol (Amulet), 5 Torches, Traveler’s Clothes, 13 GP; or (B) 50 GP",
       "about": "Something terrible happened to you once, in the dark where you did not expect it, and it has never fully let go. You keep the memory close, and you have learned to read the signs of the unnatural before others can.",
-      "feature": "Dark Insight: You can tell when a place or a person is touched by death, madness or the fiendish, and you can recall the rites or the warnings that the old texts give against them. The DM decides exactly what you saw.",
+      "feature": "Dread Sense: When a place or person within 30 feet is touched by death, madness or the fiendish, you feel it as a chill. The DM tells you which.",
       "own": true
     },
     "Investigator": {
@@ -1508,10 +1769,10 @@
         "Insight",
         "Perception"
       ],
-      "tool": "Disguise kit, thieves' tools",
-      "equipment": "Magnifying glass, evidence from a case, common clothes, 10 gp; or 50 gp",
+      "tool": "Disguise Kit",
+      "equipment": "Choose A or B: (A) Disguise Kit, Bullseye Lantern, Paper (5 sheets), Ink Pen, Traveler’s Clothes, 12 GP; or (B) 50 GP",
       "about": "You solve crimes for a living, for a city, a lord or a private client who cannot trust the watch. You are patient, observant and suspicious of every story, and you have learned to find the truth in the gaps between what people say.",
-      "feature": "Trusted Eye: You can call on a contact in the watch, the courts or a city’s records office to help you dig through a case. Their help is quick, but it can only go so far before someone asks questions.",
+      "feature": "Scene Read: After 1 minute examining a scene, ask the DM one question about what happened there or what has been moved. You get a true answer.",
       "own": true
     },
     "Pirate": {
@@ -1523,10 +1784,10 @@
         "Athletics",
         "Acrobatics"
       ],
-      "tool": "Navigator's tools, vehicles (water)",
-      "equipment": "Belaying pin (club), silk rope, lucky charm, common clothes, 10 gp; or 50 gp",
+      "tool": "Navigator’s Tools",
+      "equipment": "Choose A or B: (A) Navigator’s Tools, Club (belaying pin), Dagger, Rope, Lucky Charm, Traveler’s Clothes, 19 GP; or (B) 50 GP",
       "about": "You sailed under a black flag or a letter of marque, taking ships and sacking ports for gold and glory. You know the ocean’s dark corners and the harbours that do not ask questions, and you still wonder whether the sea will ever forgive you.",
-      "feature": "Pirate Haven: You can find a safe harbour or a fence for stolen goods in most port towns. The crews of other pirate ships will shelter you and share news of the sea, if you pay your share.",
+      "feature": "Black Flag Harbour: In most port towns you can find a hidden harbour or a fence, and pirate crews will shelter you and trade rumours if you pay your share.",
       "own": true
     },
     "Spy": {
@@ -1538,10 +1799,10 @@
         "Deception",
         "Investigation"
       ],
-      "tool": "Gaming set, thieves' tools",
-      "equipment": "Crowbar, dark clothes with a hood, 15 gp; or 50 gp",
+      "tool": "Thieves’ Tools",
+      "equipment": "Choose A or B: (A) Thieves’ Tools, Crowbar, Dagger, Gaming Set (same as above), Traveler’s Clothes, 18 GP; or (B) 50 GP",
       "about": "You worked in the shadows for a house, a kingdom or a guild, gathering secrets and passing them to the people who paid for them. You are good at being unseen, and you have learned to trust no one who has not earned it.",
-      "feature": "Dead Drop: You have a network of dead drops and safe contacts in the cities you know. You can pass a message or leave a package for a trusted contact in a day, provided no one is watching.",
+      "feature": "Lip Reader: You can read lips in any language you know, and you have Advantage on checks to overhear a conversation or hide while listening. Once per Long Rest you can mimic a voice you have heard for 1 minute.",
       "own": true
     },
     "Gladiator": {
@@ -1553,10 +1814,10 @@
         "Athletics",
         "Intimidation"
       ],
-      "tool": "Disguise kit, one unusual weapon",
-      "equipment": "An unusual weapon (net, trident), costume, admirer's favor, 15 gp; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Disguise Kit, Trident, Net, Costume, Admirer’s Favour, 14 GP; or (B) 50 GP",
       "about": "You fought in the arenas for crowds and purses, a name in the sand and a bloody rope tied to your wrist. The fans remember your fights, and so do the men you beat, and both have their own use.",
-      "feature": "Crowd Favourite: Your name is known in the arenas and taverns where you fought. People will buy you a drink, give you work and often forgive you a little trouble, as long as you keep giving them a good show.",
+      "feature": "Arena Name: Wherever fights are held, the ring master will pay you to fight or train, and the crowd will sometimes forgive a brawl.",
       "own": true
     },
     "Knight": {
@@ -1568,10 +1829,10 @@
         "Athletics",
         "History"
       ],
-      "tool": "One gaming set",
-      "equipment": "Fine clothes, signet ring, scroll of pedigree, 25 gp, and three retainers; or 50 gp",
+      "tool": "Choose one kind of Gaming Set",
+      "equipment": "Choose A or B: (A) Gaming Set (same as above), Fine Clothes, Signet Ring, Scroll of Pedigree, 28 GP; or (B) 50 GP",
       "about": "You were raised as a knight of a lord, sworn to a banner and an oath of service. You learned to ride, to fight and to speak to nobles, and you still keep the oath when it is hard to keep.",
-      "feature": "Knightly Sponsor: A lord of the realm will vouch for you at court, and his household will house you when you travel in his lands. Asking for more than a meal and a bed will cost you his goodwill.",
+      "feature": "Squire and Colours: A squire (commoner) follows you, carries your gear and, once per Long Rest, hands you a weapon, shield or item without costing your action. A lord vouches for you at court.",
       "own": true
     },
     "Shipwright": {
@@ -1583,10 +1844,10 @@
         "Athletics",
         "Investigation"
       ],
-      "tool": "Carpenter's tools, vehicles (water)",
-      "equipment": "Carpenter's tools, common clothes, quill and ink, 10 gp; or 50 gp",
+      "tool": "Carpenter’s Tools",
+      "equipment": "Choose A or B: (A) Carpenter’s Tools, Light Hammer, Rope, Block and Tackle, Hooded Lantern, Traveler’s Clothes, 31 GP; or (B) 50 GP",
       "about": "You built and repaired ships in a yard along the coast, shaping timber and tar into things that float. You know how a hull fails and how to make it last, and you judge a crew by the state of its boat.",
-      "feature": "Yard Knowledge: You can find work repairing or building boats in most coastal towns, and you know the shipwrights who will lend you a dock or a few tools. You can judge a vessel’s condition at a glance.",
+      "feature": "Yard Knowledge: Any yard lends you a dock and tools, and you can judge a vessel’s condition at a glance.",
       "own": true
     },
     "Smuggler": {
@@ -1598,10 +1859,10 @@
         "Stealth",
         "Deception"
       ],
-      "tool": "Vehicles (water)",
-      "equipment": "Fancy leather vest, common clothes, 15 gp; or 50 gp",
+      "tool": "Navigator’s Tools",
+      "equipment": "Choose A or B: (A) Navigator’s Tools, Rope, Hooded Lantern, Backpack, Pouch, Traveler’s Clothes, 15 GP; or (B) 50 GP",
       "about": "You moved goods past the customs houses and the watch, running cargo in the dark on fast boats and hidden carts. You know the coves, the tides and the men who will look the other way for the right price.",
-      "feature": "Smuggler’s Route: You know hidden coves, back roads and safe houses along a stretch of coast or border. A night of smuggling can usually be arranged for a small fee, and the men who run it will keep your secrets.",
+      "feature": "False Bottom: You can hide a Small item on your person or in cargo so that searches miss it unless the searcher beats a DC of 8 plus your Proficiency Bonus plus your Wisdom modifier.",
       "own": true
     },
     "Archaeologist": {
@@ -1613,10 +1874,10 @@
         "History",
         "Medicine"
       ],
-      "tool": "Cartographer's or navigator's tools",
-      "equipment": "Map or scroll case, lantern, miner's pick, shovel, two-person tent, trinket from a dig, 25 gp; or 50 gp",
+      "tool": "Cartographer’s Tools",
+      "equipment": "Choose A or B: (A) Cartographer’s Tools, Map or Scroll Case, Hooded Lantern, Shovel, Tent, Miner’s Pick, Trinket from a Dig, 22 GP; or (B) 50 GP",
       "about": "You dug through ruins, tombs and forgotten cities, looking for the lost things of the old world. You are careful with what you find, and you have learned that some of it is better left buried.",
-      "feature": "Tomb Lore: You can identify the age and purpose of an old ruin or tomb from a glance at its stonework. You know how to find safe paths through ruins, and the scholars who value old finds will pay for what you bring back.",
+      "feature": "Delver’s Instinct: You have Advantage on Investigation checks to find traps and hidden doors, and on saving throws against traps.",
       "own": true
     },
     "Fey Stray": {
@@ -1628,10 +1889,10 @@
         "Nature",
         "Perception"
       ],
-      "tool": "One musical instrument",
-      "equipment": "Instrument, three trinkets from the fey realm, traveler's clothes, 8 gp; or 50 gp",
+      "tool": "Choose one kind of Musical Instrument",
+      "equipment": "Choose A or B: (A) Musical Instrument (same as above), 3 Trinkets from the Fey Realm, Sprig of Mistletoe, Bedroll, 5 days of Rations, Waterskin, Traveler’s Clothes, 30 GP; or (B) 50 GP",
       "about": "You were taken into the fey woods as a child, or walked into them once and came out changed. You remember the world on the other side in dreams, and you still notice when the fey are watching.",
-      "feature": "Fey Notice: You can tell when a fey creature is near, or when a bargain has been struck in the woods. You can speak a few words of Sylvan and find a fey creature willing to hear you, once a season.",
+      "feature": "Fey Notice: You can tell when a fey creature is near or a bargain was struck in the woods, and once a season you can find a fey creature willing to hear you.",
       "own": true
     },
     "Dishonored Orc": {
@@ -1643,10 +1904,10 @@
         "Intimidation",
         "Survival"
       ],
-      "tool": "Smith's tools",
-      "equipment": "Smith's tools, a broken clan token, traveler's clothes, 15 gp; or 50 gp",
+      "tool": "Smith’s Tools",
+      "equipment": "Choose A or B: (A) Smith’s Tools, Handaxe, Broken Clan Token, Traveler’s Clothes, 23 GP; or (B) 50 GP",
       "about": "You were blooded once, and then you weren't. Whatever you did, or were said to have done, cost you your clan's name and your tusks, and every orc who sees the filed stumps knows it. You learned to hunt alone, mend your own gear and keep walking, and you are still deciding whether to prove them wrong or stop caring.",
-      "feature": "Marked: Any orc who sees your filed tusks knows you were unblooded and will not treat you as clan, so clan hospitality is closed to you. In return, you owe no clan anything, and an orc who respects a fight will still hear you out in a challenge.",
+      "feature": "Marked: Any orc who sees your filed tusks knows you were unblooded, so clan hospitality is closed to you. In return you owe no clan anything, and an orc who respects a fight will still hear you out in a challenge.",
       "own": true
     }
   },

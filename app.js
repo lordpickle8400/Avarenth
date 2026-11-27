@@ -1211,7 +1211,7 @@
 
   function defaultSheet() {
     return {
-      species: '', lineage: '', cls: '', subclass: '', background: '', patron: '', level: 1,
+      species: '', lineage: '', cls: '', subclass: '', background: '', bgTrade: '', patron: '', level: 1,
       abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
       ac: 10, speed: 30, initBonus: 0,
       hp: { cur: 10, max: 10, temp: 0 }, hd: { used: 0 },
@@ -1705,9 +1705,13 @@
         }).join('');
     } else if (step === 'Background') {
       var sbg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
-      var bgDetail = sbg ? '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Feature</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>' : '';
+      var bgDetail = sbg ? '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Perk</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>' : '';
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills, a tool and a feat.</p>' +
         choiceList(Object.keys(RULES.backgrounds).map(function (k) { var x = SRD && SRD.backgrounds[k]; return [k, RULES.backgrounds[k].join(', ') + (x && x.book ? ' · ' + x.book : '')]; }), b.bg, 'bd-bg', bgDetail);
+      if (sbg && sbg.trades) {
+        if (!b.trade) b.trade = sbg.trades[0].name;
+        html += '<h2 class="sec-title" style="margin-top:14px">Your trade</h2><p class="guide">Pick the work you did. It sets your tool and gives you one more perk.</p>' + choiceGrid(sbg.trades.map(function (t) { return [t.name, t.tool + ' · ' + t.perk]; }), b.trade, 'bd-trade');
+      }
       if (SRD && b.bg) {
         var origins = SRD.feats.filter(function (f) { return f.category === 'Origin'; });
         var def = sbg ? sbg.feat.replace(/\s*\(.*$/, '') : '';
@@ -1845,7 +1849,7 @@
   function buildSheet(b) {
     var cd = RULES.classes[b.cls], sc = buildScores(b), spc = spData(b.species, b.lineage) || {};
     var s = defaultSheet();
-    s.built = true; s.cls = b.cls; s.species = b.species; s.lineage = b.lineage || ''; s.background = b.bg; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; if (SUB_STEP[b.cls]) s.subclass = b.sub || ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
+    s.built = true; s.cls = b.cls; s.species = b.species; s.lineage = b.lineage || ''; s.background = b.bg; s.bgTrade = b.trade || ''; s.level = 1; s.patron = devotionLabel(b.cls) ? b.patron : ''; if (SUB_STEP[b.cls]) s.subclass = b.sub || ''; s.oath = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.oath || '').trim() : ''; s.drawbacks = b.cls === 'Paladin' && b.patron === OATH_ONLY ? String(b.drawbacks || '').trim() : '';
     s.abilities = sc;
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
@@ -2103,7 +2107,7 @@
         '<datalist id="dl-patrons">' + patronOptions(s.cls).map(function (p) { return p.name; }).concat(s.cls === 'Paladin' ? [OATH_ONLY] : []).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>' +
         '<datalist id="dl-bgs">' + Object.keys(RULES.backgrounds).map(function (k) { return '<option value="' + k + '">'; }).join('') + '</datalist><div class="two">' +
         sheetInput('Species', 'species', s.species, '', 'dl-species') + sheetInput('Class', 'cls', s.cls, '', 'dl-classes') +
-        sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') +
+        sheetInput(cd ? cd.subclassLabel : 'Subclass', 'subclass', s.subclass, '', 'dl-subs') + sheetInput('Background', 'background', s.background, '', 'dl-bgs') + (SRD && SRD.backgrounds[s.background] && SRD.backgrounds[s.background].trades ? '<datalist id="dl-trades">' + SRD.backgrounds[s.background].trades.map(function (t) { return '<option value="' + esc(t.name) + '">'; }).join('') + '</datalist>' + sheetInput('Trade', 'bgTrade', s.bgTrade, '', 'dl-trades') : '') +
         (devotionLabel(s.cls) || s.patron ? sheetInput(devotionLabel(s.cls) || 'Deity or patron', 'patron', s.patron, '', 'dl-patrons') : '') +
         sheetInput('Level', 'level', s.level, 'number') + sheetInput('Armor class with no armor', 'ac', s.ac, 'number') +
         sheetInput('Speed (ft)', 'speed', s.speed, 'number') + sheetInput('Initiative bonus', 'initBonus', s.initBonus, 'number') + sheetInput('Languages', 'langs', s.langs || '', '') +
@@ -2279,11 +2283,13 @@
       return '<div class="cs-row">' + csDot('skill', k[0], lvl, can) + '<span class="a">' + k[1].toUpperCase() + '</span><span class="n">' + k[0] + '</span><span class="b">' + signed(abil[k[1]] + lvl * pb) + '</span></div>';
     }).join('') + (can ? '<p class="note" style="margin:8px 0 0">Tap a dot: proficient, expertise, none.</p>' : '') + '</section>';
   }
+  function bgTradeOf(s, bg) { return bg && bg.trades && s.bgTrade ? (bg.trades.filter(function (t) { return t.name === s.bgTrade; })[0] || null) : null; }
+  function bgToolText(s, bg) { var t = bgTradeOf(s, bg); return t ? t.tool : ((bg && bg.tool) || ''); }
   function csBackgroundHtml(c, s, sp0) {
     var bg = SRD && s.background ? SRD.backgrounds[s.background] : null, html = '';
     html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.background || 'Background') + (bg && bg.own ? '<small>' + esc(bg.book) + '</small>' : '') + '</h2>';
     if (!s.background) html += '<div class="empty">No background yet.' + (canEditChar(c) ? ' Tap Edit to set one.' : '') + '</div>';
-    else if (bg) html += (bg.about ? '<p class="prose" style="margin:0 0 8px">' + esc(bg.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Skills</dt><dd>' + esc(bg.skills) + '</dd><dt>Tool</dt><dd>' + esc(bg.tool) + '</dd><dt>Feat</dt><dd>' + esc(bg.feat) + '</dd>' + (bg.feature ? '<dt>Feature</dt><dd>' + esc(bg.feature) + '</dd>' : '') + '</dl>';
+    else if (bg) html += (bg.about ? '<p class="prose" style="margin:0 0 8px">' + esc(bg.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Skills</dt><dd>' + esc(bg.skills) + '</dd><dt>Tool</dt><dd>' + esc(bgToolText(s, bg)) + '</dd><dt>Feat</dt><dd>' + esc(bg.feat) + '</dd>' + (bg.feature ? '<dt>Perk</dt><dd>' + esc(bg.feature) + '</dd>' : '') + (bg.trades ? (bgTradeOf(s, bg) ? '<dt>Trade</dt><dd>' + esc(bgTradeOf(s, bg).name) + '</dd><dt>Trade perk</dt><dd>' + esc(bgTradeOf(s, bg).perk) + '</dd>' : '<dt>Trade</dt><dd>Not picked yet. Tap Edit to choose one.</dd>') : '') + '</dl>';
     else html += '<p class="note">Skills: ' + esc((RULES.backgrounds[s.background] || []).join(', ') || '—') + '</p>';
     html += '</section>';
     if (s.species) html += '<section class="block" style="margin-top:12px"><h2 class="sec-title">' + esc(s.species + (s.lineage && sp0.lineageNote ? ' · ' + s.lineage : '')) + '<small>' + esc([sp0.size, (sp0.speed || 30) + ' ft'].filter(Boolean).join(' · ')) + '</small></h2>' + (sp0.note ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.note) + '</p>' : '') + (sp0.lineageNote ? '<p class="note" style="margin:0 0 6px">' + esc(sp0.lineageNote) + '</p>' : '') +
@@ -4231,15 +4237,16 @@
       if (!f) return peekOpen(key, 'Item', ITEM_NOTES[key] ? spellParas(ITEM_NOTES[key]) + '<p class="note sub-sum">Plain-language description from the Avarenth item catalog.</p>' : '<p class="note">No rules for this item. It’s whatever your DM says it is.</p>');
       var g = f.it, facts = [], body = '';
       if (f.k === 'weapons') {
-        facts = [['Category', g.cat + ' weapon'], ['Damage', g.dmg + ' ' + g.type], ['Properties', g.props.join(', ') || 'None'], ['Mastery', g.mastery || '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost]];
+        facts = [['Category', g.cat + ' weapon'], ['Damage', g.dmg + ' ' + g.type], ['Properties', g.props.join(', ') || 'None'], ['Mastery', g.mastery || '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost], ['Why that price', priceReason(g.name, g.cost, f.k)]];
         body = g.props.map(function (p) { var k = p.replace(/\s*\(.*$/, ''); return GEAR.props[k] ? '<p><b>' + esc(k) + '.</b> ' + esc(GEAR.props[k]) + '</p>' : ''; }).join('') + (g.mastery && GEAR.mastery[g.mastery] ? '<p><b>' + esc(g.mastery) + ' (mastery).</b> ' + esc(GEAR.mastery[g.mastery]) + '</p>' : '');
       } else if (f.k === 'armor') {
-        facts = [['Category', g.shield ? 'Shield' : g.cat + ' armor'], ['Armor class', g.acText], ['Strength', g.str || '—'], ['Stealth', g.stealth ? 'Disadvantage' : '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost]];
+        facts = [['Category', g.shield ? 'Shield' : g.cat + ' armor'], ['Armor class', g.acText], ['Strength', g.str || '—'], ['Stealth', g.stealth ? 'Disadvantage' : '—'], ['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost], ['Why that price', priceReason(g.name, g.cost, f.k)]];
       } else if (f.k === 'magic') {
         facts = [['Type', g.head]];
         body = spellParas(g.text);
       } else {
         facts = [['Weight', g.w ? g.w + ' lb' : '—'], ['Cost', g.cost || '—']];
+        if (g.cost) facts.push(['Why that price', priceReason(g.name, g.cost, f.k)]);
         body = spellParas(g.text);
         if (GEAR.packs[g.name]) body += '<p><b>Contains:</b> ' + esc(GEAR.packs[g.name].join(', ')) + '</p>';
       }
@@ -5346,7 +5353,7 @@
   function craftKey(t) { return String(t).replace(/['’]/g, '’'); }
   // Tools the character is trained with: from their class and background, plus any they tick here.
   function craftTools(s) {
-    var cd = classOf(s), bg = SRD && s.background ? SRD.backgrounds[s.background] : null, txt = [(cd && cd.tools) || '', (bg && bg.tool) || ''].join(' ').toLowerCase().replace(/['’]/g, '');
+    var cd = classOf(s), bg = SRD && s.background ? SRD.backgrounds[s.background] : null, txt = [(cd && cd.tools) || '', bgToolText(s, bg)].join(' ').toLowerCase().replace(/['’]/g, '');
     var mine = craftOf(s).tools;
     return Object.keys(CRAFTS).filter(function (t) { var w = t.toLowerCase().replace(/['’]/g, '').split(' ')[0]; return mine.indexOf(t) >= 0 || txt.indexOf(w) >= 0; });
   }
@@ -5717,6 +5724,21 @@
 
   /* ---------- Money ---------- */
   function toCp(gp) { return Math.max(0, Math.round(fnum(gp, 0) * 100)); }
+  function priceReason(name, cost, fk, cat) {
+    var m = String(cost || '').replace(/,/g, '').match(/([\d.]+)\s*(CP|SP|GP)/i);
+    if (!m) return '';
+    var gp = parseFloat(m[1]) * ({ CP: 0.01, SP: 0.1, GP: 1 })[m[2].toUpperCase()];
+    var key = String(name || '').toLowerCase().replace(/[’]/g, "'");
+    var hit = (ITEMS.items || []).filter(function (x) { return x.name.toLowerCase().replace(/[’]/g, "'") === key; })[0];
+    var tags = hit ? hit.tags : [], kind = hit ? hit.kind : '';
+    var nice = function (n) { return n < 1 ? 'under a day' : (Math.round(n * 2) / 2) + (Math.round(n * 2) / 2 === 1 ? ' day' : ' days'); };
+    if (fk === 'magic') return 'Magic is priced by rarity, not by the work that went into it.';
+    if (gp >= 100 || tags.indexOf('luxury') >= 0) return 'Rare or fine work. It costs what it fetches, not just what it took to make.';
+    if (fk === 'armor' || fk === 'weapons' && tags.indexOf('metal') >= 0 || tags.indexOf('metal') >= 0) return 'Smith’s work: about ' + nice(gp / 2) + ' of a skilled smith’s time, plus ore and fuel.';
+    if (gp <= 0.5) return 'Rough work: ' + (gp / 0.2 < 1 ? 'under a labourer’s day' : 'about ' + nice(gp / 0.2).replace(' day', ' labourer’s day')) + ' at 2 silver a day.';
+    var hrs = Math.max(1, Math.round(gp / 2 * 8));
+    return 'Skilled work: about ' + hrs + (hrs === 1 ? ' hour' : ' hours') + ' of a trained hand at 2 gold a day, plus materials.';
+  }
   function money(cp) {
     cp = Math.round(cp);
     if (cp <= 0) return 'free';
@@ -11060,10 +11082,11 @@
         var bb = ui.build, val = el.getAttribute('data-val');
         if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
         else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; bb.lskill = ''; } bb.species = val; }
-        else { if (bb.bg !== val) bb.skills = []; bb.bg = val; }
+        else { if (bb.bg !== val) { bb.skills = []; bb.trade = ''; } bb.bg = val; }
         render(); break;
       case 'bd-lineage': if (ui.build.lineage !== el.getAttribute('data-val')) { ui.build.skills = []; ui.build.lskill = ''; } ui.build.lineage = el.getAttribute('data-val'); render(); break;
       case 'bd-lskill': ui.build.skills = ui.build.skills.filter(function (k) { return k !== el.getAttribute('data-val'); }); ui.build.lskill = el.getAttribute('data-val'); render(); break;
+      case 'bd-trade': ui.build.trade = el.getAttribute('data-val'); render(); break;
       case 'bd-ofeat': ui.build.ofeat = el.getAttribute('data-val'); render(); break;
       case 'bd-buy':
         var bsb = ui.build, bsn = el.getAttribute('data-name'), bsd = num(el.getAttribute('data-dir'), 1);
@@ -12581,7 +12604,7 @@
             '<div class="tbl">' + sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
     } else if (tab === 'backgrounds') {
       html += '<p class="note">Backgrounds with a book name are summaries in our own words; for the older books, the abilities and feat are suggestions in the 2024 style.</p>';
-      Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Feature</dt><dd>' + esc(b.feature) + '</dd>' : '') + '</dl></section>'; });
+      Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Perk</dt><dd>' + esc(b.feature) + '</dd>' : '') + (b.trades ? '<dt>Trades</dt><dd>' + b.trades.map(function (t) { return esc(t.name + ' (' + t.perk + ')'); }).join('; ') + '</dd>' : '') + '</dl></section>'; });
     } else {
       var key = { metamagic: 'Metamagic', infusions: 'Tinkering' }[tab] || 'Eldritch Invocation';
       if (key === 'Tinkering') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';
