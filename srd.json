@@ -37,7 +37,7 @@
         ],
         [
           "p",
-          "_Level 1 Spell._ Choose a level 1 spell from the same list you selected for this feat's cantrips. You always have that spell prepared. You can cast it once without spending mana, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any mana you have."
+          "_Level 1 Spell._ Choose a level 1 spell from the same list you selected for this feat's cantrips. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have."
         ],
         [
           "p",
@@ -46,6 +46,10 @@
         [
           "p",
           "_Repeatable._ You can take this feat more than once, but you must choose a different spell list each time."
+        ],
+        [
+          "p",
+          "_Avarenth._ There are no spell slots: read \"spell slot\" here as mana. The free casting costs no mana, and casting the spell again costs the usual mana for a level 1 spell (5)."
         ]
       ],
       "meta": {
@@ -295,7 +299,7 @@
         ],
         [
           "p",
-          "_Free Casting._ Whenever you cast a spell with a level 1–4 spell slot, roll 1d4. If the number you roll is the same as the level of the spell whose mana you spent, the slot isn't expended."
+          "_Free Casting._ Whenever you cast a spell with a level 1–4 spell slot, roll 1d4. If the number you roll is the same as the slot's level, the slot isn't expended."
         ],
         [
           "p",
