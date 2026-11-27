@@ -1235,11 +1235,13 @@
     o.lineageNote = l.bio || l.note || '';
     return o;
   }
+  var OLD_BACKGROUNDS = { 'Folk Hero': 'Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {
     var d = defaultSheet();
     if (!s || typeof s !== 'object') return d;
     var out = Object.assign(d, s);
+    if (OLD_BACKGROUNDS[out.background]) out.background = OLD_BACKGROUNDS[out.background];
     if (OLD_LINEAGES[out.species]) { out.lineage = OLD_LINEAGES[out.species][1]; out.species = OLD_LINEAGES[out.species][0]; }
     out.abilities = Object.assign(defaultSheet().abilities, s.abilities || {});
     out.hp = Object.assign(defaultSheet().hp, s.hp || {});

@@ -1274,7 +1274,7 @@
       "feature": "Road Friends: You have friends in many towns along the roads. A few days of hospitality, a warm bed and a meal are easy to find, and travellers pass news to you without being asked.",
       "own": true
     },
-    "Folk Hero": {
+    "Hero": {
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",
@@ -1304,7 +1304,7 @@
       "feature": "Trade Card: Your guild houses and feeds you when you are in its city, speaks for you before the town council and lends you coin against your work, for dues you must keep paying.",
       "own": true
     },
-    "Outlander": {
+    "Wildlander": {
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",
@@ -1319,7 +1319,7 @@
       "feature": "Mapmind: You can always find food and fresh water in the wild for yourself and up to five companions, and you always know the direction of the nearest settlement. Your memory for the land around you is excellent.",
       "own": true
     },
-    "Urchin": {
+    "City Dreg": {
       "book": "Avarenth",
       "abilities": "Dexterity, Constitution, Wisdom",
       "feat": "Fortune Pool",
@@ -1364,7 +1364,7 @@
       "feature": "Clan Commission: Your clan takes commissions from lords and merchants, and it will house you and put you to work when you need a place. Its workshops and tools are open to you when you have earned your keep.",
       "own": true
     },
-    "Cloistered Scholar": {
+    "Arrogant Scholar": {
       "book": "Avarenth",
       "abilities": "Intelligence, Wisdom, Charisma",
       "feat": "Magic Initiate (Wizard)",
@@ -1409,7 +1409,7 @@
       "feature": "Faction Ties: You have a contact in your faction’s network in most major towns. They can pass a message, arrange a meeting or give you a safe house, provided you keep the house’s interests first.",
       "own": true
     },
-    "Far Traveler": {
+    "Stranger from Afar": {
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Skilled",
@@ -1439,7 +1439,7 @@
       "feature": "Inherited Claim: You hold a claim to a house, a title, a plot of land or a debt owed. The DM decides what it’s worth and who is willing to fight you for it.",
       "own": true
     },
-    "Knight of the Order": {
+    "Knight of an Order": {
       "book": "Avarenth",
       "abilities": "Strength, Wisdom, Charisma",
       "feat": "Skilled",
@@ -1469,7 +1469,7 @@
       "feature": "Company Ties: You have former comrades in mercenary companies across the isles. They can find you work, a fair price for a fight and news of who is hiring. Your old company may still want you back.",
       "own": true
     },
-    "Urban Bounty Hunter": {
+    "Bounty Hunter": {
       "book": "Avarenth",
       "abilities": "Dexterity, Wisdom, Charisma",
       "feat": "Alert",
@@ -1484,7 +1484,7 @@
       "feature": "Bounty Contacts: You know the bounty boards, the jailers and the watch sergeants of the big cities. They will tell you who is wanted and where, and they will pay you for finding them.",
       "own": true
     },
-    "Haunted Survivor": {
+    "Haunted": {
       "book": "Avarenth",
       "abilities": "Constitution, Wisdom, Charisma",
       "feat": "Alert",

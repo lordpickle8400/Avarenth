@@ -349,9 +349,9 @@
 
   var BACKGROUNDS = {
     'Acolyte': ['Insight', 'Religion'], 'Charlatan': ['Deception', 'Sleight of Hand'], 'Criminal': ['Deception', 'Stealth'],
-    'Entertainer': ['Acrobatics', 'Performance'], 'Folk Hero': ['Animal Handling', 'Survival'], 'Guild Artisan': ['Insight', 'Persuasion'],
-    'Hermit': ['Medicine', 'Religion'], 'Noble': ['History', 'Persuasion'], 'Outlander': ['Athletics', 'Survival'],
-    'Sage': ['Arcana', 'History'], 'Sailor': ['Athletics', 'Perception'], 'Soldier': ['Athletics', 'Intimidation'], 'Urchin': ['Sleight of Hand', 'Stealth']
+    'Entertainer': ['Acrobatics', 'Performance'], 'Hero': ['Animal Handling', 'Survival'], 'Guild Artisan': ['Insight', 'Persuasion'],
+    'Hermit': ['Medicine', 'Religion'], 'Noble': ['History', 'Persuasion'], 'Wildlander': ['Athletics', 'Survival'],
+    'Sage': ['Arcana', 'History'], 'Sailor': ['Athletics', 'Perception'], 'Soldier': ['Athletics', 'Intimidation'], 'City Dreg': ['Sleight of Hand', 'Stealth']
   };
 
   window.AVARENTH_RULES = { classes: C, subLevels: SUB_LEVELS, magic: MAGIC, species: SPECIES, backgrounds: BACKGROUNDS,
@@ -416,7 +416,7 @@
       'Lull': { Cleric: ['Thunder Domain', 'Grim Domain'], Warlock: ['The Deep Patron'] }
     },
     factionStart: {
-      'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, Urchin: 1 }, faith: { Florin: 1 } },
+      'the-black-hand': { cls: { Rogue: 1, Paladin: -1 }, bg: { Criminal: 1, Charlatan: 1, 'City Dreg': 1 }, faith: { Florin: 1 } },
       'the-red-scales': { base: -2, species: { Dragonborn: 3, Kobold: 2, Lizardfolk: 1 } },
       'spider-cult': { base: -2, faith: { Sytha: 4 } },
       'the-blooming-isle': { cls: { Monk: 1, Druid: 1 }, bg: { Acolyte: 1 }, faith: { Roselle: 2, good: 1, demon: -2 } },
