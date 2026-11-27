@@ -1697,7 +1697,7 @@
         sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div>' + (SRD && SRD.species[b.species] ? srdDetails(SRD.species[b.species].text, 'Official 2024 ' + b.species + ' traits (if your DM uses them)', SRD.species[b.species].meta) : '') + '</div>' : '';
       html += '<p class="guide">Your species shapes your body and some of your gifts. Draconic races are hated in the empire but not forbidden, and elves are rarely seen.</p>' +
         [['isles', 'Peoples of the isles', ''], ['rare', 'Rarely seen in the isles', 'Few in Doresmere have met one. Expect stares.'], ['far', 'From beyond the empire', 'Not native to Avarenth. Check with your DM before you pick one.'], ['homebrew', 'Homebrew', 'Made at your table and approved by the DM.']].map(function (g) {
-          var keys = Object.keys(RULES.species).filter(function (k) { return (RULES.species[k].group || 'isles') === g[0]; });
+          var keys = Object.keys(RULES.species).filter(function (k) { return (RULES.species[k].group || 'isles') === g[0] && !RULES.species[k].npc; });
           return keys.length ? '<h2 class="sec-title" style="margin-top:14px">' + g[1] + '<small>' + keys.length + '</small></h2>' + (g[2] ? '<p class="note" style="margin:0 0 6px">' + g[2] + '</p>' : '') +
             choiceList(keys.map(function (k) { var sp = RULES.species[k]; return [k, sp.size + ' · ' + sp.speed + ' ft' + (sp.fly ? ' · flies' : sp.swim ? ' · swims' : sp.climb ? ' · climbs' : '') + (sp.dark ? ' · darkvision' : '')]; }), b.species, 'bd-species', spDetail) : '';
         }).join('');
@@ -1848,6 +1848,7 @@
     var con = mod(sc.con), dex = mod(sc.dex);
     s.hp.max = s.hp.cur = Math.max(1, cd.hd + con);
     s.speed = spc.speed || 30;
+    if (spc.langs) s.langs = spc.langs;   // species that fix the language line (goblin-kin)
     var natural = spc.ac ? spc.ac.base + (spc.ac.stat ? mod(sc[spc.ac.stat]) : 0) : 0;   // natural armor comes from the species data
     s.ac = Math.max(b.cls === 'Barbarian' ? 10 + dex + con : b.cls === 'Monk' ? 10 + dex + mod(sc.wis) : 10 + dex, natural);
     s.mana.max = s.mana.cur = autoMana(b.cls, 1) || 0;
