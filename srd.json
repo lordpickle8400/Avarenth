@@ -4146,11 +4146,15 @@
           [
             [
               "p",
-              "You learn two spells of your choice. These spells can come from the Cleric, Druid, or Wizard spell list or any combination thereof (see a class's section for its spell list). A spell you choose must be a cantrip or a spell for which you have mana, as shown in the Bard Features table."
+              "You learn two spells of your choice. These spells can come from the Cleric, Druid, or Wizard spell list or any combination thereof (see a class's section for its spell list). A spell you choose must be a cantrip or a spell for which you have spell slots, as shown in the Bard Features table."
             ],
             [
               "p",
               "You always have the chosen spells prepared, and whenever you gain a Bard level, you can replace one of the spells with another spell that meets these requirements."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
             ]
           ],
           {
@@ -4191,7 +4195,7 @@
           [
             [
               "p",
-              "When a spell you cast with mana restores Hit Points to a creature, that creature regains additional Hit Points on the turn you cast the spell. The additional Hit Points equal 2 plus the spell slot's level."
+              "When a spell you cast with a spell slot restores Hit Points to a creature, that creature regains additional Hit Points on the turn you cast the spell. The additional Hit Points equal 2 plus the spell slot's level."
             ],
             [
               "p",
@@ -4303,7 +4307,7 @@
           [
             [
               "p",
-              "The healing spells you cast on others heal you as well. Immediately after you cast a spell with mana that restores Hit Points to one or more creatures other than yourself, you regain Hit Points equal to 2 plus the spell slot's level."
+              "The healing spells you cast on others heal you as well. Immediately after you cast a spell with a spell slot that restores Hit Points to one or more creatures other than yourself, you regain Hit Points equal to 2 plus the spell slot's level."
             ],
             [
               "p",
@@ -4610,6 +4614,18 @@
           [
             [
               "p",
+              "You can cast one of the level 1+ spells that you have prepared from your Circle Spells feature without expending a spell slot, and you must finish a Long Rest before you do so again."
+            ],
+            [
+              "p",
+              "In addition, when you finish a Short Rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your Druid level (round up), and none of them can be level 6+. For example, if you're a level 6 Druid, you can recover up to three levels' worth of spell slots. You can recover a level 3 spell slot, a level 2 and a level 1 spell slot, or three level 1 spell slots. Once you recover spell slots with this feature, you can't do so again until you finish a Long Rest."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
+            ],
+            [
+              "p",
               "_Avarenth (DM's call)._ Once per day, when you finish a Short Rest, you can regain mana equal to 5 × your Druid level."
             ]
           ],
@@ -4775,15 +4791,15 @@
             ],
             [
               "p",
-              "**Addle.** The target can't make Opportunity Attacks until the start of its next turn."
+              "_Addle._ The target can't make Opportunity Attacks until the start of its next turn."
             ],
             [
               "p",
-              "**Push.** The target must succeed on a Strength saving throw or be pushed up to 15 feet away from you."
+              "_Push._ The target must succeed on a Strength saving throw or be pushed up to 15 feet away from you."
             ],
             [
               "p",
-              "**Topple.** The target must succeed on a Dexterity saving throw or have the Prone condition."
+              "_Topple._ The target must succeed on a Dexterity saving throw or have the Prone condition."
             ]
           ]
         ],
@@ -4962,7 +4978,7 @@
           [
             [
               "p",
-              "As a Bonus Action, you can imbue your Aura of Protection with holy power, granting the benefits below for 10 minutes or until you end them (no action required). Once you use this feature, you can't use it again until you finish a Long Rest. You can also restore your use of it by expending 40 mana (a level 5 spell's cost) (no action required)."
+              "As a Bonus Action, you can imbue your Aura of Protection with holy power, granting the benefits below for 10 minutes or until you end them (no action required). Once you use this feature, you can't use it again until you finish a Long Rest. You can also restore your use of it by expending a level 5 spell slot (no action required)."
             ],
             [
               "p",
@@ -4975,6 +4991,10 @@
             [
               "p",
               "_Sunlight._ The aura is filled with Bright Light that is sunlight."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
             ]
           ],
           {
@@ -5295,11 +5315,15 @@
           [
             [
               "p",
-              "You can cast _Summon Dragon_ without a Material component. You can also cast it once without spending mana, and you regain the ability to cast it in this way when you finish a Long Rest."
+              "You can cast Summon Dragon without a Material component. You can also cast it once without a spell slot, and you regain the ability to cast it in this way when you finish a Long Rest."
             ],
             [
               "p",
               "Whenever you start casting the spell, you can modify it so that it doesn't require Concentration. If you do so, the spell's duration becomes 1 minute for that casting."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
             ]
           ],
           {
@@ -5485,7 +5509,11 @@
             ],
             [
               "p",
-              "In addition, whenever you gain access to a new level of mana in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The chosen spell must be of a level for which you have mana."
+              "In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The chosen spell must be of a level for which you have spell slots."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
             ]
           ],
           {
@@ -5539,15 +5567,19 @@
           [
             [
               "p",
-              "You can increase the power of your spells. When you cast a Wizard spell of levels 1–5 that deals damage, you can deal maximum damage with that spell on the turn you cast it."
+              "You can increase the power of your spells. When you cast a Wizard spell with a spell slot of levels 1-5 that deals damage, you can deal maximum damage with that spell on the turn you cast it."
             ],
             [
               "p",
-              "The first time you do so, you suffer no adverse effect. If you use this feature again before you finish a Long Rest, you take 2d12 Necrotic damage for each level of the spell immediately after you cast it. This damage ignores Resistance and Immunity."
+              "The first time you do so, you suffer no adverse effect. If you use this feature again before you finish a Long Rest, you take 2d12 Necrotic damage for each level of the spell slot immediately after you cast it. This damage ignores Resistance and Immunity."
             ],
             [
               "p",
               "Each time you use this feature again before finishing a Long Rest, the Necrotic damage per spell level increases by 1d12."
+            ],
+            [
+              "p",
+              "_Avarenth._ There are no spell slots: read any spell slot here as mana. A level 1–9 spell costs 5 / 10 / 18 / 28 / 40 / 60 / 85 / 110 / 150 mana; 6th–8th also need a High Magic Charge, 9th a Reality Channel."
             ]
           ],
           {
