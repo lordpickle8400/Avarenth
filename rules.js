@@ -349,7 +349,7 @@
 
   var BACKGROUNDS = {
     'Acolyte': ['Insight', 'Religion'], 'Charlatan': ['Deception', 'Sleight of Hand'], 'Criminal': ['Deception', 'Stealth'],
-    'Entertainer': ['Acrobatics', 'Performance'], 'Hero': ['Animal Handling', 'Survival'], 'Guild Artisan': ['Insight', 'Persuasion'],
+    'Entertainer': ['Acrobatics', 'Performance'], 'Local Hero': ['Animal Handling', 'Survival'], 'Guild Artisan': ['Insight', 'Persuasion'],
     'Hermit': ['Medicine', 'Religion'], 'Noble': ['History', 'Persuasion'], 'Wildlander': ['Athletics', 'Survival'],
     'Sage': ['Arcana', 'History'], 'Sailor': ['Athletics', 'Perception'], 'Soldier': ['Athletics', 'Intimidation'], 'City Dreg': ['Sleight of Hand', 'Stealth']
   };

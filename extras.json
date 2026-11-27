@@ -1274,7 +1274,7 @@
       "feature": "Road Friends: You have friends in many towns along the roads. A few days of hospitality, a warm bed and a meal are easy to find, and travellers pass news to you without being asked.",
       "own": true
     },
-    "Hero": {
+    "Local Hero": {
       "book": "Avarenth",
       "abilities": "Strength, Constitution, Wisdom",
       "feat": "Hardy Body",

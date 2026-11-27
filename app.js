@@ -1235,7 +1235,7 @@
     o.lineageNote = l.bio || l.note || '';
     return o;
   }
-  var OLD_BACKGROUNDS = { 'Folk Hero': 'Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
+  var OLD_BACKGROUNDS = { 'Folk Hero': 'Local Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {
     var d = defaultSheet();
