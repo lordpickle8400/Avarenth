@@ -1235,6 +1235,7 @@
     o.lineageNote = l.bio || l.note || '';
     return o;
   }
+  function bgAllowed(n, sp) { var x = SRD && SRD.backgrounds && SRD.backgrounds[n]; return !(x && x.species && x.species.length) || x.species.indexOf(sp) >= 0; }
   var OLD_BACKGROUNDS = { 'Folk Hero': 'Local Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {
@@ -1707,7 +1708,7 @@
       var sbg = SRD && b.bg ? SRD.backgrounds[b.bg] : null;
       var bgDetail = sbg ? '<div class="group-box"><h2>' + esc(b.bg) + (sbg.own ? '' : ' (2024 rules)') + '</h2>' + (sbg.own || sbg.about ? '<p class="note" style="margin:0 0 8px">' + esc([sbg.own ? sbg.book + '.' : '', sbg.about || ''].join(' ').trim()) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(sbg.abilities) + '</dd><dt>Feat</dt><dd>' + esc(sbg.feat) + '</dd><dt>Tool</dt><dd>' + esc(sbg.tool) + '</dd><dt>Equipment</dt><dd>' + esc(sbg.equipment) + '</dd>' + (sbg.feature ? '<dt>Perk</dt><dd>' + esc(sbg.feature) + '</dd>' : '') + '</dl>' + (sbg.own ? '<p class="note" style="margin:6px 0 0">' + esc(SUMMARY_NOTE) + '</p>' : '') + '</div>' : '';
       html += '<p class="guide">Your background is the life you had before adventuring. It gives you two skills, a tool and a feat.</p>' +
-        choiceList(Object.keys(RULES.backgrounds).map(function (k) { var x = SRD && SRD.backgrounds[k]; return [k, RULES.backgrounds[k].join(', ') + (x && x.book ? ' · ' + x.book : '')]; }), b.bg, 'bd-bg', bgDetail);
+        choiceList(Object.keys(RULES.backgrounds).filter(function (k) { return bgAllowed(k, b.species); }).map(function (k) { var x = SRD && SRD.backgrounds[k]; return [k, RULES.backgrounds[k].join(', ') + (x && x.book ? ' · ' + x.book : '')]; }), b.bg, 'bd-bg', bgDetail);
       if (sbg && sbg.trades) {
         if (!b.trade) b.trade = sbg.trades[0].name;
         html += '<h2 class="sec-title" style="margin-top:14px">Your trade</h2><p class="guide">Pick the work you did. It sets your tool and gives you one more perk.</p>' + choiceGrid(sbg.trades.map(function (t) { return [t.name, t.tool + ' · ' + t.perk]; }), b.trade, 'bd-trade');
@@ -11081,7 +11082,7 @@
       case 'bd-class': case 'bd-species': case 'bd-bg':
         var bb = ui.build, val = el.getAttribute('data-val');
         if (act === 'bd-class') { if (bb.cls !== val) { bb.skills = []; bb.spells = []; bb.patron = ''; bb.sub = ''; } bb.cls = val; }
-        else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; bb.lskill = ''; } bb.species = val; }
+        else if (act === 'bd-species') { if (bb.species !== val) { bb.skills = []; bb.lineage = ''; bb.lskill = ''; if (bb.bg && !bgAllowed(bb.bg, val)) { bb.bg = ''; bb.trade = ''; } } bb.species = val; }
         else { if (bb.bg !== val) { bb.skills = []; bb.trade = ''; } bb.bg = val; }
         render(); break;
       case 'bd-lineage': if (ui.build.lineage !== el.getAttribute('data-val')) { ui.build.skills = []; ui.build.lskill = ''; } ui.build.lineage = el.getAttribute('data-val'); render(); break;
@@ -12604,7 +12605,7 @@
             '<div class="tbl">' + sp.traits.map(function (t) { return '<div class="tbl-row"><div class="main"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span></div></div>'; }).join('') + '</div></div></details>'; }).join('') + '</section>';
     } else if (tab === 'backgrounds') {
       html += '<p class="note">Backgrounds with a book name are summaries in our own words; for the older books, the abilities and feat are suggestions in the 2024 style.</p>';
-      Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts"><dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Perk</dt><dd>' + esc(b.feature) + '</dd>' : '') + (b.trades ? '<dt>Trades</dt><dd>' + b.trades.map(function (t) { return esc(t.name + ' (' + t.perk + ')'); }).join('; ') + '</dd>' : '') + '</dl></section>'; });
+      Object.keys(SRD.backgrounds).sort().forEach(function (n) { var b = SRD.backgrounds[n]; html += '<section class="section feat"><h2>' + esc(n) + (b.own ? '<small>' + esc(b.book) + '</small>' : '') + '</h2>' + (b.about ? '<p class="prose" style="margin:0 0 6px">' + esc(b.about) + '</p>' : '') + '<dl class="tbl-facts">' + (b.species ? '<dt>Species</dt><dd>' + esc(b.species.join(', ')) + ' only</dd>' : '') + '<dt>Abilities</dt><dd>' + esc(b.abilities) + '</dd><dt>Feat</dt><dd>' + esc(b.feat) + '</dd><dt>Skills</dt><dd>' + esc(b.skills) + '</dd><dt>Tool</dt><dd>' + esc(b.tool) + '</dd><dt>Equipment</dt><dd>' + esc(b.equipment) + '</dd>' + (b.feature ? '<dt>Perk</dt><dd>' + esc(b.feature) + '</dd>' : '') + (b.trades ? '<dt>Trades</dt><dd>' + b.trades.map(function (t) { return esc(t.name + ' (' + t.perk + ')'); }).join('; ') + '</dd>' : '') + '</dl></section>'; });
     } else {
       var key = { metamagic: 'Metamagic', infusions: 'Tinkering' }[tab] || 'Eldritch Invocation';
       if (key === 'Tinkering') html += '<p class="note">' + esc(SUMMARY_NOTE) + '</p>';

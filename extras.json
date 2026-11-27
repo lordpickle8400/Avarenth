@@ -1908,7 +1908,28 @@
       "equipment": "Choose A or B: (A) Smith’s Tools, Handaxe, Broken Clan Token, Traveler’s Clothes, 23 GP; or (B) 50 GP",
       "about": "You were blooded once, and then you weren't. Whatever you did, or were said to have done, cost you your clan's name and your tusks, and every orc who sees the filed stumps knows it. You learned to hunt alone, mend your own gear and keep walking, and you are still deciding whether to prove them wrong or stop caring.",
       "feature": "Marked: Any orc who sees your filed tusks knows you were unblooded, so clan hospitality is closed to you. In return you owe no clan anything, and an orc who respects a fight will still hear you out in a challenge.",
-      "own": true
+      "own": true,
+      "species": [
+        "Orc"
+      ]
+    },
+    "Black Lizardfolk": {
+      "book": "Avarenth",
+      "abilities": "Strength, Constitution, Wisdom",
+      "feat": "Alert",
+      "skills": "Stealth and Survival",
+      "skillList": [
+        "Stealth",
+        "Survival"
+      ],
+      "tool": "Herbalism Kit",
+      "equipment": "Choose A or B: (A) Herbalism Kit, Spear, Bone Charm, Traveler’s Clothes, 21 GP; or (B) 50 GP",
+      "about": "You hatched black-scaled, one of the Bonecrown’s own children, and the hunters drove you out before your scales hardened. You grew up on the edge of other people’s marshes, learning to hide, forage and trust no tribe, and you carry a king’s blood that no lizardfolk will name.",
+      "feature": "Outcast Royal: Lizardfolk know your black scales on sight and will not take you in, but none of them dares harm you openly. Other scaled folk and hermits of the wild treat you as someone with a story, and may hear you out.",
+      "own": true,
+      "species": [
+        "Lizardfolk"
+      ]
     }
   },
   "options": {
