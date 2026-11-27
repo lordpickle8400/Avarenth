@@ -1236,6 +1236,7 @@
     return o;
   }
   function bgAllowed(n, sp) { var x = SRD && SRD.backgrounds && SRD.backgrounds[n]; return !(x && x.species && x.species.length) || x.species.indexOf(sp) >= 0; }
+  var OLD_SUBCLASSES = { 'Way of the Open Hand': 'Warrior of the Open Hand', 'Draconic Bloodline': 'Draconic Sorcery', 'The Fiend': 'Fiend Patron', 'School of Evocation': 'Evoker' };
   var OLD_BACKGROUNDS = { 'Folk Hero': 'Local Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {
@@ -1243,6 +1244,7 @@
     if (!s || typeof s !== 'object') return d;
     var out = Object.assign(d, s);
     if (OLD_BACKGROUNDS[out.background]) out.background = OLD_BACKGROUNDS[out.background];
+    if (OLD_SUBCLASSES[out.subclass]) out.subclass = OLD_SUBCLASSES[out.subclass];
     if (OLD_LINEAGES[out.species]) { out.lineage = OLD_LINEAGES[out.species][1]; out.species = OLD_LINEAGES[out.species][0]; }
     out.abilities = Object.assign(defaultSheet().abilities, s.abilities || {});
     out.hp = Object.assign(defaultSheet().hp, s.hp || {});
@@ -12363,7 +12365,7 @@
      It loads once after sign-in. Anything from the paid books stays a name only. */
   var SRD = null, SUBNOTES = null;
   var SRD_CREDIT = 'This work includes material from the System Reference Document 5.2.1 (\"SRD 5.2.1\") by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.';
-  var SRD_SUB_ALIAS = { 'Warrior of the Open Hand': 'Way of the Open Hand', 'Draconic Sorcery': 'Draconic Bloodline', 'Fiend Patron': 'The Fiend', 'Evoker': 'School of Evocation' };
+  var SRD_SUB_ALIAS = {};
   // Pick a feat, invocation, metamagic or Tinkering from the lists instead of typing it in.
   var CLASS_OPTS = { Warlock: 'Eldritch Invocation', Sorcerer: 'Metamagic', Cogwright: 'Tinkering' };
   function blocksText(b) { return (b || []).map(function (x) { return x[0] === 'ul' ? x[1].map(function (li) { return '• ' + li; }).join('\n') : x[0] === 'p' || x[0] === 'h' ? x[1] : ''; }).filter(Boolean).join('\n\n').replace(/_/g, '').replace(/\*\*/g, ''); }

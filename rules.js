@@ -112,7 +112,7 @@
     armor: 'None', weapons: 'Simple weapons, shortswords', tools: 'One artisan\'s tool or musical instrument',
     skills: { n: 2, from: ['Acrobatics', 'Athletics', 'History', 'Insight', 'Religion', 'Stealth'] },
     subclassLevel: 3, subclassLabel: 'Monastic Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Way of the Open Hand', 'Way of Shade', 'Way of the Four Winds', 'Way of the Last Breath', 'Way of the Sunlit Spirit', 'Way of the Tipsy Fist', 'Way of the Swordmaster', 'Way of the Spiritbound', 'Way of Compassion'],
+    subclasses: ['Warrior of the Open Hand', 'Way of Shade', 'Way of the Four Winds', 'Way of the Last Breath', 'Way of the Sunlit Spirit', 'Way of the Tipsy Fist', 'Way of the Swordmaster', 'Way of the Spiritbound', 'Way of Compassion'],
     features: [
       [1, 'Avarenth Magic', 'You have a mana pool and a spirit-magic spell list. Bigger magic comes from tomes. See the Mana Guide.'],
       [1, 'Unarmored Defense', 'Without armor or a shield, your AC is 10 + Dexterity + Wisdom.'],
@@ -212,7 +212,7 @@
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'Insight', 'Intimidation', 'Persuasion', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Sorcerous Origin', asi: [4, 8, 12, 16, 19],
-    subclasses: ['Draconic Bloodline', 'Chaotic Origin', 'Heavenly Origin', 'Umbral Origin', 'Tempest Origin', 'Aberrant Origin', 'Clockwork Origin'],
+    subclasses: ['Draconic Sorcery', 'Chaotic Origin', 'Heavenly Origin', 'Umbral Origin', 'Tempest Origin', 'Aberrant Origin', 'Clockwork Origin'],
     features: [
       [1, 'Spellcasting', 'The magic in your blood answers you without the long study that others need. You cast with mana, and your magic is part of who you are. Charisma is your spellcasting ability. See the Mana Guide.'],
       [1, 'Sorcerous Origin', 'Your magic came from somewhere, and that origin shapes every spell you cast. Choose where your magic comes from, whether a bloodline, a wild surge or a spark of the divine.'],
@@ -228,7 +228,7 @@
     armor: 'Light armor', weapons: 'Simple weapons', tools: '',
     skills: { n: 2, from: ['Arcana', 'Deception', 'History', 'Intimidation', 'Investigation', 'Nature', 'Religion'] },
     subclassLevel: 1, subclassLabel: 'Otherworldly Patron', asi: [4, 8, 12, 16, 19],
-    subclasses: ['The Fey Court', 'The Fiend', 'The Outer Horror', 'The Radiant Patron', 'The Bladebound', 'The Deep Patron', 'The Djinn Patron', 'The Deathless'],
+    subclasses: ['The Fey Court', 'Fiend Patron', 'The Outer Horror', 'The Radiant Patron', 'The Bladebound', 'The Deep Patron', 'The Djinn Patron', 'The Deathless'],
     features: [
       [1, 'Otherworldly Patron', 'Choose the being you made your pact with.'],
       [1, 'Pact Magic', 'You cast with mana. Charisma is your spellcasting ability. See the Mana Guide.'],
@@ -248,7 +248,7 @@
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'] },
     subclassLevel: 2, subclassLabel: 'Arcane Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['School of Warding', 'School of Summoning', 'School of Foresight', 'School of Charm', 'School of Evocation', 'School of Phantasms', 'School of Death', 'School of Alchemy', 'Bladechant', 'School of Battle Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
+    subclasses: ['School of Warding', 'School of Summoning', 'School of Foresight', 'School of Charm', 'Evoker', 'School of Phantasms', 'School of Death', 'School of Alchemy', 'Bladechant', 'School of Battle Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
     features: [
       [1, 'Spellcasting', 'You study magic the way others study law or medicine, and you master it through careful work. You cast with mana and study magic as a discipline. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
       [1, 'Arcane Recovery', 'You can gather your scattered focus after a short rest and draw some mana back into yourself. Once per day after a short rest, regain mana equal to 5 × your wizard level.'],
@@ -403,16 +403,16 @@
       'Florin': { Cleric: ['Mischief Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of Renown', 'Oath of Mercy'] },
       'Rook': { Cleric: ['Battle Domain', 'Law Domain', 'Anvil Domain'], Warlock: ['The Radiant Patron'], Paladin: ['Oath of Devotion', 'Oath of Dominion', 'Oath of Renown'] },
       'The Hungering Head': { Cleric: ['Grim Domain', 'Dusk Domain'], Warlock: ['The Outer Horror'], Paladin: ['Oathbroken', 'Oath of Dominion'] },
-      'Kharneth': { Cleric: ['Law Domain', 'Lore Domain'], Warlock: ['The Fiend'], Paladin: ['Oath of Dominion', 'Oath of Reckoning'] },
-      'Drakhar': { Cleric: ['Battle Domain', 'Law Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Dominion'] },
-      'The Pyre-Saint': { Cleric: ['Dawn Domain', 'Battle Domain'], Warlock: ['The Radiant Patron', 'The Fiend'], Paladin: ['Oath of Reckoning', 'Oath of Dominion'] },
+      'Kharneth': { Cleric: ['Law Domain', 'Lore Domain'], Warlock: ['Fiend Patron'], Paladin: ['Oath of Dominion', 'Oath of Reckoning'] },
+      'Drakhar': { Cleric: ['Battle Domain', 'Law Domain'], Warlock: ['The Bladebound', 'Fiend Patron'], Paladin: ['Oath of Dominion'] },
+      'The Pyre-Saint': { Cleric: ['Dawn Domain', 'Battle Domain'], Warlock: ['The Radiant Patron', 'Fiend Patron'], Paladin: ['Oath of Reckoning', 'Oath of Dominion'] },
       'Marrow': { Cleric: ['Grim Domain', 'Wildwood Domain'], Warlock: ['The Deathless', 'The Outer Horror'] },
       'Velvet': { Cleric: ['Mischief Domain', 'Dusk Domain'], Warlock: ['The Fey Court'] },
       'Sytha': { Cleric: ['Mischief Domain', 'Wildwood Domain'], Warlock: ['The Fey Court', 'The Outer Horror'] },
       'The Nine Below': { Cleric: ['Grim Domain', 'Tomb Domain'], Warlock: ['The Deathless'], Paladin: ['Oathbroken', 'Oath of Reckoning'] },
       'The Mask': { Cleric: ['Mischief Domain'], Warlock: ['The Fey Court', 'The Outer Horror'] },
       'Veyl': { Cleric: ['Lore Domain', 'Sigil Domain'], Warlock: ['The Outer Horror'] },
-      'Vaunt and Ruin': { Cleric: ['Battle Domain'], Warlock: ['The Bladebound', 'The Fiend'], Paladin: ['Oath of Renown', 'Oath of Dominion', 'Oathbroken'] },
+      'Vaunt and Ruin': { Cleric: ['Battle Domain'], Warlock: ['The Bladebound', 'Fiend Patron'], Paladin: ['Oath of Renown', 'Oath of Dominion', 'Oathbroken'] },
       'Lull': { Cleric: ['Thunder Domain', 'Grim Domain'], Warlock: ['The Deep Patron'] }
     },
     factionStart: {
