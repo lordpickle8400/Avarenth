@@ -372,36 +372,28 @@
       "feat": "Magic Initiate (Cleric)",
       "skills": "Insight and Religion",
       "tool": "Calligrapher's Supplies",
-      "equipment": "Choose A or B: (A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP",
-      "about": "You served a temple or shrine from a young age, keeping its rites, its books and its poor. The gods are real to you in a way they are not to most, and the church has a place for you if you want one.",
-      "feature": "Shelter of the Faith: Your temple, shrine or parish will house and feed you while you are in its lands, and its priests will hear you out. Asking for more than a bed and a meal costs you the temple’s goodwill, and it will expect service in return."
+      "equipment": "Choose A or B: (A) Calligrapher's Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP; or (B) 50 GP"
     },
     "Criminal": {
       "abilities": "Dexterity, Constitution, Intelligence",
       "feat": "Alert",
       "skills": "Sleight of Hand and Stealth",
       "tool": "Thieves' Tools",
-      "equipment": "Choose A or B: (A) 2 Daggers, Thieves' Tools, Crowbar, 2 Pouches, Traveler's Clothes, 16 GP; or (B) 50 GP",
-      "about": "You earned your living outside the law, in theft, smuggling or quiet violence, and you learned which rules were worth keeping. You still know the people who do this work, and you know who would sell them out.",
-      "feature": "Criminal Contact: You have a reliable contact in the criminal underworld of a city you know well. They can pass on a message, find a fence or tell you who is hiring, but they will want a favour in return."
+      "equipment": "Choose A or B: (A) 2 Daggers, Thieves' Tools, Crowbar, 2 Pouches, Traveler's Clothes, 16 GP; or (B) 50 GP"
     },
     "Sage": {
       "abilities": "Constitution, Intelligence, Wisdom",
       "feat": "Magic Initiate (Wizard)",
       "skills": "Arcana and History",
       "tool": "Calligrapher's Supplies",
-      "equipment": "Choose A or B: (A) Quarterstaff, Calligrapher's Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP",
-      "about": "You spent years in libraries and archives, reading until your eyes ached and writing letters to other scholars who never answered. You know a little of everything, and you know where the rest is kept.",
-      "feature": "Researcher: When you need information, you know where to look and who to ask. The DM tells you what a day of research can find, and scholars will often answer your questions if you bring them something new."
+      "equipment": "Choose A or B: (A) Quarterstaff, Calligrapher's Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP; or (B) 50 GP"
     },
     "Soldier": {
       "abilities": "Strength, Dexterity, Constitution",
       "feat": "Savage Attacker",
       "skills": "Athletics and Intimidation",
       "tool": "Choose one kind of Gaming Set",
-      "equipment": "Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler's Clothes, 14 GP; or (B) 50 GP",
-      "about": "You served in a company or a levy, marching, digging and fighting for a banner that often paid late. You know the army’s rules, the sergeant’s temper and the price of loyalty in a bad winter.",
-      "feature": "Military Rank: You have a rank and a place in an army or company. Former comrades will help you find lodgings, a meal and news of where the fighting is, and a soldier’s pass will open the gates of many garrisons."
+      "equipment": "Choose A or B: (A) Spear, Shortbow, 20 Arrows, Gaming Set (same as above), Healer's Kit, Quiver, Traveler's Clothes, 14 GP; or (B) 50 GP"
     }
   },
   "species": {
