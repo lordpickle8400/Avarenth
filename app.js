@@ -1235,7 +1235,7 @@
     o.lineageNote = l.bio || l.note || '';
     return o;
   }
-  var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'] };
+  var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {
     var d = defaultSheet();
     if (!s || typeof s !== 'object') return d;
