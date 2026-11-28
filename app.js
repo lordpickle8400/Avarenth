@@ -1236,7 +1236,7 @@
     return o;
   }
   function bgAllowed(n, sp) { var x = SRD && SRD.backgrounds && SRD.backgrounds[n]; return !(x && x.species && x.species.length) || x.species.indexOf(sp) >= 0; }
-  var OLD_SUBCLASSES = { 'Bladechant': 'Steelweave', 'Way of the Open Hand': 'Warrior of the Open Hand', 'Draconic Bloodline': 'Draconic Sorcery', 'The Fiend': 'Fiend Patron', 'School of Evocation': 'Evoker' };
+  var OLD_SUBCLASSES = { 'Bladechant': 'Spellsword', 'Steelweave': 'Spellsword', 'Way of the Open Hand': 'Warrior of the Open Hand', 'Draconic Bloodline': 'Draconic Sorcery', 'The Fiend': 'Fiend Patron', 'School of Evocation': 'Evoker' };
   var OLD_BACKGROUNDS = { 'Folk Hero': 'Local Hero', 'Outlander': 'Wildlander', 'Urchin': 'City Dreg', 'Cloistered Scholar': 'Arrogant Scholar', 'Far Traveler': 'Stranger from Afar', 'Knight of the Order': 'Knight of an Order', 'Urban Bounty Hunter': 'Bounty Hunter', 'Haunted Survivor': 'Haunted' };
   var OLD_LINEAGES = { 'Sea Elf': ['Elf', 'Sea'], 'Dark Elf': ['Elf', 'Dark'], 'Air Elementite': ['Elementite', 'Air'], 'Earth Elementite': ['Elementite', 'Earth'], 'Fire Elementite': ['Elementite', 'Fire'], 'Water Elementite': ['Elementite', 'Water'] };
   function normSheet(s) {

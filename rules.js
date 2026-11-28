@@ -248,7 +248,7 @@
     armor: 'None', weapons: 'Daggers, darts, slings, quarterstaffs, light crossbows', tools: '',
     skills: { n: 2, from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Religion'] },
     subclassLevel: 2, subclassLabel: 'Arcane Tradition', asi: [4, 8, 12, 16, 19],
-    subclasses: ['School of Warding', 'School of Summoning', 'School of Foresight', 'School of Charm', 'Evoker', 'School of Phantasms', 'School of Death', 'School of Alchemy', 'Steelweave', 'School of Battle Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
+    subclasses: ['School of Warding', 'School of Summoning', 'School of Foresight', 'School of Charm', 'Evoker', 'School of Phantasms', 'School of Death', 'School of Alchemy', 'Spellsword', 'School of Battle Magic', 'Timecraft', 'Weightcraft', 'Order of the Inkwright'],
     features: [
       [1, 'Spellcasting', 'You study magic the way others study law or medicine, and you master it through careful work. You cast with mana and study magic as a discipline. Intelligence is your spellcasting ability. You can copy compatible spells from tomes into your spellbook. See the Mana Guide.'],
       [1, 'Arcane Recovery', 'You can gather your scattered focus after a short rest and draw some mana back into yourself. Once per day after a short rest, regain mana equal to 5 × your wizard level.'],
