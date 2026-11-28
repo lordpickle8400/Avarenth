@@ -2947,33 +2947,48 @@
         ]
       ]
     },
-    "Bladechant": {
-      "about": "Wizards who fight with a blade and a spell at once, dancing through combat with a song of their own. Bladesingers are the duellists of the elven courts and the wizard schools.",
+    "Steelweave": {
+      "about": "Mages who didn't trade the sword for the book. A Steelweave wizard wears plate, swings steel and still reaches for the high spells, but the armor takes its toll on the weave.",
       "features": [
         [
           2,
-          "Training in Edge and Hymn",
-          "Light armor, one one-handed melee weapon, and Performance."
+          "Armored Study",
+          "You gain proficiency with Medium armor, Heavy armor, Shields and Martial weapons."
         ],
         [
           2,
-          "Edge Hymn",
-          "Bonus action, a few times per long rest: add Intelligence to AC and concentration saves, move faster, and gain advantage on Acrobatics."
+          "Steel Casting",
+          "A weapon you are proficient with works as your Spellcasting Focus, and you can perform the Somatic components of spells even when you have weapons or a Shield in one or both hands."
+        ],
+        [
+          2,
+          "Weight of Plate",
+          "While you wear Heavy armor, spells of level 3 or higher cost 5 extra mana to cast."
+        ],
+        [
+          2,
+          "Charged Blade",
+          "After you cast a spell of level 1 or higher, your next weapon hit before the end of your next turn deals extra Force damage equal to twice the spell's level."
         ],
         [
           6,
-          "Extra Attack",
-          "Attack twice, and replace one attack with a cantrip."
+          "Parry Weave",
+          "When a creature hits you with an attack, you can spend 5 mana and use your Reaction to add your Intelligence modifier to your Armor Class against that attack."
+        ],
+        [
+          6,
+          "Sword Drill",
+          "You can attack twice, instead of once, whenever you take the Attack action on your turn."
         ],
         [
           10,
-          "Hymn of Warding",
-          "Reaction while your Edge Hymn is active: spend mana to cut damage by 5 per spell level of that mana (5 mana cuts 5, 10 cuts 10, 18 cuts 15, and so on)."
+          "Iron Mind",
+          "Weight of Plate no longer applies to you, and you have Advantage on Constitution saving throws to maintain Concentration while you wear armor."
         ],
         [
           14,
-          "Hymn of Triumph",
-          "Add Intelligence to melee weapon damage while your Edge Hymn is active."
+          "Perfect Fusion",
+          "Once per Long Rest, as a Bonus Action, you enter a fusion of steel and spell for 1 minute. For the duration, you can make one weapon attack as a Bonus Action after you cast any spell on your turn, and your weapon hits ignore Resistance."
         ]
       ]
     },
