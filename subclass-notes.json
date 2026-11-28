@@ -1,197 +1,202 @@
 {
   "Barbarian": {
     "Path of the Animal Spirit": {
-      "about": "Your rage calls on the spirit of an animal, and you take on its strength and its ways. The hunters of the Emberwood and the high moors all tell stories about the spirit that walks with them.",
+      "about": "Your rage calls up the spirit of a beast that fights beside you. The hunters of the Emberwood and the high moors tell stories about the spirit that walks with them.",
       "features": [
         [
           3,
-          "Spirit Sight",
-          "Cast Beast Sense and Speak with Animals as rituals."
+          "Spirit Beast",
+          "When you enter your Rage, a spectral beast appears in an unoccupied space within 10 feet. Choose its look: Bear, Stag or Hound. It can't be hurt or targeted, and it lasts until your Rage ends. On your turn you can move it up to your Speed (no action needed). The first attack you make on each of your turns against a creature within 5 feet of the beast has Advantage."
         ],
         [
           3,
-          "Spirit Animal",
-          "Pick an animal for your rage: Bear (resist all damage but psychic), Eagle (enemies have disadvantage on opportunity attacks; Dash as a bonus action), Wolf (allies have advantage on melee attacks against enemies within 5 ft of you), Elk or Tiger."
+          "Quarry Sense",
+          "You always know the direction of the nearest beast within 1 mile, and you have Advantage on Wisdom (Animal Handling) checks."
         ],
         [
           6,
-          "Beast Gift",
-          "A lasting gift: Bear (double carrying capacity), Eagle (see a mile clearly, no penalty in dim light), Wolf (track at fast pace, stealth at normal pace), Elk or Tiger."
+          "Beast Bite",
+          "While your Rage lasts, once per turn when you hit a creature within 5 feet of your spirit beast, the beast bites it for extra damage equal to your Rage Damage bonus."
         ],
         [
           10,
-          "Ghost Path",
-          "Cast Commune with Nature as a ritual."
+          "Beast Step",
+          "While raging, as a Bonus Action you can swap places with your spirit beast. You don't provoke Opportunity Attacks when you do."
         ],
         [
           14,
-          "Spirit Attunement",
-          "A raging power: Bear (adjacent enemies have disadvantage attacking anyone but you), Eagle (fly while raging), Wolf (knock a Large or smaller creature prone with a bonus action after a hit), Elk or Tiger."
+          "Last Howl",
+          "Once per Long Rest, when you drop to 0 Hit Points while your spirit beast is present, you drop to 1 Hit Point instead and the beast vanishes."
         ]
       ]
     },
     "Path of the Kinwarden": {
-      "about": "Your ancestors fight at your side when you rage, shielding the people you care about with ghostly hands. Families in [[Loreaon]]’s oldest quarters still keep the old names on their doors for this reason.",
+      "about": "You fight for the ones you've sworn to protect, and the dead of your family stand behind you. The old clans say a kinwarden never fights alone.",
       "features": [
         [
           3,
-          "Ancestor Wards",
-          "The first creature you hit each turn while raging has disadvantage on attacks against anyone but you, and anyone else it hits takes half damage, until your next turn."
+          "Kin Mark",
+          "When you enter your Rage, name up to a number of allies equal to your Proficiency Bonus. They are your kin until the Rage ends."
+        ],
+        [
+          3,
+          "Take the Blow",
+          "While raging, when a kin you can see within 5 feet is hit by an attack, you can use your Reaction to become the target instead. You take the damage with your Rage resistance applying."
         ],
         [
           6,
-          "Ancestral Shield",
-          "While raging, use your reaction when an ally within 30 ft takes damage to reduce it by 2d6 (3d6 at 10th, 4d6 at 14th)."
+          "Bound by Blood",
+          "Kin within 30 feet of you have Advantage on saving throws against the Frightened condition. When a kin drops to 0 Hit Points, you can use your Reaction to move up to your Speed toward them and gain Temporary Hit Points equal to your Barbarian level."
         ],
         [
           10,
           "Ask the Dead",
-          "Cast Augury or Clairvoyance without spending mana, once per short or long rest."
+          "Once per Long Rest, you can cast Speak with Dead without spending mana. The dead answer up to three questions and can't lie to you."
         ],
         [
           14,
-          "Vengeful Dead",
-          "Whatever Spirit Shield prevents is dealt back as force damage to the attacker."
+          "Grudge of Ages",
+          "When a creature hits you or a kin, you can mark it until the end of your next turn. You have Advantage on attack rolls against the marked creature, and it can't take the Disengage action."
         ]
       ]
     },
     "Path of the Stormcaller": {
-      "about": "Your rage becomes a storm around you, shaped by the land you grew up in. Desert storms burn, sea gales strike, and tundra cold slows everything it touches.",
+      "about": "The storm lives in your chest, and every blow you take feeds it. Stormcallers walk into the weather and come out holding the lightning.",
       "features": [
         [
           3,
-          "Storm Halo",
-          "While raging, a 10 ft aura: Desert (fire damage to creatures around you), Sea (lightning to one creature, Dex save half) or Tundra (temp HP to you and allies). Use it again with a bonus action each turn."
+          "Static Build",
+          "While raging, each time you take damage from an attack, you gain 1 Charge, to a maximum of 5. Your Charges end when your Rage ends."
+        ],
+        [
+          3,
+          "Discharge",
+          "When you hit with a melee attack while raging, you can spend all of your Charges. The hit deals an extra 1d6 Lightning damage per Charge spent."
         ],
         [
           6,
           "Stormborn",
-          "Resistance to your storm's damage type plus a small utility gift (no extreme heat or cold trouble, breathe and swim underwater, or freeze water)."
+          "While raging, you have Resistance to Lightning and Thunder damage. While you have 3 or more Charges, your Speed increases by 10 feet."
         ],
         [
           10,
-          "Storm Ward",
-          "Allies in your aura gain resistance to your storm's damage type."
+          "Thunder Ward",
+          "When you are hit by an attack while raging, you can use your Reaction and spend 2 Charges. Each creature of your choice within 10 feet must succeed on a Constitution saving throw (DC 8 plus your Proficiency Bonus and your Constitution modifier) or take 2d8 Thunder damage and be pushed 10 feet away."
         ],
         [
           14,
-          "Tempest Rage",
-          "Your aura bites back: Desert burns attackers, Sea knocks enemies prone, Tundra slows creatures to 0 speed."
+          "Eye of the Storm",
+          "You start each Rage with 3 Charges, and Discharge uses d8s. Once per Long Rest, when you Discharge, creatures of your choice within 15 feet of you take Lightning damage equal to the Discharge damage (half on a successful Dexterity saving throw)."
         ]
       ]
     },
     "Path of the Fervent": {
-      "about": "A god’s fury burns through you when you rage, and death itself struggles to hold you. Zealots of the church speak of the moment they came back from the dead, and the bishops are never quite sure what to make of it.",
+      "about": "Your rage is a sworn vow, spoken before the fight begins. Keep it and you are terrible. Break it and the fury leaves you.",
       "features": [
         [
           3,
-          "Holy Fury",
-          "While raging, your first hit each turn deals extra radiant or necrotic damage: 1d6 + half your barbarian level."
-        ],
-        [
-          3,
-          "Blessed Warrior",
-          "Spells that bring you back to life need no material components."
+          "Swear the Vow",
+          "When you enter your Rage, choose a Vow. If you break it, your Rage ends. Guard: choose a creature within 30 feet. While you are within 5 feet of it, you both gain a +1 bonus to Armor Class. The Vow breaks if it drops to 0 Hit Points or you end your turn more than 30 feet from it. Avenge: choose a creature you can see. You have Advantage on your first attack each turn against it and deal extra damage equal to your Rage Damage bonus. The Vow ends when it is dead or out of sight. Endure: you don't move on your turn. In return you have Advantage on Strength and Constitution saving throws, and at the start of each of your turns you gain Temporary Hit Points equal to your Proficiency Bonus."
         ],
         [
           6,
-          "Zealous Focus",
-          "Once per rage, reroll a failed saving throw."
+          "Second Vow",
+          "You can swear two different Vows when you enter your Rage."
         ],
         [
           10,
-          "Zealous Aura",
-          "Bonus action, once per long rest: up to ten creatures gain advantage on attacks and saves until your next turn."
+          "Banner of Oath",
+          "Once per Long Rest, as a Bonus Action, up to a number of allies equal to your Proficiency Bonus within 30 feet share the benefits of your Vows until your Rage ends."
         ],
         [
           14,
-          "Undying Rage",
-          "While raging, you don't die at 0 HP; you fall only when the rage ends, if you're still at 0."
+          "Penance",
+          "Once per Long Rest, when you break a Vow, your Rage doesn't end. Instead you take psychic damage equal to twice your Barbarian level, which can't be reduced."
         ]
       ]
     },
     "Path of the Feral Shape": {
-      "about": "Your rage changes your body into something more animal: claws, jaws or a lashing tail. Those who fight beside you learn to keep their distance until the fight is over.",
+      "about": "When the rage takes you, you stop being a person. Feral Shape barbarians wear the shape of the beast they've hunted all their lives.",
       "features": [
         [
           3,
-          "Beastform",
-          "When you rage, grow a natural weapon: bite (heal a little when you hit while under half HP), claws (an extra claw attack), or tail (reaction to add to your AC against a hit)."
+          "Beast Mantle",
+          "When you enter your Rage, you can take the shape of a beast: Bear, Boar or Panther. You become Large if there is space. Your Unarmed Strikes deal 1d10 plus your Strength modifier and count as magical. Bear: you gain Temporary Hit Points equal to your Barbarian level. Boar: you can't be knocked Prone, and you can move through the space of Medium or smaller creatures. Panther: you gain a Climb Speed equal to your Speed, and your jump distances are doubled."
         ],
         [
           6,
-          "Feral Soul",
-          "Your natural weapons count as magical, and you choose a gift each rest: swim speed, climb speed, or a jumping boost."
+          "Wild Reflexes",
+          "While in your beast shape, you have a Swim Speed equal to your Speed, and Advantage on Wisdom (Perception) checks that rely on smell."
         ],
         [
           10,
-          "Spreading Rage",
-          "When your natural weapon hits, the target saves (Wis) or must attack someone else or take psychic damage. A few times per long rest."
+          "Pounce",
+          "While in your beast shape, as a Bonus Action you can move up to 10 feet. The first creature you hit after moving at least 20 feet on a turn takes extra damage equal to your Rage Damage bonus and must succeed on a Strength saving throw (DC 8 plus your Proficiency Bonus and your Strength modifier) or be knocked Prone."
         ],
         [
           14,
-          "Hunting Cry",
-          "When you rage, up to your Con modifier allies gain extra damage once per turn while you gain temporary HP. Uses equal to proficiency bonus per long rest."
+          "Apex Form",
+          "While in your beast shape, your weapon and Unarmed Strike attacks score a Critical Hit on a roll of 19 or 20, and when you reduce a creature to 0 Hit Points you regain Hit Points equal to your Constitution modifier."
         ]
       ]
     },
     "Path of the Wildborn": {
-      "about": "Wild magic surges out of you every time you rage, and no two surges are quite alike. Mages in [[Dragonsneck]] would pay a fortune to study you, and few of them would survive the study.",
+      "about": "You were raised where the world's magic runs raw, and your rage draws on it. A Wildborn never knows which surge will answer, so they choose before they need it.",
       "features": [
         [
           3,
-          "Surgesight",
-          "Sense spells and magic items within 60 ft as an action, a few times per long rest."
+          "Surge Hand",
+          "When you finish a Long Rest, choose three Surges from the list below. When you enter your Rage, you can spend one of them. A spent Surge is gone until you finish a Long Rest. Flare: creatures of your choice within 10 feet must succeed on a Dexterity saving throw (DC 8 plus your Proficiency Bonus and your Constitution modifier) or have the Blinded condition until the end of your next turn. Thorns: until your Rage ends, a creature that hits you with a melee attack takes 1d6 plus your Proficiency Bonus Piercing damage. Mend: you gain Temporary Hit Points equal to your Barbarian level plus your Constitution modifier. Gale: creatures of your choice within 15 feet must succeed on a Strength saving throw (same DC) or be pushed 10 feet away from you. Echo: the next weapon attack you hit with deals an extra die of weapon damage. Spark: until your Rage ends, your weapon attacks deal an extra 1d6 Lightning damage."
         ],
         [
           3,
-          "Chaos Pulse",
-          "When you rage, roll on the Chaos table for a random magical effect (shadow tendrils, teleporting, a burst of light, a hungry spirit and so on)."
+          "Surge Sense",
+          "You know when a spell is cast within 60 feet of you, and what school it belongs to."
         ],
         [
           6,
-          "Mana Lift",
-          "Touch an ally to give them a d3 bonus to attacks and checks for 10 minutes, or to restore some of their mana: roll a d3 and they regain 5, 10 or 18 mana. Uses per long rest equal to proficiency bonus."
+          "Deeper Hand",
+          "Your hand holds four Surges. When you finish a Short Rest, you can swap one Surge for another."
         ],
         [
           10,
-          "Backfire",
-          "When you take damage or fail a save while raging, reroll your wild surge as a reaction."
+          "Spell Eater",
+          "When you succeed on a saving throw against a spell, you regain one spent Surge."
         ],
         [
           14,
-          "Steady Surge",
-          "Roll twice on the Chaos table and pick the result you want."
+          "Perfect Draw",
+          "You can spend two Surges at once when you enter your Rage, and you can also spend a Surge as a Bonus Action once during each Rage."
         ]
       ]
     },
     "Path of the Titan": {
-      "about": "You grow with the strength of the giants when you rage, and you hurl your foes like stones. The quarry-folk of the high hills tell tales of barbarians who could throw a boulder over a river.",
+      "about": "Your rage swells you until the doorway is too small. Titans of the old stories walked the isles before the elves, and you carry a little of that size.",
       "features": [
         [
           3,
-          "Titan's Might",
-          "Learn Druidcraft or Thaumaturgy and the Giant language."
+          "Growing Fury",
+          "At the start of each of your turns while raging, you gain a Growth stage, to a maximum of 3. Your stages reset when your Rage ends. Stage 1: your reach increases by 5 feet. Stage 2: you become Large if there is space, and you have Advantage on Strength checks and saving throws. Stage 3: once per turn, when you hit with a melee attack, you deal extra damage equal to your Rage Damage bonus."
         ],
         [
           3,
-          "Titan's Havoc",
-          "While raging you count as Large (if space allows), your reach grows by 5 ft, and thrown or Strength-based hits add more damage."
+          "Heavy Lifter",
+          "Your carrying, pushing, dragging and lifting limits are doubled. You can hurl improvised objects with a range of 20/60 feet."
         ],
         [
           6,
-          "Elemental Cleave",
-          "When you rage, infuse a weapon with acid, cold, fire, thunder or lightning; it deals an extra 1d6 of that type and returns to your hand when thrown."
+          "Quake Step",
+          "While at Stage 2 or higher, when you move at least 10 feet on your turn, creatures of your choice within 5 feet of your path must succeed on a Strength saving throw (DC 8 plus your Proficiency Bonus and your Strength modifier) or have the Prone condition."
         ],
         [
           10,
           "Hurl Foe",
-          "As a bonus action while raging, hurl a Medium or smaller creature up to 30 ft (unwilling ones save)."
+          "As a Bonus Action while raging, you can make an Athletics check contested by a Large or smaller creature you are grappling. On a success, you throw it up to 30 feet. It takes 3d8 Bludgeoning damage and lands Prone."
         ],
         [
           14,
-          "Colossus Form",
-          "While raging you can grow to Large or Huge, your reach grows further and your Elemental Cleave damage rises to 2d6."
+          "Colossus",
+          "You begin each Rage at Stage 2. At Stage 3 you become Huge if there is space, and your reach is 10 feet greater than normal."
         ]
       ]
     }
